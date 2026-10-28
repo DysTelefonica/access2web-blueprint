@@ -1,0 +1,3000 @@
+# Inventario de requisitos de Condor para Calidad (issue #1494).
+# Esquema y reglas de redacción: docs/07-migracion/inventario-requisitos.md.
+#
+# Títulos de formulario: los menús sustituyen su título por
+# «Usuario conectado: <nombre> (<perfil>)» al abrirse. Ese texto no identifica
+# la ventana y contiene nombres de personas, así que se usa el rótulo visible
+# de la cabecera. Las partes que cambian se escriben entre « ». Los
+# subformularios de las fichas de datos usan el texto de su pestaña.
+#
+# Muchas acciones del flujo no son botones de Access: son botones de la página
+# web que muestra la ventana «GESTIÓN DE LA SOLICITUD». Se cita como control el
+# texto visible de esos botones en la página.
+
+aplicacion: Condor
+prefijo: CON
+repositorio: DysTelefonica/condor
+rama: main
+commit: 752fde2dae12c8c2d88b4bd151b8c51a68e52606
+
+formularios:
+  - interno: Form_frm0OtrosAdmin
+    titulo: Apartado adminstracion
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frm0Ppal
+    titulo: CONDOR
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frm0PpalTecnico
+    titulo: CONDOR
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmAltaSolicitud
+    titulo: Alta de Nueva Solicitud | Editar Pre-registro de Solicitud
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmBuscarExpediente
+    titulo: BÚSQUEDA DE EXPEDIENTES
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmBuscarSolicitudes
+    titulo: BÚSQUEDA DE SOLICITUDES
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmDatosCDCA
+    titulo: "Concesión/Desviación: «código» («nemotécnico»)"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmDatosCDCASUB
+    titulo: "Concesión/Desviación SUB: «código» («nemotécnico»)"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmDatosPC
+    titulo: "Propuesta de Cambio: «código» («nemotécnico»)"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmDetalleExpediente
+    titulo: Detalle de Expediente
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmDetalleLogCambio
+    titulo: Detalle del Cambio
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmDetalleLogError
+    titulo: Detalle del Error
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmElegirEtapaAdjunto
+    titulo: Clasificar Documento Adjunto
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmFiltrosAvanzadosSolicitudes
+    titulo: Filtros Avanzados
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmGestionAdjuntos
+    titulo: Visor de Adjuntos
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmGestionSolicitud
+    titulo: GESTIÓN DE LA SOLICITUD
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmSplash
+    titulo: CONDOR - Iniciando...
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmVerLogCambios
+    titulo: Visor de Log de Cambios
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmVerLogErrores
+    titulo: Visor de Log de Errores (cabecera «Visor de Log de Cambios»)
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmWebVisor
+    titulo: CONDOR - Visor Web
+    estado: cubierto
+    motivo: ""
+  - interno: Form_subfrmDatosCDCASUB_AprobacionSuministrador
+    titulo: APROBACIÓN SUMINSTRADOR
+    estado: cubierto
+    motivo: ""
+  - interno: Form_subfrmDatosCDCASUB_DecisionFinal
+    titulo: AUTORIDAD COMPETENTE
+    estado: cubierto
+    motivo: ""
+  - interno: Form_subfrmDatosCDCASUB_DictamenRAC
+    titulo: RAC
+    estado: cubierto
+    motivo: ""
+  - interno: Form_subfrmDatosCDCASUB_Generales
+    titulo: GENERAL
+    estado: cubierto
+    motivo: ""
+  - interno: Form_subfrmDatosCDCASUB_Impacto
+    titulo: MOTIVOS
+    estado: cubierto
+    motivo: ""
+  - interno: Form_subfrmDatosCDCASUB_Propuesta
+    titulo: DETALLE Y DESCRIPCIÓN
+    estado: cubierto
+    motivo: ""
+  - interno: Form_subfrmDatosCDCA_AprobacionSuministrador
+    titulo: APROBACIÓN SUMINSTRADOR
+    estado: cubierto
+    motivo: ""
+  - interno: Form_subfrmDatosCDCA_DecisionFinal
+    titulo: AUTORIDAD COMPETENTE
+    estado: cubierto
+    motivo: ""
+  - interno: Form_subfrmDatosCDCA_DictamenRAC
+    titulo: RAC
+    estado: cubierto
+    motivo: ""
+  - interno: Form_subfrmDatosCDCA_Generales
+    titulo: GENERAL
+    estado: cubierto
+    motivo: ""
+  - interno: Form_subfrmDatosCDCA_Impacto
+    titulo: MOTIVOS
+    estado: cubierto
+    motivo: ""
+  - interno: Form_subfrmDatosCDCA_Propuesta
+    titulo: DETALLE Y DESCRIPCIÓN
+    estado: cubierto
+    motivo: ""
+  - interno: Form_subfrmDatosPC_AprobacionSuministrador
+    titulo: APROBACIÓN SUMINSTRADOR
+    estado: cubierto
+    motivo: ""
+  - interno: Form_subfrmDatosPC_DecisionFinal
+    titulo: AUTORIDAD COMPETENTE
+    estado: cubierto
+    motivo: ""
+  - interno: Form_subfrmDatosPC_DictamenRAC
+    titulo: RAC
+    estado: cubierto
+    motivo: ""
+  - interno: Form_subfrmDatosPC_Generales
+    titulo: GENERAL
+    estado: cubierto
+    motivo: ""
+  - interno: Form_subfrmDatosPC_Impacto
+    titulo: MOTIVOS
+    estado: cubierto
+    motivo: ""
+  - interno: Form_subfrmDatosPC_Propuesta
+    titulo: DETALLE Y DESCRIPCIÓN
+    estado: cubierto
+    motivo: ""
+
+features:
+  # ---------------------------------------------------------------------------
+  # Arranque y menús
+  # ---------------------------------------------------------------------------
+  - id: CON-F001
+    area: Arranque y menús
+    nombre: Iniciar la aplicación
+    descripcion: >-
+      Al abrir Condor se muestra la pantalla de carga, se identifica al usuario, se comprueba la
+      configuración y se abre el menú que corresponde a su perfil.
+    formulario: CONDOR - Iniciando...
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      Calidad y los administradores llegan al menú principal; los técnicos, al menú de técnico.
+    tecnico:
+      formulario: Form_frmSplash
+      control: Form_Open / Form_Timer
+      evidencia:
+        - "src/forms/Form_frmSplash.cls:11"
+        - "src/forms/Form_frmSplash.cls:39"
+        - "src/modules/Variables Globales.bas:56"
+      prd: prd/formularios/Form_frmSplash.md
+    reglas:
+      - id: CON-F001-R01
+        descripcion: La cinta de opciones de Access se oculta, salvo que la aplicación se arranque en modo desarrollo.
+        evidencia: ["src/forms/Form_frmSplash.cls:17"]
+      - id: CON-F001-R02
+        descripcion: Si no se puede conectar con la base de usuarios de la Lanzadera, el arranque se detiene con «No se pudo establecer conexión con la base de datos de usuarios (Lanzadera).».
+        evidencia: ["src/modules/Variables Globales.bas:94"]
+      - id: CON-F001-R03
+        descripcion: El usuario se identifica por el correo que se pasa al arrancar la aplicación; si no se pasa ninguno, por su usuario de red de Windows.
+        evidencia: ["src/modules/Variables Globales.bas:103", "src/classes/UsuarioServicio.cls:52"]
+      - id: CON-F001-R04
+        descripcion: Si el usuario no figura entre los usuarios de las aplicaciones, el arranque se detiene con «Su usuario de red no está registrado en la aplicación o no tiene permisos.».
+        evidencia: ["src/modules/Variables Globales.bas:111"]
+      - id: CON-F001-R05
+        descripcion: El perfil se decide por este orden de prioridad. Es administrador quien está marcado como administrador; es de Calidad quien tiene marcado el permiso de Calidad en Condor; cualquier otro usuario es técnico.
+        evidencia: ["src/classes/UsuarioServicio.cls:78"]
+        # posible defecto: un usuario registrado sin ningún permiso en Condor entra como técnico, porque la falta de permiso no impide el acceso (src/classes/UsuarioServicio.cls:91).
+      - id: CON-F001-R06
+        descripcion: Se comprueba que todos los parámetros de configuración (carpetas, plantillas, versión, documentación de ayuda) se pueden leer; si alguno falla, el arranque se detiene con «CONDOR no pudo iniciarse debido a errores de configuración.».
+        evidencia: ["src/modules/Variables Globales.bas:128", "src/classes/Entorno.cls:603"]
+      - id: CON-F001-R07
+        descripcion: La pantalla de carga permanece visible al menos dos segundos.
+        evidencia: ["src/forms/Form_frmSplash.cls:40"]
+      - id: CON-F001-R08
+        descripcion: Si el perfil no es reconocido, se muestra «Rol de usuario desconocido. La aplicación se cerrará.».
+        evidencia: ["src/forms/Form_frmSplash.cls:62"]
+      - id: CON-F001-R09
+        descripcion: Cualquier error del arranque se muestra como «Se ha producido un error crítico durante el arranque:» seguido del detalle, y se cierran las conexiones abiertas.
+        evidencia: ["src/forms/Form_frmSplash.cls:69"]
+        # posible defecto: tras el error crítico la aplicación no se cierra; la instrucción de salida está desactivada (src/forms/Form_frmSplash.cls:77).
+
+  - id: CON-F002
+    area: Arranque y menús
+    nombre: Consultar el menú principal
+    descripcion: >-
+      Menú de entrada de Calidad y de los administradores. Muestra el usuario conectado, la versión
+      y el número de tareas pendientes.
+    formulario: CONDOR
+    control: ""
+    tipo: automático
+    roles: [Calidad, Administrador]
+    resultado: >-
+      El usuario ve los accesos «Tareas pendientes», «Solicitudes» y «Nueva Solicitud», y el contador de tareas.
+    tecnico:
+      formulario: Form_frm0Ppal
+      control: Form_Load
+      evidencia: ["src/forms/Form_frm0Ppal.cls:149"]
+      prd: prd/formularios/Form_frm0Ppal.md
+    reglas:
+      - id: CON-F002-R01
+        descripcion: El título de la ventana indica «Usuario conectado» con el nombre y el perfil; mientras se actúa como técnico indica «Actuando como» con el técnico y la sesión real.
+        evidencia: ["src/forms/Form_frm0Ppal.cls:158", "src/classes/Entorno.cls:565"]
+      - id: CON-F002-R02
+        descripcion: Si la aplicación está en modo de pruebas, el título añade «EN PRUEBAS».
+        evidencia: ["src/classes/Entorno.cls:594"]
+      - id: CON-F002-R03
+        descripcion: El botón «Opciones Admin» solo es visible para los administradores.
+        evidencia: ["src/forms/Form_frm0Ppal.cls:159"]
+      - id: CON-F002-R04
+        descripcion: La versión que se muestra es la del fichero de configuración de la aplicación.
+        evidencia: ["src/forms/Form_frm0Ppal.cls:160", "src/classes/Entorno.cls:214"]
+      - id: CON-F002-R05
+        descripcion: El contador muestra el número de tareas pendientes y se oculta cuando no hay ninguna.
+        evidencia: ["src/forms/Form_frm0Ppal.cls:238"]
+      - id: CON-F002-R06
+        descripcion: Para Calidad y los administradores es tarea pendiente toda solicitud que no está en «Desarrollo técnico» ni en «Aprobada», de cualquier responsable.
+        evidencia: ["src/classes/SolicitudServicio.cls:113"]
+        # posible defecto: las solicitudes rechazadas, que están en un estado final, también cuentan como tareas pendientes de Calidad (src/classes/SolicitudServicio.cls:116).
+      - id: CON-F002-R07
+        descripcion: El contador se recalcula al crear, cambiar de estado o eliminar una solicitud.
+        evidencia: ["src/modules/Variables Globales.bas:165", "src/forms/Form_frmGestionSolicitud.cls:2398"]
+      - id: CON-F002-R08
+        descripcion: Si falla la carga del menú, la aplicación se cierra.
+        evidencia: ["src/forms/Form_frm0Ppal.cls:168"]
+
+  - id: CON-F003
+    area: Arranque y menús
+    nombre: Consultar el menú de técnico
+    descripcion: >-
+      Menú de entrada de los técnicos. Muestra el usuario conectado, la versión y el número de
+      solicitudes que esperan su trabajo.
+    formulario: CONDOR
+    control: ""
+    tipo: automático
+    roles: [Técnico]
+    resultado: >-
+      El técnico ve los accesos «Tareas pendientes» y «Solicitudes» y el contador de tareas; no puede dar de alta solicitudes.
+    tecnico:
+      formulario: Form_frm0PpalTecnico
+      control: Form_Load
+      evidencia: ["src/forms/Form_frm0PpalTecnico.cls:58"]
+      prd: prd/formularios/Form_frm0PpalTecnico.md
+    reglas:
+      - id: CON-F003-R01
+        descripcion: El título de la ventana sigue la misma regla que el menú principal (CON-F002-R01 y CON-F002-R02).
+        evidencia: ["src/forms/Form_frm0PpalTecnico.cls:64"]
+      - id: CON-F003-R02
+        descripcion: El contador muestra las solicitudes en «Desarrollo técnico» de los expedientes en los que el técnico figura como responsable, y se oculta cuando no hay ninguna.
+        evidencia: ["src/forms/Form_frm0PpalTecnico.cls:152", "src/classes/SolicitudServicio.cls:110", "src/classes/SolicitudServicio.cls:124"]
+      - id: CON-F003-R03
+        descripcion: El botón «Volver a Sesión Ant.» solo es visible cuando un administrador o Calidad está actuando como técnico, y en ese caso se oculta «Salir».
+        evidencia: ["src/forms/Form_frm0PpalTecnico.cls:68"]
+
+  - id: CON-F004
+    area: Arranque y menús
+    nombre: Ver las tareas pendientes
+    descripcion: >-
+      Abre el buscador de solicitudes con la casilla «Mostrar solo tareas pendientes» marcada.
+    formulario: CONDOR
+    control: Tareas pendientes
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre «BÚSQUEDA DE SOLICITUDES» con las tareas pendientes del perfil del usuario.
+    tecnico:
+      formulario: Form_frm0Ppal
+      control: cmdTareasPendientes
+      evidencia:
+        - "src/forms/Form_frm0Ppal.cls:85"
+        - "src/forms/Form_frm0PpalTecnico.cls:9"
+        - "src/forms/Form_frmBuscarSolicitudes.cls:52"
+    reglas:
+      - id: CON-F004-R01
+        descripcion: El buscador se abre igual al pulsar el icono, el recuadro o el contador de tareas.
+        evidencia: ["src/forms/Form_frm0Ppal.cls:266", "src/forms/Form_frm0Ppal.cls:320", "src/forms/Form_frm0PpalTecnico.cls:186"]
+      - id: CON-F004-R02
+        descripcion: Las tareas pendientes son las definidas en CON-F002-R06 para Calidad y administradores y en CON-F003-R02 para técnicos.
+        evidencia: ["src/classes/SolicitudServicio.cls:109"]
+
+  - id: CON-F005
+    area: Arranque y menús
+    nombre: Abrir el buscador de solicitudes
+    descripcion: >-
+      Abre el buscador de solicitudes. Al técnico solo le muestra las solicitudes de sus expedientes.
+    formulario: CONDOR
+    control: Solicitudes
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre «BÚSQUEDA DE SOLICITUDES» sin filtros (Calidad y administradores) o limitada a los expedientes del técnico.
+    tecnico:
+      formulario: Form_frm0PpalTecnico
+      control: cmdBuscarSolicitudes
+      evidencia:
+        - "src/forms/Form_frm0Ppal.cls:48"
+        - "src/forms/Form_frm0PpalTecnico.cls:77"
+    reglas:
+      - id: CON-F005-R01
+        descripcion: Desde el menú de técnico, la búsqueda se lanza filtrada por el técnico conectado como responsable.
+        evidencia: ["src/forms/Form_frm0PpalTecnico.cls:92"]
+      - id: CON-F005-R02
+        descripcion: El buscador también se abre al pulsar el recuadro que rodea el icono.
+        evidencia: ["src/forms/Form_frm0Ppal.cls:316", "src/forms/Form_frm0PpalTecnico.cls:190"]
+
+  - id: CON-F006
+    area: Arranque y menús
+    nombre: Iniciar el alta de una solicitud
+    descripcion: >-
+      Abre la ventana de alta. Cuando la solicitud se crea, abre su gestión y su ficha de datos para
+      seguir completándola.
+    formulario: CONDOR
+    control: Nueva Solicitud
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Tras el alta se abren «GESTIÓN DE LA SOLICITUD» y la ficha de datos de la nueva solicitud.
+    tecnico:
+      formulario: Form_frm0Ppal
+      control: cmdNuevaSolicitud
+      evidencia: ["src/forms/Form_frm0Ppal.cls:103", "src/forms/Form_frm0Ppal.cls:271"]
+    reglas:
+      - id: CON-F006-R01
+        descripcion: El alta solo está en el menú principal; el menú de técnico no tiene este botón.
+        evidencia: ["src/forms/Form_frm0Ppal.cls:103", "src/forms/Form_frm0PpalTecnico.cls:1"]
+      - id: CON-F006-R02
+        descripcion: Si la ventana de alta ya está abierta, se trae al frente.
+        evidencia: ["src/forms/Form_frm0Ppal.cls:106"]
+      - id: CON-F006-R03
+        descripcion: Tras crear la solicitud se recalcula el contador de tareas y se muestra «Solicitud creada correctamente. A continuación se abrirá el entorno de gestión para que pueda completar los datos.».
+        evidencia: ["src/forms/Form_frm0Ppal.cls:280"]
+        # posible defecto: el usuario recibe dos avisos seguidos de creación, el de la ventana de alta y este del menú (src/forms/Form_frmAltaSolicitud.cls:501).
+      - id: CON-F006-R04
+        descripcion: Se abre la gestión de la nueva solicitud y, a continuación, su ficha de datos según el tipo.
+        evidencia: ["src/forms/Form_frm0Ppal.cls:289", "src/forms/Form_frmGestionSolicitud.cls:2328"]
+      - id: CON-F006-R05
+        descripcion: El alta también se inicia al pulsar el recuadro que rodea el icono.
+        evidencia: ["src/forms/Form_frm0Ppal.cls:312"]
+
+  - id: CON-F007
+    area: Arranque y menús
+    nombre: Abrir el manual de uso
+    descripcion: >-
+      Abre el manual de formación de Condor desde el menú.
+    formulario: CONDOR
+    control: Ayuda Workflow
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre el manual de formación en PDF.
+    tecnico:
+      formulario: Form_frm0Ppal
+      control: cmdAbrirAyuda / ComandoAyuda
+      evidencia:
+        - "src/forms/Form_frm0Ppal.cls:8"
+        - "src/forms/Form_frm0Ppal.cls:123"
+        - "src/forms/Form_frm0PpalTecnico.cls:32"
+    reglas:
+      - id: CON-F007-R01
+        descripcion: El botón «Ayuda Workflow» y el icono de ayuda abren el mismo documento, el manual de formación de la carpeta de ayuda.
+        evidencia: ["src/forms/Form_frm0Ppal.cls:13", "src/forms/Form_frm0Ppal.cls:128", "src/classes/Entorno.cls:475"]
+        # posible defecto: «Ayuda Workflow» no abre la ayuda del flujo de trabajo; esa página está configurada pero ningún botón la usa (src/classes/Entorno.cls:458).
+      - id: CON-F007-R02
+        descripcion: Si el manual no existe se muestra «No se pudo obtener el manual de uso.» (botón) o «No se pudo obtener el documento de ayuda.» (icono).
+        evidencia: ["src/forms/Form_frm0Ppal.cls:22", "src/forms/Form_frm0Ppal.cls:137"]
+      - id: CON-F007-R03
+        descripcion: El menú de técnico solo tiene el icono de ayuda, con el mismo comportamiento.
+        evidencia: ["src/forms/Form_frm0PpalTecnico.cls:32"]
+
+  - id: CON-F008
+    area: Arranque y menús
+    nombre: Entrar como un técnico
+    descripcion: >-
+      Permite a Calidad o a un administrador usar la aplicación como si fuera uno de los técnicos,
+      para ver lo que ese técnico ve.
+    formulario: CONDOR
+    control: Entrar como
+    tipo: campo
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Se cierra el menú principal y se abre el menú de técnico actuando como el técnico elegido.
+    tecnico:
+      formulario: Form_frm0Ppal
+      control: cboUsuariosTecnicos / cmdImpersonar
+      evidencia: ["src/forms/Form_frm0Ppal.cls:174"]
+    reglas:
+      - id: CON-F008-R01
+        descripcion: La lista ofrece los jefes de proyecto de expedientes con PECAL que no están dados de baja.
+        evidencia: ["src/forms/Form_frm0Ppal.cls:161", "src/classes/UsuarioServicio.cls:112"]
+      - id: CON-F008-R02
+        descripcion: Si no se elige a nadie se muestra «Por favor, seleccione un usuario técnico de la lista.».
+        evidencia: ["src/forms/Form_frm0Ppal.cls:181"]
+      - id: CON-F008-R03
+        descripcion: Si el usuario elegido ya no existe se muestra «No se pudo encontrar al usuario seleccionado.».
+        evidencia: ["src/forms/Form_frm0Ppal.cls:193"]
+      - id: CON-F008-R04
+        descripcion: Mientras dura, la aplicación aplica al usuario el perfil de técnico y todas las acciones quedan registradas a nombre del técnico elegido.
+        evidencia: ["src/forms/Form_frm0Ppal.cls:197"]
+      - id: CON-F008-R05
+        descripcion: No hay comprobación de perfil en la acción; la puede usar cualquier usuario que llegue al menú principal.
+        evidencia: ["src/forms/Form_frm0Ppal.cls:174"]
+
+  - id: CON-F009
+    area: Arranque y menús
+    nombre: Volver a la sesión propia
+    descripcion: >-
+      Termina la actuación como técnico y devuelve al usuario a su propio perfil.
+    formulario: CONDOR
+    control: Volver a Sesión Ant.
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Se cierra el menú de técnico y se abre el menú principal con el usuario y el perfil reales.
+    tecnico:
+      formulario: Form_frm0PpalTecnico
+      control: cmdVolverASesionAdmin
+      evidencia: ["src/forms/Form_frm0PpalTecnico.cls:113"]
+    reglas:
+      - id: CON-F009-R01
+        descripcion: Se recuperan el usuario y el perfil con los que se arrancó la aplicación.
+        evidencia: ["src/forms/Form_frm0PpalTecnico.cls:117"]
+
+  - id: CON-F010
+    area: Arranque y menús
+    nombre: Salir de la aplicación
+    descripcion: >-
+      Cierra Condor desde el pie del menú.
+    formulario: CONDOR
+    control: Salir
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se cierran las conexiones con las bases de datos y la aplicación termina sin guardar cambios de diseño.
+    tecnico:
+      formulario: Form_frm0Ppal
+      control: cmdSalir
+      evidencia: ["src/forms/Form_frm0Ppal.cls:67", "src/forms/Form_frm0PpalTecnico.cls:137"]
+    reglas:
+      - id: CON-F010-R01
+        descripcion: En el menú principal se pide confirmación con «¿Desea realmente salir de la aplicación?».
+        evidencia: ["src/forms/Form_frm0Ppal.cls:71"]
+      - id: CON-F010-R02
+        descripcion: En el menú de técnico la aplicación se cierra sin pedir confirmación.
+        evidencia: ["src/forms/Form_frm0PpalTecnico.cls:137"]
+
+  - id: CON-F011
+    area: Arranque y menús
+    nombre: Abrir las opciones de administración
+    descripcion: >-
+      Abre el menú de consultas de administración: expedientes y registros de cambios y de errores.
+    formulario: CONDOR
+    control: Opciones Admin
+    tipo: botón
+    roles: [Administrador]
+    resultado: >-
+      Se abre la ventana «Apartado adminstracion» con los accesos «Expedientes», «Ver Logs cambios» y «Ver Logs Errores».
+    tecnico:
+      formulario: Form_frm0OtrosAdmin
+      control: Form_Load
+      evidencia: ["src/forms/Form_frm0Ppal.cls:38", "src/forms/Form_frm0OtrosAdmin.cls:9"]
+      prd: prd/formularios/Form_frm0OtrosAdmin.md
+    reglas:
+      - id: CON-F011-R01
+        descripcion: El acceso solo existe para administradores (CON-F002-R03).
+        evidencia: ["src/forms/Form_frm0Ppal.cls:159"]
+      - id: CON-F011-R02
+        descripcion: «Expedientes» abre el buscador de expedientes.
+        evidencia: ["src/forms/Form_frm0OtrosAdmin.cls:22"]
+      - id: CON-F011-R03
+        descripcion: «Ver Logs cambios» abre el visor del registro de cambios y «Ver Logs Errores» el del registro de errores.
+        evidencia: ["src/forms/Form_frm0OtrosAdmin.cls:35", "src/forms/Form_frm0OtrosAdmin.cls:46"]
+      - id: CON-F011-R04
+        descripcion: «Salir» cierra solo este menú.
+        evidencia: ["src/forms/Form_frm0OtrosAdmin.cls:57"]
+      - id: CON-F011-R05
+        descripcion: El icono de ayuda de este menú no tiene ninguna acción asociada.
+        evidencia: ["src/forms/Form_frm0OtrosAdmin.form.txt:853"]
+        # posible defecto: el icono se muestra con la ayuda «Ayuda» pero no abre nada (src/forms/Form_frm0OtrosAdmin.cls:9).
+
+  # ---------------------------------------------------------------------------
+  # Búsqueda de solicitudes
+  # ---------------------------------------------------------------------------
+  - id: CON-F012
+    area: Búsqueda de solicitudes
+    nombre: Buscar solicitudes
+    descripcion: >-
+      Lista las solicitudes y permite filtrarlas por palabra clave, por las propias del usuario y por
+      tareas pendientes.
+    formulario: BÚSQUEDA DE SOLICITUDES
+    control: Palabra clave
+    tipo: lista
+    roles: []
+    resultado: >-
+      La lista muestra estado, tipo, código de solicitud, nemotécnico, responsable técnico y responsable de Calidad.
+    tecnico:
+      formulario: Form_frmBuscarSolicitudes
+      control: Form_Load / RealizarBusqueda
+      evidencia:
+        - "src/forms/Form_frmBuscarSolicitudes.cls:20"
+        - "src/forms/Form_frmBuscarSolicitudes.cls:64"
+        - "src/classes/SolicitudServicio.cls:67"
+      prd: prd/formularios/Form_frmBuscarSolicitudes.md
+    reglas:
+      - id: CON-F012-R01
+        descripcion: La búsqueda se lanza al abrir la ventana, al cambiar la palabra clave y al marcar o desmarcar cualquiera de las dos casillas.
+        evidencia: ["src/forms/Form_frmBuscarSolicitudes.cls:55", "src/forms/Form_frmBuscarSolicitudes.cls:198", "src/forms/Form_frmBuscarSolicitudes.cls:127", "src/forms/Form_frmBuscarSolicitudes.cls:202"]
+      - id: CON-F012-R02
+        descripcion: La palabra clave busca coincidencias parciales en el código de la solicitud, el nemotécnico o el código del expediente.
+        evidencia: ["src/classes/SolicitudServicio.cls:133"]
+        # posible defecto: la ayuda del campo dice que busca por título, pero el título no se consulta (src/forms/Form_frmBuscarSolicitudes.form.txt:947).
+      - id: CON-F012-R03
+        descripcion: Las solicitudes se ordenan de la más reciente a la más antigua por fecha de creación.
+        evidencia: ["src/classes/SolicitudServicio.cls:162"]
+      - id: CON-F012-R04
+        descripcion: El responsable técnico que se muestra es el jefe de proyecto del expediente; si falta alguno de los responsables se muestra «N/A».
+        evidencia: ["src/classes/SolicitudServicio.cls:86", "src/forms/Form_frmBuscarSolicitudes.cls:99"]
+      - id: CON-F012-R05
+        descripcion: Para un técnico la casilla «Mostrar solo mis solicitudes» queda marcada y bloqueada, y no tiene filtros avanzados ni botón para quitar filtros.
+        evidencia: ["src/forms/Form_frmBuscarSolicitudes.cls:39"]
+      - id: CON-F012-R06
+        descripcion: «Mostrar solo mis solicitudes» muestra, a un técnico, las solicitudes de los expedientes en los que figura como responsable, y a Calidad o a un administrador las de los expedientes de los que es responsable de Calidad.
+        evidencia: ["src/classes/SolicitudServicio.cls:123"]
+      - id: CON-F012-R07
+        descripcion: «Mostrar solo tareas pendientes» aplica la definición de tareas del perfil (CON-F002-R06, CON-F003-R02) y anula el filtro avanzado por estado.
+        evidencia: ["src/classes/SolicitudServicio.cls:109", "src/forms/Form_frmBuscarSolicitudes.cls:132"]
+      - id: CON-F012-R08
+        descripcion: El botón junto a la palabra clave la vacía y repite la búsqueda.
+        evidencia: ["src/forms/Form_frmBuscarSolicitudes.cls:15"]
+      - id: CON-F012-R09
+        descripcion: La lista se actualiza sola cuando se modifica o se elimina una solicitud abierta desde ella.
+        evidencia: ["src/forms/Form_frmBuscarSolicitudes.cls:328", "src/forms/Form_frmBuscarSolicitudes.cls:343"]
+
+  - id: CON-F013
+    area: Búsqueda de solicitudes
+    nombre: Aplicar filtros avanzados
+    descripcion: >-
+      Filtra la lista por responsable de Calidad, responsable técnico, contratista principal, tipo de
+      solicitud y estado.
+    formulario: Filtros Avanzados
+    control: Filtros Avanzados...
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      La lista de solicitudes se repite con los filtros elegidos y el botón cambia a color amarillo.
+    tecnico:
+      formulario: Form_frmFiltrosAvanzadosSolicitudes
+      control: cmdAplicar
+      evidencia:
+        - "src/forms/Form_frmBuscarSolicitudes.cls:245"
+        - "src/forms/Form_frmFiltrosAvanzadosSolicitudes.cls:40"
+        - "src/forms/Form_frmFiltrosAvanzadosSolicitudes.cls:115"
+      prd: prd/formularios/Form_frmFiltrosAvanzadosSolicitudes.md
+    reglas:
+      - id: CON-F013-R01
+        descripcion: Los filtros se abren con los valores que ya estaban aplicados.
+        evidencia: ["src/forms/Form_frmFiltrosAvanzadosSolicitudes.cls:54", "src/forms/Form_frmFiltrosAvanzadosSolicitudes.cls:104"]
+      - id: CON-F013-R02
+        descripcion: La lista de responsables técnicos ofrece los jefes de proyecto de expedientes con PECAL no dados de baja; la de responsables de Calidad, los usuarios no dados de baja con permiso de Calidad en Condor.
+        evidencia: ["src/forms/Form_frmFiltrosAvanzadosSolicitudes.cls:82", "src/classes/UsuarioServicio.cls:112", "src/classes/UsuarioServicio.cls:130"]
+      - id: CON-F013-R03
+        descripcion: El tipo de solicitud ofrece «(Todos)», «PC - Propuesta de Cambio», «CD - Concesión desviación» y «CD_sub - Concesión desviación subsiministrador».
+        evidencia: ["src/forms/Form_frmFiltrosAvanzadosSolicitudes.cls:95"]
+      - id: CON-F013-R04
+        descripcion: Cada filtro tiene un botón que lo devuelve a «(Todos)».
+        evidencia: ["src/forms/Form_frmFiltrosAvanzadosSolicitudes.cls:14"]
+      - id: CON-F013-R05
+        descripcion: El filtro por responsable técnico encuentra los expedientes en los que la persona figura como responsable, sea o no jefe de proyecto.
+        evidencia: ["src/classes/SolicitudServicio.cls:139"]
+      - id: CON-F013-R06
+        descripcion: Con «Mostrar solo mis solicitudes» marcada se ignoran los filtros por responsable técnico y por responsable de Calidad.
+        evidencia: ["src/classes/SolicitudServicio.cls:139", "src/classes/SolicitudServicio.cls:144"]
+      - id: CON-F013-R07
+        descripcion: El filtro por contratista encuentra los expedientes que tienen asociado ese suministrador.
+        evidencia: ["src/classes/SolicitudServicio.cls:149"]
+      - id: CON-F013-R08
+        descripcion: «Cancelar» cierra los filtros sin cambiar la búsqueda.
+        evidencia: ["src/forms/Form_frmFiltrosAvanzadosSolicitudes.cls:130"]
+      - id: CON-F013-R09
+        descripcion: Con algún filtro avanzado activo, el botón «Filtros Avanzados...» se pinta en amarillo; sin filtros vuelve a azul.
+        evidencia: ["src/forms/Form_frmBuscarSolicitudes.cls:160"]
+
+  - id: CON-F014
+    area: Búsqueda de solicitudes
+    nombre: Quitar todos los filtros
+    descripcion: >-
+      Vacía la palabra clave, desmarca las casillas y anula los filtros avanzados.
+    formulario: BÚSQUEDA DE SOLICITUDES
+    control: X
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      La lista vuelve a mostrar todas las solicitudes.
+    tecnico:
+      formulario: Form_frmBuscarSolicitudes
+      control: cmdQuitarFiltros
+      evidencia: ["src/forms/Form_frmBuscarSolicitudes.cls:206"]
+    reglas:
+      - id: CON-F014-R01
+        descripcion: El botón solo es visible si hay algún filtro aplicado y el usuario no es técnico.
+        evidencia: ["src/forms/Form_frmBuscarSolicitudes.cls:173"]
+      - id: CON-F014-R02
+        descripcion: La casilla «Mostrar solo mis solicitudes» solo se desmarca si está habilitada para el usuario.
+        evidencia: ["src/forms/Form_frmBuscarSolicitudes.cls:211"]
+
+  - id: CON-F015
+    area: Búsqueda de solicitudes
+    nombre: Abrir una solicitud
+    descripcion: >-
+      Abre la gestión de la solicitud seleccionada en la lista.
+    formulario: BÚSQUEDA DE SOLICITUDES
+    control: Ver Solicitud
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre «GESTIÓN DE LA SOLICITUD» con la solicitud elegida.
+    tecnico:
+      formulario: Form_frmBuscarSolicitudes
+      control: cmdVerDetalleSolicitud / lstResultados (doble clic)
+      evidencia: ["src/forms/Form_frmBuscarSolicitudes.cls:275", "src/forms/Form_frmBuscarSolicitudes.cls:287"]
+    reglas:
+      - id: CON-F015-R01
+        descripcion: Si no hay ninguna solicitud seleccionada se muestra «Por favor, seleccione una solicitud de la lista.».
+        evidencia: ["src/forms/Form_frmBuscarSolicitudes.cls:293"]
+      - id: CON-F015-R02
+        descripcion: El doble clic en la lista hace lo mismo que el botón.
+        evidencia: ["src/forms/Form_frmBuscarSolicitudes.cls:275"]
+      - id: CON-F015-R03
+        descripcion: Solo hay una gestión abierta a la vez; si está abierta otra solicitud se cierra sin guardar, y si es la misma se trae al frente.
+        evidencia: ["src/forms/Form_frmBuscarSolicitudes.cls:301"]
+
+  # ---------------------------------------------------------------------------
+  # Alta y pre-registro de solicitudes
+  # ---------------------------------------------------------------------------
+  - id: CON-F016
+    area: Alta de solicitudes
+    nombre: Buscar el expediente de la solicitud
+    descripcion: >-
+      Primer paso del alta. Se escribe parte del código o del nemotécnico del expediente y se busca.
+    formulario: Alta de Nueva Solicitud
+    control: Buscar
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Si hay un único expediente se carga directamente; si hay varios se abre el buscador de expedientes para elegir.
+    tecnico:
+      formulario: Form_frmAltaSolicitud
+      control: cmdBuscarExpediente
+      evidencia: ["src/forms/Form_frmAltaSolicitud.cls:247"]
+      prd: prd/formularios/Form_frmAltaSolicitud.md
+    reglas:
+      - id: CON-F016-R01
+        descripcion: Si ya hay un expediente cargado se pide confirmación con «Ya hay un expediente seleccionado. Si busca uno nuevo, se perderán los datos no guardados.».
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:254"]
+      - id: CON-F016-R02
+        descripcion: Si el campo de búsqueda está vacío se muestra «Introduzca un término de búsqueda.».
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:259"]
+      - id: CON-F016-R03
+        descripcion: Solo se buscan expedientes con PECAL, por coincidencia parcial en el nemotécnico o en el código del expediente.
+        evidencia: ["src/classes/ExpedienteServicio.cls:53"]
+        # posible defecto: la ayuda del campo dice que también busca por título, pero el título no se consulta (src/forms/Form_frmAltaSolicitud.form.txt:719).
+      - id: CON-F016-R04
+        descripcion: Si no hay resultados se muestra «No se encontraron resultados.» y la ventana vuelve a su estado inicial.
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:268"]
+      - id: CON-F016-R05
+        descripcion: Pulsar Intro en el campo de búsqueda lanza la búsqueda.
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:633"]
+      - id: CON-F016-R06
+        descripcion: Hasta que no hay expediente cargado no se pueden elegir el tipo, la no conformidad ni el ordinal, ni crear la solicitud.
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:215"]
+
+  - id: CON-F017
+    area: Alta de solicitudes
+    nombre: Elegir el expediente con la búsqueda avanzada
+    descripcion: >-
+      Abre el buscador de expedientes con filtros para elegir el expediente de la solicitud.
+    formulario: Alta de Nueva Solicitud
+    control: Búsqueda Avanzada
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      El expediente elegido queda cargado en el alta.
+    tecnico:
+      formulario: Form_frmAltaSolicitud
+      control: cmdIrABusquedaExpedientes
+      evidencia: ["src/forms/Form_frmAltaSolicitud.cls:305"]
+    reglas:
+      - id: CON-F017-R01
+        descripcion: Si ya hay un expediente cargado se pide confirmación con «Se perderán los cambios no guardados. ¿Continuar?».
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:308"]
+      - id: CON-F017-R02
+        descripcion: Si se sale del buscador sin elegir, el alta no cambia.
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:328"]
+
+  - id: CON-F018
+    area: Alta de solicitudes
+    nombre: Preparar los datos de la nueva solicitud
+    descripcion: >-
+      Al cargar el expediente se rellenan los contratistas, se proponen el código de la solicitud y los
+      tipos posibles, y se ofrecen las no conformidades del expediente.
+    formulario: Alta de Nueva Solicitud
+    control: Paso 2 - Definir Nueva Solicitud
+    tipo: automático
+    roles: [Calidad, Administrador]
+    resultado: >-
+      El alta muestra contratista principal, subsuministrador, tipo de solicitud, código propuesto y no conformidades.
+    tecnico:
+      formulario: Form_frmAltaSolicitud
+      control: CargarDatosExpediente
+      evidencia: ["src/forms/Form_frmAltaSolicitud.cls:123"]
+    reglas:
+      - id: CON-F018-R01
+        descripcion: Se muestran el contratista principal y el subsuministrador del expediente; si hay varios se separan con «|» y si no hay ninguno se muestra «N/A».
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:160", "src/classes/ExpedienteServicio.cls:162"]
+      - id: CON-F018-R02
+        descripcion: Siempre se puede elegir «PC - Propuesta de Cambio»; además, «CD/CA - Concesión/Desviación» si la empresa es contratista principal del expediente, o «CD/CA-SUB - Subcontratista» si no lo es.
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:167"]
+      - id: CON-F018-R03
+        descripcion: El código propuesto tiene la forma «DC-«clave»-«n.º»», donde el número es el siguiente al mayor ya usado con esa clave.
+        evidencia: ["src/classes/SolicitudServicio.cls:397", "src/modules/SolicitudRepositorio.bas:107"]
+      - id: CON-F018-R04
+        descripcion: La clave es el código de actividad del expediente; si no tiene, se forma con los dos dígitos del año seguidos del número del expediente (de «0395/20» sale «200395»).
+        evidencia: ["src/classes/ExpedienteServicio.cls:106"]
+      - id: CON-F018-R05
+        descripcion: Si no se puede obtener la clave se muestra «No se pudo extraer el patrón XXXX/AA del expediente:» con el nemotécnico, y el alta vuelve a su estado inicial.
+        evidencia: ["src/classes/ExpedienteServicio.cls:152", "src/forms/Form_frmAltaSolicitud.cls:210"]
+      - id: CON-F018-R06
+        descripcion: La lista «NC. Asociada» ofrece «(Ninguna)» y las no conformidades registradas para ese expediente.
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:357", "src/modules/NoConformidadRepositorio.bas:30"]
+      - id: CON-F018-R07
+        descripcion: Si una no conformidad de la base de No Conformidades ya tiene anotado el código de la solicitud, se selecciona sola.
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:139", "src/forms/Form_frmAltaSolicitud.cls:403"]
+
+  - id: CON-F019
+    area: Alta de solicitudes
+    nombre: Forzar el número del código de solicitud
+    descripcion: >-
+      Permite sustituir el número final del código propuesto por uno elegido por el usuario.
+    formulario: Alta de Nueva Solicitud
+    control: Forzar Ordinal (opcional)
+    tipo: campo
+    roles: [Calidad, Administrador]
+    resultado: >-
+      El código propuesto termina en el número indicado.
+    tecnico:
+      formulario: Form_frmAltaSolicitud
+      control: txtOrdinalManual
+      evidencia: ["src/forms/Form_frmAltaSolicitud.cls:583"]
+    reglas:
+      - id: CON-F019-R01
+        descripcion: Si se escribe un número, sustituye al número final del código propuesto.
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:592"]
+      - id: CON-F019-R02
+        descripcion: Si el código resultante ya existe en otra solicitud, el campo se pone en rojo y se muestra «¡ATENCIÓN! El código '«código»' ya existe.».
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:599"]
+      - id: CON-F019-R03
+        descripcion: Si el campo se vacía o no contiene un número, se vuelve a proponer el código automático.
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:620"]
+
+  - id: CON-F020
+    area: Alta de solicitudes
+    nombre: Asociar una no conformidad
+    descripcion: >-
+      Vincula la solicitud con una no conformidad del expediente.
+    formulario: Alta de Nueva Solicitud
+    control: NC. Asociada
+    tipo: campo
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Al guardar, la no conformidad queda anotada con el código de la solicitud en la base de No Conformidades.
+    tecnico:
+      formulario: Form_frmAltaSolicitud
+      control: cboNCAsociada
+      evidencia: ["src/forms/Form_frmAltaSolicitud.cls:420", "src/classes/SolicitudServicio.cls:707"]
+    reglas:
+      - id: CON-F020-R01
+        descripcion: "Si la no conformidad ya estaba registrada en la base de No Conformidades, cambiarla pide confirmación con «Esta No Conformidad está registrada en la base de datos de No Conformidades. Código NC: «código» ¿Está seguro de que desea cambiar o eliminar esta relación?»."
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:424"]
+      - id: CON-F020-R02
+        descripcion: Si el usuario no confirma, se restaura la no conformidad anterior.
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:435"]
+      - id: CON-F020-R03
+        descripcion: Al guardar, la no conformidad elegida recibe el código de la solicitud; si se cambió de no conformidad, a la anterior se le borra el código.
+        evidencia: ["src/classes/SolicitudServicio.cls:715", "src/classes/SolicitudServicio.cls:721"]
+
+  - id: CON-F021
+    area: Alta de solicitudes
+    nombre: Crear la solicitud
+    descripcion: >-
+      Registra la nueva solicitud en estado de pre-registro con el expediente, el tipo, el código y la
+      no conformidad elegidos.
+    formulario: Alta de Nueva Solicitud
+    control: Crear Solicitud
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      La solicitud queda creada en «Pre-registro» y se abren su gestión y su ficha de datos.
+    tecnico:
+      formulario: Form_frmAltaSolicitud
+      control: cmdAltaSolicitud
+      evidencia: ["src/forms/Form_frmAltaSolicitud.cls:445", "src/classes/SolicitudServicio.cls:316", "src/classes/SolicitudServicio.cls:348"]
+    reglas:
+      - id: CON-F021-R01
+        descripcion: Sin expediente se muestra «• Debe seleccionar un expediente.».
+        evidencia: ["src/classes/SolicitudServicio.cls:354"]
+      - id: CON-F021-R02
+        descripcion: Sin tipo se muestra «• Debe seleccionar un tipo de solicitud.».
+        evidencia: ["src/classes/SolicitudServicio.cls:355"]
+      - id: CON-F021-R03
+        descripcion: Sin código se muestra «• El código de solicitud no puede estar vacío.».
+        evidencia: ["src/classes/SolicitudServicio.cls:356"]
+      - id: CON-F021-R04
+        descripcion: Si el código ya existe se muestra «• El código '«código»' ya existe en el sistema.».
+        evidencia: ["src/classes/SolicitudServicio.cls:379"]
+      - id: CON-F021-R05
+        descripcion: La solicitud nace en «Pre-registro», con la revisión de Calidad «PENDIENTE» y con la fecha y el usuario de creación.
+        evidencia: ["src/classes/SolicitudServicio.cls:322"]
+      - id: CON-F021-R06
+        descripcion: La solicitud y la anotación en la no conformidad se guardan juntas; si falla una, no se guarda ninguna.
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:479", "src/forms/Form_frmAltaSolicitud.cls:573"]
+      - id: CON-F021-R07
+        descripcion: "Al terminar se muestra «Solicitud creada correctamente con el código: «código» A continuación se abrirá el formulario de datos para completar la información.» y se recalculan los contadores de tareas."
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:498"]
+      - id: CON-F021-R08
+        descripcion: «Cancelar» cierra el alta sin guardar.
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:641"]
+
+  - id: CON-F022
+    area: Alta de solicitudes
+    nombre: Editar el pre-registro
+    descripcion: >-
+      Permite cambiar el expediente, el tipo, el código o la no conformidad de una solicitud ya creada.
+    formulario: Editar Pre-registro de Solicitud
+    control: Guardar Cambios
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      La solicitud queda con los nuevos datos iniciales y, si cambió el expediente, se actualizan los datos de la ficha que dependen de él.
+    tecnico:
+      formulario: Form_frmAltaSolicitud
+      control: cmdAltaSolicitud (edición)
+      evidencia:
+        - "src/forms/Form_frmGestionSolicitud.cls:1784"
+        - "src/forms/Form_frmAltaSolicitud.cls:32"
+        - "src/forms/Form_frmAltaSolicitud.cls:507"
+    reglas:
+      - id: CON-F022-R01
+        descripcion: El botón «Editar Pre-registro» de la gestión solo está activo para Calidad y administradores, en estados anteriores a «Validación» y si la solicitud no está cerrada.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:1726"]
+      - id: CON-F022-R02
+        descripcion: El tipo de solicitud solo se puede cambiar mientras está en «Pre-registro».
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:114", "src/forms/Form_frmAltaSolicitud.cls:185"]
+      - id: CON-F022-R03
+        descripcion: Si no se ha cambiado nada se muestra «No se han detectado cambios en la solicitud.» y la ventana se cierra.
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:461"]
+      - id: CON-F022-R04
+        descripcion: Solo se propone un código nuevo si se cambia de expediente.
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:155"]
+      - id: CON-F022-R05
+        descripcion: Si el código pertenece a otra solicitud se muestra «• El código '«código»' ya pertenece a otra solicitud.».
+        evidencia: ["src/classes/SolicitudServicio.cls:369"]
+      - id: CON-F022-R06
+        descripcion: Se aplican las mismas validaciones de expediente, tipo y código que en el alta (CON-F021-R01 a CON-F021-R03) y la misma actualización de la no conformidad (CON-F020-R03).
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:529", "src/forms/Form_frmAltaSolicitud.cls:535"]
+      - id: CON-F022-R07
+        descripcion: Si cambia el expediente, la ficha de datos toma del nuevo expediente la referencia del contrato, la denominación, el objeto, el responsable técnico y el contratista, y usa el nuevo código como referencia del suministrador.
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:539", "src/classes/DatosPCServicio.cls:15"]
+      - id: CON-F022-R08
+        descripcion: Se guardan la fecha y el usuario de la modificación y se muestra «Los cambios en el pre-registro se han guardado correctamente.».
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:526", "src/forms/Form_frmAltaSolicitud.cls:559"]
+
+  # ---------------------------------------------------------------------------
+  # Expedientes
+  # ---------------------------------------------------------------------------
+  - id: CON-F023
+    area: Expedientes
+    nombre: Buscar expedientes
+    descripcion: >-
+      Lista los expedientes con PECAL y permite filtrarlos por palabra clave, responsable de Calidad y
+      responsable técnico.
+    formulario: BÚSQUEDA DE EXPEDIENTES
+    control: Palabra clave
+    tipo: lista
+    roles: [Calidad, Administrador]
+    resultado: >-
+      La lista muestra código, nemotécnico, fechas de inicio y fin, responsable técnico y RAC asignado.
+    tecnico:
+      formulario: Form_frmBuscarExpediente
+      control: Form_Load / RealizarBusqueda
+      evidencia: ["src/forms/Form_frmBuscarExpediente.cls:11", "src/forms/Form_frmBuscarExpediente.cls:111", "src/classes/ExpedienteServicio.cls:18"]
+      prd: prd/formularios/Form_frmBuscarExpediente.md
+    reglas:
+      - id: CON-F023-R01
+        descripcion: Solo se muestran expedientes con PECAL, del más reciente al más antiguo.
+        evidencia: ["src/classes/ExpedienteServicio.cls:53", "src/classes/ExpedienteServicio.cls:77"]
+      - id: CON-F023-R02
+        descripcion: Si se abre desde el alta con un texto, ese texto se usa como palabra clave.
+        evidencia: ["src/forms/Form_frmBuscarExpediente.cls:24"]
+      - id: CON-F023-R03
+        descripcion: La palabra clave busca en el nemotécnico y en el código del expediente.
+        evidencia: ["src/classes/ExpedienteServicio.cls:55"]
+      - id: CON-F023-R04
+        descripcion: El filtro por responsable técnico solo encuentra expedientes en los que esa persona es jefe de proyecto.
+        evidencia: ["src/classes/ExpedienteServicio.cls:65"]
+      - id: CON-F023-R05
+        descripcion: La búsqueda se repite al cambiar cualquier filtro; cada filtro tiene un botón que lo vacía.
+        evidencia: ["src/forms/Form_frmBuscarExpediente.cls:40", "src/forms/Form_frmBuscarExpediente.cls:60"]
+      - id: CON-F023-R06
+        descripcion: Las fechas vacías se muestran en blanco y la falta de responsable o de RAC como «N/A».
+        evidencia: ["src/forms/Form_frmBuscarExpediente.cls:144"]
+
+  - id: CON-F024
+    area: Expedientes
+    nombre: Elegir un expediente
+    descripcion: >-
+      Devuelve el expediente seleccionado a la ventana de alta.
+    formulario: BÚSQUEDA DE EXPEDIENTES
+    control: Elegir
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      El alta carga el expediente elegido.
+    tecnico:
+      formulario: Form_frmBuscarExpediente
+      control: cmdElegir / lstResultados (doble clic)
+      evidencia: ["src/forms/Form_frmBuscarExpediente.cls:52", "src/forms/Form_frmBuscarExpediente.cls:170"]
+    reglas:
+      - id: CON-F024-R01
+        descripcion: Si no hay ningún expediente seleccionado no ocurre nada.
+        evidencia: ["src/forms/Form_frmBuscarExpediente.cls:175"]
+      - id: CON-F024-R02
+        descripcion: El doble clic en la lista hace lo mismo que el botón.
+        evidencia: ["src/forms/Form_frmBuscarExpediente.cls:56"]
+        # posible defecto: si el buscador se abrió desde el menú de administración, «Elegir» solo oculta la ventana y la deja abierta (src/forms/Form_frmBuscarExpediente.cls:188).
+      - id: CON-F024-R03
+        descripcion: «Salir» cierra el buscador sin elegir ningún expediente.
+        evidencia: ["src/forms/Form_frmBuscarExpediente.cls:76"]
+
+  - id: CON-F025
+    area: Expedientes
+    nombre: Consultar el detalle de un expediente
+    descripcion: >-
+      Muestra en una ventana los datos del expediente seleccionado.
+    formulario: Detalle de Expediente
+    control: Ver detalle
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Se ven título, nemotécnico, códigos, contratistas, subcontratistas, responsables, RAC y fechas del contrato.
+    tecnico:
+      formulario: Form_frmDetalleExpediente
+      control: Form_Load
+      evidencia:
+        - "src/forms/Form_frmBuscarExpediente.cls:203"
+        - "src/forms/Form_frmAltaSolicitud.cls:339"
+        - "src/forms/Form_frmDetalleExpediente.cls:13"
+      prd: prd/formularios/Form_frmDetalleExpediente.md
+    reglas:
+      - id: CON-F025-R01
+        descripcion: En el buscador, si no hay expediente seleccionado se muestra «Por favor, seleccione un expediente de la lista para ver su detalle.».
+        evidencia: ["src/forms/Form_frmBuscarExpediente.cls:213"]
+      - id: CON-F025-R02
+        descripcion: En el alta, el botón «Ver detalle expediente» solo está activo cuando ya hay un expediente cargado.
+        evidencia: ["src/forms/Form_frmAltaSolicitud.cls:230", "src/forms/Form_frmAltaSolicitud.cls:197"]
+      - id: CON-F025-R03
+        descripcion: Si el expediente no existe se muestra «El expediente con ID «n.º» no ha sido encontrado.» y la ventana se cierra.
+        evidencia: ["src/forms/Form_frmDetalleExpediente.cls:31"]
+      - id: CON-F025-R04
+        descripcion: Las fechas de inicio, fin de contrato y fin de garantía solo se muestran si tienen valor.
+        evidencia: ["src/forms/Form_frmDetalleExpediente.cls:73"]
+
+  # ---------------------------------------------------------------------------
+  # Gestión de la solicitud y flujo de estados
+  # Estados del flujo, en orden: Pre-registro, Registro, Desarrollo técnico,
+  # Modificación, Validación, Revisión, Formalización, Aprobada y Rechazada.
+  # Los nombres visibles salen de la tabla de estados de la base de datos.
+  # ---------------------------------------------------------------------------
+  - id: CON-F026
+    area: Gestión de la solicitud
+    nombre: Consultar la ficha resumen de la solicitud
+    descripcion: >-
+      Al abrir una solicitud se muestra su estado actual y una ficha con sus datos principales, junto
+      a los botones de datos, documentos y acciones de flujo.
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Ver Ficha Resumen
+    tipo: automático
+    roles: []
+    resultado: >-
+      El usuario ve el estado, el tipo, la fecha, la decisión de Calidad, la no conformidad, el expediente,
+      los contratistas, los responsables, el autor y el tiempo de ciclo.
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: Form_Load / MostrarVista(VistaResumen)
+      evidencia:
+        - "src/forms/Form_frmGestionSolicitud.cls:60"
+        - "src/forms/Form_frmGestionSolicitud.cls:89"
+        - "src/classes/WorkflowServicio.cls:2780"
+      prd: prd/formularios/Form_frmGestionSolicitud.md
+    reglas:
+      - id: CON-F026-R01
+        descripcion: El título de la ventana es «Gestión de Solicitud:» seguido del código, y el campo «ESTADO ACTUAL» muestra el nombre del estado.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:93", "src/forms/Form_frmGestionSolicitud.cls:1737"]
+      - id: CON-F026-R02
+        descripcion: En «Modificación» la ficha muestra la decisión de Calidad como «APROBADO», «PENDIENTE» o, tras un rechazo, «RECHAZADO PTE REVISÓN CAMBIOS».
+        evidencia: ["src/classes/WorkflowServicio.cls:2805"]
+      - id: CON-F026-R03
+        descripcion: En «Desarrollo técnico» con un rechazo activo, la ficha muestra «RECHAZADO» y un enlace «[Ver Detalle]» con el motivo.
+        evidencia: ["src/classes/WorkflowServicio.cls:2827"]
+      - id: CON-F026-R04
+        descripcion: Si no hay no conformidad asociada se muestra «N/A»; si la asociada ya no existe se indica «(No encontrada)».
+        evidencia: ["src/classes/SolicitudServicio.cls:228"]
+      - id: CON-F026-R05
+        descripcion: El tiempo de ciclo va de la creación a la última transición si la solicitud está en un estado final; si no, hasta el momento actual con la indicación «(en curso)».
+        evidencia: ["src/classes/SolicitudServicio.cls:245"]
+      - id: CON-F026-R06
+        descripcion: Los botones «Ver Datos», «Visor de Adjuntos», «Ver Tiempos» y «Cambiar Estado» están siempre activos.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:1719"]
+      - id: CON-F026-R07
+        descripcion: Si la solicitud no se puede cargar, la ventana se cierra.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:83"]
+
+  - id: CON-F027
+    area: Gestión de la solicitud
+    nombre: Abrir la ficha de datos de la solicitud
+    descripcion: >-
+      Abre la ficha de datos que corresponde al tipo de solicitud (propuesta de cambio, concesión o
+      desviación, o concesión o desviación de subcontratista).
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Ver Datos
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre o se trae al frente la ficha de datos con sus pestañas.
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: cmdVerDatos
+      evidencia: ["src/forms/Form_frmGestionSolicitud.cls:295"]
+    reglas:
+      - id: CON-F027-R01
+        descripcion: Si el tipo no tiene ficha propia se muestra «No hay un formulario de datos específico para este tipo de solicitud.».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:306"]
+      - id: CON-F027-R02
+        descripcion: Si la ficha ya estaba abierta u oculta, se vuelve a mostrar en lugar de abrir otra.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:326"]
+      - id: CON-F027-R03
+        descripcion: Cuando se guarda algo en la ficha, la gestión se actualiza; si ha cambiado el estado se repinta por completo.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:1758", "src/forms/Form_frmGestionSolicitud.cls:1918", "src/forms/Form_frmGestionSolicitud.cls:2335"]
+
+  - id: CON-F028
+    area: Gestión de la solicitud
+    nombre: Ver los tiempos por fase
+    descripcion: >-
+      Muestra un gráfico de barras con el tiempo acumulado que la solicitud ha pasado en cada estado.
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Ver Tiempos
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se ve «Tiempos por Fase (Acumulado)» y el «Tiempo Total de Ciclo».
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: cmdVerHistorial
+      evidencia: ["src/forms/Form_frmGestionSolicitud.cls:248", "src/classes/WorkflowServicio.cls:2887"]
+    reglas:
+      - id: CON-F028-R01
+        descripcion: Si la solicitud pasa varias veces por el mismo estado, los tiempos se suman.
+        evidencia: ["src/classes/WorkflowServicio.cls:2914"]
+      - id: CON-F028-R02
+        descripcion: El estado actual cuenta hasta el momento presente, salvo que sea un estado final.
+        evidencia: ["src/classes/WorkflowServicio.cls:2930"]
+      - id: CON-F028-R03
+        descripcion: Los estados por los que no ha pasado se muestran con tiempo cero.
+        evidencia: ["src/classes/WorkflowServicio.cls:2955"]
+      - id: CON-F028-R04
+        descripcion: El botón alterna entre «Ver Tiempos» y «Ver Ficha Resumen».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:146"]
+
+  - id: CON-F029
+    area: Gestión de la solicitud
+    nombre: Ver la línea de estados y las acciones disponibles
+    descripcion: >-
+      Muestra todos los estados del flujo, marca los superados y el actual, y en el actual ofrece la
+      lista de comprobaciones y los botones de acción que el usuario puede usar.
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Cambiar Estado
+    tipo: botón
+    roles: []
+    resultado: >-
+      El usuario ve qué falta para avanzar y los botones de avance, rechazo o retroceso permitidos.
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: cmdCambiarEstado
+      evidencia: ["src/forms/Form_frmGestionSolicitud.cls:233", "src/classes/WorkflowServicio.cls:95"]
+    reglas:
+      - id: CON-F029-R01
+        descripcion: El estado «Rechazada» solo aparece si la solicitud está rechazada, y en ese caso no aparece «Aprobada».
+        evidencia: ["src/classes/WorkflowServicio.cls:129"]
+      - id: CON-F029-R02
+        descripcion: Cada estado superado permite desplegar su detalle con inicio, fin, tiempo total, quién lo cerró y, si existe, el número de iteraciones o de versiones RAC.
+        evidencia: ["src/classes/WorkflowServicio.cls:403"]
+      - id: CON-F029-R03
+        descripcion: Si un estado superado tiene un documento asociado, su detalle ofrece «Abrir Word».
+        evidencia: ["src/classes/WorkflowServicio.cls:475"]
+      - id: CON-F029-R04
+        descripcion: El detalle de «Modificación» lista los rechazos de Calidad con fecha, autor, motivo y comentarios; el de «Validación» y «Revisión», los hitos RAC con envío, recepción, usuario, resultado y observaciones.
+        evidencia: ["src/classes/WorkflowServicio.cls:684", "src/classes/WorkflowServicio.cls:727"]
+      - id: CON-F029-R05
+        descripcion: "La lista de comprobaciones del estado actual indica con ✓ o ✗: en «Pre-registro», «Completar pestaña 'Datos Generales'»; en «Desarrollo técnico», «Completar pestañas 'Detalle y Descripción' y 'Motivos'»; en «Validación», «Exportar borrador» y «Registrar Fecha Envio RAC»; en «Revisión», «Validación de Datos Técnicos»; en «Formalización», «Adjuntar documento de Cierre firmado»."
+        evidencia: ["src/classes/WorkflowServicio.cls:3208"]
+      - id: CON-F029-R06
+        descripcion: En «Modificación» la lista de comprobaciones marca si están completas la aprobación del suministrador y el dictamen RAC.
+        evidencia: ["src/classes/WorkflowServicio.cls:3241", "src/modules/ChecklistHelper.bas:36"]
+      - id: CON-F029-R07
+        descripcion: En «Desarrollo técnico» tras un rechazo, el técnico ve «Esperando correcciones» hasta que cambia algo y Calidad ve «Esperando cambios del técnico»; cuando hay cambios, ambos ven «Cambios detectados».
+        evidencia: ["src/classes/WorkflowServicio.cls:158"]
+      - id: CON-F029-R08
+        descripcion: Los botones de avance son «Avanzar a '«estado»'» y solo aparecen para las transiciones que permite la tabla de transiciones al perfil del usuario y cuyas condiciones previas ya se cumplen.
+        evidencia: ["src/classes/WorkflowServicio.cls:820", "src/classes/WorkflowServicio.cls:326"]
+      - id: CON-F029-R09
+        descripcion: Cada transición de la tabla exige un perfil mínimo; el administrador puede hacer todas, Calidad las de Calidad y de técnico, y el técnico solo las de técnico.
+        evidencia: ["src/classes/WorkflowServicio.cls:1410", "src/modules/WorkflowRepositorio.bas:29"]
+      - id: CON-F029-R10
+        descripcion: Las transiciones hacia un estado anterior aparecen como botones «RESET FASE» en una zona separada.
+        evidencia: ["src/classes/WorkflowServicio.cls:348", "src/classes/WorkflowServicio.cls:392"]
+      - id: CON-F029-R11
+        descripcion: El botón alterna entre «Cambiar Estado» y «Ver Ficha Resumen».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:145"]
+
+  - id: CON-F030
+    area: Gestión de la solicitud
+    nombre: Avanzar la solicitud de estado
+    descripcion: >-
+      Pasa la solicitud al siguiente estado del flujo, comprobando el perfil y que los datos
+      necesarios estén completos, y avisa por correo a quien tiene que actuar.
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Avanzar a '«estado»'
+    tipo: botón
+    roles: []
+    resultado: >-
+      La solicitud queda en el nuevo estado, el cambio queda en el historial y se envía el aviso por correo.
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: AVANZAR_ESTADO / AccionAvanzarEstado
+      evidencia:
+        - "src/forms/Form_frmGestionSolicitud.cls:508"
+        - "src/forms/Form_frmGestionSolicitud.cls:1600"
+        - "src/classes/WorkflowServicio.cls:1211"
+    reglas:
+      - id: CON-F030-R01
+        descripcion: Se pide confirmación con «¿Desea cambiar el estado de la solicitud?».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:525"]
+      - id: CON-F030-R02
+        descripcion: Si el perfil no permite la transición se muestra «Transición no permitida para su rol.».
+        evidencia: ["src/classes/WorkflowServicio.cls:1244"]
+      - id: CON-F030-R03
+        descripcion: Para pasar a «Registro» la pestaña de datos generales debe estar guardada y completa; si no, «Guarde primero la seccion 'Datos Generales'.».
+        evidencia: ["src/classes/WorkflowServicio.cls:981"]
+      - id: CON-F030-R04
+        descripcion: Para pasar a «Modificación» deben estar completos los campos obligatorios de la parte técnica; si no, «Faltan campos obligatorios en las pestañas 'Propuesta' o 'Impacto'.».
+        evidencia: ["src/classes/WorkflowServicio.cls:1020"]
+      - id: CON-F030-R05
+        descripcion: "Si Calidad rechazó la solicitud y el técnico no ha cambiado nada en la parte técnica, no puede pasar a «Modificación»; se indica «CALIDAD RECHAZÓ ESTA SOLICITUD.» con el motivo y que debe modificar la información técnica."
+        evidencia: ["src/classes/WorkflowServicio.cls:1050"]
+      - id: CON-F030-R06
+        descripcion: En ese mismo caso el botón de avance del técnico muestra «No se han detectado cambios en la propuesta técnica desde el último rechazo.» y le pide modificar las pestañas «Detalle y Descripción» o «Motivos e Impacto».
+        evidencia: ["src/classes/WorkflowServicio.cls:338", "src/forms/Form_frmGestionSolicitud.cls:503"]
+      - id: CON-F030-R07
+        descripcion: Para pasar a «Validación» la parte técnica debe estar completa («La parte técnica debe estar completa antes de validar.»), el dictamen RAC guardado y completo y la aprobación del suministrador guardada y completa, cada uno con su mensaje.
+        evidencia: ["src/classes/WorkflowServicio.cls:1072"]
+      - id: CON-F030-R08
+        descripcion: Para pasar a «Revisión» debe existir el borrador Word adjunto en la etapa de validación; si no, «Debe generar y adjuntar el borrador Word antes de pasar a Revision.».
+        evidencia: ["src/classes/WorkflowServicio.cls:1123"]
+      - id: CON-F030-R09
+        descripcion: Para pasar a «Aprobada» debe existir un documento adjunto en la etapa de formalización; si no, «Es obligatorio adjuntar el documento de Cierre antes de aprobar la solicitud.».
+        evidencia: ["src/classes/WorkflowServicio.cls:1188"]
+      - id: CON-F030-R10
+        descripcion: Pasar a «Formalización» no tiene condiciones previas.
+        evidencia: ["src/classes/WorkflowServicio.cls:1147"]
+      - id: CON-F030-R11
+        descripcion: Si Calidad pasa a «Modificación» una solicitud de «Desarrollo técnico» con un rechazo activo, se avisa de que se eliminará el rechazo y sus motivos y, si confirma, el rechazo se desactiva.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:1610"]
+        # posible defecto: este aviso y la desactivación solo se aplican al perfil Calidad, no al administrador (src/forms/Form_frmGestionSolicitud.cls:1612).
+      - id: CON-F030-R12
+        descripcion: Al pasar de «Modificación» a «Validación» se desactivan los rechazos anteriores, y al llegar a «Validación» se abre un nuevo ciclo de validación con el RAC.
+        evidencia: ["src/classes/WorkflowServicio.cls:1267", "src/classes/WorkflowServicio.cls:1272"]
+      - id: CON-F030-R13
+        descripcion: Al llegar a «Desarrollo técnico» la revisión de Calidad vuelve a «PENDIENTE».
+        evidencia: ["src/classes/WorkflowServicio.cls:1278"]
+      - id: CON-F030-R14
+        descripcion: Se guardan la fecha y el usuario de la modificación, una línea en el historial de estados y una línea en el registro de cambios; todo en una única operación que se deshace si algo falla.
+        evidencia: ["src/classes/WorkflowServicio.cls:1253", "src/classes/WorkflowServicio.cls:1284", "src/classes/WorkflowServicio.cls:1296"]
+      - id: CON-F030-R15
+        descripcion: "Tras el cambio se encola un correo con asunto «CONDOR - «aviso» | «nemotécnico» | «tipo» | «código»»; un fallo del correo no deshace el cambio de estado."
+        evidencia: ["src/classes/WorkflowServicio.cls:1311", "src/classes/NotificacionServicio.cls:14"]
+      - id: CON-F030-R16
+        descripcion: "El destinatario depende del aviso: al pasar a «Registro», al jefe de proyecto y al responsable de Calidad; al pasar a «Modificación», al responsable de Calidad; al validar Calidad (de «Modificación» a «Validación»), al jefe de proyecto; al enviar al RAC, al aprobar el RAC y al aprobar la solicitud, al jefe de proyecto y al responsable de Calidad; en el resto de casos, al jefe de proyecto. La correspondencia depende del nombre que tenga cada estado en la tabla de estados."
+        evidencia: ["src/classes/WorkflowServicio.cls:1325", "src/classes/NotificacionServicio.cls:393"]
+      - id: CON-F030-R17
+        descripcion: El correo incluye el resumen del expediente, los datos de la solicitud con el estado y el autor, y una tarjeta de próximos pasos según el aviso.
+        evidencia: ["src/classes/NotificacionServicio.cls:242", "src/classes/NotificacionServicio.cls:444"]
+      - id: CON-F030-R18
+        descripcion: Mientras la aplicación está en modo desarrollo, todos los correos se redirigen al usuario conectado con un aviso del destinatario real.
+        evidencia: ["src/classes/NotificacionServicio.cls:29"]
+        # posible defecto: el arranque fija siempre el modo desarrollo (src/modules/Variables Globales.bas:75), así que ningún correo llega a sus destinatarios reales.
+      - id: CON-F030-R19
+        descripcion: La copia se anula salvo que sea una dirección fija de una persona concreta, y todos los correos llevan copia oculta fija a esa misma dirección.
+        evidencia: ["src/classes/NotificacionServicio.cls:37", "src/classes/NotificacionServicio.cls:49"]
+        # posible defecto: los destinatarios en copia y oculta dependen de una dirección personal escrita en el código.
+      - id: CON-F030-R20
+        descripcion: Si actúa alguien en nombre de un técnico, el remitente del correo indica «(en nombre de «técnico»)».
+        evidencia: ["src/classes/NotificacionServicio.cls:54"]
+      - id: CON-F030-R21
+        descripcion: Al terminar se muestra «El estado de la solicitud ha sido actualizado correctamente.» y se recalculan los contadores de tareas.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:1631"]
+      - id: CON-F030-R22
+        descripcion: Al pasar a «Modificación», el asunto del correo añade «(RECHAZADA POR CALIDAD)» salvo que el aviso se llame «PENDIENTE DE VALIDACION».
+        evidencia: ["src/classes/WorkflowServicio.cls:1350"]
+        # posible defecto: el sufijo de rechazo se añade aunque la solicitud no venga de un rechazo, porque no se comprueba la revisión de Calidad (src/classes/WorkflowServicio.cls:1351).
+
+  - id: CON-F031
+    area: Gestión de la solicitud
+    nombre: Aceptar la parte técnica y pasar a validación
+    descripcion: >-
+      Calidad da por buena la parte técnica revisada en «Modificación» y la pasa a «Validación».
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Aceptar y Avanzar
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      La solicitud pasa a «Validación», se abre un ciclo con el RAC y se avisa al jefe de proyecto.
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: AVANZAR_ESTADO:5
+      evidencia: ["src/classes/WorkflowServicio.cls:310", "src/forms/Form_frmGestionSolicitud.cls:524"]
+    reglas:
+      - id: CON-F031-R01
+        descripcion: El botón solo aparece en «Modificación» para Calidad y administradores; en ese caso no se muestra el botón genérico de avance a «Validación».
+        evidencia: ["src/classes/WorkflowServicio.cls:310", "src/classes/WorkflowServicio.cls:328"]
+      - id: CON-F031-R02
+        descripcion: Aplica la confirmación, las condiciones y los efectos del avance de estado (CON-F030-R01, CON-F030-R07, CON-F030-R12, CON-F030-R14 a CON-F030-R21).
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:525"]
+
+  - id: CON-F032
+    area: Gestión de la solicitud
+    nombre: Rechazar la parte técnica y devolverla al técnico
+    descripcion: >-
+      Calidad devuelve la solicitud de «Modificación» a «Desarrollo técnico» con un motivo, para que el
+      técnico la corrija.
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Rechazar (Devolver a Técnico)
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      La solicitud vuelve a «Desarrollo técnico» marcada como rechazada y el jefe de proyecto recibe el aviso con el motivo.
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: RECHAZAR_TECNICA / AccionRechazarTecnica
+      evidencia:
+        - "src/forms/Form_frmGestionSolicitud.cls:785"
+        - "src/forms/Form_frmGestionSolicitud.cls:1435"
+        - "src/classes/WorkflowServicio.cls:3453"
+    reglas:
+      - id: CON-F032-R01
+        descripcion: Se abre la página «Registrar rechazo» con el campo «Motivo» y los botones «Confirmar rechazo» y «Cancelar».
+        evidencia: ["src/classes/WorkflowServicio.cls:3919"]
+      - id: CON-F032-R02
+        descripcion: Sin motivo, la página muestra «Debe indicar comentarios.» y la gestión muestra «Debe indicar un motivo.».
+        evidencia: ["src/classes/WorkflowServicio.cls:3945", "src/forms/Form_frmGestionSolicitud.cls:1451"]
+      - id: CON-F032-R03
+        descripcion: Si el usuario no es de Calidad ni administrador se muestra «No tiene permisos para rechazar.».
+        evidencia: ["src/classes/WorkflowServicio.cls:3477"]
+        # posible defecto: si la tabla de transiciones permite al técnico volver de «Modificación» a «Desarrollo técnico», al técnico también se le muestra el botón de rechazo, que después falla por permisos (src/classes/WorkflowServicio.cls:361).
+      - id: CON-F032-R04
+        descripcion: Se guarda un rechazo con la fecha, el usuario, el motivo «Rechazo Fase Técnica», el área «Desarrollo Técnico» y los comentarios escritos.
+        evidencia: ["src/classes/WorkflowServicio.cls:3482"]
+      - id: CON-F032-R05
+        descripcion: La revisión de Calidad queda «RECHAZADO» con el motivo, y la solicitud vuelve a «Desarrollo técnico» con su línea en el historial de estados y en el registro de cambios.
+        evidencia: ["src/classes/WorkflowServicio.cls:3494", "src/classes/WorkflowServicio.cls:3506"]
+      - id: CON-F032-R06
+        descripcion: Se envía el aviso de rechazo de Calidad al jefe de proyecto, con la tarjeta de próximos pasos «Modificar el formulario con las indicaciones de Calidad.».
+        evidencia: ["src/classes/WorkflowServicio.cls:3532", "src/classes/NotificacionServicio.cls:407", "src/classes/NotificacionServicio.cls:454"]
+      - id: CON-F032-R07
+        descripcion: Al terminar se muestra «La solicitud ha sido devuelta a la fase de Desarrollo Técnico.».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:1673"]
+
+  - id: CON-F033
+    area: Gestión de la solicitud
+    nombre: Consultar o corregir el motivo del rechazo
+    descripcion: >-
+      Muestra el motivo del rechazo de Calidad y, mientras el técnico no haya hecho cambios, permite a
+      Calidad corregirlo.
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Ver Motivos Rechazo
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre la página «Motivo de rechazo» (solo lectura) o «Actualizar motivo de rechazo» (edición).
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: VER_MOTIVOS_RECHAZO / VER_MOTIVO_CALIDAD
+      evidencia: ["src/forms/Form_frmGestionSolicitud.cls:566", "src/classes/WorkflowServicio.cls:192"]
+    reglas:
+      - id: CON-F033-R01
+        descripcion: El botón aparece en «Desarrollo técnico» cuando la solicitud está rechazada; también se llega desde «[Ver Detalle]» de la ficha resumen.
+        evidencia: ["src/classes/WorkflowServicio.cls:199", "src/classes/WorkflowServicio.cls:2833"]
+      - id: CON-F033-R02
+        descripcion: El técnico siempre lo ve en solo lectura.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:588"]
+      - id: CON-F033-R03
+        descripcion: Calidad y administradores pueden editarlo mientras el técnico no haya hecho cambios; después lo ven en solo lectura y el botón dice «Ver Motivos Rechazo (Solo Lectura)».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:590", "src/classes/WorkflowServicio.cls:195"]
+      - id: CON-F033-R04
+        descripcion: Al pulsar «Actualizar» se sustituyen los comentarios del rechazo activo y el motivo guardado en la solicitud.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:1458", "src/classes/RevisionServicio.cls:101"]
+
+  - id: CON-F034
+    area: Gestión de la solicitud
+    nombre: Ver los cambios del técnico tras un rechazo
+    descripcion: >-
+      Muestra, campo a campo, qué valores ha cambiado el técnico desde el rechazo de Calidad.
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Ver cambios
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre la página «Cambios detectados (Subsanación)» con el valor anterior y el nuevo de cada campo.
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: VER_CAMBIOS / VER_DELTA
+      evidencia: ["src/forms/Form_frmGestionSolicitud.cls:601", "src/classes/WorkflowServicio.cls:3627"]
+    reglas:
+      - id: CON-F034-R01
+        descripcion: Se ofrece como «Ver cambios» en «Desarrollo técnico», como «Ver Cambios (Delta)» en «Modificación» tras un rechazo y como «Ver Detalle (Forense)» en el detalle de «Desarrollo técnico» ya superado.
+        evidencia: ["src/classes/WorkflowServicio.cls:203", "src/classes/WorkflowServicio.cls:229", "src/classes/WorkflowServicio.cls:484"]
+      - id: CON-F034-R02
+        descripcion: Si no hay rechazo activo se muestran los cambios del último rechazo del historial.
+        evidencia: ["src/classes/WorkflowServicio.cls:3647"]
+      - id: CON-F034-R03
+        descripcion: Se indica quién y cuándo hizo los cambios, y los campos se agrupan en «DETALLE Y DESCRIPCIÓN» y «MOTIVOS»; solo aparecen los que tienen un valor distinto.
+        evidencia: ["src/classes/WorkflowServicio.cls:3671", "src/classes/WorkflowServicio.cls:3689"]
+      - id: CON-F034-R04
+        descripcion: Sin cambios se muestra «No se han detectado cambios técnicos registrados para este rechazo.».
+        evidencia: ["src/classes/WorkflowServicio.cls:3668"]
+
+  - id: CON-F035
+    area: Validación y revisión RAC
+    nombre: Exportar el borrador para el RAC
+    descripcion: >-
+      Genera el documento Word de la solicitud a partir de su plantilla y lo guarda como borrador de la
+      versión en curso del ciclo con el RAC.
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Exportar borrador («versión»)
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Se abre el Word generado, queda adjunto a la solicitud y la comprobación «Exportar borrador» se marca como hecha.
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: EXPORTAR_BORRADOR
+      evidencia:
+        - "src/forms/Form_frmGestionSolicitud.cls:634"
+        - "src/classes/WorkflowServicio.cls:2026"
+        - "src/classes/DocumentoServicio.cls:291"
+    reglas:
+      - id: CON-F035-R01
+        descripcion: El botón solo aparece en «Validación» para Calidad y administradores, con la versión del borrador en el texto.
+        evidencia: ["src/classes/WorkflowServicio.cls:270"]
+      - id: CON-F035-R02
+        descripcion: A partir de la segunda versión, si los datos no han cambiado desde la versión anterior se muestra «No se puede obtener una nueva versión al no haber detectado cambios con respecto a la última.».
+        evidencia: ["src/classes/WorkflowServicio.cls:2088", "src/forms/Form_frmGestionSolicitud.cls:652"]
+      - id: CON-F035-R03
+        descripcion: Si el ciclo viene de unos comentarios del RAC o de una importación de Word, se permite exportar sin comprobar cambios.
+        evidencia: ["src/classes/WorkflowServicio.cls:1956"]
+      - id: CON-F035-R04
+        descripcion: El documento se rellena con los datos de la ficha según la correspondencia de campos de la plantilla del tipo; los textos largos se reparten en campos de continuación.
+        evidencia: ["src/classes/DocumentoServicio.cls:316", "src/classes/DocumentoServicio.cls:379"]
+      - id: CON-F035-R05
+        descripcion: Si no existe la plantilla se muestra «No se encuentra la plantilla:» con la ruta.
+        evidencia: ["src/classes/DocumentoServicio.cls:303"]
+      - id: CON-F035-R06
+        descripcion: El borrador se adjunta en la etapa de validación como documento generado con la descripción «Borrador v«n.º»»; si el ciclo ya tenía borrador, se sustituye el fichero sin crear otro adjunto.
+        evidencia: ["src/classes/WorkflowServicio.cls:2135", "src/classes/WorkflowServicio.cls:2168"]
+
+  - id: CON-F036
+    area: Validación y revisión RAC
+    nombre: Notificar el envío al RAC
+    descripcion: >-
+      Registra la fecha en que se envió el borrador al RAC y pasa la solicitud a «Revisión».
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Enviado a RAC
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      El ciclo queda con fecha de envío, la solicitud pasa a «Revisión» y se avisa al jefe de proyecto y al responsable de Calidad.
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: NOTIFICAR_ENVIO_RAC / ProcesarDatosRAC
+      evidencia: ["src/forms/Form_frmGestionSolicitud.cls:663", "src/forms/Form_frmGestionSolicitud.cls:939"]
+    reglas:
+      - id: CON-F036-R01
+        descripcion: El botón solo aparece en «Validación» para Calidad y administradores.
+        evidencia: ["src/classes/WorkflowServicio.cls:277"]
+      - id: CON-F036-R02
+        descripcion: Si en el ciclo actual no se ha exportado el borrador se muestra «Debe exportar el borrador antes de notificar el envio.».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:666", "src/forms/Form_frmGestionSolicitud.cls:947"]
+      - id: CON-F036-R03
+        descripcion: Se abre la página «Notificar envio al RAC» con la «Fecha de envio», que propone la fecha de hoy, y los botones «Confirmar envio» y «Cancelar».
+        evidencia: ["src/classes/WorkflowServicio.cls:3830"]
+        # posible defecto: la página se guarda la primera vez en una copia que se reutiliza después, por lo que la fecha propuesta puede ser la de aquel primer día (src/classes/WebVisorCacheServicio.cls:51).
+      - id: CON-F036-R04
+        descripcion: Sin fecha, la página muestra «Debe indicar una fecha valida.»; con una fecha no válida, la gestión muestra «Fecha invalida.».
+        evidencia: ["src/classes/WorkflowServicio.cls:3853", "src/forms/Form_frmGestionSolicitud.cls:940"]
+      - id: CON-F036-R05
+        descripcion: Se guardan en el ciclo la fecha de envío y el usuario, y la solicitud pasa a «Revisión» con las condiciones y avisos del avance de estado (CON-F030-R08, CON-F030-R14 a CON-F030-R21).
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:953", "src/classes/WorkflowServicio.cls:1335"]
+
+  - id: CON-F037
+    area: Validación y revisión RAC
+    nombre: Registrar la aprobación del RAC
+    descripcion: >-
+      Anota que el RAC ha aprobado el borrador sin comentarios y pasa la solicitud a «Formalización».
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Aprobado sin comentarios
+    tipo: botón
+    roles: []
+    resultado: >-
+      El ciclo queda «APROBADO» con fecha de recepción y la solicitud pasa a «Formalización».
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: APROBAR_RAC
+      evidencia: ["src/forms/Form_frmGestionSolicitud.cls:684", "src/classes/WorkflowServicio.cls:248"]
+    reglas:
+      - id: CON-F037-R01
+        descripcion: El botón aparece en «Revisión» para cualquier perfil.
+        evidencia: ["src/classes/WorkflowServicio.cls:241"]
+        # posible defecto: los botones de respuesta del RAC no comprueban el perfil al mostrarse, de modo que un técnico también los ve (src/classes/WorkflowServicio.cls:248).
+      - id: CON-F037-R02
+        descripcion: No se pide confirmación; el ciclo pendiente se cierra como «APROBADO» con la fecha y hora actuales.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:688"]
+        # posible defecto: el ciclo se cierra antes de comprobar si la transición está permitida; si la transición falla, el ciclo queda aprobado y la solicitud sigue en «Revisión» (src/forms/Form_frmGestionSolicitud.cls:694).
+      - id: CON-F037-R03
+        descripcion: La solicitud pasa a «Formalización» y se avisa al jefe de proyecto y al responsable de Calidad con los próximos pasos «Adjuntar documento de Cierre firmado.».
+        evidencia: ["src/classes/WorkflowServicio.cls:1362", "src/classes/NotificacionServicio.cls:469"]
+
+  - id: CON-F038
+    area: Validación y revisión RAC
+    nombre: Registrar los comentarios del RAC
+    descripcion: >-
+      Anota las observaciones del RAC sobre el borrador y devuelve la solicitud a «Validación» para
+      preparar una nueva versión.
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Revisado con comentarios
+    tipo: botón
+    roles: []
+    resultado: >-
+      El ciclo queda «COMENTARIOS», la solicitud vuelve a «Validación» con un nuevo ciclo y se avisa al responsable de Calidad.
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: COMENTARIOS_RAC / ProcesarDatosRAC
+      evidencia: ["src/forms/Form_frmGestionSolicitud.cls:674", "src/forms/Form_frmGestionSolicitud.cls:957", "src/classes/WorkflowServicio.cls:2283"]
+    reglas:
+      - id: CON-F038-R01
+        descripcion: Se abre la página «Comentarios del RAC» con el campo «Observaciones» y los botones «Confirmar» y «Cancelar»; sin texto muestra «Debe indicar comentarios.».
+        evidencia: ["src/classes/WorkflowServicio.cls:3865"]
+      - id: CON-F038-R02
+        descripcion: Si no hay ningún ciclo pendiente se muestra «No existe ciclo pendiente.».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:961"]
+      - id: CON-F038-R03
+        descripcion: El ciclo se cierra como «COMENTARIOS» con el texto y la fecha de recepción.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:969"]
+      - id: CON-F038-R04
+        descripcion: La solicitud vuelve a «Validación» sin borrar datos, con un nuevo ciclo que guarda la huella de los datos actuales para detectar cambios en la siguiente versión.
+        evidencia: ["src/classes/WorkflowServicio.cls:2306", "src/classes/WorkflowServicio.cls:2333"]
+        # posible defecto: este retroceso no comprueba el perfil del usuario (src/classes/WorkflowServicio.cls:2283).
+      - id: CON-F038-R05
+        descripcion: Se avisa al responsable de Calidad del rechazo del RAC, con los próximos pasos «Revisar el motivo del rechazo del RAC y tomar las acciones correspondientes.».
+        evidencia: ["src/classes/WorkflowServicio.cls:2354", "src/classes/WorkflowServicio.cls:3579", "src/classes/NotificacionServicio.cls:419"]
+      - id: CON-F038-R06
+        descripcion: Al terminar se muestra «Se ha guardado correctamente, recuerda completar el formulario segun las observaciones del RAC».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:971"]
+
+  - id: CON-F039
+    area: Validación y revisión RAC
+    nombre: Importar el Word con los comentarios del RAC
+    descripcion: >-
+      Lee del documento Word devuelto por el RAC sus observaciones, su código y su nombre, los guarda en
+      la ficha y devuelve la solicitud a «Validación».
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Importar Word con comentarios RAC
+    tipo: botón
+    roles: []
+    resultado: >-
+      El dictamen RAC de la ficha queda con los datos del Word y la solicitud vuelve a «Validación» para una nueva versión.
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: IMPORTAR_WORD_RAC_DESDE_BOTON
+      evidencia: ["src/forms/Form_frmGestionSolicitud.cls:681", "src/forms/Form_frmGestionSolicitud.cls:1224"]
+    reglas:
+      - id: CON-F039-R01
+        descripcion: Se pide el fichero con «Seleccione el documento Word con las observaciones del RAC», limitado a documentos de Word.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:1240"]
+      - id: CON-F039-R02
+        descripcion: Solo se leen del Word las observaciones, el código y el nombre del RAC, y solo se guardan los que no vienen vacíos.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:1266", "src/classes/DocumentoServicio.cls:680"]
+      - id: CON-F039-R03
+        descripcion: Si no se pueden leer datos se muestra «No se pudieron leer datos del archivo.».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:1260"]
+      - id: CON-F039-R04
+        descripcion: Se muestra «Comentarios importados correctamente. Se retrocederá a la fase de VALIDACIÓN para obtener una nueva versión del documento.», el ciclo queda como «COMENTARIOS» y la solicitud vuelve a «Validación» como en CON-F038-R04 y CON-F038-R05.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:1379", "src/forms/Form_frmGestionSolicitud.cls:1397"]
+        # posible defecto: se comprueba si el dictamen RAC está completo, pero las dos ramas hacen lo mismo y la comprobación no cambia nada (src/forms/Form_frmGestionSolicitud.cls:1376).
+      - id: CON-F039-R05
+        descripcion: Cualquier fallo se muestra como «Error al importar:» seguido del detalle.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:1431"]
+
+  - id: CON-F040
+    area: Validación y revisión RAC
+    nombre: Ver el historial de validación y revisión
+    descripcion: >-
+      Muestra todas las versiones enviadas al RAC con sus fechas, su resultado y sus observaciones.
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Ver historial de validación y revisión
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre la página «Historial de Validación y Revisión» con una tarjeta por versión.
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: VER_HISTORIAL_RAC
+      evidencia: ["src/forms/Form_frmGestionSolicitud.cls:608", "src/classes/WorkflowServicio.cls:3724"]
+    reglas:
+      - id: CON-F040-R01
+        descripcion: El enlace aparece en «Validación» (Calidad y administradores) y en «Revisión» cuando ya existe algún ciclo.
+        evidencia: ["src/classes/WorkflowServicio.cls:253", "src/classes/WorkflowServicio.cls:280"]
+      - id: CON-F040-R02
+        descripcion: Cada versión muestra envío, recepción, usuario, resultado («APROBADO», «COMENTARIOS» o «PENDIENTE») y observaciones, o «(Vacio)» si no hay.
+        evidencia: ["src/classes/WorkflowServicio.cls:3753"]
+      - id: CON-F040-R03
+        descripcion: Si la versión tiene borrador, el enlace «[Word]» lo abre.
+        evidencia: ["src/classes/WorkflowServicio.cls:3789", "src/forms/Form_frmWebVisor.cls:349"]
+      - id: CON-F040-R04
+        descripcion: Sin ciclos se muestra «Sin historial registrado.».
+        evidencia: ["src/classes/WorkflowServicio.cls:3815"]
+
+  - id: CON-F041
+    area: Formalización y cierre
+    nombre: Generar el PDF para firma
+    descripcion: >-
+      Genera el documento final en PDF con los datos actuales para enviarlo a firmar.
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Generar PDF firma
+    tipo: botón
+    roles: []
+    resultado: >-
+      El PDF se abre y queda adjunto en la etapa de formalización con la descripción «Borrador».
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: GENERAR_PDF_FINAL
+      evidencia: ["src/forms/Form_frmGestionSolicitud.cls:699", "src/classes/WorkflowServicio.cls:3180", "src/classes/DocumentoServicio.cls:84"]
+    reglas:
+      - id: CON-F041-R01
+        descripcion: El botón aparece en «Formalización» para cualquier perfil.
+        evidencia: ["src/classes/WorkflowServicio.cls:292"]
+      - id: CON-F041-R02
+        descripcion: Si la aprobación del suministrador no está completa se muestra «Complete la pestaña 'Aprobación Suministrador' antes de generar el PDF.».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:720"]
+      - id: CON-F041-R03
+        descripcion: Se pide confirmación con «Se va a generar el documento PDF final con los datos actuales para su envio a firma. Desea continuar?».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:724"]
+      - id: CON-F041-R04
+        descripcion: Sin cuadro de firmas completo se muestra «Falta el Cuadro de Firmas.» y sin dictamen RAC completo «Faltan los datos del RAC.».
+        evidencia: ["src/classes/DocumentoServicio.cls:100"]
+      - id: CON-F041-R05
+        descripcion: Si el PDF no se genera se muestra «No se pudo generar el PDF final. Ruta invalida.» o «No se pudo generar el PDF final. Archivo no encontrado.».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:733", "src/forms/Form_frmGestionSolicitud.cls:742"]
+
+  - id: CON-F042
+    area: Formalización y cierre
+    nombre: Adjuntar el PDF firmado y aprobar la solicitud
+    descripcion: >-
+      Sube el documento final firmado como documento de cierre y, con él, aprueba la solicitud.
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Adjuntar PDF firmado (Aprobar)
+    tipo: botón
+    roles: []
+    resultado: >-
+      El PDF firmado queda adjunto como «Cierre», la decisión final queda «APROBADO» y la solicitud pasa a «Aprobada».
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: ADJUNTAR_PDF_FIRMADO / AccionAprobarFinal
+      evidencia: ["src/forms/Form_frmGestionSolicitud.cls:746", "src/forms/Form_frmGestionSolicitud.cls:813"]
+    reglas:
+      - id: CON-F042-R01
+        descripcion: El botón aparece en «Formalización» para cualquier perfil.
+        evidencia: ["src/classes/WorkflowServicio.cls:297"]
+      - id: CON-F042-R02
+        descripcion: Si antes no se ha generado el PDF se muestra «Debe generar el PDF desde el boton 'Generar PDF firma' antes de adjuntar el documento firmado.».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:752", "src/classes/AdjuntosServicio.cls:252"]
+      - id: CON-F042-R03
+        descripcion: Si la aprobación del suministrador no está completa se muestra «Debe cumplimentar y guardar la pestaña Aprobación Suministrador antes de adjuntar el documento firmado.».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:757"]
+      - id: CON-F042-R04
+        descripcion: Se abre el visor de adjuntos y se pide directamente un fichero PDF, que se adjunta en la etapa «Cierre».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:762", "src/forms/Form_frmGestionAdjuntos.cls:65", "src/forms/Form_frmGestionAdjuntos.cls:130"]
+        # posible defecto: esta subida automática no aplica la restricción de que los técnicos no pueden añadir adjuntos (src/forms/Form_frmGestionAdjuntos.cls:46).
+      - id: CON-F042-R05
+        descripcion: Sin documento de cierre se muestra «Debe adjuntar el documento de Cierre antes de aprobar.».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:828"]
+      - id: CON-F042-R06
+        descripcion: La decisión final se guarda como «APROBADO» y la solicitud pasa a «Aprobada» en una única operación, con el aviso de aprobación al jefe de proyecto y al responsable de Calidad.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:836", "src/forms/Form_frmGestionSolicitud.cls:860", "src/classes/WorkflowServicio.cls:1365"]
+        # posible defecto: si la aprobación falla, la operación se deshace sin mostrar ningún mensaje al usuario (src/forms/Form_frmGestionSolicitud.cls:869).
+
+  - id: CON-F043
+    area: Formalización y cierre
+    nombre: Retroceder la solicitud de fase
+    descripcion: >-
+      Devuelve la solicitud al estado anterior y borra los datos y documentos de la fase que se
+      abandona.
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: RESET FASE
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      La solicitud queda en el estado anterior, sin los datos de la fase deshecha, y se envía un aviso de reversión.
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: REVERTIR_DESARROLLO / REVERTIR_TECNICA / REVERTIR_VALIDACION / REVERTIR_FORMALIZACION
+      evidencia:
+        - "src/forms/Form_frmGestionSolicitud.cls:533"
+        - "src/forms/Form_frmGestionSolicitud.cls:2288"
+        - "src/classes/WorkflowServicio.cls:2366"
+    reglas:
+      - id: CON-F043-R01
+        descripcion: "El botón aparece para Calidad y administradores en «Desarrollo técnico», «Modificación», «Validación», «Revisión» y «Formalización»."
+        evidencia: ["src/classes/WorkflowServicio.cls:313", "src/classes/WorkflowServicio.cls:286", "src/classes/WorkflowServicio.cls:259", "src/classes/WorkflowServicio.cls:381", "src/classes/WorkflowServicio.cls:387"]
+        # posible defecto: en «Revisión» el botón «RESET FASE» se muestra a cualquier perfil, aunque después solo Calidad y administradores pueden ejecutarlo (src/classes/WorkflowServicio.cls:259).
+      - id: CON-F043-R02
+        descripcion: "Se pide confirmación con «ATENCIÓN: Esta acción borrará todos los datos de la fase actual y devolverá la solicitud al estado anterior. ¿Desea continuar?»."
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:535"]
+      - id: CON-F043-R03
+        descripcion: Si el usuario no es de Calidad ni administrador se muestra «No tiene los permisos necesarios (Admin/Calidad) para revertir estados.».
+        evidencia: ["src/classes/WorkflowServicio.cls:2389"]
+      - id: CON-F043-R04
+        descripcion: De «Desarrollo técnico» a «Registro» se borran los datos técnicos, los adjuntos de propuesta, impacto y técnica, el historial de rechazos y el de cambios, y la revisión de Calidad vuelve a «PENDIENTE».
+        evidencia: ["src/classes/WorkflowServicio.cls:2413"]
+      - id: CON-F043-R05
+        descripcion: De «Modificación» a «Desarrollo técnico» se borran los rechazos y la aprobación del suministrador, y la revisión de Calidad vuelve a «PENDIENTE».
+        evidencia: ["src/classes/WorkflowServicio.cls:2509"]
+      - id: CON-F043-R06
+        descripcion: De «Validación» a «Modificación» se revoca la aprobación técnica y se borran los ciclos con el RAC, sus adjuntos, el dictamen RAC y la aprobación del suministrador; se muestra «La solicitud ha vuelto a 'MODIFICACIÓN' y la aprobación técnica ha sido revocada.».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:2039", "src/classes/WorkflowServicio.cls:2525"]
+      - id: CON-F043-R07
+        descripcion: De «Revisión» a «Validación» se borran los ciclos con el RAC, sus adjuntos y el dictamen RAC.
+        evidencia: ["src/classes/WorkflowServicio.cls:2494"]
+      - id: CON-F043-R08
+        descripcion: De «Formalización» a «Revisión» se borran los documentos de cierre y de formalización, pero se conservan la decisión final y la aprobación del suministrador.
+        evidencia: ["src/classes/WorkflowServicio.cls:2443"]
+        # posible defecto: la confirmación de este retroceso dice que se borrará la decisión final, pero no se borra (src/forms/Form_frmGestionSolicitud.cls:553).
+      - id: CON-F043-R09
+        descripcion: Se guardan el nuevo estado, el historial de estados y el registro de cambios con el motivo del retroceso en una única operación.
+        evidencia: ["src/classes/WorkflowServicio.cls:2552"]
+      - id: CON-F043-R10
+        descripcion: "Se envía el aviso «CONDOR - «ESTADO» (RESET FASE) | …» con el detalle de lo borrado, al jefe de proyecto si se vuelve a «Desarrollo técnico» y al responsable de Calidad en los demás casos."
+        evidencia: ["src/classes/WorkflowServicio.cls:2597"]
+      - id: CON-F043-R11
+        descripcion: Al terminar se muestra «La solicitud ha retrocedido correctamente.».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:2302"]
+      - id: CON-F043-R12
+        descripcion: Los retrocesos que vienen de la tabla de transiciones y no son de los casos anteriores se ejecutan como un cambio de estado normal, sin borrar datos.
+        evidencia: ["src/classes/WorkflowServicio.cls:348", "src/forms/Form_frmGestionSolicitud.cls:524"]
+
+  - id: CON-F044
+    area: Formalización y cierre
+    nombre: Reabrir una solicitud aprobada
+    descripcion: >-
+      Devuelve una solicitud aprobada a «Formalización», borrando la decisión final y el documento de
+      cierre.
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: RESET FASE
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      La solicitud queda en «Formalización» sin decisión final ni documentos de cierre.
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: AVANZAR_ESTADO (Aprobada → Formalización)
+      evidencia: ["src/forms/Form_frmGestionSolicitud.cls:516", "src/classes/WorkflowServicio.cls:2469"]
+    reglas:
+      - id: CON-F044-R01
+        descripcion: "Se pide confirmación con «ATENCIÓN: Esta acción devolverá la solicitud al estado 'FORMALIZACIÓN'. Se eliminaran los datos de la 'Decision Final' y el documento de Cierre. ¿Desea continuar con la pérdida irreversible de los datos de esta fase y del adjunto firmado?»."
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:518"]
+      - id: CON-F044-R02
+        descripcion: Se borran los documentos de cierre y la decisión final, con el resto de efectos de CON-F043-R03 y CON-F043-R09 a CON-F043-R11.
+        evidencia: ["src/classes/WorkflowServicio.cls:2469"]
+      - id: CON-F044-R03
+        descripcion: El botón solo aparece si la tabla de transiciones permite volver de «Aprobada» a «Formalización».
+        evidencia: ["src/classes/WorkflowServicio.cls:348"]
+
+  - id: CON-F045
+    area: Formalización y cierre
+    nombre: Rechazar definitivamente la solicitud
+    descripcion: >-
+      Cierra la solicitud como rechazada, con un motivo automático.
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Avanzar a '«Rechazada»'
+    tipo: botón
+    roles: []
+    resultado: >-
+      El dictamen RAC queda «RECHAZADO» y la solicitud pasa a «Rechazada».
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: AVANZAR_ESTADO:9
+      evidencia: ["src/forms/Form_frmGestionSolicitud.cls:509", "src/forms/Form_frmGestionSolicitud.cls:2167"]
+    reglas:
+      - id: CON-F045-R01
+        descripcion: El botón solo aparece desde los estados en los que la tabla de transiciones permite pasar a «Rechazada».
+        evidencia: ["src/classes/WorkflowServicio.cls:820"]
+        # posible defecto: el texto «Cerrar como '«Rechazada»'» previsto para «Revisión» no llega a mostrarse, porque en ese estado no se pintan los botones de la tabla de transiciones (src/classes/WorkflowServicio.cls:304).
+      - id: CON-F045-R02
+        descripcion: "Se pide confirmación con «¿Confirma el RECHAZO definitivo de la solicitud? Se asignará automáticamente el motivo: 'Rechazado desde el visor de cambio de estado'.»."
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:510"]
+      - id: CON-F045-R03
+        descripcion: En las propuestas de cambio se guarda el dictamen RAC «RECHAZADO» con ese motivo; en las concesiones o desviaciones solo la decisión «RECHAZADO».
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:2173", "src/forms/Form_frmGestionSolicitud.cls:2192"]
+        # posible defecto: en las solicitudes de subcontratista no se guarda ningún dictamen de rechazo (src/forms/Form_frmGestionSolicitud.cls:2206).
+      - id: CON-F045-R04
+        descripcion: "Si no se puede guardar el motivo se muestra «Advertencia: No se pudo registrar el motivo automático del rechazo.» y el rechazo sigue adelante."
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:2211"]
+      - id: CON-F045-R05
+        descripcion: El cambio de estado sigue las reglas del avance de estado (CON-F030-R02 y CON-F030-R14 a CON-F030-R21).
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:514"]
+
+  - id: CON-F046
+    area: Formalización y cierre
+    nombre: Reabrir una solicitud rechazada
+    descripcion: >-
+      Anula el rechazo definitivo y devuelve la solicitud a «Revisión» para una nueva evaluación.
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: REABRIR SOLICITUD
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      La solicitud vuelve a «Revisión» sin el dictamen de rechazo.
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: REVERTIR_RECHAZO
+      evidencia: ["src/forms/Form_frmGestionSolicitud.cls:558", "src/classes/WorkflowServicio.cls:366"]
+    reglas:
+      - id: CON-F046-R01
+        descripcion: El botón solo aparece en «Rechazada» si la tabla de transiciones permite volver a «Revisión».
+        evidencia: ["src/classes/WorkflowServicio.cls:366"]
+      - id: CON-F046-R02
+        descripcion: "Se pide confirmación con «¿Está seguro de que desea ANULAR el rechazo y reabrir la solicitud en fase de 'REVISIÓN'? Esta acción ELIMINARÁ la decisión de rechazo y sus motivos para permitir una nueva evaluación. ¿Continuar?»."
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:559"]
+      - id: CON-F046-R03
+        descripcion: Se borra el dictamen RAC, con el resto de efectos de CON-F043-R03 y CON-F043-R09 a CON-F043-R11.
+        evidencia: ["src/classes/WorkflowServicio.cls:2432"]
+
+  - id: CON-F047
+    area: Gestión de la solicitud
+    nombre: Eliminar la solicitud
+    descripcion: >-
+      Borra de forma permanente la solicitud con todos sus datos, su historial y sus documentos.
+    formulario: GESTIÓN DE LA SOLICITUD
+    control: Eliminar Solicitud
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      La solicitud desaparece, se avisa por correo al responsable de Calidad y se libera la no conformidad asociada.
+    tecnico:
+      formulario: Form_frmGestionSolicitud
+      control: cmdEliminarSolicitud
+      evidencia: ["src/forms/Form_frmGestionSolicitud.cls:1796", "src/classes/SolicitudServicio.cls:455"]
+    reglas:
+      - id: CON-F047-R01
+        descripcion: El botón solo está activo para Calidad y administradores, y solo si la solicitud no está cerrada o está rechazada.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:1730"]
+      - id: CON-F047-R02
+        descripcion: La confirmación avisa de que se borrará todo y no se puede deshacer; si hay una no conformidad vinculada, la nombra y avisa de que se eliminará la relación.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:1805"]
+      - id: CON-F047-R03
+        descripcion: Si el usuario no es de Calidad ni administrador se muestra «No tiene los permisos necesarios (Administrador o Calidad) para eliminar una solicitud.».
+        evidencia: ["src/classes/SolicitudServicio.cls:475"]
+      - id: CON-F047-R04
+        descripcion: "Antes de borrar se envía el aviso «CONDOR - ELIMINADO | «nemotécnico» | «tipo» | «código»» al responsable de Calidad, con el estado anterior y el autor; si el correo falla, el borrado continúa."
+        evidencia: ["src/classes/SolicitudServicio.cls:503", "src/classes/NotificacionServicio.cls:136"]
+      - id: CON-F047-R05
+        descripcion: Si algún adjunto está abierto se muestra «No se puede continuar. El archivo adjunto '«nombre»' está actualmente en uso.» y no se borra nada.
+        evidencia: ["src/classes/SolicitudServicio.cls:522"]
+      - id: CON-F047-R06
+        descripcion: Se borran los datos de las tres fichas, los adjuntos y sus ficheros, el historial de estados, el registro de cambios, los ciclos con el RAC, los rechazos y la propia solicitud.
+        evidencia: ["src/classes/SolicitudServicio.cls:540"]
+      - id: CON-F047-R07
+        descripcion: Después se borra el código de la solicitud de la no conformidad que lo tuviera; si esto falla, no se avisa y la eliminación se mantiene.
+        evidencia: ["src/classes/SolicitudServicio.cls:568"]
+      - id: CON-F047-R08
+        descripcion: Al terminar se muestra «La solicitud ha sido eliminada con éxito.», se actualizan los contadores y el buscador, y se cierra la gestión.
+        evidencia: ["src/forms/Form_frmGestionSolicitud.cls:1821"]
+
+  - id: CON-F048
+    area: Gestión de la solicitud
+    nombre: Mostrar páginas auxiliares en el visor web
+    descripcion: >-
+      Ventana auxiliar donde se muestran las páginas de captura (rechazo, envío y comentarios del RAC) y
+      de consulta (motivos, cambios, historial RAC).
+    formulario: CONDOR - Visor Web
+    control: Salir
+    tipo: automático
+    roles: []
+    resultado: >-
+      La página se muestra con su título; al confirmar o cancelar, la ventana se cierra y la gestión recibe la respuesta.
+    tecnico:
+      formulario: Form_frmWebVisor
+      control: CargarContenido / webVisor_BeforeNavigate
+      evidencia: ["src/forms/Form_frmWebVisor.cls:125", "src/forms/Form_frmWebVisor.cls:322"]
+      prd: prd/formularios/Form_frmWebVisor.md
+    reglas:
+      - id: CON-F048-R01
+        descripcion: La cabecera muestra el título de la página que se está viendo.
+        evidencia: ["src/forms/Form_frmWebVisor.cls:136"]
+      - id: CON-F048-R02
+        descripcion: Al confirmar o cancelar una página de captura, la respuesta se entrega a la gestión de la solicitud abierta y el visor se cierra.
+        evidencia: ["src/forms/Form_frmWebVisor.cls:337", "src/forms/Form_frmWebVisor.cls:374"]
+      - id: CON-F048-R03
+        descripcion: Al cerrar el visor se borra la copia temporal de la página.
+        evidencia: ["src/forms/Form_frmWebVisor.cls:52"]
+      - id: CON-F048-R04
+        descripcion: Las páginas de captura de fecha, comentarios del RAC y rechazo se guardan la primera vez en la carpeta de la aplicación y en adelante se muestran desde esa copia.
+        evidencia: ["src/classes/WebVisorCacheServicio.cls:36"]
+
+  # ---------------------------------------------------------------------------
+  # Documentos adjuntos
+  # ---------------------------------------------------------------------------
+  - id: CON-F049
+    area: Documentos adjuntos
+    nombre: Consultar los adjuntos de la solicitud
+    descripcion: >-
+      Lista los documentos adjuntos a la solicitud, tanto los subidos por los usuarios como los
+      generados por la aplicación.
+    formulario: Visor de Adjuntos
+    control: Visor de Adjuntos
+    tipo: lista
+    roles: []
+    resultado: >-
+      Se ve el nombre del fichero, si fue adjuntado o generado, la etapa y la descripción de cada documento.
+    tecnico:
+      formulario: Form_frmGestionAdjuntos
+      control: Form_Load / CargarLista
+      evidencia:
+        - "src/forms/Form_frmGestionSolicitud.cls:367"
+        - "src/forms/Form_frmGestionAdjuntos.cls:14"
+        - "src/forms/Form_frmGestionAdjuntos.cls:235"
+      prd: prd/formularios/Form_frmGestionAdjuntos.md
+    reglas:
+      - id: CON-F049-R01
+        descripcion: El título de la ventana es «Visor de Adjuntos para:» seguido del código de la solicitud.
+        evidencia: ["src/forms/Form_frmGestionAdjuntos.cls:33"]
+      - id: CON-F049-R02
+        descripcion: Si la etapa guardada es un estado del flujo, se muestra con el nombre del estado.
+        evidencia: ["src/classes/AdjuntosServicio.cls:383"]
+      - id: CON-F049-R03
+        descripcion: «Añadir Adjunto» solo está activo para Calidad y administradores.
+        evidencia: ["src/forms/Form_frmGestionAdjuntos.cls:46"]
+      - id: CON-F049-R04
+        descripcion: «Abrir seleccionado» y «Eliminar Adjunto» se activan al seleccionar un documento; eliminar solo para Calidad y administradores y nunca para documentos generados por la aplicación.
+        evidencia: ["src/forms/Form_frmGestionAdjuntos.cls:255"]
+      - id: CON-F049-R05
+        descripcion: «Salir» cierra el visor.
+        evidencia: ["src/forms/Form_frmGestionAdjuntos.cls:375"]
+
+  - id: CON-F050
+    area: Documentos adjuntos
+    nombre: Añadir un adjunto
+    descripcion: >-
+      Sube un fichero a la solicitud con una descripción; el fichero se copia a la carpeta de
+      documentación de Condor.
+    formulario: Visor de Adjuntos
+    control: Añadir Adjunto
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      El documento queda en la lista de adjuntos con el usuario y la fecha de subida.
+    tecnico:
+      formulario: Form_frmGestionAdjuntos
+      control: cmdAnadirAdjunto / EjecutarFlujoSubida
+      evidencia: ["src/forms/Form_frmGestionAdjuntos.cls:82", "src/forms/Form_frmGestionAdjuntos.cls:108", "src/classes/AdjuntosServicio.cls:17"]
+    reglas:
+      - id: CON-F050-R01
+        descripcion: Primero se pide la descripción del documento (CON-F051) y después el fichero, que puede ser de cualquier tipo, PDF o Word.
+        evidencia: ["src/forms/Form_frmGestionAdjuntos.cls:86", "src/forms/Form_frmGestionAdjuntos.cls:133"]
+      - id: CON-F050-R02
+        descripcion: Los adjuntos añadidos con este botón quedan siempre en la etapa «Otro».
+        evidencia: ["src/forms/Form_frmElegirEtapaAdjunto.cls:6"]
+        # posible defecto: como la etapa siempre es «Otro», nunca se aplica la sustitución ni la aprobación automática previstas para el «Documento Final Firmado» (src/forms/Form_frmGestionAdjuntos.cls:145).
+      - id: CON-F050-R03
+        descripcion: Si ya existe un fichero con el mismo nombre en la carpeta de documentación, se añade al nombre la fecha y la hora de subida.
+        evidencia: ["src/classes/AdjuntosServicio.cls:66"]
+      - id: CON-F050-R04
+        descripcion: Se guardan la etapa, el nombre del fichero, la fecha, el usuario que lo sube, la descripción y el tipo «Adjuntado»; sin descripción se usa «Adjunto de la etapa «etapa»».
+        evidencia: ["src/classes/AdjuntosServicio.cls:76"]
+      - id: CON-F050-R05
+        descripcion: El nombre del fichero no puede superar 255 caracteres («El nombre del archivo adjunto no puede exceder los 255 caracteres.»).
+        evidencia: ["src/classes/AdjuntosServicio.cls:294"]
+      - id: CON-F050-R06
+        descripcion: Un documento de la etapa «Documento Final Firmado» tiene que ser PDF; si no, se muestra «El archivo seleccionado debe ser un documento PDF.» con la extensión.
+        evidencia: ["src/classes/AdjuntosServicio.cls:53"]
+      - id: CON-F050-R07
+        descripcion: Si falla el registro, se borra la copia del fichero ya hecha.
+        evidencia: ["src/classes/AdjuntosServicio.cls:120"]
+      - id: CON-F050-R08
+        descripcion: Al terminar se muestra «Archivo adjuntado correctamente.» y se recarga la lista.
+        evidencia: ["src/forms/Form_frmGestionAdjuntos.cls:218"]
+
+  - id: CON-F051
+    area: Documentos adjuntos
+    nombre: Describir el documento que se adjunta
+    descripcion: >-
+      Ventana previa a la subida en la que el usuario escribe la descripción del documento.
+    formulario: Clasificar Documento Adjunto
+    control: Aceptar
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      La descripción escrita acompaña al documento que se adjunta a continuación.
+    tecnico:
+      formulario: Form_frmElegirEtapaAdjunto
+      control: cmdAceptar
+      evidencia: ["src/forms/Form_frmElegirEtapaAdjunto.cls:42"]
+      prd: prd/formularios/Form_frmElegirEtapaAdjunto.md
+    reglas:
+      - id: CON-F051-R01
+        descripcion: Sin descripción se muestra «Debe indicar una descripcion para el adjunto.».
+        evidencia: ["src/forms/Form_frmElegirEtapaAdjunto.cls:44"]
+      - id: CON-F051-R02
+        descripcion: «Cancelar» abandona la subida.
+        evidencia: ["src/forms/Form_frmElegirEtapaAdjunto.cls:57", "src/forms/Form_frmGestionAdjuntos.cls:97"]
+
+  - id: CON-F052
+    area: Documentos adjuntos
+    nombre: Abrir un adjunto
+    descripcion: >-
+      Abre el documento seleccionado con la aplicación que corresponda.
+    formulario: Visor de Adjuntos
+    control: Abrir seleccionado
+    tipo: botón
+    roles: []
+    resultado: >-
+      El documento se abre desde la carpeta de documentación.
+    tecnico:
+      formulario: Form_frmGestionAdjuntos
+      control: cmdAbrirAdjunto / lstAdjuntos (doble clic)
+      evidencia: ["src/forms/Form_frmGestionAdjuntos.cls:365", "src/forms/Form_frmGestionAdjuntos.cls:371"]
+    reglas:
+      - id: CON-F052-R01
+        descripcion: El doble clic en la lista hace lo mismo que el botón, si hay un documento seleccionado.
+        evidencia: ["src/forms/Form_frmGestionAdjuntos.cls:372"]
+
+  - id: CON-F053
+    area: Documentos adjuntos
+    nombre: Eliminar un adjunto
+    descripcion: >-
+      Borra el documento seleccionado de la solicitud y de la carpeta de documentación.
+    formulario: Visor de Adjuntos
+    control: Eliminar Adjunto
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      El documento desaparece de la lista y su fichero se borra.
+    tecnico:
+      formulario: Form_frmGestionAdjuntos
+      control: cmdEliminarAdjunto
+      evidencia: ["src/forms/Form_frmGestionAdjuntos.cls:273", "src/classes/AdjuntosServicio.cls:484"]
+    reglas:
+      - id: CON-F053-R01
+        descripcion: Se pide confirmación con «¿Está seguro de que desea eliminar el archivo adjunto seleccionado?».
+        evidencia: ["src/forms/Form_frmGestionAdjuntos.cls:309"]
+      - id: CON-F053-R02
+        descripcion: Los documentos generados por la aplicación no se pueden eliminar desde aquí (CON-F049-R04).
+        evidencia: ["src/forms/Form_frmGestionAdjuntos.cls:268"]
+      - id: CON-F053-R03
+        descripcion: Si se elimina el «Documento Final Firmado» de una solicitud aprobada, se advierte de las consecuencias, se borra la decisión final y la solicitud vuelve a «Formalización» con el mensaje «El adjunto se ha eliminado. La solicitud ha vuelto al estado 'FORMALIZACIÓN'.».
+        evidencia: ["src/forms/Form_frmGestionAdjuntos.cls:297", "src/forms/Form_frmGestionAdjuntos.cls:322"]
+        # posible defecto: el PDF firmado se adjunta en la etapa «Cierre» (CON-F042-R04), así que borrarlo no activa este caso y la solicitud sigue aprobada (src/forms/Form_frmGestionSolicitud.cls:762).
+        # posible defecto: en las solicitudes de subcontratista la decisión final se borra con la lógica de las concesiones o desviaciones (src/forms/Form_frmGestionAdjuntos.cls:329).
+
+  # ---------------------------------------------------------------------------
+  # Administración y trazabilidad
+  # ---------------------------------------------------------------------------
+  - id: CON-F054
+    area: Administración
+    nombre: Consultar el registro de cambios
+    descripcion: >-
+      Lista todos los cambios de datos registrados por la aplicación, con filtros por usuario, tabla y
+      número de registro.
+    formulario: Visor de Log de Cambios
+    control: Ver Logs cambios
+    tipo: lista
+    roles: [Administrador]
+    resultado: >-
+      Se ve fecha y hora, usuario, tabla, registro, campo, valor anterior, valor nuevo y operación de cada cambio.
+    tecnico:
+      formulario: Form_frmVerLogCambios
+      control: Form_Load / AplicarFiltros
+      evidencia: ["src/forms/Form_frm0OtrosAdmin.cls:35", "src/forms/Form_frmVerLogCambios.cls:10", "src/forms/Form_frmVerLogCambios.cls:34"]
+      prd: prd/formularios/Form_frmVerLogCambios.md
+    reglas:
+      - id: CON-F054-R01
+        descripcion: Los filtros de usuario y tabla ofrecen «(Todos)» y los valores que ya existen en el registro.
+        evidencia: ["src/forms/Form_frmVerLogCambios.cls:16"]
+      - id: CON-F054-R02
+        descripcion: El campo «Texto» filtra por el número del registro modificado al pulsar Intro; si no es un número se ignora.
+        evidencia: ["src/forms/Form_frmVerLogCambios.cls:146", "src/classes/LogServicio.cls:174"]
+        # posible defecto: la etiqueta «Texto» sugiere una búsqueda de texto, pero solo admite el número de registro (src/forms/Form_frmVerLogCambios.form.txt:723).
+      - id: CON-F054-R03
+        descripcion: Los cambios se ordenan del más reciente al más antiguo.
+        evidencia: ["src/classes/LogServicio.cls:176"]
+      - id: CON-F054-R04
+        descripcion: El botón de limpiar devuelve los filtros a «(Todos)» y vacía el número de registro.
+        evidencia: ["src/forms/Form_frmVerLogCambios.cls:161"]
+
+  - id: CON-F055
+    area: Administración
+    nombre: Ver el detalle de un cambio
+    descripcion: >-
+      Muestra en una ventana todos los datos de un cambio del registro.
+    formulario: Detalle del Cambio
+    control: Ver Detalle
+    tipo: botón
+    roles: [Administrador]
+    resultado: >-
+      Se ven fecha y hora, usuario, tabla, registro, campo, operación, valor anterior y valor nuevo.
+    tecnico:
+      formulario: Form_frmDetalleLogCambio
+      control: Form_Load
+      evidencia: ["src/forms/Form_frmVerLogCambios.cls:106", "src/forms/Form_frmDetalleLogCambio.cls:9"]
+      prd: prd/formularios/Form_frmDetalleLogCambio.md
+    reglas:
+      - id: CON-F055-R01
+        descripcion: Sin registro seleccionado se muestra «Por favor, seleccione un registro de la lista para ver su detalle.»; el doble clic hace lo mismo que el botón.
+        evidencia: ["src/forms/Form_frmVerLogCambios.cls:98", "src/forms/Form_frmVerLogCambios.cls:114"]
+      - id: CON-F055-R02
+        descripcion: Solo hay un detalle abierto a la vez; si es otro registro se cierra y se abre el nuevo.
+        evidencia: ["src/forms/Form_frmVerLogCambios.cls:118"]
+      - id: CON-F055-R03
+        descripcion: El campo «Suplantado Por» no se rellena.
+        evidencia: ["src/forms/Form_frmDetalleLogCambio.cls:29"]
+        # posible defecto: la ventana tiene el campo «Suplantado Por» pero no se le asigna ningún valor (src/forms/Form_frmDetalleLogCambio.form.txt:561).
+
+  - id: CON-F056
+    area: Administración
+    nombre: Consultar el registro de errores
+    descripcion: >-
+      Lista los errores registrados por la aplicación, con filtros por usuario, módulo y procedimiento.
+    formulario: Visor de Log de Errores
+    control: Ver Logs Errores
+    tipo: lista
+    roles: [Administrador]
+    resultado: >-
+      Se ve fecha y hora, usuario, módulo, número y descripción de cada error.
+    tecnico:
+      formulario: Form_frmVerLogErrores
+      control: Form_Load / AplicarFiltros
+      evidencia: ["src/forms/Form_frm0OtrosAdmin.cls:46", "src/forms/Form_frmVerLogErrores.cls:36"]
+      prd: prd/formularios/Form_frmVerLogErrores.md
+    reglas:
+      - id: CON-F056-R01
+        descripcion: Los filtros de usuario y módulo ofrecen «(Todos)» y los valores existentes; «Proc.» busca coincidencias parciales al pulsar Intro.
+        evidencia: ["src/forms/Form_frmVerLogErrores.cls:16", "src/classes/LogServicio.cls:124"]
+      - id: CON-F056-R02
+        descripcion: Los errores se ordenan del más reciente al más antiguo.
+        evidencia: ["src/classes/LogServicio.cls:190"]
+      - id: CON-F056-R03
+        descripcion: La cabecera de la ventana muestra «Visor de Log de Cambios».
+        evidencia: ["src/forms/Form_frmVerLogErrores.form.txt:561"]
+        # posible defecto: la cabecera no se actualiza y muestra el título del registro de cambios en el visor de errores (src/forms/Form_frmVerLogErrores.cls:14).
+
+  - id: CON-F057
+    area: Administración
+    nombre: Ver el detalle de un error
+    descripcion: >-
+      Muestra en una ventana todos los datos de un error del registro.
+    formulario: Detalle del Error
+    control: Ver Detalle
+    tipo: botón
+    roles: [Administrador]
+    resultado: >-
+      Se ven fecha y hora, usuario, quién actuaba en su nombre, módulo, procedimiento, número, descripción y contexto.
+    tecnico:
+      formulario: Form_frmDetalleLogError
+      control: Form_Load
+      evidencia: ["src/forms/Form_frmVerLogErrores.cls:105", "src/forms/Form_frmDetalleLogError.cls:9"]
+      prd: prd/formularios/Form_frmDetalleLogError.md
+    reglas:
+      - id: CON-F057-R01
+        descripcion: Sin registro seleccionado se muestra «Por favor, seleccione un registro de la lista para ver su detalle.».
+        evidencia: ["src/forms/Form_frmVerLogErrores.cls:113"]
+      - id: CON-F057-R02
+        descripcion: El botón «Salir» de esta ventana no tiene acción asociada.
+        evidencia: ["src/forms/Form_frmDetalleLogError.form.txt:938"]
+        # posible defecto: el procedimiento de cierre existe pero el botón no está enlazado a él, así que no cierra la ventana (src/forms/Form_frmDetalleLogError.cls:50).
+
+  - id: CON-F058
+    area: Administración
+    nombre: Avisar y registrar los errores
+    descripcion: >-
+      Cuando una operación falla, la aplicación muestra un aviso al usuario y guarda el error en el
+      registro de errores.
+    formulario: (todas las ventanas)
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      El usuario ve el motivo del fallo y el administrador puede consultarlo después.
+    tecnico:
+      formulario: ""
+      control: ManejadorErroresFormulario / ErrorPresenter.MostrarError
+      evidencia: ["src/modules/FUNCIONES UTILES.bas:588", "src/modules/ErrorPresenter.bas:13"]
+    reglas:
+      - id: CON-F058-R01
+        descripcion: "Los fallos de validación se muestran como advertencia con el título «Validación: Datos Requeridos»."
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:622", "src/modules/ErrorPresenter.bas:27"]
+      - id: CON-F058-R02
+        descripcion: Los fallos operativos se muestran con el título «No se puede completar la operación» y los técnicos con «Error en «procedimiento»».
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:627"]
+      - id: CON-F058-R03
+        descripcion: Si no hay detalle del error se muestra «Error inesperado. Contacte con el administrador.».
+        evidencia: ["src/modules/ErrorPresenter.bas:16"]
+      - id: CON-F058-R04
+        descripcion: El error mostrado se guarda en el registro de errores.
+        evidencia: ["src/modules/ErrorPresenter.bas:47"]
+
+  # ---------------------------------------------------------------------------
+  # Fichas de datos de la solicitud
+  # Hay tres fichas, una por tipo: propuesta de cambio (PC), concesión o
+  # desviación (CD/CA) y concesión o desviación de subcontratista (CD/CA-SUB).
+  # Las tres tienen las pestañas GENERAL, DETALLE Y DESCRIPCIÓN, MOTIVOS,
+  # APROBACIÓN SUMINSTRADOR, RAC y AUTORIDAD COMPETENTE.
+  # ---------------------------------------------------------------------------
+  - id: CON-F059
+    area: Fichas de datos
+    nombre: Abrir la ficha de una propuesta de cambio
+    descripcion: >-
+      Ventana con las pestañas de datos de una propuesta de cambio; se abre por la pestaña que
+      corresponde al estado y solo deja grabar lo que el perfil puede tocar en ese estado.
+    formulario: "Propuesta de Cambio: «código» («nemotécnico»)"
+    control: Ver Datos
+    tipo: automático
+    roles: []
+    resultado: >-
+      El usuario ve el estado y la pestaña de trabajo de la fase, con los campos activos o bloqueados según sus permisos.
+    tecnico:
+      formulario: Form_frmDatosPC
+      control: Form_Load / ConfigurarYPoblarInterfaz
+      evidencia:
+        - "src/forms/Form_frmDatosPC.cls:50"
+        - "src/forms/Form_frmDatosPC.cls:423"
+        - "src/classes/WorkflowServicio.cls:1599"
+      prd: prd/formularios/Form_frmDatosPC.md
+    reglas:
+      - id: CON-F059-R01
+        descripcion: La pestaña inicial es GENERAL en «Pre-registro» y «Registro», DETALLE Y DESCRIPCIÓN en «Desarrollo técnico» y «Modificación», APROBACIÓN SUMINSTRADOR en «Validación», RAC en «Revisión» y AUTORIDAD COMPETENTE en «Formalización» y «Aprobada».
+        evidencia: ["src/forms/Form_frmDatosPC.cls:72", "src/classes/WorkflowServicio.cls:1844"]
+      - id: CON-F059-R02
+        descripcion: En una solicitud «Rechazada» no se puede grabar ninguna pestaña.
+        evidencia: ["src/classes/WorkflowServicio.cls:1610"]
+      - id: CON-F059-R03
+        descripcion: En «Formalización» solo Calidad y administradores pueden grabar APROBACIÓN SUMINSTRADOR y AUTORIDAD COMPETENTE; en «Aprobada» ya no se puede grabar nada.
+        evidencia: ["src/classes/WorkflowServicio.cls:1612", "src/classes/WorkflowServicio.cls:1620", "src/forms/Form_subfrmDatosPC_DecisionFinal.cls:43"]
+      - id: CON-F059-R04
+        descripcion: Antes de «Formalización», GENERAL la graban Calidad y administradores en cualquier estado.
+        evidencia: ["src/classes/WorkflowServicio.cls:1634"]
+      - id: CON-F059-R05
+        descripcion: DETALLE Y DESCRIPCIÓN y MOTIVOS los graba solo el técnico en «Desarrollo técnico», y solo Calidad y administradores desde «Modificación».
+        evidencia: ["src/classes/WorkflowServicio.cls:1638"]
+      - id: CON-F059-R06
+        descripcion: APROBACIÓN SUMINSTRADOR y RAC los graban Calidad y administradores a partir de «Modificación».
+        evidencia: ["src/classes/WorkflowServicio.cls:1654", "src/classes/WorkflowServicio.cls:1660"]
+      - id: CON-F059-R07
+        descripcion: Si el usuario no puede grabar una pestaña, su botón «Grabar», sus botones de datos predeterminados y sus campos quedan desactivados.
+        evidencia: ["src/forms/Form_frmDatosPC.cls:452", "src/modules/FormulariosPadreAuxiliares.bas:268", "src/modules/FUNCIONES UTILES.bas:946"]
+      - id: CON-F059-R08
+        descripcion: En «Modificación» tras un rechazo, la ficha muestra el aviso «RECHAZADO POR CALIDAD:».
+        evidencia: ["src/forms/Form_frmDatosPC.cls:479"]
+        # posible defecto: en la propuesta de cambio el aviso no incluye el motivo del rechazo, a diferencia de las otras dos fichas (src/forms/Form_frmDatosCDCA.cls:652).
+      - id: CON-F059-R09
+        descripcion: Al grabar cualquier pestaña, si no se ha cambiado ningún dato se muestra «No se han detectado cambios.» y no se graba; si se graba, «Datos guardados correctamente.».
+        evidencia: ["src/forms/Form_frmDatosPC.cls:204", "src/forms/Form_frmDatosPC.cls:384"]
+      - id: CON-F059-R10
+        descripcion: «Ver detalle» oculta la ficha y devuelve a la gestión de la solicitud; «Salir» cierra la ficha.
+        evidencia: ["src/forms/Form_frmDatosPC.cls:26", "src/forms/Form_frmDatosPC.cls:19"]
+      - id: CON-F059-R11
+        descripcion: Si la solicitud aún no tiene datos, la ficha propone como referencias del contrato y del suministrador el código largo del expediente y el código de la solicitud.
+        evidencia: ["src/forms/Form_frmDatosPC.cls:517"]
+
+  - id: CON-F060
+    area: Fichas de datos
+    nombre: Abrir la ficha de una concesión o desviación
+    descripcion: >-
+      Ventana con las pestañas de datos de una concesión o desviación, con el mismo funcionamiento
+      que la ficha de propuesta de cambio.
+    formulario: "Concesión/Desviación: «código» («nemotécnico»)"
+    control: Ver Datos
+    tipo: automático
+    roles: []
+    resultado: >-
+      El usuario ve el estado y la pestaña de trabajo de la fase, con los campos activos o bloqueados según sus permisos.
+    tecnico:
+      formulario: Form_frmDatosCDCA
+      control: Form_Load / ConfigurarYPoblarInterfaz
+      evidencia: ["src/forms/Form_frmDatosCDCA.cls:613", "src/classes/WorkflowServicio.cls:1478"]
+      prd: prd/formularios/Form_frmDatosCDCA.md
+    reglas:
+      - id: CON-F060-R01
+        descripcion: Siguen las mismas reglas de pestaña inicial, permisos de grabado, grabado sin cambios y botones «Ver detalle» y «Salir» que la propuesta de cambio (CON-F059-R01 a CON-F059-R07, CON-F059-R09 y CON-F059-R10).
+        evidencia: ["src/classes/WorkflowServicio.cls:1478", "src/forms/Form_frmDatosCDCA.cls:199", "src/forms/Form_frmDatosCDCA.cls:68"]
+      - id: CON-F060-R02
+        descripcion: En «Modificación» tras un rechazo, el aviso «RECHAZADO POR CALIDAD:» incluye el motivo.
+        evidencia: ["src/forms/Form_frmDatosCDCA.cls:650"]
+      - id: CON-F060-R03
+        descripcion: Si la solicitud aún no tiene datos, la ficha se abre con los datos generales predeterminados (CON-F065).
+        evidencia: ["src/forms/Form_frmDatosCDCA.cls:570"]
+
+  - id: CON-F061
+    area: Fichas de datos
+    nombre: Abrir la ficha de una concesión o desviación de subcontratista
+    descripcion: >-
+      Ventana con las pestañas de datos de una concesión o desviación en la que la empresa actúa como
+      subcontratista, con el mismo funcionamiento que las otras fichas.
+    formulario: "Concesión/Desviación SUB: «código» («nemotécnico»)"
+    control: Ver Datos
+    tipo: automático
+    roles: []
+    resultado: >-
+      El usuario ve el estado y la pestaña de trabajo de la fase, con los campos activos o bloqueados según sus permisos.
+    tecnico:
+      formulario: Form_frmDatosCDCASUB
+      control: Form_Load / ConfigurarYPoblarInterfaz
+      evidencia: ["src/forms/Form_frmDatosCDCASUB.cls:84", "src/classes/WorkflowServicio.cls:1557"]
+      prd: prd/formularios/Form_frmDatosCDCASUB.md
+    reglas:
+      - id: CON-F061-R01
+        descripcion: Siguen las mismas reglas de pestaña inicial, permisos de grabado, grabado sin cambios y botones «Ver detalle» y «Salir» que la propuesta de cambio (CON-F059-R01 a CON-F059-R07, CON-F059-R09 y CON-F059-R10).
+        evidencia: ["src/classes/WorkflowServicio.cls:1557", "src/forms/Form_frmDatosCDCASUB.cls:290", "src/forms/Form_frmDatosCDCASUB.cls:149"]
+      - id: CON-F061-R02
+        descripcion: En «Modificación» tras un rechazo, el aviso «RECHAZADO POR CALIDAD:» incluye el motivo.
+        evidencia: ["src/forms/Form_frmDatosCDCASUB.cls:121"]
+
+  - id: CON-F062
+    area: Fichas de datos
+    nombre: Grabar los datos generales de una propuesta de cambio
+    descripcion: >-
+      Calidad completa las referencias, la denominación y el objeto del contrato y el suministrador.
+      El primer grabado registra la solicitud y permite asignarla al técnico.
+    formulario: GENERAL
+    control: Grabar
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Los datos generales quedan guardados; la primera vez la solicitud pasa a «Registro» y, si se acepta, a «Desarrollo técnico».
+    tecnico:
+      formulario: Form_subfrmDatosPC_Generales
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_subfrmDatosPC_Generales.cls:111", "src/classes/DatosPCServicio.cls:234"]
+      prd: prd/formularios/Form_subfrmDatosPC.md
+    reglas:
+      - id: CON-F062-R01
+        descripcion: «Referencia del Contrato/Inspección Oficial» y «Referencia del Suministrador» no se pueden editar.
+        evidencia: ["src/forms/Form_subfrmDatosPC_Generales.form.txt:624", "src/forms/Form_subfrmDatosPC_Generales.cls:35"]
+      - id: CON-F062-R02
+        descripcion: "Son obligatorios los cinco campos; si falta alguno se muestra «El campo '«campo»' es obligatorio.»: Referencia del Contrato/Inspección Oficial, Referencia del Suministrador, Denominación del Contrato, Suministrador (Nombre y Dirección) y Objeto del Contrato."
+        evidencia: ["src/classes/DatosPCServicio.cls:253"]
+      - id: CON-F062-R03
+        descripcion: Si la solicitud está en «Pre-registro», al grabar pasa a «Registro» en la misma operación, con su aviso por correo al jefe de proyecto y al responsable de Calidad.
+        evidencia: ["src/classes/DatosPCServicio.cls:269", "src/classes/NotificacionServicio.cls:398"]
+      - id: CON-F062-R04
+        descripcion: Tras grabar en «Registro» se pregunta «Datos Generales guardados. ¿Asignar tarea al Técnico ahora?»; si se acepta, la solicitud pasa a «Desarrollo técnico» y se muestra «Solicitud asignada a Desarrollo Técnico.».
+        evidencia: ["src/forms/Form_frmDatosPC.cls:265"]
+
+  - id: CON-F063
+    area: Fichas de datos
+    nombre: Grabar los datos generales de una concesión o desviación
+    descripcion: >-
+      Calidad completa el contrato, el suministrador, las desviaciones previas y si se requiere
+      modificar el contrato.
+    formulario: GENERAL
+    control: Grabar
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Los datos generales quedan guardados con los mismos avances de estado que en la propuesta de cambio.
+    tecnico:
+      formulario: Form_subfrmDatosCDCA_Generales
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_subfrmDatosCDCA_Generales.cls:121", "src/classes/DatosCDCAServicio.cls:288"]
+      prd: prd/formularios/Form_subfrmDatosCDCA.md
+    reglas:
+      - id: CON-F063-R01
+        descripcion: «Nº del contrato» y «Referencia del Suministrador» no se pueden editar.
+        evidencia: ["src/forms/Form_subfrmDatosCDCA_Generales.form.txt:617", "src/forms/Form_subfrmDatosCDCA_Generales.form.txt:744"]
+      - id: CON-F063-R02
+        descripcion: Son obligatorios «Nº del contrato», «Referencia del Suministrador» y «Suministrador (Nombre y Dirección)», cada uno con su mensaje «El campo '«campo»' es obligatorio.».
+        evidencia: ["src/classes/DatosCDCAServicio.cls:300"]
+      - id: CON-F063-R03
+        descripcion: Hay que indicar Sí o No en «Requiere Modificación del contrato»; si no, «Debe indicar si 'Requiere Modificación del contrato' (Sí/No).».
+        evidencia: ["src/classes/DatosCDCAServicio.cls:303"]
+      - id: CON-F063-R04
+        descripcion: «Referencia de desviaciones o concesiones previas» es opcional.
+        evidencia: ["src/classes/DatosCDCAServicio.cls:300"]
+      - id: CON-F063-R05
+        descripcion: Aplica el mismo paso automático a «Registro» y la misma pregunta de asignación al técnico que la propuesta de cambio (CON-F062-R03 y CON-F062-R04).
+        evidencia: ["src/classes/DatosCDCAServicio.cls:316", "src/forms/Form_frmDatosCDCA.cls:258"]
+
+  - id: CON-F064
+    area: Fichas de datos
+    nombre: Grabar los datos generales de una concesión o desviación de subcontratista
+    descripcion: >-
+      Calidad completa el suministrador principal, el subsuministrador, las desviaciones previas y si se
+      requiere modificar el contrato.
+    formulario: GENERAL
+    control: Grabar
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Los datos generales quedan guardados con los mismos avances de estado que en la propuesta de cambio.
+    tecnico:
+      formulario: Form_subfrmDatosCDCASUB_Generales
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_subfrmDatosCDCASUB_Generales.cls:113", "src/classes/DatosCDCASUBServicio.cls:133"]
+      prd: prd/formularios/Form_subfrmDatosCDCASUB.md
+    reglas:
+      - id: CON-F064-R01
+        descripcion: «Referencia del Suministrador» y «Referencia del Sub-Suministrador» no se pueden editar.
+        evidencia: ["src/forms/Form_subfrmDatosCDCASUB_Generales.form.txt:619", "src/forms/Form_subfrmDatosCDCASUB_Generales.form.txt:743"]
+      - id: CON-F064-R02
+        descripcion: Son obligatorios la referencia del subsuministrador («Ref. Sub-Suministrador obligatoria.»), el suministrador principal («Suministrador Principal obligatorio.») y el subsuministrador («Sub-Suministrador obligatorio.»).
+        evidencia: ["src/classes/DatosCDCASUBServicio.cls:142"]
+      - id: CON-F064-R03
+        descripcion: Hay que indicar si requiere modificación del contrato; si no, «Indique si requiere modificación.».
+        evidencia: ["src/classes/DatosCDCASUBServicio.cls:145"]
+      - id: CON-F064-R04
+        descripcion: Aplica el mismo paso automático a «Registro» y la misma pregunta de asignación al técnico que la propuesta de cambio (CON-F062-R03 y CON-F062-R04).
+        evidencia: ["src/classes/DatosCDCASUBServicio.cls:154", "src/forms/Form_frmDatosCDCASUB.cls:358"]
+
+  - id: CON-F065
+    area: Fichas de datos
+    nombre: Cargar los datos generales predeterminados
+    descripcion: >-
+      Rellena la pestaña GENERAL con los datos del expediente y de sus suministradores, sin grabarlos,
+      y permite volver a los valores anteriores.
+    formulario: GENERAL
+    control: Cargar Datos Predeterminados
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Los campos quedan rellenos con los valores propuestos hasta que el usuario pulse «Grabar» o «Restaurar».
+    tecnico:
+      formulario: Form_subfrmDatosPC_Generales
+      control: cmdCargarDefaults / cmdRestaurarDatos
+      evidencia:
+        - "src/forms/Form_subfrmDatosPC_Generales.cls:126"
+        - "src/forms/Form_subfrmDatosCDCA_Generales.cls:137"
+        - "src/forms/Form_subfrmDatosCDCASUB_Generales.cls:131"
+    reglas:
+      - id: CON-F065-R01
+        descripcion: En la propuesta de cambio se proponen el código largo del expediente como referencia del contrato, el código de la solicitud como referencia del suministrador, y el título y el objeto del contrato del expediente.
+        evidencia: ["src/classes/DatosPCServicio.cls:154"]
+      - id: CON-F065-R02
+        descripcion: En la concesión o desviación se proponen el código largo del expediente como número de contrato y el código de la solicitud como referencia del suministrador.
+        evidencia: ["src/classes/DatosCDCAServicio.cls:185"]
+      - id: CON-F065-R03
+        descripcion: El suministrador propuesto son los subcontratistas del expediente si los hay y, si no, los contratistas principales; si hay varios se escribe «UNION TEMPORAL DE EMPRESAS:» con los nombres unidos por «y».
+        evidencia: ["src/classes/DatosPCServicio.cls:193", "src/classes/DatosCDCAServicio.cls:157"]
+      - id: CON-F065-R04
+        descripcion: Al nombre se añade entre paréntesis la dirección de la UTE configurada o, si no hay, la del primer suministrador.
+        evidencia: ["src/classes/DatosPCServicio.cls:207"]
+      - id: CON-F065-R05
+        descripcion: En la de subcontratista se proponen por separado el suministrador principal y el subsuministrador, con la dirección en el principal si la empresa es contratista principal y en el subsuministrador si no, y el código de la solicitud como referencia del subsuministrador.
+        evidencia: ["src/classes/DatosCDCASUBServicio.cls:83", "src/classes/DatosCDCASUBServicio.cls:96"]
+      - id: CON-F065-R06
+        descripcion: Tras cargar, el botón se desactiva y aparece «Restaurar», que devuelve los valores anteriores; grabar consolida los nuevos.
+        evidencia: ["src/forms/Form_subfrmDatosPC_Generales.cls:163", "src/forms/Form_subfrmDatosPC_Generales.cls:178"]
+
+  - id: CON-F066
+    area: Fichas de datos
+    nombre: Grabar el detalle y la descripción de una propuesta de cambio
+    descripcion: >-
+      El técnico describe el material afectado, la especificación o plano y la propuesta de cambio.
+    formulario: DETALLE Y DESCRIPCIÓN
+    control: Grabar
+    tipo: botón
+    roles: [Técnico, Calidad, Administrador]
+    resultado: >-
+      La descripción técnica de la propuesta queda guardada.
+    tecnico:
+      formulario: Form_subfrmDatosPC_Propuesta
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_subfrmDatosPC_Propuesta.cls:27", "src/classes/DatosPCServicio.cls:293"]
+    reglas:
+      - id: CON-F066-R01
+        descripcion: Es obligatoria la descripción del material afectado («La descripcion del material afectado es obligatoria.»).
+        evidencia: ["src/classes/DatosPCServicio.cls:303"]
+      - id: CON-F066-R02
+        descripcion: Es obligatoria la descripción de la propuesta («La descripcion de la propuesta de cambio obligatoria.»).
+        evidencia: ["src/classes/DatosPCServicio.cls:306"]
+      - id: CON-F066-R03
+        descripcion: El número de la especificación o plano es opcional.
+        evidencia: ["src/classes/DatosPCServicio.cls:303"]
+      - id: CON-F066-R04
+        descripcion: Quién puede grabar depende del estado (CON-F059-R05); tras grabar se aplica el avance guiado al envío a Calidad (CON-F072).
+        evidencia: ["src/classes/WorkflowServicio.cls:1638", "src/forms/Form_frmDatosPC.cls:287"]
+
+  - id: CON-F067
+    area: Fichas de datos
+    nombre: Grabar el detalle y la descripción de una concesión o desviación
+    descripcion: >-
+      El técnico identifica el material, la especificación, la cantidad, el lote, la causa de la no
+      conformidad y su descripción y efecto.
+    formulario: DETALLE Y DESCRIPCIÓN
+    control: Grabar
+    tipo: botón
+    roles: [Técnico, Calidad, Administrador]
+    resultado: >-
+      La descripción de la no conformidad queda guardada.
+    tecnico:
+      formulario: Form_subfrmDatosCDCA_Propuesta
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_subfrmDatosCDCA_Propuesta.cls:48", "src/classes/DatosCDCAServicio.cls:351"]
+    reglas:
+      - id: CON-F067-R01
+        descripcion: Son obligatorios la identificación del material («El campo 'Identificacion del Material' es obligatorio.»), la causa («El campo 'Causa de la No Conformidad' es obligatorio.») y la descripción y efecto («El campo 'Descripcion/Impacto de la No Conformidad' es obligatorio.»).
+        evidencia: ["src/classes/DatosCDCAServicio.cls:359"]
+      - id: CON-F067-R02
+        descripcion: La especificación o plano, la cantidad o periodo y el número de serie o lote son opcionales.
+        evidencia: ["src/classes/DatosCDCAServicio.cls:359"]
+      - id: CON-F067-R03
+        descripcion: Quién puede grabar y el avance guiado posterior son los de la propuesta de cambio (CON-F066-R04).
+        evidencia: ["src/classes/WorkflowServicio.cls:1519", "src/forms/Form_frmDatosCDCA.cls:280"]
+
+  - id: CON-F068
+    area: Fichas de datos
+    nombre: Grabar el detalle y la descripción de una concesión o desviación de subcontratista
+    descripcion: >-
+      El técnico identifica el material, la especificación, la cantidad, el lote, la causa de la no
+      conformidad y su descripción y efecto.
+    formulario: DETALLE Y DESCRIPCIÓN
+    control: Grabar
+    tipo: botón
+    roles: [Técnico, Calidad, Administrador]
+    resultado: >-
+      La descripción de la no conformidad queda guardada.
+    tecnico:
+      formulario: Form_subfrmDatosCDCASUB_Propuesta
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_subfrmDatosCDCASUB_Propuesta.cls:25", "src/classes/DatosCDCASUBServicio.cls:173"]
+    reglas:
+      - id: CON-F068-R01
+        descripcion: Son obligatorios la identificación («Identificacion obligatoria.»), la causa («Causa NC obligatoria.») y la descripción del impacto («Descripcion Impacto obligatoria.»).
+        evidencia: ["src/classes/DatosCDCASUBServicio.cls:180"]
+      - id: CON-F068-R02
+        descripcion: Quién puede grabar y el avance guiado posterior son los de la propuesta de cambio (CON-F066-R04).
+        evidencia: ["src/classes/WorkflowServicio.cls:1578", "src/forms/Form_frmDatosCDCASUB.cls:384"]
+
+  - id: CON-F069
+    area: Fichas de datos
+    nombre: Grabar los motivos de una propuesta de cambio
+    descripcion: >-
+      El técnico indica los motivos de la propuesta, su incidencia en coste, plazo y otras
+      características, su clasificación y si afecta a material entregado o por entregar.
+    formulario: MOTIVOS
+    control: Grabar
+    tipo: botón
+    roles: [Técnico, Calidad, Administrador]
+    resultado: >-
+      Los motivos y el impacto de la propuesta quedan guardados.
+    tecnico:
+      formulario: Form_subfrmDatosPC_Impacto
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_subfrmDatosPC_Impacto.cls:118", "src/classes/DatosPCServicio.cls:366"]
+    reglas:
+      - id: CON-F069-R01
+        descripcion: Hay que marcar al menos un motivo; si no, «>> (Impacto) Seleccione al menos un Motivo de la Propuesta.».
+        evidencia: ["src/classes/DatosPCServicio.cls:379"]
+      - id: CON-F069-R02
+        descripcion: Si se marca «Otros» hay que escribir el detalle, y si se escribe detalle hay que marcar «Otros», cada caso con su mensaje.
+        evidencia: ["src/classes/DatosPCServicio.cls:387", "src/classes/DatosPCServicio.cls:391"]
+      - id: CON-F069-R03
+        descripcion: Las incidencias en coste y en plazo son obligatorias y admiten «Aumentará», «Disminuirá» o «No Variará».
+        evidencia: ["src/classes/DatosPCServicio.cls:397"]
+      - id: CON-F069-R04
+        descripcion: La clasificación «Mayor» o «Menor» es obligatoria, y también indicar si el cambio afecta a «Material ya entregado» o «Material por entregar».
+        evidencia: ["src/classes/DatosPCServicio.cls:409", "src/classes/DatosPCServicio.cls:415"]
+        # posible defecto: si no se elige clasificación, la pantalla borra la incidencia en plazo en lugar de la clasificación (src/forms/Form_subfrmDatosPC_Impacto.cls:103).
+      - id: CON-F069-R05
+        descripcion: Las incidencias en seguridad, fiabilidad, mantenibilidad, intercambiabilidad, vida útil o almacén y funcionamiento son casillas opcionales.
+        evidencia: ["src/forms/Form_subfrmDatosPC_Impacto.cls:93"]
+      - id: CON-F069-R06
+        descripcion: Quién puede grabar y el avance guiado posterior son los de la propuesta de cambio (CON-F066-R04).
+        evidencia: ["src/classes/WorkflowServicio.cls:1638"]
+        # posible defecto: el botón usa una variable que esta pantalla no declara, por lo que con la declaración obligatoria de variables «Grabar» puede fallar al ejecutarse (src/forms/Form_subfrmDatosPC_Impacto.cls:122).
+
+  - id: CON-F070
+    area: Fichas de datos
+    nombre: Grabar los motivos de una concesión o desviación
+    descripcion: >-
+      El técnico indica las características afectadas, el coste, si la no conformidad es mayor o menor,
+      el efecto en la fecha de entrega y si el suministrador es la autoridad de diseño.
+    formulario: MOTIVOS
+    control: Grabar
+    tipo: botón
+    roles: [Técnico, Calidad, Administrador]
+    resultado: >-
+      El impacto de la no conformidad queda guardado.
+    tecnico:
+      formulario: Form_subfrmDatosCDCA_Impacto
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_subfrmDatosCDCA_Impacto.cls:117", "src/classes/DatosCDCAServicio.cls:420"]
+    reglas:
+      - id: CON-F070-R01
+        descripcion: El coste es obligatorio («Debe seleccionar una opcion para 'Coste'.») con las opciones «Aumentará», «Disminuirá» o «No Variará».
+        evidencia: ["src/classes/DatosCDCAServicio.cls:436"]
+      - id: CON-F070-R02
+        descripcion: Hay que indicar si la no conformidad es «Mayor» o «Menor» («Debe seleccionar si la 'NC Considerada' es Mayor o Menor.»).
+        evidencia: ["src/classes/DatosCDCAServicio.cls:437"]
+      - id: CON-F070-R03
+        descripcion: Hay que indicar si el suministrador es la autoridad de diseño («Debe indicar si 'El suministrador es la Autoridad de Diseno' (Si/No).»).
+        evidencia: ["src/classes/DatosCDCAServicio.cls:438"]
+      - id: CON-F070-R04
+        descripcion: Las características afectadas, el efecto en la fecha de entrega y la identificación de la autoridad de diseño son opcionales.
+        evidencia: ["src/forms/Form_subfrmDatosCDCA_Impacto.cls:71"]
+      - id: CON-F070-R05
+        descripcion: Mientras la pestaña no se ha grabado nunca, las opciones de coste, clasificación y autoridad de diseño aparecen sin marcar.
+        evidencia: ["src/forms/Form_subfrmDatosCDCA_Impacto.cls:30"]
+      - id: CON-F070-R06
+        descripcion: Quién puede grabar y el avance guiado posterior son los de la propuesta de cambio (CON-F066-R04).
+        evidencia: ["src/classes/WorkflowServicio.cls:1519"]
+
+  - id: CON-F071
+    area: Fichas de datos
+    nombre: Grabar los motivos de una concesión o desviación de subcontratista
+    descripcion: >-
+      El técnico indica las características afectadas, el coste, si la no conformidad es mayor o menor,
+      el efecto en la fecha de entrega y si el suministrador es la autoridad de diseño.
+    formulario: MOTIVOS
+    control: Grabar
+    tipo: botón
+    roles: [Técnico, Calidad, Administrador]
+    resultado: >-
+      El impacto de la no conformidad queda guardado.
+    tecnico:
+      formulario: Form_subfrmDatosCDCASUB_Impacto
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_subfrmDatosCDCASUB_Impacto.cls:87", "src/classes/DatosCDCASUBServicio.cls:238"]
+    reglas:
+      - id: CON-F071-R01
+        descripcion: Si falta el coste, la clasificación o la indicación de autoridad de diseño se muestra «Complete campos obligatorios de Impacto.».
+        evidencia: ["src/classes/DatosCDCASUBServicio.cls:250"]
+      - id: CON-F071-R02
+        descripcion: Quién puede grabar y el avance guiado posterior son los de la propuesta de cambio (CON-F066-R04).
+        evidencia: ["src/classes/WorkflowServicio.cls:1578"]
+
+  - id: CON-F072
+    area: Fichas de datos
+    nombre: Enviar la parte técnica a Calidad desde la ficha
+    descripcion: >-
+      Después de que el técnico graba DETALLE Y DESCRIPCIÓN o MOTIVOS, la ficha le guía a la pestaña que
+      falta y, cuando las dos están completas, le ofrece enviar la solicitud a Calidad.
+    formulario: DETALLE Y DESCRIPCIÓN | MOTIVOS
+    control: Grabar
+    tipo: automático
+    roles: [Técnico]
+    resultado: >-
+      Si el técnico acepta, la solicitud pasa a «Modificación» y se avisa al responsable de Calidad.
+    tecnico:
+      formulario: Form_frmDatosPC
+      control: GuardarDesdeSubform
+      evidencia:
+        - "src/forms/Form_frmDatosPC.cls:287"
+        - "src/forms/Form_frmDatosCDCA.cls:280"
+        - "src/forms/Form_frmDatosCDCASUB.cls:384"
+    reglas:
+      - id: CON-F072-R01
+        descripcion: Solo se aplica en «Desarrollo técnico» y no justo después de que Calidad asigne la tarea desde GENERAL.
+        evidencia: ["src/forms/Form_frmDatosPC.cls:287"]
+      - id: CON-F072-R02
+        descripcion: Si faltan los motivos y la solicitud no viene de un rechazo, se muestra «Se ha guardado correctamente, completa el apartado 'Motivos'» y se abre MOTIVOS.
+        evidencia: ["src/forms/Form_frmDatosPC.cls:300"]
+      - id: CON-F072-R03
+        descripcion: Si se grabó MOTIVOS y falta el detalle, se muestra «Se ha guardado correctamente, completa el apartado 'Detalle y Descripcion'» y se abre DETALLE Y DESCRIPCIÓN.
+        evidencia: ["src/forms/Form_frmDatosPC.cls:307"]
+      - id: CON-F072-R04
+        descripcion: Si ambas pestañas están completas se pregunta «¿Desea finalizar su tarea y enviar la solicitud para que Calidad la revise? (Esto avanzará de Estado)»; si acepta, la solicitud pasa a «Modificación» y se muestra «Tarea completada. La solicitud ha sido enviada a Calidad.».
+        evidencia: ["src/forms/Form_frmDatosPC.cls:314"]
+      - id: CON-F072-R05
+        descripcion: Si no acepta, la ficha pasa a la otra pestaña técnica.
+        evidencia: ["src/forms/Form_frmDatosPC.cls:323"]
+      - id: CON-F072-R06
+        descripcion: El paso a «Modificación» aplica las condiciones y avisos del avance de estado (CON-F030-R04, CON-F030-R05 y CON-F030-R14 a CON-F030-R21).
+        evidencia: ["src/forms/Form_frmDatosPC.cls:320"]
+
+  - id: CON-F073
+    area: Fichas de datos
+    nombre: Registrar los cambios del técnico tras un rechazo
+    descripcion: >-
+      Mientras hay un rechazo de Calidad activo, cada vez que se graba la parte técnica se anota el valor
+      anterior y el nuevo de cada campo.
+    formulario: DETALLE Y DESCRIPCIÓN | MOTIVOS
+    control: Grabar
+    tipo: automático
+    roles: []
+    resultado: >-
+      Calidad puede ver qué ha cambiado el técnico (CON-F034) y el técnico puede volver a enviar la solicitud.
+    tecnico:
+      formulario: ""
+      control: JsonHelper.RegistrarCambio
+      evidencia:
+        - "src/classes/DatosPCServicio.cls:311"
+        - "src/classes/DatosPCServicio.cls:421"
+        - "src/classes/DatosCDCAServicio.cls:364"
+        - "src/classes/DatosCDCASUBServicio.cls:210"
+    reglas:
+      - id: CON-F073-R01
+        descripcion: Se anotan todos los campos de DETALLE Y DESCRIPCIÓN y de MOTIVOS con su valor antes y después de grabar.
+        evidencia: ["src/classes/DatosPCServicio.cls:340", "src/classes/DatosPCServicio.cls:434"]
+      - id: CON-F073-R02
+        descripcion: Una solicitud rechazada se considera cambiada en cuanto hay algún campo anotado.
+        evidencia: ["src/classes/WorkflowServicio.cls:3425"]
+
+  - id: CON-F074
+    area: Fichas de datos
+    nombre: Grabar la aprobación del suministrador de una propuesta de cambio
+    descripcion: >-
+      Calidad indica quién estudia y aprueba la propuesta en la oficina técnica y quién la remite en
+      representación del suministrador.
+    formulario: APROBACIÓN SUMINSTRADOR
+    control: Grabar
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Las firmas del suministrador quedan guardadas.
+    tecnico:
+      formulario: Form_subfrmDatosPC_AprobacionSuministrador
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_subfrmDatosPC_AprobacionSuministrador.cls:64", "src/classes/DatosPCServicio.cls:493"]
+    reglas:
+      - id: CON-F074-R01
+        descripcion: Son obligatorios el nombre de «10. Estudiado y aprobado (Oficina Técnica del Suministrador)» y el de «11. Remitido en representación del Suministrador», cada uno con su mensaje.
+        evidencia: ["src/classes/DatosPCServicio.cls:499"]
+      - id: CON-F074-R02
+        descripcion: Si los nombres no han cambiado se muestra «No se han detectado cambios.».
+        evidencia: ["src/forms/Form_frmDatosPC.cls:247"]
+      - id: CON-F074-R03
+        descripcion: Si la solicitud está en «Modificación», tras grabar se actualiza la lista de comprobaciones de la gestión.
+        evidencia: ["src/forms/Form_frmDatosPC.cls:258"]
+
+  - id: CON-F075
+    area: Fichas de datos
+    nombre: Grabar la aprobación del suministrador de una concesión o desviación
+    descripcion: >-
+      Calidad indica los responsables de ingeniería y de calidad y, si aplican, los de producción,
+      diseño y el representante del suministrador.
+    formulario: APROBACIÓN SUMINSTRADOR
+    control: Grabar
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Las aprobaciones del suministrador quedan guardadas.
+    tecnico:
+      formulario: Form_subfrmDatosCDCA_AprobacionSuministrador
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_subfrmDatosCDCA_AprobacionSuministrador.cls:93", "src/classes/DatosCDCAServicio.cls:508"]
+    reglas:
+      - id: CON-F075-R01
+        descripcion: Son obligatorios los nombres de los responsables de ingeniería y de calidad, cada uno con su mensaje.
+        evidencia: ["src/classes/DatosCDCAServicio.cls:512"]
+      - id: CON-F075-R02
+        descripcion: Producción, diseño y representante del suministrador tienen un selector «Aplica»; con «Sí» el nombre es obligatorio y con «No» el campo se vacía y se bloquea.
+        evidencia: ["src/forms/Form_subfrmDatosCDCA_AprobacionSuministrador.cls:171", "src/classes/DatosCDCAServicio.cls:516"]
+      - id: CON-F075-R03
+        descripcion: Al abrir, cada «Aplica» aparece en «Sí» si su nombre ya tiene valor.
+        evidencia: ["src/forms/Form_frmDatosCDCA.cls:469"]
+      - id: CON-F075-R04
+        descripcion: Se aplican el control de cambios y la actualización de la lista de comprobaciones de la propuesta de cambio (CON-F074-R02 y CON-F074-R03).
+        evidencia: ["src/forms/Form_frmDatosCDCA.cls:241", "src/forms/Form_frmDatosCDCA.cls:251"]
+
+  - id: CON-F076
+    area: Fichas de datos
+    nombre: Grabar la aprobación del suministrador de una concesión o desviación de subcontratista
+    descripcion: >-
+      Calidad indica los responsables de ingeniería y de calidad y, si aplican, los de producción,
+      diseño y el representante del suministrador.
+    formulario: APROBACIÓN SUMINSTRADOR
+    control: Grabar
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Las aprobaciones del suministrador quedan guardadas.
+    tecnico:
+      formulario: Form_subfrmDatosCDCASUB_AprobacionSuministrador
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_subfrmDatosCDCASUB_AprobacionSuministrador.cls:85", "src/classes/DatosCDCASUBServicio.cls:317"]
+    reglas:
+      - id: CON-F076-R01
+        descripcion: Son obligatorias las firmas de ingeniería («Firma Ingeniería obligatoria.») y de calidad («Firma Calidad obligatoria.»).
+        evidencia: ["src/classes/DatosCDCASUBServicio.cls:319"]
+      - id: CON-F076-R02
+        descripcion: Los selectores «Aplica» vacían y bloquean el nombre cuando se marca «No».
+        evidencia: ["src/forms/Form_subfrmDatosCDCASUB_AprobacionSuministrador.cls:142"]
+        # posible defecto: a diferencia de la concesión o desviación, con «Aplica» en «Sí» no se exige el nombre de producción, diseño ni representante (src/classes/DatosCDCASUBServicio.cls:317).
+
+  - id: CON-F077
+    area: Fichas de datos
+    nombre: Cargar las firmas predeterminadas del suministrador
+    descripcion: >-
+      Rellena las firmas principales con el jefe de proyecto y el responsable de Calidad configurado, sin
+      grabarlas, y permite volver a los valores anteriores.
+    formulario: APROBACIÓN SUMINSTRADOR
+    control: Cargar Datos Predeterminados
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Los nombres propuestos quedan en pantalla hasta que se pulse «Grabar» o «Restaurar».
+    tecnico:
+      formulario: Form_subfrmDatosPC_AprobacionSuministrador
+      control: cmdCargarDefaults / cmdRestaurarDatos
+      evidencia:
+        - "src/forms/Form_subfrmDatosPC_AprobacionSuministrador.cls:74"
+        - "src/forms/Form_subfrmDatosCDCA_AprobacionSuministrador.cls:107"
+        - "src/forms/Form_subfrmDatosCDCASUB_AprobacionSuministrador.cls:96"
+    reglas:
+      - id: CON-F077-R01
+        descripcion: En la propuesta de cambio, la oficina técnica recibe el jefe de proyecto con «(Jefe de Proyecto)» y el representante del suministrador el jefe de Calidad configurado con «(Responsable de Calidad)».
+        evidencia: ["src/classes/DatosPCServicio.cls:118"]
+      - id: CON-F077-R02
+        descripcion: En las concesiones o desviaciones, el responsable de ingeniería recibe el jefe de proyecto y el responsable de calidad el jefe de Calidad configurado, con los mismos sufijos.
+        evidencia: ["src/classes/DatosCDCAServicio.cls:263", "src/classes/DatosCDCASUBServicio.cls:114"]
+      - id: CON-F077-R03
+        descripcion: El sufijo no se repite si el nombre ya lo lleva.
+        evidencia: ["src/classes/DatosPCServicio.cls:871"]
+      - id: CON-F077-R04
+        descripcion: Tras cargar, el botón se desactiva y aparece «Restaurar», que devuelve los nombres anteriores.
+        evidencia: ["src/forms/Form_subfrmDatosPC_AprobacionSuministrador.cls:98", "src/forms/Form_subfrmDatosPC_AprobacionSuministrador.cls:113"]
+
+  - id: CON-F078
+    area: Fichas de datos
+    nombre: Grabar el dictamen RAC de una propuesta de cambio
+    descripcion: >-
+      Calidad anota el nombre y el código del RAC; las observaciones del RAC llegan con la importación del
+      Word y no se escriben a mano.
+    formulario: RAC
+    control: Grabar
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Los datos del RAC quedan guardados.
+    tecnico:
+      formulario: Form_subfrmDatosPC_DictamenRAC
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_subfrmDatosPC_DictamenRAC.cls:36", "src/classes/DatosPCServicio.cls:518"]
+    reglas:
+      - id: CON-F078-R01
+        descripcion: Salvo que el dictamen sea de rechazo, el código es obligatorio («El Codigo RAC es obligatorio.»).
+        evidencia: ["src/classes/DatosPCServicio.cls:526"]
+      - id: CON-F078-R02
+        descripcion: El campo «Observaciones» está siempre bloqueado.
+        evidencia: ["src/forms/Form_subfrmDatosPC_DictamenRAC.cls:23"]
+      - id: CON-F078-R03
+        descripcion: Para que el dictamen cuente como completo (CON-F030-R07, CON-F041-R04) hacen falta el código y el nombre.
+        evidencia: ["src/classes/DatosPCServicio.cls:788"]
+      - id: CON-F078-R04
+        descripcion: Grabar no cambia el estado de la solicitud y muestra «Datos guardados correctamente.».
+        evidencia: ["src/forms/Form_frmDatosPC.cls:221"]
+
+  - id: CON-F079
+    area: Fichas de datos
+    nombre: Grabar el dictamen RAC de una concesión o desviación
+    descripcion: >-
+      Calidad anota el nombre y el código del RAC; las observaciones llegan con la importación del Word.
+    formulario: RAC
+    control: Grabar
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Los datos del RAC quedan guardados.
+    tecnico:
+      formulario: Form_subfrmDatosCDCA_DictamenRAC
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_subfrmDatosCDCA_DictamenRAC.cls:51", "src/classes/DatosCDCAServicio.cls:547"]
+    reglas:
+      - id: CON-F079-R01
+        descripcion: Salvo que el dictamen sea de rechazo, son obligatorios el código («El campo 'Código' es obligatorio.») y el nombre («El campo 'Nombre' es obligatorio.»).
+        evidencia: ["src/classes/DatosCDCAServicio.cls:555"]
+      - id: CON-F079-R02
+        descripcion: Las observaciones están bloqueadas y grabar no cambia el estado (CON-F078-R02 y CON-F078-R04).
+        evidencia: ["src/forms/Form_subfrmDatosCDCA_DictamenRAC.cls:24", "src/forms/Form_frmDatosCDCA.cls:215"]
+
+  - id: CON-F080
+    area: Fichas de datos
+    nombre: Grabar el dictamen RAC de una concesión o desviación de subcontratista
+    descripcion: >-
+      Calidad anota el RAC delegado (parte 2) y el nombre del RAC delegador (parte 4); las observaciones
+      llegan con la importación del Word.
+    formulario: RAC
+    control: Grabar
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Los datos del RAC delegado y del delegador quedan guardados.
+    tecnico:
+      formulario: Form_subfrmDatosCDCASUB_DictamenRAC
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_subfrmDatosCDCASUB_DictamenRAC.cls:61", "src/classes/DatosCDCASUBServicio.cls:327"]
+    reglas:
+      - id: CON-F080-R01
+        descripcion: Salvo que el dictamen sea de rechazo, el código es obligatorio («Código RAC obligatorio.»).
+        evidencia: ["src/classes/DatosCDCASUBServicio.cls:335"]
+      - id: CON-F080-R02
+        descripcion: Las observaciones del RAC delegado y del delegador están siempre bloqueadas; el nombre del delegador se puede editar.
+        evidencia: ["src/forms/Form_subfrmDatosCDCASUB_DictamenRAC.cls:29"]
+
+  - id: CON-F081
+    area: Fichas de datos
+    nombre: Cargar el RAC asignado al expediente
+    descripcion: >-
+      Rellena el nombre del RAC con el RAC asignado al expediente, sin grabarlo, y permite volver al valor
+      anterior.
+    formulario: RAC
+    control: Cargar Datos Predeterminados
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      El nombre del RAC queda propuesto hasta que se pulse «Grabar» o «Restaurar».
+    tecnico:
+      formulario: Form_subfrmDatosPC_DictamenRAC
+      control: cmdCargarDatosPredeterminados / cmdRestaurarDatos
+      evidencia:
+        - "src/forms/Form_subfrmDatosPC_DictamenRAC.cls:49"
+        - "src/forms/Form_subfrmDatosCDCA_DictamenRAC.cls:64"
+        - "src/forms/Form_subfrmDatosCDCASUB_DictamenRAC.cls:74"
+    reglas:
+      - id: CON-F081-R01
+        descripcion: Si el expediente no tiene RAC asignado se muestra «Este expediente no tiene un RAC asignado. Hable con el gestor de expedientes».
+        evidencia: ["src/forms/Form_subfrmDatosPC_DictamenRAC.cls:66"]
+      - id: CON-F081-R02
+        descripcion: «Restaurar» devuelve el nombre anterior.
+        evidencia: ["src/forms/Form_subfrmDatosPC_DictamenRAC.cls:81"]
+      - id: CON-F081-R03
+        descripcion: En la de subcontratista el RAC asignado se propone como RAC delegado (parte 2), no como delegador.
+        evidencia: ["src/forms/Form_subfrmDatosCDCASUB_DictamenRAC.cls:90"]
+
+  - id: CON-F082
+    area: Fichas de datos
+    nombre: Registrar la decisión final de una propuesta de cambio
+    descripcion: >-
+      Calidad anota la aprobación de la autoridad de diseño y la decisión del órgano de contratación,
+      con su firmante y observaciones.
+    formulario: AUTORIDAD COMPETENTE
+    control: Grabar
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Con «NO APROBADO» la decisión queda guardada; con «APROBADO» se inicia el cierre (CON-F085).
+    tecnico:
+      formulario: Form_subfrmDatosPC_DecisionFinal
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_subfrmDatosPC_DecisionFinal.cls:94", "src/classes/DatosPCServicio.cls:562"]
+    reglas:
+      - id: CON-F082-R01
+        descripcion: La decisión («APROBADO» o «NO APROBADO») es obligatoria; si falta se muestra «El campo 'Decisión Final' es obligatorio.».
+        evidencia: ["src/forms/Form_subfrmDatosPC_DecisionFinal.cls:101"]
+      - id: CON-F082-R02
+        descripcion: Los nombres y observaciones de la autoridad de diseño y del firmante son opcionales.
+        evidencia: ["src/classes/DatosPCServicio.cls:565"]
+      - id: CON-F082-R03
+        descripcion: En una solicitud «Aprobada» la pestaña queda en solo lectura.
+        evidencia: ["src/forms/Form_subfrmDatosPC_DecisionFinal.cls:40"]
+      - id: CON-F082-R04
+        descripcion: El nombre de la autoridad de diseño grabado no se vuelve a mostrar al abrir la pestaña.
+        evidencia: ["src/forms/Form_frmDatosPC.cls:642"]
+        # posible defecto: al cargar la ficha el nombre de la autoridad de diseño no se pasa a la pantalla, así que aparece vacío y un nuevo grabado lo borra (src/forms/Form_frmDatosPC.cls:645).
+
+  - id: CON-F083
+    area: Fichas de datos
+    nombre: Registrar la decisión final de una concesión o desviación
+    descripcion: >-
+      Calidad anota la decisión del órgano de contratación con su firmante y observaciones.
+    formulario: AUTORIDAD COMPETENTE
+    control: Grabar
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Con «NO APROBADO» la decisión queda guardada; con «APROBADO» se inicia el cierre (CON-F085).
+    tecnico:
+      formulario: Form_subfrmDatosCDCA_DecisionFinal
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_subfrmDatosCDCA_DecisionFinal.cls:68", "src/classes/DatosCDCAServicio.cls:591"]
+    reglas:
+      - id: CON-F083-R01
+        descripcion: La decisión es obligatoria («El campo 'Decisión Final' es obligatorio.») y la pestaña queda en solo lectura en una solicitud «Aprobada».
+        evidencia: ["src/forms/Form_subfrmDatosCDCA_DecisionFinal.cls:75", "src/forms/Form_subfrmDatosCDCA_DecisionFinal.cls:28"]
+
+  - id: CON-F084
+    area: Fichas de datos
+    nombre: Registrar la decisión final de una concesión o desviación de subcontratista
+    descripcion: >-
+      Calidad anota la decisión del suministrador principal con su firmante y observaciones.
+    formulario: AUTORIDAD COMPETENTE
+    control: Grabar
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Con «NO APROBADO» la decisión queda guardada; con «APROBADO» se inicia el cierre (CON-F085).
+    tecnico:
+      formulario: Form_subfrmDatosCDCASUB_DecisionFinal
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_subfrmDatosCDCASUB_DecisionFinal.cls:59", "src/classes/DatosCDCASUBServicio.cls:365"]
+    reglas:
+      - id: CON-F084-R01
+        descripcion: La decisión la toma el suministrador principal («DECISIÓN (Suministrador Principal)»), es obligatoria («El campo 'Decisión Final' es obligatorio.») y la pestaña queda en solo lectura en una solicitud «Aprobada».
+        evidencia: ["src/forms/Form_subfrmDatosCDCASUB_DecisionFinal.form.txt:775", "src/forms/Form_subfrmDatosCDCASUB_DecisionFinal.cls:64", "src/forms/Form_subfrmDatosCDCASUB_DecisionFinal.cls:27"]
+
+  - id: CON-F085
+    area: Formalización y cierre
+    nombre: Aprobar y cerrar la solicitud con el documento de cierre
+    descripcion: >-
+      Al grabar la decisión «APROBADO», la ficha pide el PDF de cierre firmado, lo archiva y aprueba la
+      solicitud.
+    formulario: AUTORIDAD COMPETENTE
+    control: Grabar
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      La decisión queda guardada, el PDF queda adjunto como documento de formalización y la solicitud pasa a «Aprobada».
+    tecnico:
+      formulario: Form_frmDatosPC
+      control: ProcesarCierreFormalizacion
+      evidencia:
+        - "src/forms/Form_frmDatosPC.cls:744"
+        - "src/forms/Form_frmDatosCDCA.cls:669"
+        - "src/forms/Form_frmDatosCDCASUB.cls:483"
+        - "src/classes/WorkflowServicio.cls:3334"
+    reglas:
+      - id: CON-F085-R01
+        descripcion: Se avisa con «Para APROBAR definitivamente la solicitud, es obligatorio adjuntar el documento de Cierre.» y se puede cancelar.
+        evidencia: ["src/forms/Form_frmDatosPC.cls:753"]
+      - id: CON-F085-R02
+        descripcion: Se pide un PDF con «SELECCIONE EL PDF DE CIERRE (Obligatorio)»; si no se elige se muestra «Operacion cancelada. No se ha seleccionado el documento firmado.».
+        evidencia: ["src/forms/Form_frmDatosPC.cls:760", "src/forms/Form_frmDatosPC.cls:769"]
+      - id: CON-F085-R03
+        descripcion: En una única operación se graba la decisión, se quitan los documentos anteriores de formalización y cierre, se adjunta el PDF elegido y la solicitud pasa a «Aprobada» con su aviso por correo.
+        evidencia: ["src/classes/WorkflowServicio.cls:3360", "src/classes/WorkflowServicio.cls:3373", "src/classes/WorkflowServicio.cls:3383"]
+        # posible defecto: los documentos anteriores se quitan de la lista pero sus ficheros no se borran de la carpeta (src/classes/WorkflowServicio.cls:3376).
+      - id: CON-F085-R04
+        descripcion: Al terminar se muestra «Solicitud APROBADA y CERRADA correctamente. El documento de Cierre ha sido archivado.».
+        evidencia: ["src/forms/Form_frmDatosPC.cls:791"]
