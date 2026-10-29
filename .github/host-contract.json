@@ -52,6 +52,12 @@
       "class": "host-enforced"
     }
   ],
+  "governed_path": {
+    "enabled": true,
+    "actors": [
+      "dys-orquestador[bot]"
+    ]
+  },
   "merge_methods": {
     "allow_merge_commit": {
       "declared": true,
