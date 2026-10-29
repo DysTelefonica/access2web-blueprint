@@ -1,6 +1,6 @@
 # access2web-blueprint
 
-<!-- personal-skills:slice:access2web-blueprint @ va23573b -->
+<!-- personal-skills:slice:access2web-blueprint @ v037c761 -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -63,10 +63,10 @@ La tabla de skills del `AGENTS.md` del consumer es un subconjunto curado; el reg
 
 ### Presupuesto de revisión
 
-- Toda PR se mantiene bajo el **presupuesto de revisión de 400 líneas** (`additions + deletions`), comprobado por el gate `assets/pr-size/check_pr_size.py` del patrón (HR-33), que lee la etiqueta `size:exception` (`--labels` o `$PR_LABELS`).
+- Toda PR se mantiene bajo el **presupuesto de revisión de 400 líneas** (`additions + deletions`), comprobado en CI por la regla A1 de `assets/pr-contract/check_pr_contract.py` del patrón (HR-33), el único check de tamaño, con una sola cuenta (#1396); `assets/pr-size/check_pr_size.py` es la medida local.
 - 400 líneas es **techo de revisión, no techo de tamaño**: a partir de esa cifra la revisión pasa de atenta a vistazo. La justificación completa vive en el `CONTRIBUTING.md` de cada consumer; este partial la enuncia sin duplicar.
 - **Lectura obligatoria antes de abrir una PR:** el `CONTRIBUTING.md` del consumer (HR-71). Recoge cómo se aplica aquí el flujo del catálogo: issue primero, asistencia de IA declarada en el cuerpo, etiquetas, presupuesto, commits por unidad, comprobaciones previas y automáticas, enlace a la issue. Sin `CONTRIBUTING.md` el gate `docs_manifest` falla cerrado en fase 5.
-- La única excepción al presupuesto es la **etiqueta `size:exception`** (decisión del dueño del repo, 2026-10-15). El campo `size-exception-reason:` del cuerpo del PR **no existe**, y `SIZE_EXCEPTION_APPROVER` tampoco: `check_pr_size.py` lee la etiqueta (`--labels` o `$PR_LABELS`) y no comprueba quién la puso.
+- La única excepción al presupuesto es la **etiqueta `size:exception`** (decisión del dueño del repo, 2026-10-15). El campo `size-exception-reason:` del cuerpo del PR **no existe**, y `SIZE_EXCEPTION_APPROVER` tampoco: la regla A1 lee la etiqueta del PR y no comprueba quién la puso.
 - La etiqueta `size:exception` la aplica **solo el mantenedor**, nunca el agente, y solo cuando partir el PR rompería `main` (no por tests, refactor o cambio menor). Antes de aplicarla, el agente responde las cuatro preguntas de `## Excepción de tamaño` en el cuerpo de la PR; sin las cuatro respuestas la etiqueta no se pide. El merge sigue siendo una decisión humana.
 - **Borrar siempre es divisible.** Retirar tests, código muerto o configuración nunca justifica `size:exception`: se borra por trozos de ≤400 líneas, aunque sea dentro del mismo fichero, dejando `main` en verde entre trozos; lo que comparten los trozos (helpers, fixtures) se borra en el último.
 - Cuando la diff supera el presupuesto, el orden de escape es: (1) partir por unidad de trabajo, (2) encadenar PRs vía `chained-pr`, (3) `size:exception` (la pone el mantenedor) como último recurso. Si la excepción se vuelve habitual, el problema está en el troceado del issue, no en el presupuesto.
@@ -137,6 +137,27 @@ partial solo enuncia la invariante y no lo duplica.
 
 - La estrategia de merge (`--squash` o `--no-ff`) es decisión del consumer; ambas son válidas. La **invariante** es que la rama remota sobreviva al merge, no la forma concreta del commit en `main`.
 
+### Origen de la imagen de producción (invariante)
+
+Donde la imagen se construye y se despliega fuera del CI (registro inalcanzable
+desde el CI, despliegue con `oc`), **producción se despliega solo desde una imagen
+cuyo contenido casa con el manifiesto de un tag de release en `main`**.
+
+- **Se construye desde el tag publicado, nunca desde una copia local.**
+  `build_release_image.py` del asset `image-provenance` clona el tag en limpio,
+  rechaza tag ausente, fuera de `main` o árbol distinto del contenido git, y pone
+  `org.opencontainers.image.revision` = commit del tag.
+- **Se despliega solo tras el gate.** `image_provenance.py gate` compara el árbol
+  de la imagen con el manifiesto que el workflow de release subió a la GitHub
+  Release y muestra el diff frente a la imagen en ejecución. Cualquier diferencia,
+  incluida una que solo afecte a los finales de línea, rechaza el despliegue; un
+  resultado no medible también (exit 2).
+- **El parámetro vive en el repositorio**: `.github/image-provenance.json` (árbol
+  desplegable, exclusiones, imagen, repositorio, clúster). Su existencia activa el
+  job `provenance` del workflow de release.
+- Quien tenga permisos de `oc` puede saltarse el gate; hacerlo es un acto explícito
+  que se documenta en la issue del despliegue, nunca un atajo.
+
 ### Propiedad de recursos de contenedores (invariante)
 
 La máquina donde trabaja un agente puede ser la misma que sirve producción.
@@ -163,7 +184,7 @@ Un agente solo para o borra los contenedores, volúmenes y redes que haya creado
 
 ### Disciplina de revisión
 
-- El CI corre **una vez, en la PR**: no hay `strict` ni cola de merge, y la rama base puede avanzar durante la vida del PR sin invalidar los checks. La red de seguridad después del merge es el workflow de `push` a `main` más un nightly diario.
+- El CI corre **una vez, en la PR**: no hay `strict` ni cola de merge, y la rama base puede avanzar durante la vida del PR sin invalidar los checks. La red de seguridad después del merge es el workflow de `push` a `main` más un nightly diario. El merge gobernado lo aplica con `merge_freshness` en `.github/host-contract.json`: ausente u `off` (por defecto), un PR atrasado con los checks requeridos en verde se fusiona sin actualizar la rama, y el CI que despacha `post_merge_dispatch` verifica el árbol fusionado (sin `post_merge_dispatch` el atraso sigue bloqueando); `required` solo para el consumer cuyo deploy compara el árbol fusionado con el revisado (APAP_WEB, #426). Con cualquier valor, si la PR y la base cambiaron el mismo fichero de `.github/workflows/`, hay que actualizar la rama: `GITHUB_TOKEN` no puede escribir workflows (#783, #1397).
 - **Rojo en CI pisa todo el merge.** Regla humana: el revisor no debe pulsar merge con ningún check rojo, ni siquiera si el rojo parece trivial. Complemento técnico: `repository-delivery-governance` HR-7 + `deterministic-quality-harness` HR-1 fail-loud atajan el escenario cuando hay branch protection automatizada.
 - **El agente no usa `--admin` ni fuerza el merge.** La decisión de fusionar es humana (HR-50) y la regla anterior es inseparable del bypass: el agente que detecte un merge bloqueado por checks rojos, por la protección del ruleset o por un SHA desactualizado **lo escala al mantenedor** (issue, comentario en el PR o canal acordado), nunca aplica `--admin`, `--force` ni equivalente en CLI; y, por la API, nunca envía `merge_method: admin` ni `sha` distinto al verificado por CI. El job de merge gobernado del consumer (HR-50, `assets/runner-controls/check_governed_merge.py`) aplica `merge` o `squash` con la identidad del bot sobre el SHA verificado, sin bandera admin; si una PR exige admin para entrar, el flujo está roto y se arregla el flujo, no se salta.
 - El job `merge-ready` signal-only que consulta `mergeable` y `reviewDecision` está retirado (no cazaba defectos): sin `strict` ni cola de merge, la barrera la aplica el ruleset del host y la red de seguridad post-merge (`push` a `main` + nightly diario), y replicarla en CI duplicaba la señal sin añadir garantía.
@@ -211,6 +232,7 @@ Cada invariante de este partial se ancla a una skill específica del catálogo o
 - Evidencia e2e por PR (UI exige flujo e2e o exención justificada; gate
   `e2e-evidence` parametrizado, fail-closed) → `ci-pattern` asset `e2e-evidence` (#425).
 - Propiedad de recursos de contenedores (solo lo propio con prefijo; producción con `*-prod-*`, volumen con nombre y etiqueta de protección) → DysTelefonica/team-skills#454, por el incidente de APAP_WEB del 2026-10-12: un agente borró la base de producción con `docker rm -fv` porque el contenedor tenía nombre de prueba y volumen anónimo. Invariante de flota sin skill fuente.
+- Origen de la imagen de producción (manifiesto de release, build desde el tag, gate antes de `oc set image`) → `ci-pattern` HR-83, asset `image-provenance` (DysTelefonica/team-skills#1389), por el incidente de `DysTelefonica/cadete`: producción ejecutó `wcdy/cadete:2026.07.29B`, construida desde un commit nunca subido mientras su tag apuntaba a otro commit de `main`, y un hotfix desde `main` borró sus funciones (DysTelefonica/cadete#748, investigación DysTelefonica/cadete#755).
 - Anti-slop → `ai-slop-discipline` (catálogo, T1 universal).
 - CodeGraph preflight → upstream `engineering-workflow` líneas 64-71; `codegraph-usage` HR-1, HR-2.
 - Conventional commits + castellano peninsular en artefactos + sin atribución IA → `personal-skills/AGENTS.md` raíz de flota.
