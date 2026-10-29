@@ -267,6 +267,38 @@ class ManifestSealTests(unittest.TestCase):
             self.assertEqual(
                 (repo / ".governance-manifest.json").read_text(encoding="utf-8"), before)
 
+    def test_seal_keeps_the_order_of_the_manifest(self):
+        """#1415: re-sellar un hash no reordena el manifiesto; el diff que se
+        revisa es la línea del hash, no el fichero entero."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._drifted_repo(tmp)
+            path = repo / ".governance-manifest.json"
+            manifest = json.loads(path.read_text(encoding="utf-8"))
+            manifest["files"] = dict(reversed(list(manifest["files"].items())))
+            unsorted = {k: manifest[k] for k in reversed(list(manifest))}
+            path.write_text(json.dumps(unsorted, indent=2) + "\n", encoding="utf-8")
+            before = path.read_text(encoding="utf-8").splitlines()
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            after = path.read_text(encoding="utf-8").splitlines()
+            self.assertEqual(len(after), len(before))
+            changed = [b for a, b in zip(before, after, strict=True) if a != b]
+            self.assertEqual(len(changed), 1, changed)
+            self.assertIn("scripts/check_pr_size.py", changed[0])
+
+    def test_seal_with_out_keeps_the_order_of_the_manifest(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._drifted_repo(tmp)
+            path = repo / ".governance-manifest.json"
+            manifest = json.loads(path.read_text(encoding="utf-8"))
+            unsorted = {k: manifest[k] for k in reversed(list(manifest))}
+            path.write_text(json.dumps(unsorted, indent=2) + "\n", encoding="utf-8")
+            out_path = Path(tmp) / "sello.json"
+            code, out, err = run_cli(["manifest", "seal", str(repo), "--out", str(out_path)])
+            self.assertEqual(code, 0, out + err)
+            sealed = json.loads(out_path.read_text(encoding="utf-8"))
+            self.assertEqual(list(sealed), list(unsorted))
+
     def test_seal_is_idempotent(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo, _ = self._drifted_repo(tmp)

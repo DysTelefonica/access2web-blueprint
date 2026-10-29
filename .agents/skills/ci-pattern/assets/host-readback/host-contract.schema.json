@@ -58,6 +58,11 @@
       "uniqueItems": true,
       "description": "Optional. Basenames of workflows to redispatch via workflow_dispatch after a governed merge (DysTelefonica/team-skills#817, HR-817). Each basename must exist as a workflow with `on: workflow_dispatch:` in the repo; if not, the merge fails closed before PUT /merge."
     },
+    "merge_freshness": {
+      "type": "string",
+      "enum": ["off", "required"],
+      "description": "Optional, default off (DysTelefonica/team-skills#1397). off: CI runs once, on the PR; a PR behind its base with green required checks merges and the post-merge CI (post_merge_dispatch) verifies the integrated tree; without post_merge_dispatch being behind still blocks. required: a PR behind its base is blocked (#787) and an integrated tree that differs from the verified head exits 5. The workflow-overlap refusal (#783) applies with either value; any other value fails closed (exit 2)."
+    },
     "governed_path": {
       "type": "object",
       "description": "Optional. Exige que lo que llega a una rama protegida por contrato haya entrado por el camino gobernado (DysTelefonica/team-skills#909). Un PR mergeado en una rama protegida cumple si su `merged_by.login` esta en `actors` (ruta fuerte: la plataforma la firma) o si su commit de merge casa con `merge_marker` (ruta debil, corroboracion). Sin la clave, o con `enabled: false`, el veredicto del detective no cambia. Un contrato inservible falla cerrado con exit 2 (HR-3).",

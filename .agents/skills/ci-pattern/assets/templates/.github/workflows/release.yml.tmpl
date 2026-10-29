@@ -16,6 +16,11 @@
 #   verify     comprueba que lo publicado corresponde al tag. Es una
 #              comprobación de salida, no una batería de tests: el CI ya
 #              quedó verde en preflight y no se repite aquí.
+#   provenance solo si existe el fichero de IMAGE_PROVENANCE_CONFIG (consumers
+#              que construyen la imagen fuera del CI, HR-83): sube a la
+#              release el manifiesto sha256 del árbol desplegable en el
+#              commit del tag, contra el que el gate de despliegue compara
+#              la imagen antes de `oc set image`.
 
 name: Release
 
@@ -47,6 +52,9 @@ env:
   # 4. Solo si su endpoint de salud no está donde el script lo espera: la
   #    verificación de salida lee de aquí la revisión desplegada (parámetro 6).
   # RELEASE_HEALTH_URL: ${{ vars.RELEASE_HEALTH_URL }}
+  # 5. Parámetros de procedencia de imagen (HR-83, asset `image-provenance`).
+  #    Sin ese fichero el job `provenance` no publica nada y lo dice.
+  IMAGE_PROVENANCE_CONFIG: .github/image-provenance.json
 
 jobs:
   preflight:
@@ -134,3 +142,32 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
         run: "$RELEASE_VERIFY_SCRIPT"
+
+  provenance:
+    name: manifiesto de procedencia de la imagen
+    needs: release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      # Subir un asset a la release del tag; nada más.
+      contents: write
+    steps:
+      - name: Checkout del tag exacto
+        # actions/checkout v4.4.0
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+
+      - name: Manifiesto del árbol desplegable como asset de la release (HR-83)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ ! -f "$IMAGE_PROVENANCE_CONFIG" ]; then
+            echo "Sin $IMAGE_PROVENANCE_CONFIG: este consumer no declara imágenes construidas fuera del CI."
+            exit 0
+          fi
+          python3 "$CI_PATTERN_ROOT/assets/image-provenance/image_provenance.py" manifest --config "$IMAGE_PROVENANCE_CONFIG" --repo . --tag "$GITHUB_REF_NAME" --out image-provenance-manifest.json
+          gh release upload "$GITHUB_REF_NAME" image-provenance-manifest.json --clobber

@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 # Fuente única del presupuesto (#931): la regla A1 la comparte con pr-size.
+# A1 es el único check de tamaño en CI (#1396): pr-size es medida local.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "budget"))
 from vendored_budget import (  # noqa: E402
     VENDORED_ROOTS,

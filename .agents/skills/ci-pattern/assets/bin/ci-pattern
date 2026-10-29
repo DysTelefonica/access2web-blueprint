@@ -110,9 +110,10 @@ Comandos:
                              [--policy <path> --changed-files <file>] [--json]
                              Mismos veredictos que la CI sobre un PR abierto,
                              reusando los gates en proceso; corre antes de push.
-  adoption check (--phase N | --all) <repo>
+  adoption check (--phase N | --only-phase N | --all) <repo>
                              Gate por fase del contrato de adopción: fases del
                              porting-guide verificadas sobre el árbol real.
+                             --phase N mide 0..N; --only-phase N, solo la N.
   dependabot render <repo>  Imprime el `.github/dependabot.yml` que el canon
                              genera desde la declaración `dependabot` del contrato.
   dependabot check <repo>   Dice si el del consumer coincide con ese.
@@ -222,8 +223,11 @@ def load_manifest(repo, allow_legacy=False):
 
 
 def write_manifest(repo, manifest):
+    # Sin ordenar las claves: re-sellar cambia la línea del hash y conserva el
+    # orden del manifiesto, así el diff que se revisa es solo el sello (#1415).
     path = Path(repo) / MANIFEST_NAME
-    path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8",
+                    newline="\n")
     return path
 
 
@@ -1280,8 +1284,8 @@ def cmd_manifest_seal(args):
     if out_path:
         target = Path(out_path)
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(json.dumps(sealed, indent=2, sort_keys=True) + "\n",
-                          encoding="utf-8")
+        target.write_text(json.dumps(sealed, indent=2) + "\n",
+                          encoding="utf-8", newline="\n")
     else:
         write_manifest(repo, sealed)
     destino = out_path or str(repo / MANIFEST_NAME)
@@ -1560,8 +1564,8 @@ def cmd_report_friction(args):
 ADOPTION_HELP = """\
 adoption — generación y gate por fase de la adopción (#276, #279)
 
-uso: ci-pattern adoption check (--phase N | --all) <repo> [--config-from <dir>]
-     [--seal-baseline <dir>]
+uso: ci-pattern adoption check (--phase N | --only-phase N | --all) <repo>
+     [--config-from <dir>] [--seal-baseline <dir>]
      ci-pattern adoption generate-doc <repo> --out <ruta>
 
 check: valida el contrato .github/ci-pattern-adoption.json del consumer y
@@ -1569,6 +1573,13 @@ verifica cada fase del porting-guide contra el árbol real. Exit: 0 la fase
 cumple · 1 hallazgos nombrando cada artefacto o condición que falta · 2
 contrato ilegible, esquema inválido, sujeto vacío o entrada ausente de un
 gate.
+
+--phase N mide las fases 0..N en orden y se detiene en la primera que falla:
+ninguna fase pasa si la anterior no pasa. --only-phase N mide la fase N y
+ninguna otra (#1396): es la forma de un job de CI que mide su fase cuando cada
+fase previa tiene su propio job (p. ej. `docs-gates` con --only-phase 5 junto a
+`governance-seals` con --phase 3), de modo que una causa da un solo rojo. La
+medición completa (nightly, cierre de adopción) sigue usando --phase N o --all.
 
 --config-from <dir>: el contrato de adopción que GOBIERNA el gate sale de <dir>
 (un checkout de la base del PR, sin credenciales); el estado que se mide sigue
@@ -2455,12 +2466,14 @@ def _integrated_tree_lines():
         "en el resumen del job, con `merge commit`, `merge tree`, `verified head`, "
         "`head tree` y `verdict`.",
         "- Códigos de salida del merge gobernado:",
-        "  - `0`: Merge hecho y el árbol integrado es el del head verificado.",
+        "  - `0`: Merge hecho y el árbol integrado es el del head verificado o, con la "
+        "frescura apagada, incluye commits de la base que verifica el CI post-merge.",
         "  - `1`: El contrato no se cumplió: no se fusiona.",
         "  - `2`: Fallo cerrado: el entorno o la medición no son salvables.",
         "  - `3`: Merge hecho, las issues enlazadas no se cerraron.",
         "  - `4`: Merge hecho, el dispatch post-merge falló.",
-        "  - `5`: Merge hecho, **el árbol integrado no es el árbol que revisó el CI**.",
+        "  - `5`: Merge hecho, **el árbol integrado no es el árbol que revisó el CI** "
+        '(solo con `merge_freshness: "required"`).',
         "- Si sale `5`, el merge no se deshace. Compare el commit de merge con el head "
         "verificado (`git diff <head> <merge>`), compruebe si la base se movió entre la "
         "comprobación y el merge, corrija y vuelva a fusionar: un rerun no sirve.",
@@ -2657,7 +2670,9 @@ def _cmd_adoption_generate_doc(rest):
     target = Path(out)
     if str(target.parent) and not target.parent.exists():
         target.parent.mkdir(parents=True)
-    target.write_text(text, encoding="utf-8")
+    # LF en todas las plataformas: el modo texto de Windows escribe CRLF y el PR
+    # cuenta el documento entero como reescrito (#1408).
+    target.write_text(text, encoding="utf-8", newline="\n")
     print(f"documento operativo escrito: {target}")
     return EXIT_OK
 
@@ -3968,7 +3983,7 @@ def _manifest_slice_sha(repo):
 
 
 def _check_agents_structure(repo, contract):
-    """#341-S3 (HR-55): estructura del AGENTS en fases 3 y 5.
+    """#341-S3 (HR-55): estructura del AGENTS en la fase 3 (#1396: no en la 5).
 
     AGENTS = titulo + bloque propagado (marcas personal-skills:slice:* con
     sha256 identico a slice_block_sha256 del .team-skills.yaml) + como
@@ -4671,7 +4686,9 @@ def _phase_findings(repo, n, decl, contract, seal=None):
     if n == 4:
         return _check_gates_phase(repo, decl, contract, seal) + _check_review_budget(repo)
     if n == 5:
-        return (_check_docs_phase(repo, decl, seal) + _check_agents_structure(repo, contract)
+        # #1396: HR-55 (_check_agents_structure) la mide la fase 3; repetirla
+        # aquí daba dos rojos por una causa.
+        return (_check_docs_phase(repo, decl, seal)
                 + _check_docs_map(repo, contract) + _check_architecture(repo, contract)
                 + _check_docs_manifest(repo, contract)
                 + _check_docs_links(repo, contract)
@@ -5100,7 +5117,8 @@ def cmd_adoption(args):
         return EXIT_OK
     if args[:1] != ["check"]:
         raise UsageError(
-            "adoption: subcomando desconocido; use 'adoption check (--phase N | --all) <repo>' "
+            "adoption: subcomando desconocido; use "
+            "'adoption check (--phase N | --only-phase N | --all) <repo>' "
             "o 'adoption generate-doc <repo> --out <ruta>'."
         )
     rest = args[1:]
@@ -5108,6 +5126,7 @@ def cmd_adoption(args):
         print(ADOPTION_HELP.rstrip())
         return EXIT_OK
     phase_raw = None
+    only_raw = None
     all_phases = False
     repo = None
     config_from = None
@@ -5119,6 +5138,11 @@ def cmd_adoption(args):
             if i + 1 >= len(rest):
                 raise UsageError("--phase requiere un número de fase (0..%d)" % (ADOPTION_PHASES - 1))
             phase_raw = rest[i + 1]
+            i += 2
+        elif arg == "--only-phase":
+            if i + 1 >= len(rest):
+                raise UsageError(f"--only-phase requiere un número de fase (0..{ADOPTION_PHASES - 1})")
+            only_raw = rest[i + 1]
             i += 2
         elif arg == "--all":
             all_phases = True
@@ -5142,8 +5166,8 @@ def cmd_adoption(args):
             i += 1
     if repo is None:
         raise UsageError("adoption check: falta <repo>")
-    if all_phases == (phase_raw is not None):
-        raise UsageError("adoption check: exactamente una de --phase N o --all")
+    if [all_phases, phase_raw is not None, only_raw is not None].count(True) != 1:
+        raise UsageError("adoption check: exactamente una de --phase N, --only-phase N o --all")
     if not Path(repo).is_dir():
         raise UsageError(f"repo inexistente o no es un directorio: {repo}")
     if seal_baseline is not None and not Path(seal_baseline).is_dir():
@@ -5152,9 +5176,13 @@ def cmd_adoption(args):
     if all_phases:
         last = ADOPTION_PHASES - 1
     else:
-        if not re.fullmatch(r"[0-6]", phase_raw):
-            raise UsageError(f"--phase debe ser un número 0..{ADOPTION_PHASES - 1}; se recibió {phase_raw!r}")
-        last = int(phase_raw)
+        option, raw = ("--phase", phase_raw) if phase_raw is not None else ("--only-phase", only_raw)
+        if not re.fullmatch(r"[0-6]", raw):
+            raise UsageError(f"{option} debe ser un número 0..{ADOPTION_PHASES - 1}; se recibió {raw!r}")
+        last = int(raw)
+    # #1396: --only-phase mide la fase N y ninguna otra; cada fase previa la
+    # mide su propio job, de modo que una causa da un solo rojo.
+    first = last if only_raw is not None else 0
 
     # #1270: la configuracion que gobierna el gate puede venir de la BASE
     # (--config-from); el estado que se mide sigue siendo el del repo.
@@ -5180,7 +5208,7 @@ def cmd_adoption(args):
         seal = _seal_baseline(seal_baseline) if seal_baseline else None
     blocked_at = None
     findings = []
-    for n in range(last + 1):
+    for n in range(first, last + 1):
         phase_findings = _phase_findings(Path(repo), n, contract["phases"].get(str(n)),
                                          contract, seal)
         if phase_findings:
@@ -5197,6 +5225,9 @@ def cmd_adoption(args):
         for finding in findings:
             print(f"hallazgo: {finding}", file=sys.stderr)
         return EXIT_FINDINGS
+    if only_raw is not None:
+        print(f"adoption check: fase {last} en verde sobre {repo}")
+        return EXIT_OK
     print(f"adoption check: fases 0..{last} en verde sobre {repo}")
     return EXIT_OK
 

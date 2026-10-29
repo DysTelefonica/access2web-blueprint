@@ -25,6 +25,7 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 SKILL_ROOT = Path(__file__).resolve().parents[3]
@@ -2696,6 +2697,16 @@ class DocsPhaseTests(unittest.TestCase):
             code, out, _ = run_cli(["adoption", "check", "--phase", "5", str(repo)])
             self.assertEqual(code, 0, out)
 
+    def test_generated_doc_is_written_with_lf_line_endings(self):
+        """#1408: en Windows el modo texto escribía CRLF y el tramo 2 contaba
+        el documento entero como reescrito (450 líneas frente a 9)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.docs_repo(tmp)
+            out = repo / "docs" / "ci-pattern-flow.md"
+            code, _, err = run_cli(["adoption", "generate-doc", str(repo), "--out", str(out)])
+            self.assertEqual(code, 0, err)
+            self.assertNotIn(b"\r", out.read_bytes())
+
     def test_docs_phase_missing_doc_is_finding(self):
         with tempfile.TemporaryDirectory() as tmp:
             contract = complete_contract(upto=5)
@@ -2787,6 +2798,103 @@ class DocsPhaseTests(unittest.TestCase):
                 ["adoption", "generate-doc", str(repo),
                  "--out", str(repo / "docs" / "ci-pattern-flow.md")])
             self.assertEqual(code, 2, err)
+
+
+class OnlyPhaseTests(unittest.TestCase):
+    """#1396: `--only-phase N` mide la fase N y ninguna otra, para que cada
+    job de CI mida su fase una sola vez; `--phase N` sigue midiendo 0..N."""
+
+    def docs_repo(self, tmp):
+        return DocsPhaseTests.docs_repo(self, tmp)
+
+    def break_phase_two(self, repo):
+        contract = json.loads(
+            (repo / ".github" / "ci-pattern-adoption.json").read_text(encoding="utf-8"))
+        contract["phases"]["2"] = {}
+        write_contract(repo, contract)
+
+    def measured_phases(self, argv):
+        seen = []
+        real = CLI._phase_findings
+
+        def spy(repo, n, *rest):
+            seen.append(n)
+            return real(repo, n, *rest)
+
+        with unittest.mock.patch.object(CLI, "_phase_findings", spy):
+            code, out, err = run_cli(argv)
+        return seen, code, out, err
+
+    def test_only_phase_measures_exactly_that_phase(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.docs_repo(tmp)
+            seen, code, out, err = self.measured_phases(
+                ["adoption", "check", "--only-phase", "5", str(repo)])
+            self.assertEqual((seen, code), ([5], 0), err)
+            self.assertEqual(out, f"adoption check: fase 5 en verde sobre {repo}\n")
+
+    def test_cumulative_phase_still_measures_zero_to_n(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.docs_repo(tmp)
+            seen, code, out, err = self.measured_phases(
+                ["adoption", "check", "--phase", "5", str(repo)])
+            self.assertEqual((seen, code), ([0, 1, 2, 3, 4, 5], 0), err)
+            self.assertEqual(out, f"adoption check: fases 0..5 en verde sobre {repo}\n")
+
+    def test_a_phase_two_cause_is_not_red_in_the_phase_five_job(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.docs_repo(tmp)
+            self.break_phase_two(repo)
+            code, out, _ = run_cli(
+                ["adoption", "check", "--only-phase", "5", str(repo)])
+            self.assertEqual(code, 0)
+            self.assertEqual(out, f"adoption check: fase 5 en verde sobre {repo}\n")
+            code, out, err = run_cli(
+                ["adoption", "check", "--only-phase", "2", str(repo)])
+            self.assertEqual((code, out), (1, ""))
+            self.assertEqual(
+                [line for line in err.splitlines() if line.startswith("hallazgo:")],
+                ["hallazgo: fase 2: falta 'env_isolation' con 'root' (árbol de tests "
+                 "del consumer) y 'allowlist' (JSON versionado): el gate EJECUTA "
+                 "env-isolation (HR-28) sobre el árbol; una declaración con evidencia "
+                 "en un .md no lo prueba"])
+            self.assertNotIn("no evaluadas", err)
+
+    def test_cumulative_phase_still_stops_at_the_first_red(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.docs_repo(tmp)
+            self.break_phase_two(repo)
+            code, out, err = run_cli(["adoption", "check", "--phase", "5", str(repo)])
+            self.assertEqual((code, out), (1, ""))
+            self.assertIn("adoption check: fases 3..5 no evaluadas: ninguna fase pasa "
+                          "si la anterior no pasa.\n", err)
+            self.assertIn("hallazgo: fase 2: falta 'env_isolation'", err)
+
+    def test_agents_structure_is_measured_once_on_the_way_to_phase_five(self):
+        # HR-55 es de la fase 3 (job governance-seals): la fase 5 no la repite.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.docs_repo(tmp)
+            _, _, err = run_cli(["adoption", "check", "--phase", "5", str(repo)])
+            self.assertEqual(err.count("HR-55: agents_md no declarado"), 1, err)
+            _, _, err = run_cli(["adoption", "check", "--only-phase", "5", str(repo)])
+            self.assertNotIn("HR-55", err)
+
+    def test_phase_options_are_mutually_exclusive(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.docs_repo(tmp)
+            for argv in (["--phase", "5", "--only-phase", "5"],
+                         ["--only-phase", "5", "--all"]):
+                code, out, err = run_cli(["adoption", "check", *argv, str(repo)])
+                self.assertEqual((code, out), (2, ""))
+                self.assertIn("adoption check: exactamente una de --phase N, "
+                              "--only-phase N o --all", err)
+
+    def test_only_phase_out_of_range_is_usage_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.docs_repo(tmp)
+            code, out, err = run_cli(["adoption", "check", "--only-phase", "7", str(repo)])
+            self.assertEqual((code, out), (2, ""))
+            self.assertIn("--only-phase debe ser un número 0..6; se recibió '7'", err)
 
 
 class DocsLocationTests(unittest.TestCase):
