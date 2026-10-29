@@ -5,11 +5,18 @@ qué hacer cuando sale en rojo (#1265).
 
 ## Qué mide
 
-El merge gobernado ya garantiza que el árbol integrado es el árbol que
-revisó el CI: un PR atrasado respecto de su base se bloquea antes de
-fusionar (`freshness_findings`, `behind_by > 0` → exit 1) y el merge se
-pide con el SHA verificado del head, de modo que si la cabeza cambia entre
-la comprobación y el PUT la API responde 409 y el fallo es cerrado.
+Con `merge_freshness: "required"` en `.github/host-contract.json`, el merge
+gobernado garantiza que el árbol integrado es el árbol que revisó el CI: un
+PR atrasado respecto de su base se bloquea antes de fusionar
+(`freshness_findings`, `behind_by > 0` → exit 1) y el merge se pide con el
+SHA verificado del head, de modo que si la cabeza cambia entre la
+comprobación y el PUT la API responde 409 y el fallo es cerrado.
+
+Por defecto (`merge_freshness` ausente u `off`, #1397) el CI corre una vez,
+en la PR: un PR atrasado se fusiona y el árbol integrado incluye commits de
+la base que el PR no traía. Ese árbol lo verifica el CI que despacha
+`post_merge_dispatch` sobre la base, más el nightly; sin `post_merge_dispatch`
+el atraso sigue bloqueando, porque nada verificaría el árbol fusionado.
 
 Esa garantía era una conclusión, no un registro. Desde #1265, el asset
 `assets/runner-controls/check_governed_merge.py` la mide y la publica: tras
@@ -43,18 +50,20 @@ El veredicto se imprime en la salida del job y se escribe en
 ```
 
 En el caso de drift, la última línea dice que el árbol integrado **no** es
-el árbol que revisó el CI.
+el árbol que revisó el CI. Con la frescura apagada, el drift no es rojo: la
+última línea dice `the integrated tree includes base commits the PR did not
+carry; the post-merge CI on '<base>' verifies it` y el código es 0.
 
 ## Códigos de salida
 
 | Código | Significado |
 |---|---|
-| 0 | Merge hecho y el árbol integrado es el del head verificado. |
+| 0 | Merge hecho y el árbol integrado es el del head verificado o, con la frescura apagada, incluye commits de la base que verifica el CI post-merge. |
 | 1 | El contrato no se cumplió: no se fusiona. |
 | 2 | Fallo cerrado: el entorno o la medición no son salvables. |
 | 3 | Merge hecho, las issues enlazadas no se cerraron. |
 | 4 | Merge hecho, el dispatch post-merge falló. |
-| 5 | Merge hecho, **el árbol integrado no es el árbol que revisó el CI**. |
+| 5 | Merge hecho, **el árbol integrado no es el árbol que revisó el CI** (solo con `merge_freshness: "required"`). |
 
 El 5 es post-merge: el merge no se deshace, porque no se puede. El rojo no
 significa "el merge falló" sino "la revisión integrada no tiene la

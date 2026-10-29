@@ -30,6 +30,11 @@ history; any API failure, or a breakdown that still does not match the PR's
 the event (a newer push), the event is superseded: it exits 0, because the newer
 event measures the new head (#1113).
 
+Not a CI gate (#1396). In CI the budget is enforced once, by rule A1 of
+``assets/pr-contract/check_pr_contract.py``, with one count: running both gave
+two red checks with two different numbers on the same PR. This script stays as
+a local measurement and as the size diagnostic of ``pr preflight --draft``.
+
 The only override is the ``size:exception`` label, applied by the
 maintainer (never by the author, never read from the PR body). With
 ``--event`` it is read live from the API (``GET issues/N/labels``), because the

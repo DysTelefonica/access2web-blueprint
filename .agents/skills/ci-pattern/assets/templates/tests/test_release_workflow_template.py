@@ -108,6 +108,20 @@ class TestReleaseWorkflowTemplate(unittest.TestCase):
         self.assertNotIn("pytest", commands)
         self.assertNotIn("run-unit-suites", commands)
 
+    # --- HR-83: manifiesto de procedencia de imagen como asset de la release ---
+
+    def test_el_job_provenance_sube_el_manifiesto_del_tag_si_hay_config(self):
+        job = self.doc["jobs"]["provenance"]
+        self.assertEqual(job["needs"], "release")
+        self.assertEqual(job["permissions"], {"contents": "write"})
+        commands = run_commands(job)
+        self.assertIn('if [ ! -f "$IMAGE_PROVENANCE_CONFIG" ]', commands)
+        self.assertIn("image-provenance/image_provenance.py\" manifest", commands)
+        self.assertIn('--tag "$GITHUB_REF_NAME"', commands)
+        self.assertIn('gh release upload "$GITHUB_REF_NAME" image-provenance-manifest.json',
+                      commands)
+        self.assertNotIn("actions/upload-artifact", self.text)
+
     def test_el_script_de_verificacion_compara_lo_desplegado_con_el_sha_del_tag(self):
         script = VERIFY_TMPL.read_text(encoding="utf-8")
         proc = subprocess.run(["bash", "-n", str(VERIFY_TMPL)], capture_output=True, text=True)

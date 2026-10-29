@@ -1,4 +1,4 @@
-# Plantilla canonica del workflow de contrato de PR de un consumer (#1133, #1270).
+# Plantilla canonica del workflow de contrato de PR de un consumer (#1133, #1270, #1396).
 #
 # El paso de pr-contract necesita los datos del rango y el MAPA DE ORIGENES:
 # sin el, el gate cuenta el arbol vendorizado (`.agents/skills/`) para el
@@ -6,16 +6,23 @@
 # `size:exception` a mano (#931, #1088). Con el, el arbol vendorizado no cuenta
 # y un renombrado desde una ruta de autoria sigue contando.
 #
-# Modelo de dos jobs, en `pull_request_target` (#1270). En `pull_request` el
-# workflow que corre es el de la cabeza del PR, asi que el secret del catalogo
-# no puede estar en un job de PR: lo resuelve el job `canon`, que hace checkout
-# de la BASE (de donde salen la accion y el sello) y publica el patron como
-# artefacto. El job del gate consume ese artefacto, no tiene ningun secreto y
-# lee la cabeza del PR como datos.
+# Un solo job, en `pull_request_target` (#1270, #1396). En `pull_request` el
+# workflow que corre es el de la cabeza del PR; aqui corre el de la base. El
+# patron es la copia vendorizada en el checkout de la BASE
+# (`base/.agents/skills/ci-pattern`), como en los jobs del `ci.yml` del
+# consumer: el PR no elige el codigo que lo mide, no hace falta el token del
+# catalogo y ningun artefacto se interpone, asi que una cuota de facturacion de
+# artefactos no puede saltar el check requerido (DysTelefonica/cadete#752). La
+# cabeza del PR se lee como datos.
 #
-# El veredicto se publica como check run sobre la cabeza del PR: un run
-# de `pull_request_target` se atribuye a la base y su check run no bloquea el
-# merge.
+# Por que el gate sale dos veces en los checks del PR (#1396, S9): un run de
+# `pull_request_target` adjunta su check run NATIVO (`pr-contract`) al commit
+# de la BASE (`GITHUB_SHA`, el ultimo commit de la rama base), no a la cabeza
+# del PR. El merge gobernado lee los check runs de la CABEZA
+# (`repos/{repo}/commits/{head_sha}/check-runs`, `check_push_compliance`), asi
+# que el unico que satisface el check requerido es el ESPEJO que el ultimo paso
+# publica sobre la cabeza con `CONTEXT` "<workflow> / <job>"; el nativo es
+# informativo. El espejo usa solo `GITHUB_TOKEN`, nunca el secreto del catalogo.
 #
 # La plantilla deriva de las del patron (`assets/templates/README.md`); el
 # consumer cambia la politica de contrato de PR (`.github/pr-contract.policy.json`).
@@ -38,49 +45,13 @@ concurrency:
   cancel-in-progress: ${{ github.event.action == 'synchronize' }}
 
 jobs:
-  canon:
-    name: canon
-    # El UNICO job que puede leer el token del catalogo (#1270). No ejecuta
-    # codigo del PR: el checkout es de la BASE, de donde salen la accion y el
-    # sello, asi que el PR no puede tocar la una ni elegir el commit que se
-    # mide. El patron se publica como artefacto para los jobs del gate.
-    runs-on: [self-hosted, Linux, mi-consumer]
-    timeout-minutes: 10
-    steps:
-      - name: Check out the base (trusted action and seal)
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          ref: ${{ github.event.pull_request.base.sha || github.sha }}
-          persist-credentials: false
-
-      # La accion y el sello son los de la base. El token vive SOLO en este paso.
-      - name: Resolve the canon at the seal
-        uses: ./.github/actions/pattern-at-pin
-        with:
-          token: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
-
-      # El canon viaja como tarball: un artifact no conserva el bit de
-      # ejecucion, y el canon lo necesita (`assets/bin/ci-pattern`).
-      - name: Pack the canon
-        run: |
-          set -euo pipefail
-          tar -czf "$RUNNER_TEMP/canon.tar.gz" -C "$PATTERN_DIR" .
-
-      - name: Publish the canon
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: canon
-          path: ${{ runner.temp }}/canon.tar.gz
-          if-no-files-found: error
-
   pr-contract:
     name: pr-contract
-    needs: canon
     runs-on: [self-hosted, Linux, consumer]
     timeout-minutes: 5
     env:
-      # El canon publicado por el job `canon`.
-      PATTERN_DIR: .canon
+      # El patron vendorizado en la BASE: ni token ni artefacto (#1396).
+      PATTERN_DIR: base/.agents/skills/ci-pattern
     steps:
       # La cabeza del PR entra como DATOS: el gate la lee, no la ejecuta.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -90,26 +61,16 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      # La CONFIGURACION que gobierna el gate sale de la BASE (#1270): sin esto
-      # un PR podria reescribir su propia politica y debilitar el gate. Checkout
-      # sin credenciales: la base no necesita ninguna.
+      # La CONFIGURACION que gobierna el gate y el PATRON que lo ejecuta salen
+      # de la BASE (#1270, #1396): sin esto un PR podria reescribir su propia
+      # politica o el gate que la aplica. Checkout sin credenciales: la base no
+      # necesita ninguna.
       - name: Check out the base (trusted configuration)
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.event.pull_request.base.sha }}
           path: base
           persist-credentials: false
-
-      - name: Get the canon
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-        with:
-          name: canon
-          path: .canon
-
-      - name: Unpack the canon
-        run: |
-          set -euo pipefail
-          tar -xzf .canon/canon.tar.gz -C .canon
 
       # Los datos del rango (merge-base: BASE...HEAD) y el mapa de origenes.
       # El mapa lo produce `vendored_budget.origins_for`; el gate no ejecuta
@@ -147,14 +108,10 @@ jobs:
             --tracked-files  .ci-pr-tracked \
             --origins-file   .ci-pr-origins
 
-      # Un run de `pull_request_target` se atribuye a la BASE: su check run no
-      # aparece en el PR ni satisface un check requerido. El veredicto se publica
-      # como CHECK RUN sobre la CABEZA del PR, que es lo que bloquea el merge
-      # (`checks: write`).
-      # El NOMBRE del check run es el que exige el contrato del consumer
-      # (`pr-contract / pr-contract`, P28): es el nombre que GitHub da al job.
-      # Con otro nombre, el check requerido no aparece en la cabeza del PR y el
-      # gate no bloquea el merge.
+      # El espejo del veredicto sobre la CABEZA del PR: el check run nativo de
+      # este job queda en la base y el merge gobernado no lo ve (ver cabecera).
+      # El NOMBRE es el que exige el contrato del consumer
+      # (`pr-contract / pr-contract`, P28).
       - name: Publish the verdict as a check run on the PR head
         if: always()
         env:
