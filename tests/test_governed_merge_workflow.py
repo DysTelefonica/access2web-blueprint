@@ -35,14 +35,8 @@ def _job() -> dict:
 
 
 def _step(job: dict, needle: str) -> dict:
-    matches = [
-        s
-        for s in job["steps"]
-        if needle in str(s.get("uses", "")) + str(s.get("run", ""))
-    ]
-    assert len(matches) == 1, (
-        f"expected exactly one step with {needle!r}, got {len(matches)}"
-    )
+    matches = [s for s in job["steps"] if needle in str(s.get("uses", "")) + str(s.get("run", ""))]
+    assert len(matches) == 1, f"expected exactly one step with {needle!r}, got {len(matches)}"
     return matches[0]
 
 
