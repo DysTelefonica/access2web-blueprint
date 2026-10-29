@@ -14,6 +14,7 @@ include_skills:
   - deterministic-quality-harness
   - github-roles
   - governed-delivery
+  - release-notes
   - repository-delivery-governance
   - worktree-reorg-per-project
 
