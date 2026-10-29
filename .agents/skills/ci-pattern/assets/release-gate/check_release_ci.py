@@ -36,6 +36,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -146,18 +148,62 @@ def evaluate(runs: list[dict], workflow_ref: str, tag: str) -> tuple[int, str]:
                      f"(id {run.get('id')}, {url}) terminó en success sobre el commit del tag")
 
 
+_SLUG = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
+
+
+def resolve_subject(repo_arg: str, git_dir_arg: str | None) -> tuple[str, str]:
+    """(repositorio git local, OWNER/NAME del host) a partir de `--repo`.
+
+    `--repo OWNER/NAME` nombra el repo del host y el git local sale de
+    `--git-dir` (por defecto el directorio actual). `--repo <directorio>`
+    nombra el git local y el host sale de `GITHUB_REPOSITORY`, que Actions
+    define siempre. Un directorio no es un OWNER/NAME: con él solo, la ruta de
+    la API no resuelve, así que sin `GITHUB_REPOSITORY` el gate no mide."""
+    if _SLUG.fullmatch(repo_arg) and not Path(repo_arg).is_dir():
+        return (git_dir_arg or "."), repo_arg
+    slug = os.environ.get("GITHUB_REPOSITORY", "").strip()
+    if not _SLUG.fullmatch(slug):
+        raise GateError(  # noqa: TRY003
+            f"--repo {repo_arg!r} is a directory and GITHUB_REPOSITORY is not OWNER/NAME; "
+            "pass --repo OWNER/NAME (and --git-dir for the local checkout)")
+    return (git_dir_arg or repo_arg), slug
+
+
+def tag_push_runs(runs: list[dict], tag: str, workflow_ref: str) -> list[dict]:
+    """Solo los runs que lanzó el push del propio tag (`--tag-run`). Sin ninguno,
+    el gate no mide: un run de otro evento sobre el mismo commit no lo prueba."""
+    mine = [r for r in runs if r.get("event") == "push" and r.get("head_branch") == tag]
+    if not mine:
+        raise GateError(  # noqa: TRY003
+            f"no hay ningún run de {workflow_ref} lanzado por el push del tag "
+            f"{tag}; un run de otro evento sobre el mismo commit no prueba "
+            "lo que se publica")
+    return mine
+
+
 def main(argv, fetch_runs=None) -> int:
     _pin_output_encoding()
     ap = argparse.ArgumentParser(description="Release CI gate (HR-19).")
-    ap.add_argument("--repo", required=True)
+    ap.add_argument("--repo", required=True,
+                    help="OWNER/NAME del host, o el directorio del checkout (el host sale "
+                         "entonces de GITHUB_REPOSITORY)")
+    ap.add_argument("--git-dir", default=None,
+                    help="checkout local donde se resuelve el tag (por defecto: el "
+                         "directorio de --repo, o el actual con --repo OWNER/NAME)")
     ap.add_argument("--tag", required=True)
     ap.add_argument("--workflow", default="ci.yml",
                     help="basename del workflow de CI del consumer (por defecto ci.yml)")
+    ap.add_argument("--tag-run", action="store_true",
+                    help="medir solo el run que lanzó el push del tag (event push, "
+                         "head_branch = tag), no el más nuevo sobre el commit")
     args = ap.parse_args(argv)
     client = fetch_runs or globals()["fetch_runs"]
     try:
-        sha = tag_commit(args.repo, args.tag)
-        runs = client(args.repo, args.workflow, sha)
+        git_dir, api_repo = resolve_subject(args.repo, args.git_dir)
+        sha = tag_commit(git_dir, args.tag)
+        runs = client(api_repo, args.workflow, sha)
+        if args.tag_run:
+            runs = tag_push_runs(runs, args.tag, args.workflow)
         code, message = evaluate(runs, args.workflow, args.tag)
     except GateError as exc:
         code, message = EXIT_UNMEASURABLE, f"RELEASE-CI ERROR: {exc}"

@@ -222,12 +222,23 @@ def load_manifest(repo, allow_legacy=False):
     return manifest
 
 
+def manifest_newline(repo):
+    """El final de línea del manifiesto en disco: CRLF si ya lo usa, si no LF.
+    Re-sellar no cambia los finales de línea de un manifiesto commiteado con
+    CRLF; el diff que se revisa es solo el sello (#1415)."""
+    try:
+        data = (Path(repo) / MANIFEST_NAME).read_bytes()
+    except OSError:
+        return "\n"
+    return "\r\n" if b"\r\n" in data else "\n"
+
+
 def write_manifest(repo, manifest):
     # Sin ordenar las claves: re-sellar cambia la línea del hash y conserva el
     # orden del manifiesto, así el diff que se revisa es solo el sello (#1415).
     path = Path(repo) / MANIFEST_NAME
     path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8",
-                    newline="\n")
+                    newline=manifest_newline(repo))
     return path
 
 
@@ -1285,7 +1296,7 @@ def cmd_manifest_seal(args):
         target = Path(out_path)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(json.dumps(sealed, indent=2) + "\n",
-                          encoding="utf-8", newline="\n")
+                          encoding="utf-8", newline=manifest_newline(repo))
     else:
         write_manifest(repo, sealed)
     destino = out_path or str(repo / MANIFEST_NAME)
@@ -3096,6 +3107,29 @@ def _referenced_governance_scripts(repo, refs, declared=()):
     return found
 
 
+def _on_disk_relpath(repo, path):
+    """Ruta relativa de ``path`` con los nombres que tiene en disco, o None si
+    no existe. En un sistema de ficheros que no distingue mayúsculas, `glob`
+    devuelve el segmento literal escrito como el patrón
+    (`pull_request_template.md` para `PULL_REQUEST_TEMPLATE.md`), y esa ruta
+    no casa con el inventario, que nombra el fichero real."""
+    current = Path(repo)
+    parts = []
+    for part in path.relative_to(repo).parts:
+        try:
+            names = os.listdir(current)
+        except OSError:
+            return None
+        if part not in names:
+            matches = [n for n in names if n.casefold() == part.casefold()]
+            if len(matches) != 1:
+                return None
+            part = matches[0]
+        parts.append(part)
+        current = current / part
+    return "/".join(parts) if current.is_file() else None
+
+
 def _scan_governed_paths(repo, declared=()):
     """Artefactos de gobierno PRESENTES en el árbol: rutas del catálogo
     (glob como dato) y scripts descubiertos por REFERENCIA (#312)."""
@@ -3104,7 +3138,10 @@ def _scan_governed_paths(repo, declared=()):
     for pattern in patterns:
         for p in repo.glob(pattern):
             if p.is_file():
-                found.add(p.relative_to(repo).as_posix())
+                # Sin nombre resoluble en disco (nombre ambiguo, error de
+                # lectura) se queda la ruta del glob: mejor un hallazgo de más
+                # que un artefacto sin medir.
+                found.add(_on_disk_relpath(repo, p) or p.relative_to(repo).as_posix())
     for rel in _referenced_governance_scripts(repo, refs, declared):
         if (repo / rel).is_file():
             found.add(rel)

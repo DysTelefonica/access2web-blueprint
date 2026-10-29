@@ -4362,6 +4362,57 @@ class AdoptionContractSchemaTests(unittest.TestCase):
             "nombre")
 
 
+class GovernedPathCasingTests(unittest.TestCase):
+    """Auditoría de CI/CD de cadete 2026-10-29, hallazgo 7: en un sistema de
+    ficheros que no distingue mayúsculas (Windows), el patrón literal
+    `.github/pull_request_template.md` casa con `PULL_REQUEST_TEMPLATE.md` y
+    `glob` devuelve la ruta del patrón. La fase 0 la daba por artefacto sin
+    inventario aunque el inventario nombra el fichero real."""
+
+    def _repo(self, tmp):
+        repo = Path(tmp) / "repo"
+        (repo / ".github").mkdir(parents=True)
+        (repo / ".github" / "PULL_REQUEST_TEMPLATE.md").write_text("x", encoding="utf-8")
+        return repo
+
+    def test_the_relative_path_takes_the_name_on_disk(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            self.assertEqual(
+                CLI._on_disk_relpath(repo, repo / ".github" / "pull_request_template.md"),
+                ".github/PULL_REQUEST_TEMPLATE.md")
+
+    def test_a_missing_file_has_no_relative_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            self.assertIsNone(CLI._on_disk_relpath(repo, repo / ".github" / "otro.md"))
+
+    def test_a_case_insensitive_match_is_reported_by_its_real_name(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            real_glob = Path.glob
+
+            def insensitive_glob(self, pattern):
+                # Como en Windows: el segmento literal casa sin distinguir
+                # mayúsculas y la ruta sale escrita como el patrón.
+                if pattern == ".github/pull_request_template.md":
+                    return iter([self / pattern])
+                return real_glob(self, pattern)
+
+            real_is_file = Path.is_file
+
+            def insensitive_is_file(self):
+                if self.name == "pull_request_template.md":
+                    return real_is_file(self.with_name("PULL_REQUEST_TEMPLATE.md"))
+                return real_is_file(self)
+
+            with unittest.mock.patch.object(Path, "glob", insensitive_glob), \
+                    unittest.mock.patch.object(Path, "is_file", insensitive_is_file):
+                found = CLI._scan_governed_paths(repo)
+            self.assertIn(".github/PULL_REQUEST_TEMPLATE.md", found)
+            self.assertNotIn(".github/pull_request_template.md", found)
+
+
 class PhaseZeroWorkflowCommentsTests(unittest.TestCase):
     """#607: la fase 0 no cuenta como gobierno las rutas que solo viven en
     un comentario YAML de un workflow. Solo cuentan las referenciadas por

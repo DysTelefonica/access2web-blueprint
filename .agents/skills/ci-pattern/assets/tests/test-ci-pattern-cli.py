@@ -286,6 +286,23 @@ class ManifestSealTests(unittest.TestCase):
             self.assertEqual(len(changed), 1, changed)
             self.assertIn("scripts/check_pr_size.py", changed[0])
 
+    def test_seal_keeps_the_line_endings_of_the_manifest(self):
+        """Un manifiesto commiteado con CRLF (cadete) no sale reescrito entero
+        al re-sellar un hash: el sello conserva sus finales de línea."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._drifted_repo(tmp)
+            path = repo / ".governance-manifest.json"
+            crlf = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
+            path.write_bytes(crlf)
+            before = crlf.rstrip(b"\r\n").split(b"\r\n")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            after_bytes = path.read_bytes()
+            self.assertEqual(after_bytes.count(b"\n"), after_bytes.count(b"\r\n"))
+            after = after_bytes.rstrip(b"\r\n").split(b"\r\n")
+            self.assertEqual(len(after), len(before))
+            self.assertEqual(len([a for a, b in zip(before, after, strict=True) if a != b]), 1)
+
     def test_seal_with_out_keeps_the_order_of_the_manifest(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo, _ = self._drifted_repo(tmp)
