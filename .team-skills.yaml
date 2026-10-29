@@ -12,6 +12,7 @@ include_skills:
   - ai-slop-discipline
   - ci-pattern
   - deterministic-quality-harness
+  - github-roles
   - governed-delivery
   - repository-delivery-governance
   - worktree-reorg-per-project
