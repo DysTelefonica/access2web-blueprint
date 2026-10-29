@@ -21,6 +21,7 @@
         {"artifact": ".github/workflows/pr-gates.yml (BP #1461: el gate H1 del pull request en pull_request_target; el job canon publica el catálogo en el sello y el job del gate lo ejecuta sin secretos)", "disposition": "adopted", "target": ".github/workflows/pr-gates.yml"},
         {"artifact": ".github/workflows/codeql.yml", "disposition": "adopted", "target": ".github/workflows/codeql.yml"},
         {"artifact": ".github/workflows/dysflow-erd.yml (#1074: extracción manual y de solo lectura del ERD de un backend Access, en el runner propio del dueño; el gate check_workflows admite ese runner solo por ser un fichero workflow_dispatch-only)", "disposition": "adopted", "target": ".github/workflows/dysflow-erd.yml"},
+        {"artifact": ".github/workflows/governed-merge.yml (#1359: el merge gobernado de cadete, manual y solo desde main, con el token de la GitHub App dys-orquestador porque el ruleset de main rechaza GITHUB_TOKEN)", "disposition": "adopted", "target": ".github/workflows/governed-merge.yml"},
         {"artifact": ".github/workflows/pip-audit.yml (issue #1377: la auditoría del lockfile como job de primer nivel de ci.yml, para que su salto por superficie sea declarable en la política de required-jobs)", "disposition": "adopted", "target": ".github/workflows/pip-audit.yml"},
         {"artifact": ".github/workflows/release.yml", "disposition": "adopted", "target": ".github/workflows/release.yml"},
         {"artifact": ".github/workflows/security.yml", "disposition": "adopted", "target": ".github/workflows/security.yml"},
