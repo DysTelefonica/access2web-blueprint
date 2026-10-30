@@ -1,38 +1,111 @@
 {
   "events": {
     "pull_request": {
-      "accepted_skips": []
+      "accepted_skips": [
+        "pip-audit-alert"
+      ]
     },
     "push": {
       "accepted_skips": [
-        "pr-gate"
+        "pr-gate",
+        "e2e-smoke",
+        "governance-seals",
+        "pip-audit",
+        "pip-audit-alert"
       ]
     },
     "schedule": {
       "accepted_skips": [
-        "pr-gate"
+        "pr-gate",
+        "governance-seals",
+        "pip-audit-alert"
       ]
     },
     "workflow_dispatch": {
       "accepted_skips": [
-        "pr-gate"
+        "pr-gate",
+        "e2e-smoke",
+        "governance-seals",
+        "pip-audit-alert"
       ]
     }
   },
+  "docs_only_lane": {
+    "event": "pull_request",
+    "gate_job": "pr-gate",
+    "output": "docs_changed",
+    "skips": [
+      "quality",
+      "integration",
+      "security",
+      "codeql",
+      "e2e-smoke"
+    ]
+  },
+  "marker_lanes": [
+    {
+      "event": "pull_request",
+      "gate_job": "pr-gate",
+      "output": "e2e_scope_changed",
+      "equals": "false",
+      "skips": [
+        "e2e-smoke"
+      ]
+    },
+    {
+      "event": "pull_request",
+      "gate_job": "pr-gate",
+      "output": "codeql_scope_changed",
+      "equals": "false",
+      "skips": [
+        "codeql"
+      ]
+    },
+    {
+      "event": "pull_request",
+      "gate_job": "pr-gate",
+      "output": "lockfile_scope_changed",
+      "equals": "false",
+      "skips": [
+        "pip-audit"
+      ]
+    }
+  ],
   "relaxation": {
-    "reason": "El script propio aceptaba saltar pr-gate en push, schedule y workflow_dispatch (ci.yml dispara los cuatro eventos) pero la politica solo declaraba pull_request; al ejecutar el canon, la politica pasa a declarar esos tres eventos con ese unico salto aceptado, sin cambiar el comportamiento previo.",
-    "reference": "DysTelefonica/access2web-blueprint#1040",
-    "issue": 1040
+    "reason": "Carril del lockfile (DysTelefonica/access2web-blueprint#1377): la auditoria de dependencias pasa a ser un job de PRIMER NIVEL de ci.yml (con su propio workflow reutilizable) porque `needs:` no cruza ficheros de workflow —el agregador required solo puede leer el resultado de un job de primer nivel, y sin esa lectura su salto por diseño no se puede declarar—. El job corre en pull request solo cuando el marcador del lockfile que publica el pr-gate vale exactamente 'false', es decir cuando el diff no toca app/requirements-dev.lock ni app/uv.lock, y corre en el nightly (schedule), que es donde un aviso publicado entre medias debe salir. En push a main se salta y ese salto queda declarado: el pull request que cambio el lockfile ya lo audito. Los avisos dependen del tiempo y no del diff: de los 14 SHA rojos de la ventana 22-24 oct, 6 fueron por un aviso de filelock ajeno a la PR. Se mantienen sin cambios los carriles de superficie de #1376 (e2e-smoke y codeql) y el carril docs-only de #1368: un diff entero en docs/ salta los jobs pesados y docs-links sigue corriendo en ese carril. Skip nuevo (DysTelefonica/access2web-blueprint#1414): el job pip-audit-alert abre una issue cuando el nightly de pip-audit se pone rojo. Solo corre con el evento schedule y con fallo de pip-audit; en los demás casos (pull_request, push, workflow_dispatch y schedule con pip-audit verde) se salta. Ese salto es el resultado normal y no encubre ningún check: el job no es un gate, solo alerta. #1464: cada skip aceptado por evento, con su motivo. En el evento schedule se aceptan pr-gate (solo corre en pull_request), governance-seals (mide la identidad del gobierno, que es de un pull request) y pip-audit-alert (no hay fallo de pip-audit que avisar). En el evento workflow_dispatch se aceptan pr-gate (solo corre en pull_request), e2e-smoke (corre solo cuando el diff toca su superficie y un dispatch manual no es un pull request), governance-seals (mide la identidad del gobierno, que es de un pull request) y pip-audit-alert (no hay fallo de pip-audit que avisar). En el evento push se aceptan pr-gate, e2e-smoke, governance-seals, pip-audit (el pull request que cambio el lockfile ya lo audito) y pip-audit-alert. En el evento pull_request se acepta pip-audit-alert. Ninguno de estos skips quita un check del pull request: el agregador required sigue midiendo el resto de los jobs en cada evento.",
+    "reference": "DysTelefonica/access2web-blueprint#1377, DysTelefonica/access2web-blueprint#1414",
+    "issue": 1414
   },
   "required_jobs": [
     "pr-gate",
     "quality",
     "integration",
     "security",
+    "pip-audit",
     "codeql",
+    "e2e-smoke",
     "docs-codeguide",
     "docs-links",
     "docs-decisions",
-    "docs-architecture"
+    "docs-architecture",
+    "governance-seals",
+    "docs-commands",
+    "pip-audit-alert",
+    "ci-images"
+  ],
+  "state_dependent_gates": [
+    {
+      "name": "pip-audit",
+      "command": "pip-audit",
+      "pr_workflow": ".github/workflows/ci.yml",
+      "pr_job": "pip-audit",
+      "manifests": [
+        "app/uv.lock",
+        "app/requirements-dev.lock",
+        "app/pyproject.toml"
+      ],
+      "scheduled_workflow": ".github/workflows/ci.yml",
+      "alert_command": "gh issue create"
+    }
   ]
 }

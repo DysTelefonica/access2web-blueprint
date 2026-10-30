@@ -43,6 +43,18 @@ Cola de cambios pendientes que consulta un script del servidor (`M_E2EMigration.
 
 Índices: clave primaria sobre `IDCola`; secundarios sobre `Estado`, `IDExpediente` y `FechaDeteccion` (`M_E2EMigration.bas:125-128`); índice único `UX_TbE2ECola_OrdinalE2E` sobre `OrdinalE2E` (`:269-273`). `OrdinalE2E` se rellena con `IDCola` en las filas previas (`:204-206`) y `EstadoImportacion` con «Pendiente» (`:430-432`) porque DAO no admite valores por defecto.
 
+## TbExpedientesDatosAGEDYS
+
+Tabla que cita `src` sin que ni el `ERD/schema.sql` del snapshot ni ningún DDL de `src` la declaren; las tres columnas se infieren del código que la lee y de la clase [ExpedienteAGEDYS](../clases/ExpedienteAGEDYS.md). Los tipos son «hipótesis»: confirmar con un volcado del ERD de RC1.
+
+| Origen | Tipo origen | Admite nulos | Evidencia (uso en `src`) | Destino |
+|---|---|---|---|---|
+| `TbExpedientesDatosAGEDYS.IDExpedienteAGEDYS` | sin declarar | sin declarar | `ExpedienteAGEDYS.cls:59`; `constructor.bas:5042-5046` | pendiente de decisión |
+| `TbExpedientesDatosAGEDYS.IDExpediente` | sin declarar | sin declarar | `constructor.bas:5046` | pendiente de decisión |
+| `TbExpedientesDatosAGEDYS.Generico` | sin declarar | sin declarar | `ExpedienteAGEDYS.cls:16, 87` | pendiente de decisión |
+
+Ningún flujo de RC1 llega a la clase (ver su ficha), por lo que la tabla puede ser código muerto del snapshot.
+
 ## Columnas de RC1 que el snapshot no tiene
 
 | Origen | Evidencia | Observación |

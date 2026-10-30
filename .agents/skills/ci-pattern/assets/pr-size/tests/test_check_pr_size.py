@@ -2,9 +2,13 @@
 """Suite RED/GREEN del gate portátil de presupuesto de revisión (#623).
 
 Cubre la regla de BP portada como activo de ci-pattern:
-``VENDORED_ROOTS = (".agents/skills/", "skills/")`` queda fuera del
-presupuesto de 400 líneas, pero un renombrado desde una ruta de autoría
-hacia una vendorizada sí cuenta, porque el trabajo fue authored.
+``VENDORED_ROOTS = (".agents/skills/",)`` queda fuera del presupuesto de
+400 líneas, pero un renombrado desde una ruta de autoría hacia una
+vendorizada sí cuenta, porque el trabajo fue authored.
+
+``skills/`` **no** está en la lista desde #1088: en el canon es el catálogo
+de autoría (64 skills escritas aquí), no contenido vendorizado. Excluirlo
+medía 0 líneas donde el revisor tenía 569 delante.
 
 Convenciones: stdlib exclusivamente, ``unittest``, fixtures con
 ``subprocess`` real sobre repos ``git init`` en ``tmp_path``. Sin
@@ -80,6 +84,16 @@ def _commit_file(repo: Path, path: str, content: str, msg: str) -> None:
     _git("commit", "-qm", msg, cwd=repo)
 
 
+def _commit_files(repo: Path, files: dict[str, str], msg: str) -> None:
+    """Varios ficheros en el MISMO commit: un bump mueve el lockfile y el manifiesto."""
+    for path, content in files.items():
+        target = repo / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+    _git("add", "-A", cwd=repo)
+    _git("commit", "-qm", msg, cwd=repo)
+
+
 def _rename_and_modify(repo: Path, src: str, dst: str, new_content: str, msg: str) -> None:
     dst_p = repo / dst
     dst_p.parent.mkdir(parents=True, exist_ok=True)
@@ -100,9 +114,14 @@ class TestVendoredRootsRule(unittest.TestCase):
     def test_vendored_path_under_agents_skills_is_recognised(self) -> None:
         gate = _load_gate()
         self.assertTrue(gate.is_under_vendored(".agents/skills/foo/auth.py"))
-        self.assertTrue(gate.is_under_vendored("skills/legacy/skill/SKILL.md"))
-        # Igual con prefijos relativos al repo
-        self.assertTrue(gate.is_under_vendored("skills/x.py"))
+        # Con prefijos relativos al repo
+        self.assertTrue(gate.is_under_vendored(".agents/skills/x.py"))
+
+    def test_the_catalog_is_not_vendored(self) -> None:
+        """RED (#1088): ``skills/`` es el catálogo de autoría del canon, cuenta."""
+        gate = _load_gate()
+        self.assertFalse(gate.is_under_vendored("skills/legacy/skill/SKILL.md"))
+        self.assertFalse(gate.is_under_vendored("skills/x.py"))
 
     def test_non_vendored_path_is_not_vendored(self) -> None:
         gate = _load_gate()
@@ -115,8 +134,9 @@ class TestVendoredRootsRule(unittest.TestCase):
 
     def test_vendored_constant_matches_issue(self) -> None:
         gate = _load_gate()
-        # El issue #623 fija explícitamente estos dos prefijos
-        self.assertEqual(gate.VENDORED_ROOTS, (".agents/skills/", "skills/"))
+        # #1088: el canon no excluye su propio catálogo. Solo queda fuera el
+        # árbol vendorizado de los consumers (.agents/skills/).
+        self.assertEqual(gate.VENDORED_ROOTS, (".agents/skills/",))
 
 
 class TestCountsToBudgetRule(unittest.TestCase):
@@ -135,9 +155,13 @@ class TestCountsToBudgetRule(unittest.TestCase):
             gate.counts_to_budget(".agents/skills/foo/x.py", ".agents/skills/foo/x.py"),
             "un fichero vendorizado nuevo NO debe contar",
         )
-        self.assertFalse(
+
+    def test_catalog_path_counts_as_authored(self) -> None:
+        """RED (#1088): bajo ``skills/`` es autoría y cuenta para el presupuesto."""
+        gate = _load_gate()
+        self.assertTrue(
             gate.counts_to_budget("skills/legacy/x.py", "skills/legacy/x.py"),
-            "skills/<x> sin renombrar NO debe contar",
+            "skills/<x> sin renombrar DEBE contar: es el catálogo de autoría",
         )
 
     def test_rename_from_authored_to_vendored_still_counts(self) -> None:
@@ -161,17 +185,29 @@ class TestCountsToBudgetRule(unittest.TestCase):
             ),
             "renombrar dentro de vendored NO debe contar",
         )
-        self.assertFalse(
-            gate.counts_to_budget(
-                "skills/old/x.py", "skills/new/x.py",
-            ),
-            "renombrar dentro de skills/ NO debe contar",
-        )
 
 
 # ---------------------------------------------------------------------------
 # Tests de integración sobre un repo git real
 # ---------------------------------------------------------------------------
+
+
+class TestGeneratedLockfileRule(unittest.TestCase):
+    """RED (#1177): el gate publica la regla de lockfile generado."""
+
+    def test_the_gate_exposes_the_lockfile_rule(self) -> None:
+        gate = _load_gate()
+        self.assertTrue(gate.is_generated_lockfile("uv.lock"))
+        self.assertTrue(gate.is_generated_lockfile("app/requirements-dev.lock"))
+        self.assertFalse(gate.is_generated_lockfile("app/requirements.txt"))
+
+    def test_the_documented_patterns_are_the_ones_in_the_gate(self) -> None:
+        gate = _load_gate()
+        self.assertEqual(
+            gate.LOCKFILE_PATTERNS,
+            ("uv.lock", "package-lock.json", "pnpm-lock.yaml", "poetry.lock",
+             "requirements*.lock"),
+        )
 
 
 class TestChangedLinesIntegration(unittest.TestCase):
@@ -211,6 +247,46 @@ class TestChangedLinesIntegration(unittest.TestCase):
             f"stderr: {result.stderr}",
         )
         self.assertIn("0 changed line(s)", result.stdout)
+
+    def test_catalog_change_counts_toward_the_budget(self) -> None:
+        """RED (#1088): N líneas añadidas bajo ``skills/`` cuentan como N.
+
+        El catálogo del canon es el producto del repo: excluirlo del
+        presupuesto medía 0 líneas donde el revisor tenía 569 delante.
+        """
+        body = "\n".join(f"# line {i}" for i in range(569)) + "\n"
+        _commit_file(
+            self.repo, "skills/acme/SKILL.md", body,
+            "feat: write a 569-line skill",
+        )
+        result = self._run_gate("--base-ref", "HEAD~1")
+        self.assertIn("569 changed line(s)", result.stdout)
+        self.assertEqual(
+            result.returncode, 1,
+            f"569 líneas de catálogo superan el techo de 400: el gate debe "
+            f"fallar.\nstdout: {result.stdout}\nstderr: {result.stderr}",
+        )
+
+    def test_catalog_and_vendored_are_counted_apart(self) -> None:
+        """RED (#1088): el catálogo cuenta; lo vendorizado sigue fuera."""
+        _commit_file(
+            self.repo, "skills/acme/SKILL.md",
+            "\n".join(f"# s {i}" for i in range(300)) + "\n",
+            "feat: write a skill",
+        )
+        _commit_file(
+            self.repo, ".agents/skills/foo/x.py",
+            "\n".join(f"# v {i}" for i in range(1000)) + "\n",
+            "feat: vendor a thousand lines",
+        )
+        result = self._run_gate("--base-ref", "HEAD~2")
+        self.assertIn("300 changed line(s)", result.stdout)
+        self.assertIn("1000 vendored line(s) excluded", result.stdout)
+        self.assertEqual(
+            result.returncode, 0,
+            f"300 líneas de catálogo están bajo el techo: el gate debe pasar.\n"
+            f"stdout: {result.stdout}\nstderr: {result.stderr}",
+        )
 
     def test_authored_change_over_budget_fails(self) -> None:
         """RED: 500 líneas authored en app/ → FAIL (500 > 400)."""
@@ -439,14 +515,108 @@ class TestLabelOverride(unittest.TestCase):
         self.assertEqual(envelope["status"], "pass")
 
 
-class TestNothingElseIsExcluded(unittest.TestCase):
-    def test_a_lockfile_counts_toward_the_budget(self) -> None:
+class TestGeneratedLockfilesAreExcluded(unittest.TestCase):
+    """RED (#1177): un lockfile generado no es trabajo de revision y no cuenta.
+
+    El lockfile lo escribe el gestor de paquetes a partir del manifiesto
+    (``ardelperal/APAP_WEB#2424``: 444 de las 448 lineas del diff eran
+    ``uv.lock`` y la PR solo pudo entrar con la etiqueta ``size:exception``).
+    """
+
+    def test_a_lockfile_does_not_count_toward_the_budget(self) -> None:
         import tempfile
         with tempfile.TemporaryDirectory() as tmp:
             repo = _over_budget_repo(Path(tmp), "uv.lock")
             result = _run_cli(repo)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_a_lockfile_is_reported_apart_from_the_vendored_lines(self) -> None:
+        """La cifra excluida se dice por separado: no es arbol vendorizado."""
+        import json
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _over_budget_repo(Path(tmp), "uv.lock")
+            result = _run_cli(repo, "--json")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            env = json.loads(result.stdout)
+            self.assertEqual(env["status"], "pass")
+            self.assertEqual(env["indicators"]["changed_lines"], 0)
+            self.assertEqual(env["indicators"]["generated_lines"], 500)
+            self.assertEqual(env["indicators"]["vendored_lines"], 0)
+
+    def test_the_lockfile_is_named_in_the_text_output(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _over_budget_repo(Path(tmp), "uv.lock")
+            result = _run_cli(repo)
+            self.assertIn("500 generated line(s) excluded", result.stdout)
+
+    def test_authored_code_still_fails(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _over_budget_repo(Path(tmp), "app/x.py")
+            result = _run_cli(repo)
             self.assertEqual(result.returncode, 1, result.stdout)
-            self.assertIn("uv.lock", result.stdout)
+            self.assertIn("maintainer", result.stdout)
+
+    def test_requirements_txt_still_counts(self) -> None:
+        """Solo la extension ``.lock`` queda fuera: ``requirements.txt`` es de autoria."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _over_budget_repo(Path(tmp), "app/requirements.txt")
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_requirements_lock_is_excluded(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _over_budget_repo(Path(tmp), "app/requirements-dev.lock")
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+
+class TestLockfileBumpRealCase(unittest.TestCase):
+    """El caso real de APAP_WEB#2424: un bump que mueve 444 líneas de ``uv.lock``
+    y 4 de ``pyproject.toml`` (448 en crudo). El presupuesto cuenta 4, no 448
+    (#1177): el lockfile lo escribió el gestor de paquetes, no quien abre la PR.
+    """
+
+    def _bump_repo(self, tmp: Path) -> Path:
+        repo = _make_repo(tmp)
+        lock = "\n".join(f"# lock {i}" for i in range(222)) + "\n"
+        manifest = "\n".join(f"# dep {i}" for i in range(2)) + "\n"
+        _commit_files(repo, {"uv.lock": lock, "pyproject.toml": manifest},
+                      "chore: bump")
+        # El bump: el lockfile se reescribe entero (222 altas + 222 bajas) y el
+        # manifiesto cambia dos líneas (2 altas + 2 bajas). Los dos ficheros
+        # entran en el MISMO commit: es un commit, no dos.
+        _commit_files(repo,
+                      {"uv.lock": "\n".join(f"# lock {i} v2" for i in range(222)) + "\n",
+                       "pyproject.toml": "\n".join(f"# dep {i} v2" for i in range(2)) + "\n"},
+                      "chore: bump v2")
+        return repo
+
+    def test_the_budget_counts_the_manifest_and_not_the_lockfile(self) -> None:
+        import json
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._bump_repo(Path(tmp))
+            result = _run_cli(repo, "--json")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            env = json.loads(result.stdout)
+            self.assertEqual(env["status"], "pass")
+            self.assertEqual(env["indicators"]["changed_lines"], 4)
+            self.assertEqual(env["indicators"]["generated_lines"], 444)
+            self.assertEqual(env["indicators"]["vendored_lines"], 0)
+
+    def test_the_text_output_says_what_it_left_out(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._bump_repo(Path(tmp))
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("OK    4 changed line(s)", result.stdout)
+            self.assertIn("444 generated line(s) excluded", result.stdout)
 
 
 def _file(name: str, added: int, deleted: int = 0, previous: str | None = None) -> dict:
@@ -457,28 +627,44 @@ def _file(name: str, added: int, deleted: int = 0, previous: str | None = None) 
     return item
 
 
-class _Api:
-    """Servidor HTTP minimo en loopback que sirve ``/pulls/N/files`` paginado.
+class _Seq:
+    """Respuestas en orden: cada llamada toma la siguiente; la última se repite."""
 
-    Aislamiento por instancia: cada ``_Api`` levanta su propio ``ThreadingHTTPServer``
-    en puerto efímero (``bind 0``) y captura su estado (``files``, ``status``, ``auth``)
-    en el cierre del Handler que devuelve ``_make_handler``. Asi, dos ``_Api`` viven
-    en procesos o clases distintas sin compartir estado de clase ni de modulo (#941,
-    #511, #585). El Handler enruta por path: si la URL no es el endpoint paginado,
-    responde 404 explicito sin lanzar ``KeyError`` ante una query distinta a la esperada.
+    def __init__(self, items: list) -> None:
+        self.items, self.i = items, 0
+
+    def take(self):
+        value = self.items[min(self.i, len(self.items) - 1)]
+        self.i += 1
+        return value
+
+
+class _Api:
+    """Servidor HTTP minimo en loopback para ``/repos/o/r/pulls/N`` y ``.../files``.
+
+    Aislamiento por instancia: cada ``_Api`` levanta su propio ``HTTPServer`` en puerto
+    efímero (``bind 0``) y guarda su estado en la propia instancia (#941, #511, #585).
+
+    - ``pulls``: secuencia de cuerpos de ``GET pulls/N`` (``head.sha``, ``changed_files``).
+    - ``listings``: secuencia de listados de ficheros; cada primera página toma el
+      siguiente listado y las siguientes páginas siguen el mismo.
+    - ``paths``: cada petición de la API, en orden (la sonda ajena no cuenta).
+    - ``live_labels``: etiquetas que devuelve ``GET issues/N/labels`` (#1359).
+    - ``labels_status``: código de respuesta de ``GET issues/N/labels`` (#1359).
     """
 
-    def __init__(self, files: list[dict], status: int = 200) -> None:
+    def __init__(self, files: list[dict], status: int = 200, pulls: list | None = None,
+                 listings: list | None = None, live_labels: list | None = None,
+                 labels_status: int = 200) -> None:
         import threading
         from http.server import HTTPServer
-        self.files, self.status, self.auth = files, status, []
-        # ``HTTPServer`` (single-thread) y no ``ThreadingHTTPServer`` (multi-thread):
-        # mantener el comportamiento serie que el stub tenia antes del fix garantiza
-        # que el gate (cliente secuencial con ``urllib``) recibe cada respuesta antes
-        # de enviar el siguiente request, igual que el stub original (#941). El
-        # paralelismo intra-suite no es objeto de esta fix.
-        self.server = HTTPServer(
-            ("127.0.0.1", 0), _make_handler(self.files, self.status, self.auth))
+        self.files, self.status, self.auth, self.paths = files, status, [], []
+        self.live_labels, self.labels_status = list(live_labels or []), labels_status
+        self.pulls = _Seq(pulls if pulls is not None
+                          else [{"head": {"sha": "HEAD1"}, "changed_files": len(files)}])
+        self.listings = _Seq(listings if listings is not None else [files])
+        self.current: list[dict] = files
+        self.server = HTTPServer(("127.0.0.1", 0), _make_handler(self))
         self.url = f"http://127.0.0.1:{self.server.server_address[1]}"
         threading.Thread(target=self.server.serve_forever, daemon=True).start()
 
@@ -487,45 +673,55 @@ class _Api:
         self.server.server_close()
 
 
-def _make_handler(files: list[dict], status: int, auth: list):
-    """Fabrica una clase Handler con estado capturado en cierre.
+def _make_handler(api: _Api):
+    """Clase Handler ligada a una ``_Api``: enruta ``pulls/N`` y ``pulls/N/files``.
 
-    Una clase nueva por llamada garantiza que dos ``_Api`` no compartan Handler
-    (y por tanto no compartan listas de auth). El Handler enruta por path: solo
-    ``/pulls/<N>/files?page=...&per_page=...`` pagina; cualquier otra URL
-    devuelve 404 explicito para no depender de que el gate use exactamente esa
-    forma (#941, smoke en ``run-unit-suites.sh UNIT_PARALLEL>1``)."""
+    Cualquier otra URL devuelve 404 explicito (#941)."""
     import json as _json
+    import re as _re
     import urllib.parse as _urlparse
     from http.server import BaseHTTPRequestHandler
 
     class Handler(BaseHTTPRequestHandler):
-        def do_GET(self) -> None:  # noqa: N802
-            # Un sondeo ajeno (`GET /` sin Authorization, #941) recibe el 404 de abajo
-            # sin entrar en `auth`; el resto de peticiones, tengan o no token, cuentan.
-            probe = _urlparse.urlsplit(self.path).path == "/" and self.headers.get("Authorization") is None
-            if not probe:
-                auth.append(self.headers.get("Authorization"))
-            url = _urlparse.urlsplit(self.path)
-            query = _urlparse.parse_qs(url.query)
-            page = query.get("page")
-            per = query.get("per_page")
-            if not url.path.endswith("/files") or not page or not per:
-                payload = _json.dumps({"message": "Not Found"}).encode("utf-8")
-                self.send_response(404)
-                self.send_header("Content-Type", "application/json")
-                self.send_header("Content-Length", str(len(payload)))
-                self.end_headers()
-                self.wfile.write(payload)
-                return
-            page_i = int(page[0])
-            per_i = int(per[0])
-            body = _json.dumps(files[(page_i - 1) * per_i:page_i * per_i]).encode("utf-8")
+        def _send(self, status: int, payload: object) -> None:
+            body = _json.dumps(payload).encode("utf-8")
             self.send_response(status)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
+
+        def do_GET(self) -> None:  # noqa: N802
+            # Un sondeo ajeno (`GET /` sin Authorization, #941) recibe el 404 de abajo
+            # sin entrar en `auth`; el resto de peticiones, tengan o no token, cuentan.
+            probe = _urlparse.urlsplit(self.path).path == "/" and self.headers.get("Authorization") is None
+            if not probe:
+                api.auth.append(self.headers.get("Authorization"))
+                api.paths.append(self.path)
+            url = _urlparse.urlsplit(self.path)
+            query = _urlparse.parse_qs(url.query)
+            if api.status != 200:
+                self._send(api.status, {"message": "error"})
+                return
+            if _re.search(r"/issues/\d+/labels$", url.path):
+                if api.labels_status != 200:
+                    self._send(api.labels_status, {"message": "error"})
+                    return
+                per_i = int(query.get("per_page", ["100"])[0])
+                page_i = int(query.get("page", ["1"])[0])
+                self._send(200, [{"name": name} for name in api.live_labels][(page_i - 1) * per_i:page_i * per_i])
+                return
+            if _re.search(r"/pulls/\d+$", url.path):
+                self._send(200, api.pulls.take())
+                return
+            page, per = query.get("page"), query.get("per_page")
+            if not url.path.endswith("/files") or not page or not per:
+                self._send(404, {"message": "Not Found"})
+                return
+            page_i, per_i = int(page[0]), int(per[0])
+            if page_i == 1:
+                api.current = api.listings.take()
+            self._send(200, api.current[(page_i - 1) * per_i:page_i * per_i])
 
         def log_message(self, *args: object) -> None:
             return
@@ -547,14 +743,20 @@ class TestApiMode(unittest.TestCase):
             api.close()
         self._tmp.cleanup()
 
-    def run_api(self, files, labels=(), changed=None, token="tok", status=200, url=None, extra=()):
+    def run_api(self, files, labels=(), changed=None, token="tok", status=200, url=None, extra=(),
+                head="HEAD1", pulls=None, listings=None, live_labels=None, labels_status=200):
         import json
-        api = _Api(files, status)
+        # Por defecto las etiquetas vivas son las del payload; un caso de etiqueta añadida
+        # o quitada tras el evento pasa `live_labels` distinto (#1359).
+        api = _Api(files, status, pulls=pulls, listings=listings,
+                   live_labels=labels if live_labels is None else live_labels,
+                   labels_status=labels_status)
         self.apis.append(api)
         event = self.tmp / "event.json"
         event.write_text(json.dumps({
             "repository": {"full_name": "o/r"},
             "pull_request": {"number": 7, "labels": [{"name": n} for n in labels],
+                             "head": {"sha": head},
                              "changed_files": len(files) if changed is None else changed},
         }), encoding="utf-8")
         env = _clean_env()
@@ -570,7 +772,7 @@ class TestApiMode(unittest.TestCase):
         result, api = self.run_api([_file("app/a.py", 10, 5)])
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("15 changed line(s)", result.stdout)
-        self.assertEqual(api.auth, ["Bearer tok"])
+        self.assertEqual(set(api.auth), {"Bearer tok"})
 
     def test_additions_plus_deletions_over_budget_fails(self) -> None:
         result, _ = self.run_api([_file("app/a.py", 300, 150)])
@@ -582,18 +784,64 @@ class TestApiMode(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("1000 vendored line(s) excluded", result.stdout)
 
+    def test_catalog_file_counts_and_is_not_reported_as_vendored(self) -> None:
+        """RED (#1088): en modo API el catálogo cuenta como autoría."""
+        result, _ = self.run_api([_file("skills/acme/SKILL.md", 500)])
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("500 changed line(s)", result.stdout)
+        self.assertNotIn("vendored", result.stdout)
+
     def test_rename_from_authored_into_vendored_still_counts(self) -> None:
         result, _ = self.run_api([_file(".agents/skills/x/a.py", 500, previous="app/a.py")])
         self.assertEqual(result.returncode, 1, result.stdout)
 
-    def test_lockfile_counts(self) -> None:
+    def test_lockfile_does_not_count(self) -> None:
+        """RED (#1177): en modo API el lockfile generado tampoco cuenta."""
         result, _ = self.run_api([_file("uv.lock", 500)])
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("500 generated line(s) excluded", result.stdout)
+
+    def test_a_rename_from_authored_into_a_lockfile_still_counts(self) -> None:
+        result, _ = self.run_api([_file("uv.lock", 500, previous="app/a.py")])
         self.assertEqual(result.returncode, 1, result.stdout)
 
-    def test_label_in_the_payload_overrides(self) -> None:
+    def test_a_lockfile_bump_counts_only_the_manifest(self) -> None:
+        """APAP_WEB#2424: 444 líneas de ``uv.lock`` y 4 de ``pyproject.toml`` → 4."""
+        result, _ = self.run_api([_file("uv.lock", 222, 222),
+                                  _file("pyproject.toml", 2, 2)])
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("4 changed line(s)", result.stdout)
+        self.assertIn("444 generated line(s) excluded", result.stdout)
+
+    def test_label_overrides(self) -> None:
         result, _ = self.run_api([_file("app/a.py", 900)], labels=("size:exception",))
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("overridden", result.stdout)
+
+    def test_label_added_after_the_event_overrides(self) -> None:
+        """RED (#1359): el payload del `opened` no trae la etiqueta; la API ya la tiene.
+
+        cadete#715: `size:exception` se puso 7 s después de abrir el PR. El run del
+        `opened` leyó el snapshot del payload, sin etiqueta, y falló; el run siguiente
+        pasó. El gate lee las etiquetas en vivo, no del snapshot del evento.
+        """
+        result, api = self.run_api([_file("app/a.py", 900)], labels=(),
+                                   live_labels=("size:exception",))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("overridden", result.stdout)
+        self.assertTrue(any("/issues/7/labels" in path for path in api.paths))
+
+    def test_a_label_removed_after_the_event_does_not_override(self) -> None:
+        """RED (#1359): la etiqueta del payload ya no está en la API: no exime."""
+        result, _ = self.run_api([_file("app/a.py", 900)], labels=("size:exception",),
+                                 live_labels=())
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+
+    def test_labels_api_failure_fails_closed(self) -> None:
+        """RED (#1359): sin etiquetas vivas no hay veredicto: falla cerrado, aunque quepa."""
+        result, _ = self.run_api([_file("app/a.py", 10)], labels_status=500)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("labels", result.stdout + result.stderr)
 
     def test_a_foreign_probe_is_not_counted(self) -> None:
         """RED (#941): un `GET /` ajeno al gate (sin Authorization) no entra en ``auth``."""
@@ -619,12 +867,19 @@ class TestApiMode(unittest.TestCase):
         result, api = self.run_api(files)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("450 changed line(s)", result.stdout)
-        self.assertEqual(len(api.auth), 2)
+        self.assertEqual(len([p for p in api.paths if "/files" in p]), 2)
 
     def test_breakdown_that_does_not_match_changed_files_fails_closed(self) -> None:
-        result, _ = self.run_api([_file("app/a.py", 1)], changed=3)
+        """Un desfase persistente entre el listado y GET pulls, leidos a la vez, falla cerrado."""
+        result, _ = self.run_api([_file("app/a.py", 1)],
+                                 pulls=[{"head": {"sha": "HEAD1"}, "changed_files": 3}])
         self.assertEqual(result.returncode, 1)
         self.assertIn("changed_files", result.stderr)
+
+    def test_stale_changed_files_in_the_payload_alone_does_not_fail(self) -> None:
+        """#1113: el payload del evento es una foto anterior; no decide por si solo."""
+        result, _ = self.run_api([_file("app/a.py", 1)], changed=3)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_api_error_fails_closed(self) -> None:
         result, _ = self.run_api([_file("app/a.py", 1)], status=500)
@@ -640,6 +895,23 @@ class TestApiMode(unittest.TestCase):
         result, _ = self.run_api([_file("app/a.py", 1)], url="http://example.invalid")
         self.assertEqual(result.returncode, 1)
         self.assertIn("https", result.stderr)
+
+    def test_head_moved_after_the_event_is_superseded_not_an_error(self) -> None:
+        """RED (#1113): si el head de la PR ya no es el del evento, sale 0 y lo dice."""
+        result, _ = self.run_api(
+            [_file("app/a.py", 1)], head="HEAD1",
+            pulls=[{"head": {"sha": "HEAD2"}, "changed_files": 1}])
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("superado por un push más reciente", result.stdout)
+
+    def test_breakdown_that_settles_on_the_retry_passes(self) -> None:
+        """RED (#1113): un desglose desfasado en el primer intento se reintenta una vez."""
+        result, _ = self.run_api(
+            [_file("app/a.py", 1), _file("app/b.py", 2)],
+            pulls=[{"head": {"sha": "HEAD1"}, "changed_files": 2}],
+            listings=[[_file("app/a.py", 1)], [_file("app/a.py", 1), _file("app/b.py", 2)]])
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("3 changed line(s)", result.stdout)
 
     def test_json_error_envelope_in_api_mode(self) -> None:
         import json

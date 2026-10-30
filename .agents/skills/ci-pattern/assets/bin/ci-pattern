@@ -35,8 +35,50 @@ MANIFEST_NAME = ".governance-manifest.json"
 ADOPTION_CONTRACT_NAME = ".github/ci-pattern-adoption.json"
 ADOPTION_SCHEMA_VERSION = 1
 ADOPTION_PHASES = 7  # fases 0..6 del porting-guide (5 = docs, #279)
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 3
+#: Versiones del manifiesto que `manifest seal` sabe migrar. El sello cambia de
+#: formato porque los workflows se sellan normalizados: v1 (#1199) en crudo; v2
+#: (#1199) con los `uses:` normalizados; v3 (#1361) con las imágenes por digest
+#: normalizadas también. El v1 no lo mide ningún gate: `manifest seal` lo
+#: migra. El v2 lo miden los gates del canon vigente (ver
+#: `MEASURED_SCHEMA_VERSIONS`).
+LEGACY_SCHEMA_VERSIONS = (1, 2)
+#: Formatos del manifiesto que los gates miden (#1371). El vigente y el
+#: anterior: la migración es de dos pasos. Mientras la base de un consumer
+#: mida un manifiesto v2 con SU canon (el de su rama base), el canon nuevo
+#: tiene que medir también el v2; si no, el gate de la base rechaza el PR
+#: con rc=2 aunque el canon de la cabeza lo entienda. El formato 1 sigue sin
+#: medirse: `manifest seal` lo migra.
+MEASURED_SCHEMA_VERSIONS = (SCHEMA_VERSION, SCHEMA_VERSION - 1)
 
+#: Los workflows se sellan sobre su contenido NORMALIZADO (#1199): la
+#: referencia pineada de cada `uses:` (y su comentario de versión) es un dato
+#: que Dependabot cambia por diseño; la lógica del workflow no lo es.
+WORKFLOW_DIR = ".github/workflows/"
+#: Una clave YAML cuyo valor es un bloque escalar (`run: |`, `if: >`, ...): lo
+#: que va dentro NO es YAML, es el texto que el runner ejecuta. Normalizar una
+#: línea de ahí sería tragarse carga útil y dejaría de sellar la lógica.
+BLOCK_SCALAR_RX = re.compile(
+    r"^(?P<indent>[ \t]*)(?:-[ \t]+)?[^\s#][^:]*:[ \t]*[|>][-+0-9]*[ \t]*(?:#.*)?$"
+)
+#: La clave `uses:` con su pin. El comentario exige un espacio delante de `#` y
+#: no admite nada detrás: solo la forma `v1.2.3` de una versión. Un comentario
+#: con otra forma no se normaliza, y entonces el sha sigue dentro del sello.
+WORKFLOW_USES_RX = re.compile(
+    r"^(?P<indent>[ \t]*)(?P<dash>-[ \t]+)?uses:[ \t]+"
+    r"(?P<action>[A-Za-z0-9._-]+/[A-Za-z0-9._/-]+)@(?P<sha>[0-9a-f]{40})"
+    r"(?P<comment>[ \t]+#[ \t]*v?[\w.\-]*[ \t]*)?$"
+)
+#: La referencia de imagen fijada por digest (#1361): `image: <nombre>[:<tag>]@sha256:<64 hex>`,
+#: con un comentario de versión opcional. El tag y el digest son el pin; el nombre
+#: de la imagen es lógica y se queda dentro del sello. Igual que `uses:`, una forma
+#: que no casa (comillas, sin digest) se sella en crudo: fallo cerrado.
+WORKFLOW_IMAGE_RX = re.compile(
+    r"^(?P<indent>[ \t]*)(?P<dash>-[ \t]+)?image:[ \t]+"
+    r"(?P<name>[A-Za-z0-9._/:-]+?)(?::[A-Za-z0-9._-]+)?@sha256:[0-9a-f]{64}"
+    r"(?P<comment>[ \t]+#[ \t]*v?[\w.\-]*[ \t]*)?$"
+)
+PIN_MARKER = "@<PIN>"
 EXIT_OK = 0
 EXIT_FINDINGS = 1
 EXIT_USAGE = 2
@@ -54,15 +96,27 @@ Comandos:
                              Verifica el cumplimiento dirigido por el manifiesto.
   status <repo> [--json]     Resumen de una línea por clase del repo destino.
   manifest show <repo>       Imprime el manifiesto leído.
+  manifest seal <repo> [--out <ruta>] [--schema-version N]
+                             Re-sella el manifiesto (sha256 de los ficheros y
+                             de los bloques de slice declarados). Con --out
+                             escribe la copia re-sellada y no toca el árbol.
+                             Con --schema-version N sella en el formato N (2 o
+                             3), con el algoritmo de N.
   pr preflight --pr-body <file> [--issue N] [--branch <ref>] [--repository owner/name]
+  pr preflight --draft --pr-body <file> --base <branch> [--label L]...
+                             Modo borrador API-free: cuerpo y tamaño local; --base es obligatorio.
   pr contract --body <file> [--base main] [--label L]... [--print-payload]
                              [--token <token>] [--actor <user>] [--with-adoption]
                              [--policy <path> --changed-files <file>] [--json]
                              Mismos veredictos que la CI sobre un PR abierto,
                              reusando los gates en proceso; corre antes de push.
-  adoption check (--phase N | --all) <repo>
+  adoption check (--phase N | --only-phase N | --all) <repo>
                              Gate por fase del contrato de adopción: fases del
                              porting-guide verificadas sobre el árbol real.
+                             --phase N mide 0..N; --only-phase N, solo la N.
+  dependabot render <repo>  Imprime el `.github/dependabot.yml` que el canon
+                             genera desde la declaración `dependabot` del contrato.
+  dependabot check <repo>   Dice si el del consumer coincide con ese.
 
 `adopt` y `update` están retirados; ver references/cli-spec.md.
 
@@ -134,7 +188,16 @@ class ParamsFileError(Exception):
 # ---------------------------------------------------------------------------
 
 
-def load_manifest(repo):
+def load_manifest(repo, allow_legacy=False):
+    """El manifiesto de gobierno, leído y validado.
+
+    Los gates miden los formatos vivos (#1371): el vigente y el anterior, con
+    el algoritmo de cada uno (el hash se calcula con el formato que declara el
+    manifiesto, no con el del canon que lo lee). `allow_legacy=True` lo usa
+    `manifest seal`, que es la vía de migración: un manifiesto de formato viejo
+    se puede re-sellar al nuevo, pero ningun gate lo mide (HR-3: un formato
+    que el gate no entiende no puede pasar por conforme).
+    """
     path = Path(repo) / MANIFEST_NAME
     if not path.is_file():
         raise MissingResourceError(
@@ -147,16 +210,35 @@ def load_manifest(repo):
         manifest = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise MissingResourceError(f"manifest: {path} ilegible o corrupto ({exc}).") from exc
-    if not isinstance(manifest, dict) or manifest.get("schema_version") != SCHEMA_VERSION:
+    version = manifest.get("schema_version") if isinstance(manifest, dict) else None
+    accepted = MEASURED_SCHEMA_VERSIONS if not allow_legacy else (SCHEMA_VERSION, *LEGACY_SCHEMA_VERSIONS)
+    if version not in accepted:
+        medidos = " o ".join(str(v) for v in MEASURED_SCHEMA_VERSIONS)
         raise MissingResourceError(
-            f"manifest: schema_version debe ser {SCHEMA_VERSION}; revise {path}."
+            f"manifest: schema_version debe ser {medidos}; revise {path}. "
+            "El formato del sello cambió (#1199, #1361): los workflows se sellan "
+            f"normalizados. Re-selle el manifiesto con: ci-pattern manifest seal {repo}"
         )
     return manifest
 
 
+def manifest_newline(repo):
+    """El final de línea del manifiesto en disco: CRLF si ya lo usa, si no LF.
+    Re-sellar no cambia los finales de línea de un manifiesto commiteado con
+    CRLF; el diff que se revisa es solo el sello (#1415)."""
+    try:
+        data = (Path(repo) / MANIFEST_NAME).read_bytes()
+    except OSError:
+        return "\n"
+    return "\r\n" if b"\r\n" in data else "\n"
+
+
 def write_manifest(repo, manifest):
+    # Sin ordenar las claves: re-sellar cambia la línea del hash y conserva el
+    # orden del manifiesto, así el diff que se revisa es solo el sello (#1415).
     path = Path(repo) / MANIFEST_NAME
-    path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8",
+                    newline=manifest_newline(repo))
     return path
 
 
@@ -168,6 +250,94 @@ def sha256_file(path):
     """
     digest = hashlib.sha256(Path(path).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
     return f"sha256:{digest}"
+
+
+def _indent_of(line):
+    """Los espacios iniciales de una línea."""
+    return len(line) - len(line.lstrip(" \t"))
+
+
+def normalize_workflow_content(text, images=True):
+    """El contenido de un workflow con cada pin a un marcador fijo (#1199, #1361).
+
+    Solo se normaliza una clave YAML `uses:`: la referencia `owner/repo@<sha de 40
+    hex>` y un comentario final de versión (` # v1.2.3`, con espacio delante del
+    `#` y nada detrás). El NOMBRE de la action se conserva: cambiar que action se
+    usa sigue cambiando el sello, que es lo que el guardián tiene que ver.
+
+    Con `images` (formato v3, #1361) también se normaliza una clave `image:` con
+    digest, `<nombre>[:<tag>]@sha256:<64 hex>`: el tag y el digest son el pin, y
+    el nombre se conserva. `images=False` reproduce el formato v2 (solo `uses:`).
+
+    No se normaliza, y por eso el sello sigue viendo la lógica:
+
+    - lo que va dentro de un bloque escalar (`run: |`): es shell, no YAML, y
+      tragar sus lineas dejaria una carga util fuera del sello;
+    - un `docker run <imagen>@sha256:...` dentro de `run:` (en linea o en un
+      bloque): es shell, no una clave `image:`. Su bump sigue exigiendo re-sellar
+      (cadete#665 queda fuera a proposito);
+    - la forma corta `container: <imagen>@sha256:...`: no es una clave `image:`;
+    - un pin con otra forma: una etiqueta en vez de un sha (el patron exige pins
+      de 40 hex, HR-26; una imagen sin digest, HR-78), un `uses:` local
+      (`./.github/actions/...`, cuya ruta es logica), un comentario que no es
+      una version (`@<sha>#algo` sin espacio, o `# lo que sea`) o una imagen
+      entre comillas. Todo eso sigue dentro del sello.
+    """
+    def swap_uses(match):
+        dash = match.group("dash") or ""
+        return f"{match.group('indent')}{dash}uses: {match.group('action')}{PIN_MARKER}"
+
+    def swap_image(match):
+        dash = match.group("dash") or ""
+        return f"{match.group('indent')}{dash}image: {match.group('name')}{PIN_MARKER}"
+
+    out = []
+    block_indent = None
+    for line in text.split("\n"):
+        if block_indent is not None:
+            # Dentro del bloque escalar: el contenido no es YAML.
+            if line.strip() == "" or _indent_of(line) > block_indent:
+                out.append(line)
+                continue
+            block_indent = None
+        block = BLOCK_SCALAR_RX.match(line)
+        if block:
+            block_indent = len(block.group("indent"))
+        line = WORKFLOW_USES_RX.sub(swap_uses, line)
+        if images:
+            line = WORKFLOW_IMAGE_RX.sub(swap_image, line)
+        out.append(line)
+    return "\n".join(out)
+
+
+def sha256_governed(path, rel, schema=SCHEMA_VERSION):
+    """sha256 del contenido GOBERNADO según el formato `schema` (#1199, #1361).
+
+    Los workflows se sellan normalizados: un bump de Dependabot cambia el sha y
+    el comentario de un `uses:`, o el tag y el digest de una imagen; con el
+    contenido normalizado el sello no se mueve y el gate no bloquea un PR sin
+    defecto. Cualquier otro cambio del workflow (steps, run, permissions, if,
+    needs, el nombre de la imagen o de la action) sigue cambiando el hash.
+    """
+    if not str(rel).replace("\\", "/").startswith(WORKFLOW_DIR):
+        return sha256_file(path)
+    raw = Path(path).read_bytes().replace(b"\r\n", b"\n")
+    raw = normalize_workflow_content(
+        raw.decode("utf-8", "surrogateescape"), images=schema >= 3
+    ).encode("utf-8", "surrogateescape")
+    return "sha256:" + hashlib.sha256(raw).hexdigest()
+
+
+def hash_for_schema(path, rel, schema):
+    """El hash que el formato `schema` sellaba para `rel` (#1361).
+
+    El formato 1 (#1199) sellaba todo en crudo; desde el 2 los workflows se
+    sellan normalizados. Lo usa la migración para comprobar los hashes viejos
+    antes de re-sellar: una deriva no se esconde al cambiar de algoritmo.
+    """
+    if schema == 1:
+        return sha256_file(path)
+    return sha256_governed(path, rel, schema)
 
 
 # ---------------------------------------------------------------------------
@@ -627,6 +797,10 @@ def verify_repo(repo, slice_canonical=None):
     findings = []
     manifest = load_manifest(repo)
     repo = Path(repo)
+    # El hash se calcula con el algoritmo del formato que declara el
+    # manifiesto (#1371): un manifiesto v2 se mide con el algoritmo v2, que es
+    # el que mide la base del consumer con su canon viejo.
+    schema = manifest.get("schema_version")
 
     # Validación de forma del manifiesto (#182): entradas degeneradas o
     # mal tipadas fallan cerrado con exit 2, sin traceback.
@@ -702,15 +876,15 @@ def verify_repo(repo, slice_canonical=None):
         if not target.is_file():
             findings.append(("files", "missing", f"{rel} está en el manifiesto pero no existe en el repo."))
             continue
-        actual = sha256_file(target)
+        actual = sha256_governed(target, rel, schema=schema)
         if actual != expected:
             findings.append(
                 (
                     "files",
                     "locally-modified",
-                    f"{rel} difiere del hash del manifiesto ({expected[:19]}…). "
-                    "El contenido del repo manda; re-selle el manifiesto "
-                    "(`.governance-manifest.json`) con el sha256 nuevo.",
+                    f"{rel} difiere del hash del manifiesto: esperado {expected}, "
+                    f"encontrado {actual}. El contenido del repo manda; re-selle el "
+                    f"manifiesto con: ci-pattern manifest seal {repo}",
                 )
             )
 
@@ -983,6 +1157,157 @@ def cmd_manifest_show(args):
     return EXIT_OK
 
 
+def cmd_manifest_seal(args):
+    """`manifest seal <repo> [--out <ruta>] [--reeseal <ruta>...] [--schema-version N]`.
+
+    Recalcula el sha256 de cada fichero declarado en `files` y de cada bloque
+    de slice declarado en `slice_blocks`, y escribe el manifiesto re-sellado.
+
+    NO es un auto-firmado: solo cambia el hash de lo que YA está declarado. Un
+    fichero declarado que no existe en el árbol NO se re-sella —sale 1
+    nombrándolo— porque inventar el contenido de un artefacto ausente no es
+    sellarlo (HR-3). El contenido del repo manda; el manifiesto se pone al día.
+
+    Sin `--out` escribe el manifiesto en el repo. Con `--out` escribe la copia
+    re-sellada en esa ruta y NO toca el árbol: es lo que hace el job
+    `governance-seals` para publicar el manifiesto re-sellado como artefacto
+    (sin push automático).
+
+    `--reeseal <ruta>` declara que esta operación cambia ese fichero, así que
+    su hash viejo no se verifica. Sin eso, al MIGRAR de un formato de sello a
+    otro (#1199) se comprobarían los hashes del formato viejo y un fichero
+    cuya deriva se quiso esconder no podria pasar como re-sellado.
+
+    `--schema-version N` sella en el formato N, con el algoritmo de N (#1371).
+    La ronda de propagación lo usa para sellar en el formato que mide la BASE
+    del consumer (la base mide el PR con su canon): un manifiesto en un
+    formato que la base no mide es un rojo en el gate de la base. Sin la
+    opción, sella en el formato vigente.
+
+    Salida: 0 sellado · 1 algo declarado no existe en el árbol, o una migración
+    con deriva sin declarar · 2 uso inválido o manifiesto ausente (3 si el
+    manifiesto no está).
+    """
+    out_path = None
+    reseal = []
+    schema_version = SCHEMA_VERSION
+    positional = []
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--out":
+            if index + 1 >= len(args):
+                raise UsageError("manifest seal: --out requiere una ruta.")
+            out_path = args[index + 1]
+            index += 2
+            continue
+        if arg == "--reeseal":
+            if index + 1 >= len(args):
+                raise UsageError("manifest seal: --reeseal requiere una ruta.")
+            reseal.append(args[index + 1])
+            index += 2
+            continue
+        if arg == "--schema-version":
+            if index + 1 >= len(args):
+                raise UsageError("manifest seal: --schema-version requiere un número.")
+            raw = args[index + 1]
+            if not raw.isdigit():
+                raise UsageError(
+                    f"manifest seal: --schema-version debe ser un número; se recibió {raw!r}.")
+            schema_version = int(raw)
+            index += 2
+            continue
+        if arg.startswith("--"):
+            raise UsageError(f"manifest seal: opción no reconocida: {arg}")
+        positional.append(arg)
+        index += 1
+    if len(positional) != 1:
+        raise UsageError(
+            "manifest seal requiere exactamente un argumento: <repo> [--out <ruta>].")
+    if schema_version not in MEASURED_SCHEMA_VERSIONS:
+        medidos = " o ".join(str(v) for v in MEASURED_SCHEMA_VERSIONS)
+        raise UsageError(
+            f"manifest seal: --schema-version debe ser {medidos}; el canon no sella "
+            f"el formato {schema_version}.")
+    repo = Path(positional[0])
+    manifest = load_manifest(repo, allow_legacy=True)
+    files = manifest.get("files")
+    if not isinstance(files, dict) or not files:
+        raise UsageError(
+            f"{MANIFEST_NAME} no declara 'files': no hay nada que re-sellar.")
+    for rel in files:
+        _ensure_safe_manifest_path(rel)
+    missing = [rel for rel in sorted(files) if not (repo / rel).is_file()]
+    if missing:
+        print(
+            "manifest seal: estos ficheros declarados no existen en el árbol y no "
+            "se re-sellan: " + ", ".join(missing), file=sys.stderr)
+        return EXIT_FINDINGS
+    if manifest.get("schema_version") != schema_version:
+        # Migrar de formato cambia la manera de hashear (#1199, #1361): antes de
+        # re-sellar, los hashes del formato viejo (con su algoritmo) tienen que
+        # cuadrar con el árbol. Si no cuadran, el manifiesto describe un contenido que no
+        # es el del repo, y firmarlo en el formato nuevo escondería esa deriva.
+        # Los ficheros que esta operación declara que cambia (--reeseal) quedan
+        # fuera de la comprobación: de eso responde quien los declara.
+        old_schema = manifest.get("schema_version")
+        drifted = [rel for rel in sorted(files)
+                   if rel not in reseal
+                   and hash_for_schema(repo / rel, rel, old_schema) != files[rel]]
+        if drifted:
+            print(
+                "manifest seal: no se migra un manifiesto desalineado: "
+                + ", ".join(drifted)
+                + " difieren del hash del manifiesto. El contenido del repo manda; "
+                "revisa el cambio antes de re-sellar (o declara el fichero con "
+                "--reeseal si el cambio es de esta operación).",
+                file=sys.stderr)
+            return EXIT_FINDINGS
+    sealed = dict(manifest)
+    sealed["schema_version"] = schema_version
+    sealed_files = dict(files)
+    changed = []
+    for rel in sorted(files):
+        current = hash_for_schema(repo / rel, rel, schema_version)
+        if current != files[rel]:
+            changed.append(rel)
+        sealed_files[rel] = current
+    sealed["files"] = sealed_files
+    blocks = manifest.get("slice_blocks")
+    if isinstance(blocks, dict) and blocks:
+        agents = repo / "AGENTS.md"
+        agents_text = agents.read_text(encoding="utf-8") if agents.is_file() else ""
+        sealed_blocks = dict(blocks)
+        absent = []
+        for name in sorted(blocks):
+            block = extract_slice_block(agents_text, name)
+            if block is None:
+                absent.append(name)
+                continue
+            sealed_blocks[name] = "sha256:" + hashlib.sha256(
+                block[1].replace("\r\n", "\n").encode("utf-8")).hexdigest()
+        if absent:
+            print(
+                "manifest seal: estos bloques de slice no están en AGENTS.md y no "
+                "se re-sellan: " + ", ".join(absent), file=sys.stderr)
+            return EXIT_FINDINGS
+        sealed["slice_blocks"] = sealed_blocks
+    if out_path:
+        target = Path(out_path)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(sealed, indent=2) + "\n",
+                          encoding="utf-8", newline=manifest_newline(repo))
+    else:
+        write_manifest(repo, sealed)
+    destino = out_path or str(repo / MANIFEST_NAME)
+    print(
+        f"manifest seal: formato v{schema_version}, {len(sealed_files)} fichero(s) "
+        f"re-sellados, {len(changed)} con el hash cambiado -> {destino}")
+    for rel in changed:
+        print(f"  {rel}: {files[rel]} -> {sealed_files[rel]}")
+    return EXIT_OK
+
+
 # ---------------------------------------------------------------------------
 # report-friction (#198): fricciones de la skill detectadas en un consumer
 # ---------------------------------------------------------------------------
@@ -1250,7 +1575,8 @@ def cmd_report_friction(args):
 ADOPTION_HELP = """\
 adoption — generación y gate por fase de la adopción (#276, #279)
 
-uso: ci-pattern adoption check (--phase N | --all) <repo>
+uso: ci-pattern adoption check (--phase N | --only-phase N | --all) <repo>
+     [--config-from <dir>] [--seal-baseline <dir>]
      ci-pattern adoption generate-doc <repo> --out <ruta>
 
 check: valida el contrato .github/ci-pattern-adoption.json del consumer y
@@ -1258,6 +1584,61 @@ verifica cada fase del porting-guide contra el árbol real. Exit: 0 la fase
 cumple · 1 hallazgos nombrando cada artefacto o condición que falta · 2
 contrato ilegible, esquema inválido, sujeto vacío o entrada ausente de un
 gate.
+
+--phase N mide las fases 0..N en orden y se detiene en la primera que falla:
+ninguna fase pasa si la anterior no pasa. --only-phase N mide la fase N y
+ninguna otra (#1396): es la forma de un job de CI que mide su fase cuando cada
+fase previa tiene su propio job (p. ej. `docs-gates` con --only-phase 5 junto a
+`governance-seals` con --phase 3), de modo que una causa da un solo rojo. La
+medición completa (nightly, cierre de adopción) sigue usando --phase N o --all.
+
+--config-from <dir>: el contrato de adopción que GOBIERNA el gate sale de <dir>
+(un checkout de la base del PR, sin credenciales); el estado que se mide sigue
+siendo el del repo. Con la base como suelo el PR puede AÑADIR y no QUITAR: el
+inventario de la fase 0 y las rutas gobernadas declaradas se miden con la UNIÓN
+de la base y la cabeza (la base manda en el conflicto) y los 'pattern_paths' de
+la fase 3 son los que declara el PR, con el suelo de sellado de la base: lo que
+la base sellaba no puede reducir un PR mientras el fichero siga en el árbol
+(E8b). El `host-contract` y el `ci-pattern.yaml` NO salen de la base: son el
+estado del consumer (#1351), pero el INVENTARIO manda sobre la lista de
+exenciones del host-contract: un ruleset que el inventario declara retirado no
+se exime por declararlo en el contrato del host. Es la forma que mide el
+fragmento canónico del job `governance-seals` (#1339) y es una alternativa a
+--seal-baseline: no lo sustituye.
+
+--seal-baseline <dir>: mide el gate también contra la BASE del PR (un
+checkout de <dir> con su contrato de adopción). Un operador por fase:
+
+  fase 3: el conjunto que hay que sellar es la UNIÓN de los 'pattern_paths'
+  de la base y los de la cabeza: lo que la base sellaba no puede reducir un
+  PR mientras el fichero siga en el árbol, y lo nuevo de la cabeza también
+  se sella.
+
+  fases 0 y 2: IDENTIDAD y CONTENIDO. La instantánea de etiquetas del host
+  (fase 0) y el allowlist y el árbol que escanea el gate de aislamiento
+  (fase 2) tienen que ser los que mide la base: el PR no puede apartar el
+  gate cambiando lo que el gate lee. Con la misma ruta, el contenido tampoco
+  puede medir MENOS que el de la base: el allowlist no puede autorizar de más
+  (una variable de entorno, una extensión excluida o un fichero de datos
+  nuevo) y la instantánea de etiquetas no puede dejar de cubrir las que
+  cubría. Medir más sí se admite: quitar una autorización o añadir una
+  etiqueta es endurecer la medición. Una ampliación del allowlist se admite
+  si el allowlist la declara como exención con identidad (HR-33): la
+  superficie, el elemento y quién la autoriza ('actor' o 'issue').
+
+  fases 1, 4, 5 y 6 (#1321): la evidencia (fase 1), las rutas `@` que miden los
+  gates (fase 4), el documento operativo y el fichero que lo enlaza (fase 5)
+  usan IDENTIDAD; las entradas de aceptación (fase 6) usan CONTENCIÓN: la
+  cadena crece, así que las entradas de la base tienen que seguir presentes y
+  sin cambios, y la cabeza puede añadir las suyas. En la fase 4 el conjunto
+  de gates lo fija el canon: el consumer elige las entradas, no el subconjunto.
+
+Si la ruta de la base ya no existe en la cabeza, solo se admite un MOVIMIENTO
+PURO: la ruta nueva tiene que tener el mismo contenido que la base, byte a byte
+(en un directorio, cada fichero de la base con el mismo contenido; la cabeza
+puede añadir ficheros, que solo añaden medición). Un movimiento con edición
+en el mismo PR da hallazgo. Sin la opción el gate se mide como siempre; una base
+sin contrato legible es exit 2.
 
 generate-doc: escribe el documento operativo del consumer (--out), generado
 desde sus datos (ci-pattern.yaml, host-contract, required-jobs, formularios
@@ -1305,6 +1686,95 @@ def load_adoption_contract(repo):
     return doc
 
 
+def _head_contract(repo):
+    """El contrato del repo medido (la cabeza del PR), o None si no hay.
+
+    Con `--config-from` el contrato que gobierna es el de la base, pero lo que
+    el PR declara de mas se mide con el suyo: sin esto, un PR que anade un
+    artefacto de gobierno es rojo (E9) y la unica forma de que pase seria no
+    medirlo. Un contrato ausente no dice nada (la base manda); uno ilegible es
+    exit 2: no se mide a medias (HR-3)."""
+    if not (Path(repo) / ADOPTION_CONTRACT_NAME).is_file():
+        return None
+    return load_adoption_contract(repo)
+
+
+def _union_inventory(base_entries, head_entries):
+    """Inventario por union, con la base mandando en el conflicto (#1339).
+
+    El PR puede anadir una entrada (el artefacto de gobierno que acaba de
+    crear), no reapuntar la que la base declara: si la base dice que un
+    artefacto se adopto hacia otro sitio, el PR no puede decir que se adopto
+    hacia si mismo para que el residuo deje de nombrarse."""
+    if not isinstance(base_entries, list):
+        return None
+    if not isinstance(head_entries, list):
+        return list(base_entries)
+    merged = list(base_entries)
+    seen = {e.get("artifact") for e in base_entries
+            if isinstance(e, dict) and isinstance(e.get("artifact"), str)}
+    for entry in head_entries:
+        if isinstance(entry, dict):
+            key = entry.get("artifact")
+            if isinstance(key, str):
+                if key in seen:
+                    continue
+                seen.add(key)
+        merged.append(entry)
+    return merged
+
+
+def _union_paths(base_paths, head_paths):
+    """Rutas por union, con la base mandando en el conflicto (#1339)."""
+    if not isinstance(base_paths, list):
+        return None
+    if not isinstance(head_paths, list):
+        return list(base_paths)
+    merged = list(base_paths)
+    for rel in head_paths:
+        if rel not in merged:
+            merged.append(rel)
+    return merged
+
+
+def _contract_with_additions(base_contract, head_contract):
+    """El contrato que gobierna con la BASE como suelo; el PR puede AÑADIR.
+
+    Lo que el PR declara de mas se mide tambien: el inventario de la fase 0 y
+    las rutas gobernadas declaradas, por union, y los `pattern_paths` de la
+    fase 3, que son los que declara el PR (puede anadir y retirar). El suelo
+    es el de la base: en el inventario la entrada de la base manda en el
+    conflicto, y en la fase 3 lo que la base sellaba no se reduce mientras el
+    fichero siga en el arbol (E8b, el suelo de sellado).
+
+    Con solo el contrato de la base, un PR que anade un artefacto de gobierno
+    sale en rojo (E9): el inventario de la base no puede conocer un artefacto
+    que el PR acaba de crear."""
+    if not isinstance(head_contract, dict):
+        return base_contract
+    base_phases = base_contract.get("phases")
+    head_phases = head_contract.get("phases")
+    if not isinstance(base_phases, dict) or not isinstance(head_phases, dict):
+        return base_contract
+    base_zero = base_phases.get("0")
+    head_zero = head_phases.get("0")
+    if isinstance(base_zero, dict) and isinstance(head_zero, dict):
+        inventory = _union_inventory(base_zero.get("inventory"),
+                                     head_zero.get("inventory"))
+        if inventory is not None:
+            base_zero["inventory"] = inventory
+        declared = _union_paths(base_zero.get("declared_governed_paths"),
+                                head_zero.get("declared_governed_paths"))
+        if declared is not None:
+            base_zero["declared_governed_paths"] = declared
+    base_three = base_phases.get("3")
+    head_three = head_phases.get("3")
+    if isinstance(base_three, dict) and isinstance(head_three, dict) \
+            and isinstance(head_three.get("pattern_paths"), list):
+        base_three["pattern_paths"] = list(head_three["pattern_paths"])
+    return base_contract
+
+
 def _is_canonical_pattern_target(target, repo=None, declared=()):
     """#306/#311: catálogo canónico del patrón — ubicaciones donde el patrón
     instala (globs del catálogo), el espacio ruleset:<nombre>, los scripts
@@ -1323,7 +1793,7 @@ def _is_canonical_pattern_target(target, repo=None, declared=()):
             and target in _referenced_governance_scripts(repo, refs))
 
 
-def _check_phase_zero(repo, decl):
+def _check_phase_zero(repo, decl, seal=None):
     findings = []
     declared_paths = _declared_governed_paths(decl)
     inventory = decl.get("inventory")
@@ -1412,15 +1882,37 @@ def _check_phase_zero(repo, decl):
             "fase 0: 'removal_confirmed' debe ser true: la lista de eliminación "
             "de gobernanza la confirma el operador (porting-guide, fase 0)"
         )
+    # #1319: la instantánea que mide la fase 0 tiene que ser la que mide la
+    # base: el PR no puede apartar la cobertura de las etiquetas del host.
+    findings.extend(_seal_identity_findings(
+        0, decl.get("host_labels"), (seal or {}).get("host_labels"), repo,
+        (seal or {}).get("base_dir"), "la instantánea de etiquetas del host"))
+    # #1341: además de ser la misma ruta, tiene que COBRIR lo que cubría la
+    # base: una etiqueta que desaparece de la instantánea apaga la
+    # obligación de inventariarla.
+    findings.extend(_seal_labels_findings(
+        0, decl.get("host_labels"), (seal or {}).get("host_labels"), repo,
+        (seal or {}).get("base_dir")))
     return findings
 
 
-def _check_evidence_phase(repo, n, decl):
+def _check_evidence_phase(repo, n, decl, seal=None):
     evidence = decl.get("evidence")
     if not isinstance(evidence, dict) or not isinstance(evidence.get("path"), str) \
             or not evidence["path"].strip():
         return [f"fase {n}: falta 'evidence.path': la evidencia de la fase se declara como ruta"]
     rel = evidence["path"]
+    # #1321: la evidencia que mide la cabeza tiene que ser la que mide la base.
+    # #1348: la de SU fase. La evidencia es una declaracion por fase (la 1 y
+    # la 3 miden documentos distintos), asi que la base guarda una ruta por
+    # fase; comparar la de la fase 3 contra la de la fase 1 era comparar dos
+    # declaraciones que no se corresponden y daba un hallazgo falso.
+    base_route = ((seal or {}).get("evidence_paths") or {}).get(str(n))
+    findings = _seal_identity_findings(
+        n, rel, base_route, repo,
+        (seal or {}).get("base_dir"), "la evidencia de la fase")
+    if findings:
+        return findings
     path = repo / rel
     if not path.is_file():
         return [f"fase {n}: la evidencia declarada no existe: {rel}"]
@@ -1443,7 +1935,7 @@ def _sha_in_history(repo, sha):
     return proc.returncode == 0
 
 
-def _check_acceptance_phase(repo, decl):
+def _check_acceptance_phase(repo, decl, seal=None):
     prs = decl.get("prs")
     if not isinstance(prs, list) or not prs:
         return [
@@ -1451,6 +1943,27 @@ def _check_acceptance_phase(repo, decl):
             "PRs de aceptación (número, SHA y veredicto de CI)"
         ]
     findings = []
+    # #1321: contencion. La cadena de aceptacion CRECE (cada PR aceptado anade
+    # una entrada), asi que las entradas de la base tienen que seguir presentes
+    # y sin cambios; la cabeza puede anadir entradas nuevas.
+    base_prs = (seal or {}).get("acceptance_prs")
+    if base_prs:
+        head_entries = [
+            (e.get("number"), e.get("sha"), e.get("conclusion"))
+            for e in prs if isinstance(e, dict)]
+        for number, sha, conclusion in base_prs:
+            if (number, sha, conclusion) in head_entries:
+                continue
+            # la cabeza muestra lo que declara para ESE PR, para que la
+            # desviacion sea visible sin abrir el contrato
+            head_now = [h for h in head_entries if h[0] == number]
+            now = (f"la cabeza declara sha {head_now[0][1]}, veredicto {head_now[0][2]!r}"
+                   if head_now else "la cabeza no lo declara")
+            findings.append(
+                f"fase 6: la entrada de aceptacion del PR {number!r} (sha {sha}, "
+                f"veredicto {conclusion!r}) la declara la BASE y {now}: una "
+                f"aceptacion no puede apartarse de la base (--seal-baseline); "
+                f"dejala como estaba o anade la cadena nueva")
     for entry in prs:
         if not isinstance(entry, dict):
             findings.append("fase 6: entrada de 'prs' no-objeto: " + repr(entry)[:80])
@@ -1525,9 +2038,9 @@ CHECK_RECOVERY = {
     "pr-size": ("presupuesto de revisión (líneas añadidas + borradas)",
                 "reduzca el diff o divida el cambio en cadena "
                 "(`chain:partial` + `Refs #N`; `Closes #N` solo en la punta)"),
-    "issue-spec": ("enlace y estado de la issue (aprobada, forma canónica)",
-                   "corrija el cuerpo del PR: enlace a la issue aprobada con "
-                   "la forma canónica; nunca invente el cierre"),
+    "issue-spec": ("enlace a la issue del repositorio",
+                   "corrija el cuerpo del PR: enlace a la issue con "
+                   "`Closes`/`Refs`; nunca invente el cierre"),
     "security": ("escaneo de seguridad de superficie",
                  "atienda el hallazgo o justifíquelo en el PR; nunca silencie "
                  "el scanner sin causa responsable"),
@@ -1634,8 +2147,8 @@ def _changelog_fragment_gate_wired(repo):
 def _changelog_fragment_lines(repo):
     if not _changelog_fragment_gate_wired(repo):
         return []
-    return ["- Toda edición material de una skill añade un fragmento válido en `changelog.d/` "
-            "(HR-44, #665)."]
+    return ["- Los fragmentos de `changelog.d/` se consolidan en el PR de release: ningún gate "
+            "exige uno por PR (HR-44, #665; team-skills#1093, R4)."]
 
 
 OPERATING_DOC_AGENTS_BLOCK = """<!-- ci-pattern-agents:begin -->
@@ -1792,8 +2305,8 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint, repo=None):
     # Backticks pares: el flag va dentro del span de código y la nota fuera.
     issue_type_note = (" Elija exactamente un `type:*` de la sección 4."
                        if type_label_flag else "")
-    pr_type_note = (" Elija exactamente un `type:*` de la sección 4; "
-                    "el merge gobernado rechaza el PR sin él."
+    pr_type_note = (" Elija exactamente un `type:*` de la sección 4 "
+                    "(convención; desde #1093 ningún gate la exige)."
                     if type_label_flag else "")
     return [f"Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. "
             f"Jobs requeridos que debe ver en verde antes del merge: {_or_none(sorted(jobs))}.",
@@ -1802,13 +2315,14 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint, repo=None):
         "  `gh issue list --search \"<términos>\" --json number,title,state --state all --limit 20`\n"
         f"  `gh issue create --title \"<título>\" --body-file <cuerpo-de-la-issue.md>{type_label_flag}`{issue_type_note}\n"
         "  Hecho: la issue existe y lleva su etiqueta de tipo.",
-        f"- **2. Aprobación.** El agente crea la issue y para; la aprueba un mantenedor. "
-        "Nunca se auto-aprueba, ni aunque la orden del mantenedor incluya la "
-        "aprobación: en ese caso lo declara en el cuerpo del PR (quién aprobó "
-        "y con qué instrucción). Consulte la etiqueta:\n"
-        f"  `gh issue view <número> --json labels --jq '.labels[].name'`\n"
-        f"  Hecho: la lista contiene `{params['P10_label_approval']}`. "
-        "Si no está, pare y pregunte; no cree rama ni PR.",
+        f"- **2. Aprobación (convención, no puerta).** `{params['P10_label_approval']}` la "
+        "puede poner cualquiera, agentes incluidos (decisión del dueño del 2026-10-23, "
+        "17:24, en los comentarios de #1093); ningún gate la exige. La PR no se bloquea "
+        "por la aprobación: bloquean el enlace a la issue, el tamaño y los commits "
+        "convencionales. Consulte la etiqueta si la quiere usar:\n"
+        "  `gh issue view <número> --json labels --jq '.labels[].name'`\n"
+        f"  Hecho: la etiqueta `{params['P10_label_approval']}` es opcional; el flujo "
+        "sigue con ella o sin ella.",
         "- **3. Worktree.** Desde la rama base actualizada, con un nombre de rama que "
         "cumpla la regex "
         f"`{params['P01_branch_name_pattern']}`:\n"
@@ -1830,13 +2344,16 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint, repo=None):
         "  Hecho: exit 0 sobre el árbol integrado.",
         f"- **6. Pull request.** Contra la rama base de la etapa 3; cuerpo con "
         f"`Refs #N` (o `Closes #N` solo en la punta de cadena), exactamente una "
-        f"etiqueta `type:*` (sección 4) y presupuesto de "
+        f"etiqueta `type:*` orientativa (sección 4) y presupuesto de "
         f"{params['P06_review_budget_lines']} líneas; si no cabe, cadena:\n"
         "  Con `chain:partial` o en la punta de cadena (base = rama por "
-        "defecto) el cuerpo lleva ADEMÁS la sección **Chain Context** (HR-54) "
+        "defecto) el cuerpo declara ADEMÁS la sección **Chain Context** (HR-54) "
         "como dato: `chain`, `position` N/M, `base`, `depends-on`, `follow-up`, "
-        "`starts-at`, `ends-with` y `review-budget`, con `base` igual a la base "
-        "del PR y un único marcador del PR actual en el diagrama de la plantilla de PR.\n"
+        "`starts-at`, `ends-with` y `review-budget`. Si falta o no cuadra, el gate "
+        "avisa y no bloquea (team-skills#1093, R3).\n"
+        "  `ci-pattern pr preflight --draft --pr-body <cuerpo-del-pr.md> --base "
+        "<rama-base> --label <etiqueta>` (modo API-free: exit 0 exige cuerpo y "
+        "tamaño en verde)\n"
         "  `gh pr create --base <rama-base> --head <rama-nueva> "
         f"--title \"<tipo>(<ámbito>): <resumen>\" --body-file <cuerpo-del-pr.md>{type_label_flag}`{pr_type_note}\n"
         "  Hecho: `gh pr view <número> --json number,url` devuelve número y URL.",
@@ -1950,6 +2467,30 @@ def _governed_merge_workflow(repo):
         return str(files[0])
 
 
+def _integrated_tree_lines():
+    """#1303: evidencia del arbol integrado del merge gobernado (#1265). Los codigos
+    de salida son los de references/integrated-tree-evidence.md, copiados tal cual;
+    el test de la referencia impide que se desvien."""
+    return [
+        "- Evidencia del árbol integrado: tras fusionar, el merge gobernado compara el "
+        "árbol del commit de merge con el árbol del head verificado y escribe el veredicto "
+        "en el resumen del job, con `merge commit`, `merge tree`, `verified head`, "
+        "`head tree` y `verdict`.",
+        "- Códigos de salida del merge gobernado:",
+        "  - `0`: Merge hecho y el árbol integrado es el del head verificado o, con la "
+        "frescura apagada, incluye commits de la base que verifica el CI post-merge.",
+        "  - `1`: El contrato no se cumplió: no se fusiona.",
+        "  - `2`: Fallo cerrado: el entorno o la medición no son salvables.",
+        "  - `3`: Merge hecho, las issues enlazadas no se cerraron.",
+        "  - `4`: Merge hecho, el dispatch post-merge falló.",
+        "  - `5`: Merge hecho, **el árbol integrado no es el árbol que revisó el CI** "
+        '(solo con `merge_freshness: "required"`).',
+        "- Si sale `5`, el merge no se deshace. Compare el commit de merge con el head "
+        "verificado (`git diff <head> <merge>`), compruebe si la base se movió entre la "
+        "comprobación y el merge, corrija y vuelva a fusionar: un rerun no sirve.",
+    ]
+
+
 def _operating_doc_merge_lines(repo, allowed_merges):
     """#351: seccion Merge; el camino gobernado solo con declaracion."""
     _or_none = lambda items: ", ".join(items) if items else "ninguno declarado"
@@ -1966,6 +2507,7 @@ def _operating_doc_merge_lines(repo, allowed_merges):
             f"- Camino gobernado: el workflow `{name}` (workflow_dispatch) "
             "audita el PR antes de merge y exige CI en verde; lo lanza un "
             f"mantenedor con `gh workflow run {name} -f pr=<N>`.")
+        lines += _integrated_tree_lines()
     return lines
 
 
@@ -2008,7 +2550,9 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
     issues_lines += [
         f"- Formularios disponibles en el destino: {_or_none(available_forms)}.",
         "- Antes de crear la issue, busque duplicados en issues abiertas y cerradas.",
-        f"- La implementación solo arranca con la etiqueta `{params['P10_label_approval']}` en la issue.",
+        f"- `{params['P10_label_approval']}` la puede poner cualquiera, agentes incluidos "
+        "(decisión del dueño del 2026-10-23, 17:24, en los comentarios de #1093); "
+        "ningún gate la exige (team-skills#1093, R1).",
     ]
     numbered = _branch_takes_issue_number(params["P01_branch_name_pattern"])
     return {
@@ -2020,9 +2564,9 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
              "minúsculas y guiones y sin número de issue:"),
             ("  `git switch -c <tipo>/<número>-<slug>`" if numbered else
              "  `git switch -c <tipo>/<slug>`"),
-            f"- Regex obligatoria: `{params['P01_branch_name_pattern']}`",
-            "- La regex la aplica el ruleset del host; en un host sin rulesets, el gate "
-            "de nombre de rama del patrón.",
+            f"- Regex de la convención (aviso, no bloquea): `{params['P01_branch_name_pattern']}`",
+            "- La regex la aplica el ruleset del host. En un host sin rulesets, el gate de "
+            "nombre de rama solo avisa: no bloquea el PR (team-skills#1093, R10).",
         ]),
         "commits": "\n".join([
             "- Conventional Commits: `tipo[(scope)]: descripción` con tipo en "
@@ -2032,17 +2576,23 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
         "pull-request": "\n".join([
             f"- Presupuesto: {params['P06_review_budget_lines']} líneas (añadidas + borradas, "
             "tests y docs incluidos). Si no cabe, cadena de PRs.",
+            "- El flujo de PR bloquea por tres cosas: el enlace a la issue (`Closes` o "
+            "`Refs` a una issue del repositorio), el presupuesto y los commits "
+            "convencionales; HR-53 y HR-64 avisan. Los gates técnicos (tests, lint, "
+            "tipos, seguridad) no cambian (team-skills#1093).",
             f"- PR que no cierra la issue: etiqueta `{params['P11_label_chain_partial']}` y "
             "`Refs #<issue>` en el cuerpo; sin `Closes|Fixes|Resolves`. HR-7 deduce "
             f"que `{params['P11_label_chain_partial']}` significa «este PR no cierra la "
             "issue»; los propagadores y los eslabones intermedios de una cadena la llevan.",
-            "- Con `chain:partial` o en la punta de cadena, el cuerpo lleva la "
-            "sección Chain Context (HR-54): posición N/M, base igual a la del PR, "
-            "dependencias, presupuesto y un único marcador del PR actual en el diagrama.",
+            "- Con `chain:partial` o en la punta de cadena, el cuerpo declara la "
+            "sección Chain Context (HR-54) como ayuda: posición N/M, base igual a la del PR, "
+            "dependencias, presupuesto y un único marcador del PR actual en el diagrama. "
+            "El gate avisa si falta y no bloquea (team-skills#1093, R3).",
             "- El PR que cierra la issue lleva `Closes #<issue>` sin la etiqueta de cadena.",
-            f"- Exactamente una etiqueta `type:*` por PR: {_or_none(type_labels)}.",
-            "- El cuerpo lleva la sección `## Asistencia de IA` no vacía (HR-14): «ninguna» o la "
-            "herramienta de IA y la parte que ayudó. La declaración vive en el PR; los commits no "
+            f"- Etiquetas `type:*` orientativas, ninguna exigida por un gate: {_or_none(type_labels)}.",
+            "- El cuerpo declara la sección `## Asistencia de IA` (HR-14): «ninguna» o la "
+            "herramienta de IA y la parte que ayudó. El gate avisa si falta y no bloquea "
+            "(team-skills#1093, R9). La declaración vive en el PR; los commits no "
             "llevan atribución de IA.",
             *_changelog_fragment_lines(repo),
         ]),
@@ -2131,7 +2681,9 @@ def _cmd_adoption_generate_doc(rest):
     target = Path(out)
     if str(target.parent) and not target.parent.exists():
         target.parent.mkdir(parents=True)
-    target.write_text(text, encoding="utf-8")
+    # LF en todas las plataformas: el modo texto de Windows escribe CRLF y el PR
+    # cuenta el documento entero como reescrito (#1408).
+    target.write_text(text, encoding="utf-8", newline="\n")
     print(f"documento operativo escrito: {target}")
     return EXIT_OK
 
@@ -2144,12 +2696,19 @@ ADOPTION_GATES = {
     "workflow-policy": "assets/workflow-policy/check_workflow_policy.py",
 }
 ENV_ISOLATION_GATE = "assets/env-isolation/check_env_isolation.py"
+# #1264: opt-in (P56); fuera de ADOPTION_GATES, sin declaración no cambia el veredicto.
+CI_IMAGES_GATE = "assets/ci-images/check_ci_images_pinned.py"
 
 RUNNER_BINDING_GATES = {
     # #303: binding ejecutable exigido SOLO cuando el host declara el camino
     # runner (runner.label); un repo con protección de rama no lo necesita.
     "runner-binding": "assets/runner-controls/check_runner_binding.py",
 }
+
+# #1149 (R3): el detector del cableado de A1 vive en un módulo aparte y se
+# importa EN PROCESO: un gate de adopción jamás invoca otro gate como
+# subproceso (HR-46, la lección del ciclo de 1.300 procesos).
+REVIEW_BUDGET_MODULE = "assets/adoption/review_budget.py"
 
 
 def _tail(text, lines=3, width=240):
@@ -2187,7 +2746,7 @@ def _run_gate_binary(repo, binary, args):
     return _run_cmd(cmd, timeout=600)
 
 
-def _check_env_isolation_phase(repo, decl):
+def _check_env_isolation_phase(repo, decl, seal=None):
     spec = decl.get("env_isolation")
     if not isinstance(spec, dict) or not isinstance(spec.get("root"), str) \
             or not spec["root"].strip() or not isinstance(spec.get("allowlist"), str) \
@@ -2197,12 +2756,28 @@ def _check_env_isolation_phase(repo, decl):
             "'allowlist' (JSON versionado): el gate EJECUTA env-isolation (HR-28) "
             "sobre el árbol; una declaración con evidencia en un .md no lo prueba"
         ]
+    # #1319: el allowlist y el árbol que mide la fase 2 tienen que ser los que
+    # mide la base: el PR no puede apartar una fuga del gate HR-28 cambiando
+    # lo que el gate lee. La comprobación va DESPUÉS de la existencia: una
+    # ruta declarada que no existe es duda (exit 2), no un hallazgo.
     root = repo / spec["root"]
     allowlist = repo / spec["allowlist"]
     if not root.is_dir():
         raise UsageError(f"fase 2: el árbol de tests declarado no existe: {spec['root']}")
     if not allowlist.is_file():
         raise UsageError(f"fase 2: el allowlist declarado no existe: {spec['allowlist']}")
+    findings = []
+    findings.extend(_seal_identity_findings(
+        2, spec.get("allowlist"), (seal or {}).get("env_allowlist"), repo,
+        (seal or {}).get("base_dir"), "el allowlist del gate de aislamiento"))
+    findings.extend(_seal_identity_findings(
+        2, spec.get("root"), (seal or {}).get("env_root"), repo,
+        (seal or {}).get("base_dir"), "el árbol que escanea el gate de aislamiento"))
+    findings.extend(_seal_allowlist_findings(
+        2, spec.get("allowlist"), (seal or {}).get("env_allowlist"), repo,
+        (seal or {}).get("base_dir")))
+    if findings:
+        return findings
     proc = _run_gate_binary(repo, skill_dir() / ENV_ISOLATION_GATE,
                             ["--root", str(root), "--allowlist", str(allowlist)])
     if proc.returncode == 0:
@@ -2217,7 +2792,96 @@ def _check_env_isolation_phase(repo, decl):
     ]
 
 
-def _check_gates_phase(repo, decl, contract):
+def _check_review_budget(repo):
+    """Fase 4 (#1149, R3): el presupuesto A1 con el mapa de orígenes cableado.
+
+    El mapa de orígenes (`--origins-file`) es lo que hace que el árbol
+    vendorizado (`.agents/skills/`) no cuente para el presupuesto. Un consumer
+    con la comprobación `budget` activa y sin el mapa revienta A1 en la
+    primera PR de propagación del catálogo (#1133, cadete#643): la fase 4 lo
+    dice antes y nombra el cableado que falta. El detector se importa EN
+    PROCESO desde la skill vigente: un gate de adopción jamás invoca otro gate
+    como subproceso (HR-46).
+    """
+    path = skill_dir() / REVIEW_BUDGET_MODULE
+    spec = importlib.util.spec_from_file_location("ci_pattern_review_budget", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return ["fase 4: " + finding for finding in module.findings(Path(repo))]
+
+
+def _ci_images_mode(repo):
+    """#1264: 'on' si P56_ci_images_gate: on; None sin declaración (ausente, off o sin clave).
+    Fail-closed: fichero ilegible o valor fuera de {off, on} es UsageError (exit 2)."""
+    path = repo / "ci-pattern.yaml"
+    if not path.is_file():
+        return None
+    try:
+        params = parse_params_yaml(path.read_text(encoding="utf-8"))
+    except (ParamsFileError, OSError, UnicodeDecodeError) as exc:
+        raise UsageError(f"fase 4: ci-pattern.yaml ilegible ({path}): {exc}") from exc
+    if "P56_ci_images_gate" not in params:
+        return None
+    param = next(p for p in load_schema()[0]["parameters"] if p["id"] == "P56")
+    err = validate_value(param, params["P56_ci_images_gate"])
+    if err:
+        raise UsageError(f"fase 4: ci-pattern.yaml ilegible: {err}")
+    return "on" if params["P56_ci_images_gate"] == "on" else None
+
+
+def _ci_images_jobs(repo):
+    """Jobs cuyo step `run` ejecuta el gate (un workflow ilegible lo reporta la medición)."""
+    wp_path = skill_dir() / "assets" / "workflow-policy" / "check_workflow_policy.py"
+    spec = importlib.util.spec_from_file_location("ci_pattern_workflow_policy", wp_path)
+    wp = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(wp)
+    files = sorted((repo / ".github" / "workflows").glob("*.y*ml"))
+    script = Path(CI_IMAGES_GATE).name
+    jobs = []
+    for path in files:
+        try:
+            doc = wp.parse_workflow(path.read_text(encoding="utf-8"), str(path))
+        except (wp.InvalidInput, OSError, UnicodeDecodeError):
+            continue
+        for job_id, job in doc["jobs"].items():
+            steps = job.get("steps") if isinstance(job, dict) else None
+            runs_gate = any(
+                isinstance(s, dict) and script in str(s.get("run", ""))
+                for s in (steps if isinstance(steps, list) else [])
+            )
+            if runs_gate and job_id not in jobs:
+                jobs.append(job_id)
+    return jobs
+
+
+def _ci_images_findings(repo):
+    """#1264 (HR-78): con P56=on, el gate mide el consumer y su job va en required_jobs."""
+    if _ci_images_mode(repo) is None:
+        return []
+    script = Path(CI_IMAGES_GATE).name
+    proc = _run_gate_binary(repo, skill_dir() / CI_IMAGES_GATE, [str(repo)])
+    findings = []
+    if proc.returncode != 0:
+        findings.append(
+            f"fase 4: el gate {script} (HR-78) no está en verde sobre el consumer "
+            f"(rc={proc.returncode}): {_tail(proc.stdout + proc.stderr)}"
+        )
+    jobs = _ci_images_jobs(repo)
+    if not jobs:
+        return findings + [
+            f"fase 4: ningún job ejecuta el gate de imágenes de CI ({script}, HR-78); "
+            "con P56_ci_images_gate: on el gate debe cablearse en un job requerido"
+        ]
+    for job in jobs:
+        findings += [
+            "fase 4: " + f
+            for f in _workflow_job_findings(repo, job, hr="HR-78")
+            + _required_job_findings(repo, job, hr="HR-78")
+        ]
+    return findings
+
+
+def _check_gates_phase(repo, decl, contract, seal=None):
     runner = _runner_label(repo)
     gate_map = {**ADOPTION_GATES, **RUNNER_BINDING_GATES} if runner else ADOPTION_GATES
     gates = decl.get("gates")
@@ -2228,6 +2892,49 @@ def _check_gates_phase(repo, decl, contract):
             "parseen no es 'en verde'"
         ]
     findings = []
+    # #1321: las rutas `@` que mide la cabeza tienen que ser las que mide la
+    # base. El conjunto de gates lo fija el canon (el consumer elige las
+    # ENTRADAS), asi que no se compara la lista entera: solo las rutas
+    # declaradas. La retirada real (la ruta de la base ya no esta en el arbol)
+    # la admite el mismo criterio de las fases 0 y 2: un movimiento puro.
+    base_routes = (seal or {}).get("gate_routes")
+    if base_routes:
+        head_routes = set()
+        for entry in gates:
+            if not isinstance(entry, dict):
+                continue
+            for arg in entry.get("args") or []:
+                if isinstance(arg, str) and arg.startswith("@"):
+                    head_routes.add(arg[1:].strip())
+        # #1344: la excepcion de retirada es la de las fases 0, 1, 2 y 5
+        # (#1323): si la ruta de la base ya no esta en el arbol medido, solo se
+        # admite un MOVIMIENTO PURO, la cabeza mide una ruta nueva con el
+        # mismo contenido byte a byte. Las candidatas son las rutas que la
+        # cabeza mide y la base no: una ruta que la base ya media no puede ser
+        # la nueva.
+        base_dir = (seal or {}).get("base_dir")
+        new_routes = sorted(head_routes - base_routes)
+        for rel in sorted(base_routes):
+            if rel in head_routes:
+                continue
+            if (repo / rel).exists():
+                findings.append(
+                    f"fase 4: la ruta '{rel}' la mide la BASE y la cabeza no la "
+                    f"mide: el PR no puede apartar el gate de la base "
+                    f"(--seal-baseline); mide '{rel}' o retira la ruta de la base")
+                continue
+            # la ruta de la base desaparecio: el movimiento se mide con el
+            # helper de las demas fases, no con un criterio propio.
+            moves = [(r, _seal_identity_findings(
+                4, r, rel, repo, base_dir, "la ruta que mide el gate"))
+                for r in new_routes]
+            if any(not detail for _, detail in moves):
+                continue
+            findings.append(next((detail for _, detail in moves if detail), (
+                f"fase 4: la ruta '{rel}' la mide la BASE y la cabeza no la mide, "
+                f"y no es un movimiento puro: la base mide '{rel}' y la cabeza no "
+                f"mide ninguna ruta nueva con su contenido (--seal-baseline); "
+                f"mide '{rel}' o mueve la ruta sin editarla")))
     names = []
     for entry in gates:
         name = entry.get("gate") if isinstance(entry, dict) else None
@@ -2261,6 +2968,7 @@ def _check_gates_phase(repo, decl, contract):
             )
     if runner:
         findings.extend(_runner_online_findings(repo, contract, runner))
+    findings.extend(_ci_images_findings(repo))
     return findings
 
 
@@ -2399,6 +3107,29 @@ def _referenced_governance_scripts(repo, refs, declared=()):
     return found
 
 
+def _on_disk_relpath(repo, path):
+    """Ruta relativa de ``path`` con los nombres que tiene en disco, o None si
+    no existe. En un sistema de ficheros que no distingue mayúsculas, `glob`
+    devuelve el segmento literal escrito como el patrón
+    (`pull_request_template.md` para `PULL_REQUEST_TEMPLATE.md`), y esa ruta
+    no casa con el inventario, que nombra el fichero real."""
+    current = Path(repo)
+    parts = []
+    for part in path.relative_to(repo).parts:
+        try:
+            names = os.listdir(current)
+        except OSError:
+            return None
+        if part not in names:
+            matches = [n for n in names if n.casefold() == part.casefold()]
+            if len(matches) != 1:
+                return None
+            part = matches[0]
+        parts.append(part)
+        current = current / part
+    return "/".join(parts) if current.is_file() else None
+
+
 def _scan_governed_paths(repo, declared=()):
     """Artefactos de gobierno PRESENTES en el árbol: rutas del catálogo
     (glob como dato) y scripts descubiertos por REFERENCIA (#312)."""
@@ -2407,7 +3138,10 @@ def _scan_governed_paths(repo, declared=()):
     for pattern in patterns:
         for p in repo.glob(pattern):
             if p.is_file():
-                found.add(p.relative_to(repo).as_posix())
+                # Sin nombre resoluble en disco (nombre ambiguo, error de
+                # lectura) se queda la ruta del glob: mejor un hallazgo de más
+                # que un artefacto sin medir.
+                found.add(_on_disk_relpath(repo, p) or p.relative_to(repo).as_posix())
     for rel in _referenced_governance_scripts(repo, refs, declared):
         if (repo / rel).is_file():
             found.add(rel)
@@ -2590,7 +3324,7 @@ def _load_host_snapshot(repo, kind, rel):
 def _manifest_identity_findings(repo, declared_paths):
     """Identidad del patrón EN PROCESO (#277): la única fuente es el
     manifiesto de gobierno `.governance-manifest.json`, leído con
-    `load_manifest` y verificado con `sha256_file`, las mismas funciones que
+    `load_manifest` y verificado con `sha256_governed`, las mismas funciones que
     usa `verify`. Devuelve (hallazgos, files del manifiesto). Un gate de
     adopción NUNCA lanza `verify` ni `adoption check` como subproceso: verify
     ejecuta `adoption check` en proceso y el ciclo recursivo tumbo el VPS
@@ -2604,6 +3338,9 @@ def _manifest_identity_findings(repo, declared_paths):
     if not isinstance(manifest_files, dict):
         raise UsageError(
             f"fase 3: {MANIFEST_NAME} debe declarar 'files' como objeto ruta→sha256")
+    # El hash se calcula con el algoritmo del formato que declara el
+    # manifiesto (#1371): la fase 3 mide un manifiesto v2 con el algoritmo v2.
+    schema = manifest.get("schema_version")
     unsafe = [rel for rel in manifest_files
               if not isinstance(rel, str)]
     for rel in manifest_files:
@@ -2625,10 +3362,13 @@ def _manifest_identity_findings(repo, declared_paths):
                 f"fase 3: '{rel}' figura en el manifiesto de gobierno pero no "
                 "existe en el árbol (HR-46)")
             continue
-        if sha256_file(target) != manifest_files[rel]:
+        actual = sha256_governed(target, rel, schema=schema)
+        if actual != manifest_files[rel]:
             findings.append(
-                f"fase 3: '{rel}' difiere del sha256 del manifiesto de "
-                "gobierno; la identidad del patrón no es autodeclarada (HR-46)")
+                f"fase 3: '{rel}' difiere del sha256 del manifiesto de gobierno "
+                f"(esperado {manifest_files[rel]}, encontrado {actual}); "
+                "la identidad del patrón no es autodeclarada (HR-46). "
+                f"Re-selle el manifiesto con: ci-pattern manifest seal {repo}")
     # (b) todo artefacto declarado del patrón está cubierto por el manifiesto.
     for rel in sorted(declared_paths):
         if rel not in manifest_files:
@@ -2918,7 +3658,7 @@ def _incident_line_findings(rel, number, line):
     return findings
 
 
-def _check_phase_three(repo, decl, contract):
+def _check_phase_three(repo, decl, contract, seal=None):
     """#277: sustitución del gobierno de destino ejecutada, no declarada."""
     pattern_paths = decl.get("pattern_paths")
     if not isinstance(pattern_paths, list) or not pattern_paths:
@@ -2956,8 +3696,22 @@ def _check_phase_three(repo, decl, contract):
             if isinstance(e, dict) and isinstance(e.get("artifact"), str):
                 inventory[e["artifact"]] = e
     declared_paths = {r for r in pattern_paths if isinstance(r, str)}
+    # #1317: la base de sellado no se reduce en un PR. El conjunto que hay que
+    # sellar es la UNIÓN de los 'pattern_paths' de la base y los de la cabeza:
+    # lo que la base sellaba no puede desaparecer mientras el fichero siga en
+    # el árbol. Retirar un workflow sí se permite: si el fichero ya no existe,
+    # no hay nada que sellar y la base deja de exigirlo.
+    seal_paths = (seal or {}).get("pattern_paths") or set()
+    if seal_paths:
+        for rel in sorted(seal_paths - declared_paths):
+            if (repo / rel).exists():
+                findings.append(
+                    f"fase 3: '{rel}' lo sellaba la BASE y el PR lo deja de declarar "
+                    "en 'pattern_paths', pero el fichero sigue en el árbol: la base de "
+                    "sellado no se reduce en un PR (--seal-baseline); decláralo en "
+                    "'pattern_paths' y séllalo, o borra el fichero si lo retiras")
     # Identidad del patrón: el manifiesto de gobierno verificado EN PROCESO
-    # con load_manifest + sha256_file (las mismas funciones de `verify`),
+    # con load_manifest + sha256_governed (las mismas funciones de `verify`),
     # nunca la autodeclaración del contrato de adopción (#277; hallazgo del
     # auditor: listar el workflow legado como pattern_path no puede bastar).
     # NUNCA como subproceso: verify ejecuta adoption check y el ciclo
@@ -3021,9 +3775,22 @@ def _check_phase_three(repo, decl, contract):
         pattern_rulesets = _pattern_rulesets_from_host_contract(repo)
         for entry in ruleset_data:
             name = entry["name"]
-            if name in pattern_rulesets:
-                continue
             e = inventory.get(f"ruleset:{name}")
+            # #1353: un ruleset adoptado HACIA SI MISMO es el del patron, no un
+            # residual: nada lo sustituyo. Solo es residual el que el inventario
+            # dice que el patron sustituyo por OTRO destino.
+            if (e is not None and e.get("disposition") == "adopted"
+                    and e.get("target") == f"ruleset:{name}"
+                    and name in pattern_rulesets):
+                continue
+            # #1351: el INVENTARIO del patron manda sobre la lista de
+            # exenciones del host-contract. El PR no puede declarar en su
+            # contrato un ruleset que el inventario dice que el patron
+            # sustituyo: la exencion solo aplica a lo que nadie inventario.
+            # Con `--config-from` el inventario sale de la base (#1339), asi
+            # que el PR tampoco lo puede quitar.
+            if e is None and name in pattern_rulesets:
+                continue
             if e is None:
                 findings.append(
                     f"fase 3: artefacto de gobierno del host no inventariado: "
@@ -3068,7 +3835,7 @@ def _first_diff_line(expected, actual):
     return "contenido distinto"
 
 
-def _check_docs_phase(repo, decl):
+def _check_docs_phase(repo, decl, seal=None):
     """Fase 5 (#279): el documento operativo existe, está enlazado desde el
     fichero declarado y coincide byte a byte (por secciones) con el doc
     REGENERADO en este mismo proceso desde los datos reales del consumer.
@@ -3086,6 +3853,16 @@ def _check_docs_phase(repo, decl):
         ]
     doc_rel = spec["doc"].strip()
     linked_rel = spec["linked_from"].strip()
+    # #1321: el documento que mide la cabeza tiene que ser el que mide la
+    # base, y el fichero que lo enlaza tambien.
+    findings = _seal_identity_findings(
+        5, doc_rel, (seal or {}).get("operating_doc"), repo,
+        (seal or {}).get("base_dir"), "el documento operativo")
+    findings += _seal_identity_findings(
+        5, linked_rel, (seal or {}).get("operating_linked_from"), repo,
+        (seal or {}).get("base_dir"), "el fichero que enlaza el documento operativo")
+    if findings:
+        return findings
     generated = build_operating_doc(repo)  # entradas ilegibles → UsageError (exit 2)
     doc_path = repo / doc_rel
     if not doc_path.is_file():
@@ -3243,7 +4020,7 @@ def _manifest_slice_sha(repo):
 
 
 def _check_agents_structure(repo, contract):
-    """#341-S3 (HR-55): estructura del AGENTS en fases 3 y 5.
+    """#341-S3 (HR-55): estructura del AGENTS en la fase 3 (#1396: no en la 5).
 
     AGENTS = titulo + bloque propagado (marcas personal-skills:slice:* con
     sha256 identico a slice_block_sha256 del .team-skills.yaml) + como
@@ -3456,6 +4233,46 @@ def _workflow_job_findings(repo, job, hr="HR-63"):
     if any(job_re.search(w.read_text(encoding="utf-8")) for w in workflows):
         return []
     return [f"{hr}: ningun workflow define el job {job}"]
+
+
+GOVERNANCE_SEALS_KEYS = ("job",)
+
+
+def _check_governance_seals(repo, contract):
+    """#1027 (HR-72): la fase 3 se mide en un pull request.
+
+    Activacion por DECLARACION explicita `governance_seals` (como HR-55 y
+    HR-63): sin ella avisa por stderr y sale 0 y la adopcion previa no se
+    rompe. Con ella el consumer declara el job de PR que ejecuta
+    `adoption check --phase 3`, y el gate comprueba que ese job existe en un
+    workflow y figura en `required_jobs` de la politica: la unica via de
+    enforcement que queda en un repo privado con plan Free, donde el host no
+    ofrece ni proteccion de rama ni required checks y el unico.required es el
+    agregador `required` del propio CI del consumer. El job invoca la CLI como
+    comando de primer nivel, nunca encadenada a otro gate (HR-46, #342).
+    """
+    declared = contract.get("governance_seals") if isinstance(contract, dict) else None
+    if declared is None:
+        print("HR-72: governance_seals no declarado en el contrato de adopcion; "
+              "la fase 3 todavia no se exige medirse en un PR "
+              "(se activa con governance_seals).", file=sys.stderr)
+        return []
+    if not isinstance(declared, dict):
+        return ["HR-72: governance_seals debe ser un objeto"]
+    findings = []
+    unknown = sorted(set(declared) - set(GOVERNANCE_SEALS_KEYS))
+    if unknown:
+        findings.append("HR-72: governance_seals con claves desconocidas: "
+                        + ", ".join(unknown))
+    missing = [k for k in GOVERNANCE_SEALS_KEYS
+               if not isinstance(declared.get(k), str) or not declared[k].strip()]
+    if missing:
+        findings.append("HR-72: governance_seals incompleto, faltan: "
+                        + ", ".join(missing))
+    if findings:
+        return findings
+    return (_workflow_job_findings(repo, declared["job"], "HR-72")
+            + _required_job_findings(repo, declared["job"], "HR-72"))
 
 
 def _docs_map_roots(decl):
@@ -3676,6 +4493,23 @@ def _check_docs_manifest(repo, contract):
         raise UsageError(f"HR-70: {exc}") from exc
 
 
+_ADOPTION_CONTRACT = ".github/ci-pattern-adoption.json"
+# Segunda fuente retirada en #1020: el job leia estos ficheros de la raiz mientras
+# la fase 5 validaba el contrato. El job ya lee el contrato; el fichero, si
+# sobrevive a la propagacion, es una declaracion muerta que hay que borrar.
+LEGACY_DOCS_CONFIGS = {"docs_commands": "docs-commands.json",
+                       "docs_links": "docs-links.json"}
+
+
+def _legacy_source_findings(repo, key, hr):
+    """Nombra el fichero de raiz mientras exista: dos fuentes derivan (#1020)."""
+    name = LEGACY_DOCS_CONFIGS[key]
+    if not (repo / name).is_file():
+        return []
+    return [f"{hr}: segunda fuente obsoleta: {name} en la raiz; la declaracion vive en "
+            f"{_ADOPTION_CONTRACT} ({key}), que es lo que el job ya lee"]
+
+
 def _check_docs_links(repo, contract):
     """#712 (HR-66): enlaces locales de README, AGENTS.md y docs/. Activacion por
     DECLARACION `docs_links`: sin ella avisa por stderr y sale 0; con ella la
@@ -3695,6 +4529,7 @@ def _check_docs_links(repo, contract):
     spec.loader.exec_module(gate)
     unknown = sorted(set(decl) - set(gate.CONFIG_KEYS))
     findings = [f"HR-66: clave desconocida en docs_links: {k}" for k in unknown]
+    findings += _legacy_source_findings(repo, "docs_links", "HR-66")
     findings += gate.check(repo, decl)
     job = decl.get("job")
     if job:
@@ -3704,6 +4539,36 @@ def _check_docs_links(repo, contract):
             findings.append(f"HR-66: ningun workflow define el job {job}")
         findings += _required_job_findings(repo, job, "HR-66")
     return findings
+
+
+def _check_where_to_work(repo, contract):
+    """HR-77 (#1201): la pagina «donde trabajar», con el modo declarado en el
+    contrato. Sin `docs_where_to_work` el gate NO se mide: la clave es opcional
+    y el comportamiento de cada consumer no cambia por propagar. Con ella,
+    `mode` decide si la pagina se exige (`exigido`, falla la fase 5) o solo se
+    avisa (`aviso`). El modo es dato del contrato, no cableado del consumer."""
+    decl = contract.get("docs_where_to_work") if isinstance(contract, dict) else None
+    if decl is None:
+        print("HR-77: docs_where_to_work no declarado en el contrato de adopcion; "
+              "la pagina «donde trabajar» no se exige todavia (se activa con "
+              "docs_where_to_work).", file=sys.stderr)
+        return []
+    if not isinstance(decl, dict):
+        return ["HR-77: docs_where_to_work debe ser un objeto con 'mode'"]
+    mode = decl.get("mode")
+    if mode not in ("exigido", "aviso"):
+        return ["HR-77: docs_where_to_work.mode debe ser 'exigido' o 'aviso'"]
+    spec = importlib.util.spec_from_file_location(
+        "check_where_to_work",
+        skill_dir() / "assets" / "where-to-work" / "check_where_to_work.py")
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
+    findings = gate.check(repo)
+    if mode == "aviso":
+        for finding in findings:
+            print(f"HR-77 AVISO: {finding}", file=sys.stderr)
+        return []
+    return [f"HR-77: {finding}" for finding in findings]
 
 
 def _check_docs_commands(repo, contract):
@@ -3718,13 +4583,21 @@ def _check_docs_commands(repo, contract):
               "comandos documentados todavia no se prueban (se activa con docs_commands).",
               file=sys.stderr)
         return []
+    if not isinstance(decl, dict):
+        return ["HR-65: docs_commands debe ser un objeto"]
+    spec = importlib.util.spec_from_file_location(
+        "check_docs_commands", skill_dir() / "assets" / "docs-commands" / "check_docs_commands.py")
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
     keys = ("cli_name", "cli_command", "job")
-    missing = [k for k in keys if not isinstance(decl, dict) or not decl.get(k)]
+    findings = [f"HR-65: clave desconocida en docs_commands: {k}"
+                for k in sorted(set(decl) - set(gate.CONFIG_KEYS))]
+    findings += _legacy_source_findings(repo, "docs_commands", "HR-65")
+    missing = [k for k in keys if not decl.get(k)]
     if missing:
-        return ["HR-65: docs_commands incompleto, faltan: " + ", ".join(missing)]
+        return findings + ["HR-65: docs_commands incompleto, faltan: " + ", ".join(missing)]
     job_re = re.compile(r"^\s+" + re.escape(decl["job"]) + r":\s*$", re.M)
     workflows = (repo / ".github" / "workflows").glob("*.y*ml")
-    findings = []
     if not any(job_re.search(w.read_text(encoding="utf-8")) for w in workflows):
         findings.append(f"HR-65: ningun workflow define el job {decl['job']}")
     return findings + _required_job_findings(repo, decl["job"], "HR-65")
@@ -3760,33 +4633,512 @@ def _check_docs_decisions(repo, contract):
     return findings
 
 
-def _phase_findings(repo, n, decl, contract):
+def _check_checks_tables(repo, contract):
+    """HR-82 (#1382): las tablas de checks ESCRITAS A MANO, contra los jobs reales
+    de los workflows. La fase 5 ya mide la tabla del documento operativo generado;
+    una tabla escrita a mano es tan vinculante como esa y no se media. Activacion
+    por DECLARACION `checks_tables`: sin ella avisa por stderr y sale 0, para no
+    poner en rojo a los consumers existentes; con ella la fase 5 mide cada tabla
+    declarada (el nombre del check y el workflow que lo define) y exige que esten
+    los jobs requeridos."""
+    decl = contract.get("checks_tables") if isinstance(contract, dict) else None
+    if decl is None:
+        print("HR-82: checks_tables no declarado en el contrato de adopcion; las "
+              "tablas de checks escritas a mano no se miden todavia (se activa con "
+              "checks_tables).", file=sys.stderr)
+        return []
+    if not isinstance(decl, dict):
+        return ["HR-82: checks_tables debe ser un objeto"]
+    spec = importlib.util.spec_from_file_location(
+        "check_checks_table", skill_dir() / "assets" / "checks-table" / "check_checks_table.py")
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
+    findings = [f"HR-82: clave desconocida en checks_tables: {k}"
+                for k in sorted(set(decl) - set(gate.CONFIG_KEYS))]
+    findings += [f"HR-82: {finding}" for finding in gate.check(repo, decl)]
+    return findings
+
+
+def _load_dependabot_config():
+    """Importa el activo de configuracion de Dependabot en proceso (nunca subproceso)."""
+    path = skill_dir() / "assets" / "dependabot" / "config.py"
+    spec = importlib.util.spec_from_file_location("dependabot_config", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _check_dependabot_config(repo, contract):
+    """#1182 (HR-75): el `.github/dependabot.yml` del consumer es el que genera el
+    canon desde la declaracion `dependabot` (un ecosystem por manifiesto, con el
+    `directory` de cada uno donde vive su manifiesto). Activacion por
+    DECLARACION `dependabot`: sin ella avisa por stderr y sale 0."""
+    declared = contract.get("dependabot") if isinstance(contract, dict) else None
+    if declared is None:
+        print("HR-75: dependabot no declarado en el contrato de adopcion; la direccion "
+              "de Dependabot todavia no se mide (se activa con dependabot).", file=sys.stderr)
+        return []
+    return _load_dependabot_config().findings(Path(repo), declared)
+
+
+def cmd_dependabot(args):
+    """#1182: el `.github/dependabot.yml` del consumer sale de la declaracion
+    `dependabot` del contrato de adopcion. `render` imprime el fichero; `check`
+    dice si el del consumer coincide."""
+    if not args or args[0] not in ("render", "check"):
+        raise UsageError("dependabot: use 'dependabot render <repo>' o 'dependabot check <repo>'.")
+    action, rest = args[0], args[1:]
+    if len(rest) != 1:
+        raise UsageError(f"dependabot {action}: se espera el repositorio del consumer.")
+    repo = Path(rest[0])
+    gate = _load_dependabot_config()
+    declaration = load_adoption_contract(repo).get(gate.DECLARATION_KEY)
+    if declaration is None:
+        raise UsageError(f"el contrato de adopcion de {repo} no declara '{gate.DECLARATION_KEY}': "
+                         "sin esa declaracion no hay direccion que generar (#1182)")
+    if action == "render":
+        print(gate.render(declaration), end="")
+        return EXIT_OK
+    findings = gate.findings(repo, declaration)
+    for item in findings:
+        print(item, file=sys.stderr)
+    return EXIT_FINDINGS if findings else EXIT_OK
+
+
+def _phase_findings(repo, n, decl, contract, seal=None):
     """Hallazgos de la fase n contra el árbol real; [] si cumple."""
     if not isinstance(decl, dict):
         return [f"fase {n}: sin declaración en el contrato"]
     if n == 0:
-        return _check_phase_zero(repo, decl)
+        return _check_phase_zero(repo, decl, seal)
     if n == 2:
-        return _check_env_isolation_phase(repo, decl)
+        return _check_env_isolation_phase(repo, decl, seal)
     if n == 1:
-        return _check_evidence_phase(repo, n, decl)
+        return _check_evidence_phase(repo, n, decl, seal)
     if n == 3:
-        return _check_phase_three(repo, decl, contract) + \
-            _check_evidence_phase(repo, n, decl) + \
-            _check_agents_structure(repo, contract)
+        return _check_phase_three(repo, decl, contract, seal) + \
+            _check_evidence_phase(repo, n, decl, seal) + \
+            _check_agents_structure(repo, contract) + \
+            _check_governance_seals(repo, contract)
     if n == 4:
-        return _check_gates_phase(repo, decl, contract)
+        return _check_gates_phase(repo, decl, contract, seal) + _check_review_budget(repo)
     if n == 5:
-        return (_check_docs_phase(repo, decl) + _check_agents_structure(repo, contract)
+        # #1396: HR-55 (_check_agents_structure) la mide la fase 3; repetirla
+        # aquí daba dos rojos por una causa.
+        return (_check_docs_phase(repo, decl, seal)
                 + _check_docs_map(repo, contract) + _check_architecture(repo, contract)
                 + _check_docs_manifest(repo, contract)
                 + _check_docs_links(repo, contract)
                 + _check_docs_commands(repo, contract)
+                + _check_where_to_work(repo, contract)
                 + _check_docs_decisions(repo, contract)
+                + _check_checks_tables(repo, contract)
+                + _check_dependabot_config(repo, contract)
                 + _incident_contract_findings(_operating_doc_params(repo)))
     if n == 6:
-        return _check_acceptance_phase(repo, decl)
+        return _check_acceptance_phase(repo, decl, seal)
     return [f"fase {n}: fase fuera del rango 0..{ADOPTION_PHASES - 1}"]
+
+
+def _seal_baseline(base_dir):
+    """Lo que la BASE declara como sujeto de cada fase (#1317, #1319).
+
+    Lee el contrato de adopción del checkout de la base y devuelve sus
+    declaraciones: el conjunto que hay que sellar en la fase 3, la
+    instantánea de etiquetas de la fase 0 y el allowlist y el árbol que mide
+    la fase 2. Un contrato ausente o ilegible es exit 2 (fallo cerrado): un
+    gate que no puede medir la base no da verde (HR-3)."""
+    try:
+        contract = load_adoption_contract(base_dir)
+    except UsageError as exc:
+        raise UsageError(
+            f"adoption check: --seal-baseline no puede medirse: {exc}") from exc
+    return _seal_from_contract(contract, base_dir)
+
+
+def _seal_floor(contract, base_dir):
+    """El suelo de sellado: lo que la base sellaba (#1317).
+
+    Es la parte de `--seal-baseline` que sigue valiendo con `--config-from`:
+    alli el contrato que gobierna ya sale de la base, asi que las fases 0, 1,
+    2, 4, 5 y 6 miden con el de la base y no necesitan un operador de
+    identidad. Lo que la base SELLABA sigue siendo el suelo de la fase 3
+    (E8b): un PR no puede reducir su propia base de sellar mientras el
+    fichero siga en el arbol."""
+    phases = contract.get("phases")
+    phases = phases if isinstance(phases, dict) else {}
+    decl = phases.get("3")
+    decl = decl if isinstance(decl, dict) else {}
+    return {
+        "pattern_paths": _seal_baseline_paths(decl),
+        "base_dir": str(Path(base_dir).resolve()),
+    }
+
+
+def _seal_from_contract(contract, base_dir):
+    """Las declaraciones de la BASE, fase por fase (#1317, #1319, #1321)."""
+    phases = contract.get("phases")
+    phases = phases if isinstance(phases, dict) else {}
+
+    def _phase(n):
+        decl = phases.get(str(n))
+        return decl if isinstance(decl, dict) else {}
+
+    env = _phase(2).get("env_isolation")
+    env = env if isinstance(env, dict) else {}
+    # #1321: las fases 1, 4, 5 y 6 declaran tambien QUE se mide.
+    operating_doc = _phase(5).get("operating_doc")
+    operating_doc = operating_doc if isinstance(operating_doc, dict) else {}
+    return {
+        "pattern_paths": _seal_baseline_paths(_phase(3)),
+        "host_labels": _seal_baseline_route(_phase(0), "host_labels"),
+        "env_allowlist": _seal_baseline_route(env, "allowlist"),
+        "env_root": _seal_baseline_route(env, "root"),
+        "evidence_paths": _seal_baseline_evidence_paths(phases),
+        "gate_routes": _seal_baseline_gate_routes(_phase(4)),
+        "operating_doc": _seal_baseline_route(operating_doc, "doc"),
+        "operating_linked_from": _seal_baseline_route(operating_doc, "linked_from"),
+        "acceptance_prs": _seal_baseline_prs(_phase(6)),
+        "base_dir": str(Path(base_dir).resolve()),
+    }
+
+
+#: Fases que declaran su propia evidencia. La 1 mide la evidencia de la
+#: propagacion y la 3 la del reemplazo de gobernanza: son documentos
+#: distintos, y cada uno se mide contra el de SU fase (#1348).
+EVIDENCE_PHASES = ("1", "3")
+
+
+def _seal_baseline_evidence_paths(phases):
+    """Rutas de evidencia que declara la BASE, POR FASE (#1348).
+
+    La base declara la evidencia de cada fase por separado: la 1 y la 3
+    declaran rutas distintas. Con una sola ruta (la de la fase 1) la fase 3
+    se comparaba contra la declaracion de otra fase y el gate daba un
+    hallazgo falso.
+
+    Una fase que la base no declara no obliga: su ruta es None. Una
+    declaracion ilegible es exit 2: la base esta rota y el gate no puede
+    medirla (HR-3)."""
+    paths = {}
+    for n in EVIDENCE_PHASES:
+        decl = phases.get(n)
+        decl = decl if isinstance(decl, dict) else {}
+        evidence = decl.get("evidence")
+        if evidence is None:
+            paths[n] = None
+            continue
+        if not isinstance(evidence, dict):
+            raise UsageError(
+                "adoption check: --seal-baseline no puede medirse: el contrato de la "
+                f"base declara 'evidence' de la fase {n} que no es un objeto")
+        paths[n] = _seal_baseline_route(evidence, "path")
+    return paths
+
+
+def _seal_baseline_gate_routes(decl):
+    """Rutas `@` que la BASE declara medir en la fase 4 (#1321).
+
+    El conjunto de gates lo fija el canon (el consumer elige las ENTRADAS),
+    asi que lo que se compara son las rutas que cada gate declara medir: la
+    cabeza tiene que medir las mismas. Una declaracion ilegible es exit 2: la
+    base esta rota y el gate no puede medirla (HR-3)."""
+    gates = decl.get("gates")
+    if gates is None:
+        return None
+    if not isinstance(gates, list):
+        raise UsageError(
+            "adoption check: --seal-baseline no puede medirse: el contrato de la "
+            "base declara 'gates' que no es una lista")
+    routes = set()
+    for entry in gates:
+        if not isinstance(entry, dict):
+            continue
+        for arg in entry.get("args") or []:
+            if isinstance(arg, str) and arg.startswith("@"):
+                routes.add(arg[1:].strip())
+    return routes
+
+
+def _seal_baseline_prs(decl):
+    """Entradas de aceptacion que la BASE declara en la fase 6 (#1321).
+
+    La cadena de aceptacion CRECE (cada PR aceptado anade una entrada), asi
+    que el operador es contencion: las entradas de la base tienen que seguir
+    presentes y sin cambios en la cabeza. Se comparan los tres campos
+    (numero, sha y veredicto): cambiar el veredicto tambien es apartar la
+    aceptacion."""
+    prs = decl.get("prs")
+    if prs is None:
+        return None
+    if not isinstance(prs, list):
+        raise UsageError(
+            "adoption check: --seal-baseline no puede medirse: el contrato de la "
+            "base declara 'prs' que no es una lista")
+    entries = []
+    for entry in prs:
+        if not isinstance(entry, dict):
+            continue
+        entries.append((entry.get("number"), entry.get("sha"), entry.get("conclusion")))
+    return entries
+
+
+def _seal_baseline_paths(decl):
+    """Conjunto que la BASE sellaba en la fase 3 (#1317).
+
+    Lo que la base sellaba no puede reducir un PR. Una lista ilegible es exit
+    2: la base está rota y el gate no puede medirla (HR-3)."""
+    paths = decl.get("pattern_paths")
+    if paths is None:
+        return set()
+    if not isinstance(paths, list) or not all(
+            isinstance(rel, str) and rel.strip() for rel in paths):
+        raise UsageError(
+            "adoption check: --seal-baseline no puede medirse: el contrato de la "
+            "base declara 'pattern_paths' que no es una lista de rutas")
+    return set(paths)
+
+
+def _seal_baseline_route(decl, key):
+    """Ruta que la BASE declara, o None si no la declara (#1319).
+
+    Una declaración presente que no es una ruta no vacía es exit 2: la base
+    está rota y el gate no puede medirla (HR-3)."""
+    value = decl.get(key)
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value.strip():
+        raise UsageError(
+            "adoption check: --seal-baseline no puede medirse: el contrato de la "
+            f"base declara '{key}' que no es una ruta")
+    return value.strip()
+
+
+def _seal_identity_findings(phase, head_route, base_route, repo, base_dir, what):
+    """Identidad con la base: lo que mide la cabeza tiene que ser lo que mide
+    la base (#1319).
+
+    Es el operador de las fases 0 y 2, donde la declaración es UNA ruta y no
+    un conjunto: no hay unión que hacer, hay la misma ruta.
+
+    Cuando la ruta de la base ya no está en el árbol medido, solo se admite un
+    MOVIMIENTO PURO: el contenido de la cabeza tiene que ser el de la base,
+    byte a byte. La excepción de la retirada (la ruta que ya no está, se
+    se acota aquí: sin esta comprobación, un PR que mueve el allowlist y lo
+    edita en el mismo paso se apartaba del gate sin que nada lo detectara."""
+    head_route = head_route.strip() if isinstance(head_route, str) else None
+    if not base_route or not head_route or head_route == base_route:
+        return []
+    if (repo / base_route).exists():
+        return [
+            f"fase {phase}: {what} '{head_route}' no es el que mide la BASE "
+            f"('{base_route}'): el PR no puede apartar el gate de la base "
+            f"(--seal-baseline); mide '{base_route}'"
+        ]
+    # La ruta de la base ya no está: solo se admite un movimiento puro.
+    detail = _move_detail(Path(base_dir) / base_route, repo / head_route)
+    if detail is None:
+        return []
+    return [
+        f"fase {phase}: {what} '{head_route}' no es el que mide la BASE "
+        f"('{base_route}') y no es un movimiento puro: {detail} (--seal-baseline); "
+        f"un movimiento con edición en el mismo PR abre el hueco que la base de "
+        f"sellado cierra"
+    ]
+
+
+def _move_detail(base_path, head_path):
+    """Qué impide que el cambio sea un movimiento puro; None si lo es.
+
+    Un fichero: idéntico byte a byte. Un árbol: la cabeza contiene todos los
+    ficheros de la base con el mismo contenido — puede medir MÁS (ficheros
+    nuevos), nunca menos ni con otro contenido. Medir más endurece el gate;
+    medir menos lo aparta, y eso es lo que la excepción no admite."""
+    if not base_path.exists():
+        return "la ruta de la BASE no existe en el checkout de la base"
+    if not head_path.exists():
+        return "la ruta declarada no existe en el árbol medido"
+    if base_path.is_dir() != head_path.is_dir():
+        return "la ruta cambia de tipo"
+    if not base_path.is_dir():
+        try:
+            if base_path.read_bytes() == head_path.read_bytes():
+                return None
+        except OSError:
+            return "el contenido no se puede leer"
+        return "el contenido del fichero cambió"
+    base_files = _tree_digest(base_path)
+    head_files = _tree_digest(head_path)
+    missing = sorted(set(base_files) - set(head_files))
+    changed = sorted(rel for rel in set(base_files) & set(head_files)
+                     if base_files[rel] != head_files[rel])
+    if missing:
+        return "faltan ficheros de la base: " + ", ".join(missing[:5])
+    if changed:
+        return "el contenido cambió en: " + ", ".join(changed[:5])
+    return None
+
+
+def _seal_content_pair(head_route, base_route, repo, base_dir):
+    """(fichero de la base, fichero de la cabeza) cuando hay contenido que
+    comparar; None si la ruta no es la misma.
+
+    El contenido solo se compara cuando la ruta coincide: si la ruta cambia,
+    la mide `_seal_identity_findings` (#1319, #1323). Una base que declara una
+    ruta que no tiene es una base rota y el gate no puede medirla: exit 2
+    (HR-3)."""
+    if not base_route or not head_route or head_route != base_route:
+        return None
+    base_path = Path(base_dir) / base_route
+    if not base_path.is_file():
+        raise UsageError(
+            "--seal-baseline no puede medirse: la BASE declara "
+            f"'{base_route}' y no lo tiene en el checkout de la base")
+    return base_path, repo / head_route
+
+
+def _allowlist_surface(path):
+    """Lo que el allowlist AUTORIZA: las variables de entorno que la batería
+    puede leer, las extensiones que quedan fuera del dominio declarado y los
+    ficheros cuyas menciones de `.env` son datos.
+
+    El formato se lee del gate que lo consume (`load_allowlist`), para que la
+    lista de lo autorizado tenga una sola fuente de verdad. Un allowlist que
+    no se puede leer es exit 2 (HR-3)."""
+    spec = importlib.util.spec_from_file_location(
+        "check_env_isolation", skill_dir() / ENV_ISOLATION_GATE)
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
+    try:
+        env, excluded, dotenv = gate.load_allowlist(str(path))
+    except gate.GateError as exc:
+        raise UsageError(f"el allowlist no se puede leer ({path}): {exc}") from exc
+    return {"env_vars": env, "excluded_extensions": excluded,
+            "dotenv_data_files": set(dotenv)}
+
+
+def _labels_surface(path):
+    """Las etiquetas del host que la instantánea declara: cada una es una
+    obligación de inventario (fase 0)."""
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise UsageError(
+            f"la instantánea de etiquetas no se puede leer ({path}): {exc}") from exc
+    if not isinstance(doc, list) or not all(isinstance(x, str) for x in doc):
+        raise UsageError(
+            f"la instantánea de etiquetas no es una lista de nombres ({path})")
+    return set(doc)
+
+
+def _allowlist_exemptions(path):
+    """Exenciones declaradas en el allowlist: cada una nombra la superficie y
+    el elemento que exime, y lleva su identidad (HR-33: `actor` o `issue`).
+
+    Sin identidad no hay quién responder por la exención, y una exención sin
+    identidad no exime de nada: el gate no puede medir quién autorizó la
+    ampliación (HR-3)."""
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise UsageError(
+            f"el allowlist no se puede leer ({path}): {exc}") from exc
+    entries = doc.get("exemptions", []) if isinstance(doc, dict) else None
+    if not isinstance(entries, list):
+        raise UsageError(
+            f"el allowlist declara 'exemptions' que no es una lista ({path})")
+    granted = set()
+    for entry in entries:
+        if not isinstance(entry, dict):
+            raise UsageError(f"el allowlist declara una exención que no es un objeto ({path})")
+        surface = entry.get("surface")
+        element = entry.get("element")
+        identity = entry.get("exemption")
+        if not isinstance(surface, str) or not surface.strip() \
+                or not isinstance(element, str) or not element.strip() \
+                or not isinstance(identity, dict):
+            raise UsageError(
+                f"el allowlist declara una exención sin superficie, elemento o "
+                f"identidad ({path})")
+        actor = identity.get("actor")
+        issue = identity.get("issue")
+        if not ((isinstance(actor, str) and actor.strip())
+                or (isinstance(issue, int) and not isinstance(issue, bool) and issue > 0)):
+            raise UsageError(
+                f"la exención de '{element}' no trae identidad (actor o issue) ({path})")
+        granted.add((surface, element))
+    return granted
+
+
+def _seal_allowlist_findings(phase, head_route, base_route, repo, base_dir):
+    """El allowlist de la cabeza no puede autorizar MÁS que el de la base
+    (#1341).
+
+    Autorizar de más es medir menos: una variable de entorno nueva, una
+    extensión excluida nueva o un fichero de datos nuevo es una autorización
+    que la base no daba. Quitar una autorización sí se admite: eso endurece la
+    medición.
+
+    Una ampliación sí se admite si el allowlist la declara como exención con
+    identidad (HR-33): quién la autoriza y en qué issue queda escrito."""
+    pair = _seal_content_pair(head_route, base_route, repo, base_dir)
+    if pair is None:
+        return []
+    base_path, head_path = pair
+    base = _allowlist_surface(base_path)
+    head = _allowlist_surface(head_path)
+    granted = _allowlist_exemptions(head_path)
+    findings = []
+    for key, what, article in (
+            ("env_vars", "variable de entorno", "la"),
+            ("excluded_extensions", "extensión excluida", "la"),
+            ("dotenv_data_files", "fichero de datos", "el")):
+        extra = sorted(x for x in head[key] - base[key] if (key, x) not in granted)
+        if extra:
+            findings.append(
+                f"fase {phase}: el allowlist del gate de aislamiento "
+                f"'{head_route}' autoriza de más que el de la BASE: "
+                + ", ".join(f"{article} {what} '{x}'" for x in extra)
+                + " (--seal-baseline); el PR no puede ampliar lo que la base "
+                "autorizaba sin una exención con identidad (actor o issue)")
+    return findings
+
+
+def _seal_labels_findings(phase, head_route, base_route, repo, base_dir):
+    """La instantánea de la cabeza no puede dejar de CUBRIR lo que cubría la
+    de la base (#1341).
+
+    Cada etiqueta de la instantánea es una obligación de inventario: si
+    desaparece de la instantánea, la cobertura se apaga. Añadir una etiqueta
+    es más cobertura, y se admite."""
+    pair = _seal_content_pair(head_route, base_route, repo, base_dir)
+    if pair is None:
+        return []
+    base_path, head_path = pair
+    base = _labels_surface(base_path)
+    head = _labels_surface(head_path)
+    dropped = sorted(base - head)
+    if not dropped:
+        return []
+    return [
+        f"fase {phase}: la instantánea de etiquetas del host '{head_route}' "
+        "deja de cubrir lo que cubría la BASE: "
+        + ", ".join(f"la etiqueta '{x}'" for x in dropped)
+        + " (--seal-baseline); el PR no puede reducir la cobertura de la base"
+    ]
+
+
+def _tree_digest(root):
+    """Mapa ruta relativa → sha256 de los BYTES de cada fichero del árbol.
+
+    Sin normalizar saltos de línea: la identidad del movimiento es byte a byte
+    (#1319), no la de `sha256_file`, que ignora CRLF."""
+    digest = {}
+    for path in sorted(root.rglob("*")):
+        if path.is_file() and not path.is_symlink():
+            data = path.read_bytes()
+            digest[path.relative_to(root).as_posix()] = hashlib.sha256(data).hexdigest()
+    return digest
 
 
 def cmd_adoption(args):
@@ -3802,7 +5154,8 @@ def cmd_adoption(args):
         return EXIT_OK
     if args[:1] != ["check"]:
         raise UsageError(
-            "adoption: subcomando desconocido; use 'adoption check (--phase N | --all) <repo>' "
+            "adoption: subcomando desconocido; use "
+            "'adoption check (--phase N | --only-phase N | --all) <repo>' "
             "o 'adoption generate-doc <repo> --out <ruta>'."
         )
     rest = args[1:]
@@ -3810,8 +5163,11 @@ def cmd_adoption(args):
         print(ADOPTION_HELP.rstrip())
         return EXIT_OK
     phase_raw = None
+    only_raw = None
     all_phases = False
     repo = None
+    config_from = None
+    seal_baseline = None
     i = 0
     while i < len(rest):
         arg = rest[i]
@@ -3820,9 +5176,24 @@ def cmd_adoption(args):
                 raise UsageError("--phase requiere un número de fase (0..%d)" % (ADOPTION_PHASES - 1))
             phase_raw = rest[i + 1]
             i += 2
+        elif arg == "--only-phase":
+            if i + 1 >= len(rest):
+                raise UsageError(f"--only-phase requiere un número de fase (0..{ADOPTION_PHASES - 1})")
+            only_raw = rest[i + 1]
+            i += 2
         elif arg == "--all":
             all_phases = True
             i += 1
+        elif arg == "--config-from":
+            if i + 1 >= len(rest):
+                raise UsageError("--config-from requiere un directorio")
+            config_from = rest[i + 1]
+            i += 2
+        elif arg == "--seal-baseline":
+            if i + 1 >= len(rest):
+                raise UsageError("--seal-baseline requiere un directorio")
+            seal_baseline = rest[i + 1]
+            i += 2
         elif arg.startswith("-"):
             raise UsageError(f"adoption check: opción no reconocida: {arg}")
         else:
@@ -3832,22 +5203,51 @@ def cmd_adoption(args):
             i += 1
     if repo is None:
         raise UsageError("adoption check: falta <repo>")
-    if all_phases == (phase_raw is not None):
-        raise UsageError("adoption check: exactamente una de --phase N o --all")
+    if [all_phases, phase_raw is not None, only_raw is not None].count(True) != 1:
+        raise UsageError("adoption check: exactamente una de --phase N, --only-phase N o --all")
     if not Path(repo).is_dir():
         raise UsageError(f"repo inexistente o no es un directorio: {repo}")
+    if seal_baseline is not None and not Path(seal_baseline).is_dir():
+        raise UsageError(
+            f"adoption check: --seal-baseline no es un directorio: {seal_baseline}")
     if all_phases:
         last = ADOPTION_PHASES - 1
     else:
-        if not re.fullmatch(r"[0-6]", phase_raw):
-            raise UsageError(f"--phase debe ser un número 0..{ADOPTION_PHASES - 1}; se recibió {phase_raw!r}")
-        last = int(phase_raw)
+        option, raw = ("--phase", phase_raw) if phase_raw is not None else ("--only-phase", only_raw)
+        if not re.fullmatch(r"[0-6]", raw):
+            raise UsageError(f"{option} debe ser un número 0..{ADOPTION_PHASES - 1}; se recibió {raw!r}")
+        last = int(raw)
+    # #1396: --only-phase mide la fase N y ninguna otra; cada fase previa la
+    # mide su propio job, de modo que una causa da un solo rojo.
+    first = last if only_raw is not None else 0
 
-    contract = load_adoption_contract(repo)
+    # #1270: la configuracion que gobierna el gate puede venir de la BASE
+    # (--config-from); el estado que se mide sigue siendo el del repo.
+    # #1339: con la base como suelo, el PR puede AÑADIR y no QUITAR: lo que
+    # declara de mas se mide con la union de la base y la cabeza, y el suelo
+    # de sellado (E8b) lo pone la base.
+    if config_from:
+        base_contract = load_adoption_contract(config_from)
+        # El suelo de sellado lo pone la base que gobierna; si ademas hay
+        # --seal-baseline, el suelo es el de ese checkout.
+        floor_contract = base_contract
+        if seal_baseline:
+            floor_contract = load_adoption_contract(seal_baseline)
+        seal = _seal_floor(floor_contract, seal_baseline or config_from)
+        contract = _contract_with_additions(base_contract, _head_contract(repo))
+    else:
+        contract = load_adoption_contract(repo)
+        # #1317: la fase 3 mide además contra la BASE (--seal-baseline): el
+        # conjunto que hay que sellar es la unión de los 'pattern_paths' de la
+        # base y los de la cabeza. #1319: las fases 0 y 2 comparan con la base
+        # la ruta que miden (identidad). Sin la opción, no hay base y el gate se
+        # mide exactamente como antes.
+        seal = _seal_baseline(seal_baseline) if seal_baseline else None
     blocked_at = None
     findings = []
-    for n in range(last + 1):
-        phase_findings = _phase_findings(Path(repo), n, contract["phases"].get(str(n)), contract)
+    for n in range(first, last + 1):
+        phase_findings = _phase_findings(Path(repo), n, contract["phases"].get(str(n)),
+                                         contract, seal)
         if phase_findings:
             blocked_at = n
             findings.extend(phase_findings)
@@ -3862,8 +5262,22 @@ def cmd_adoption(args):
         for finding in findings:
             print(f"hallazgo: {finding}", file=sys.stderr)
         return EXIT_FINDINGS
+    if only_raw is not None:
+        print(f"adoption check: fase {last} en verde sobre {repo}")
+        return EXIT_OK
     print(f"adoption check: fases 0..{last} en verde sobre {repo}")
     return EXIT_OK
+
+
+def cmd_manifest(args):
+    """`manifest show` (lectura) y `manifest seal` (escritura del sello)."""
+    if args[:1] == ["show"]:
+        return cmd_manifest_show(args[1:])
+    if args[:1] == ["seal"]:
+        return cmd_manifest_seal(args[1:])
+    raise UsageError(
+        "manifest: subcomando desconocido; use 'manifest show <repo>' "
+        "o 'manifest seal <repo> [--out <ruta>]'.")
 
 
 COMMANDS = {
@@ -3874,11 +5288,8 @@ COMMANDS = {
     ),
     "verify": cmd_verify,
     "status": cmd_status,
-    "manifest": lambda args: (
-        cmd_manifest_show(args[1:])
-        if args[:1] == ["show"]
-        else (_ for _ in ()).throw(UsageError("manifest: subcomando desconocido; use 'manifest show <repo>'."))
-    ),
+    "manifest": cmd_manifest,
+    "dependabot": cmd_dependabot,
     "adopt": lambda args: (_ for _ in ()).throw(
         UsageError(
             "`adopt` está retirado: la adopción la gobierna una IA con "

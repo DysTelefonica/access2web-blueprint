@@ -53,11 +53,16 @@ def script() -> Path:
     return _find_script()
 
 
-def test_gate_order_includes_legacy_hashes(script: Path) -> None:
+def test_gate_order_includes_legacy_hashes(script: Path, monkeypatch) -> None:
     """Hard Rule 13 + DA-13: the gate order in code, not in YAML."""
+    # DQH 2.2: the gates import their siblings by module name, so `scripts/` has to
+    # be importable. `syspath_prepend` and `setitem` both restore what they touched
+    # on teardown, so this test does not hand a warm `scripts/` or a cached
+    # `quality_report` to whatever runs after it (BP#1353).
+    monkeypatch.syspath_prepend(str(script.parent))
     spec = importlib.util.spec_from_file_location("quality_report", script)
     module = importlib.util.module_from_spec(spec)
-    sys.modules["quality_report"] = module
+    monkeypatch.setitem(sys.modules, "quality_report", module)
     spec.loader.exec_module(module)
     names = tuple(name for name, _, _ in module.GATES)
     # CRAP gate was retired (issue #266, DG-12). The order keeps the ratchet of the

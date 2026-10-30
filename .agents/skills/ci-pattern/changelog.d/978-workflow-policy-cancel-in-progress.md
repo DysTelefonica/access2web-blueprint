@@ -1,0 +1,3 @@
+type: minor
+
+El gate `workflow-policy` rechaza ahora, en un workflow con trigger `pull_request`, un `cancel-in-progress` que pueda cancelar una ejecución del mismo SHA: el literal `true` (de workflow o de job) o una expresión que no mencione `synchronize`. Una ejecución cancelada con sus jobs ya creados deja un check run `required` en `cancelled` que bloquea el merge aunque otra ejecución posterior del mismo SHA termine en verde (BP #1071 y #1081). Se aceptan `false` y `${{ github.event.action == 'synchronize' }}`. Los consumers con `cancel-in-progress: true` verán un hallazgo nuevo al propagarse (#978).

@@ -1,0 +1,78 @@
+# Release <versión> — <título en una línea>
+
+<!-- Esqueleto del perfil VBA/Access de la skill release-notes. Sigue las secciones de la
+     plantilla RELEASE-NOTES.md.tmpl de ci-pattern; cambia la Procedencia (fichero, no
+     imagen) y el despliegue. Los grupos sin entradas se omiten. -->
+
+## Resumen
+
+- **Seguridad.** <una línea>
+- **Errores de producto.** <una línea>
+- **Funcionalidad nueva.** <una línea>
+
+<migraciones del back-end, cambios de configuración y cambios incompatibles, o «Sin
+migraciones ni cambios de configuración».>
+
+## Procedencia
+
+| Concepto | Valor |
+|---|---|
+| Release anterior | <versión anterior> → `<sha completo>` |
+| Objetivo | <versión> → `<sha completo>` (<tag anotado en la rama>) |
+| Rama integrada y UAT | `<release/<versión>.rc<n>>`; <evidencia UAT o «sin UAT»> |
+| Front-end distribuido | `<Proyecto>.accdb` SHA-256 `<hash>` (<bytes> bytes) |
+| Versión declarada por el front-end | `<VersionAplicacion del .ini o constante>` |
+| Binario frente a `src/` | <resultado de `verify_code`> |
+| Front-end de marcha atrás | `<Proyecto>.accdb` del tag <versión anterior>, SHA-256 `<hash>` |
+| Migraciones del back-end | <ruta del script, o «ninguna»> |
+
+## 1. Seguridad
+
+### 1.1 <título> — #<PR> (cierra #<issue>)
+
+- **En <versión anterior>:** <qué ocurría>
+- **En <versión>:** <qué ocurre>
+- **Dónde:** <formulario, control, módulo.procedimiento>
+
+## 2. Errores de producto corregidos
+
+## 3. Funcionalidad nueva o ampliada
+
+## 4. Repositorio, pruebas y CI
+
+No cambian la aplicación.
+
+- **<tema>** — #<PR> o `<sha corto>`. <qué y por qué>
+
+## PR integradas
+
+| PR o commit | Issue | Contenido |
+|---|---|---|
+| #<PR> | cierra #<issue> | <una línea> |
+| `<sha corto>` | Refs #<issue> | <commit directo, una línea> |
+
+## Qué lo prueba
+
+- <átomos `Test_*` nuevos o cambiados y su resultado; UAT con su evidencia>
+
+## Cambios incompatibles
+
+Ninguno.
+
+## Cómo actualizar / desplegar
+
+1. <copia del front-end en uso y, con migración, copia verificada del back-end; comprobación>
+2. <migración y su comprobación>
+3. <distribución del front-end del tag; comprobar SHA-256 y versión mostrada>
+4. <pruebas tras el despliegue>
+5. Marcha atrás: <front-end del tag anterior; qué pasa con la migración>
+
+## Registro de cierres
+
+### Cerradas con evidencia
+
+- #<issue>. <prueba o UAT que lo demuestra>
+
+### Pendiente tras esta versión
+
+- #<issue> o «sin issue». <qué queda y por qué>
