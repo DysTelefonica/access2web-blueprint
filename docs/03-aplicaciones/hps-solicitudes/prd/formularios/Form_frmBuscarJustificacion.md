@@ -88,7 +88,7 @@ Las dos consultas del buscador concatenan un `Long`, así que no hay superficie 
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Lo que este formulario aporta al plan: es el único consumidor de la caché de justificaciones y el que decide las tres reglas de gestión (activa para elegir, en uso bloquea el borrado, baja lógica). En web las tres se resuelven en el servidor —una consulta con `WHERE activa` y paginación, y una clave foránea real que impida el borrado—, pero eso exige decidir si la baja lógica sigue siendo un `activa = False` o pasa a un estado explícito (`baja`), porque el filtro actual sólo conoce dos valores.
+Pendiente de la coexistencia (documento aún no redactado). Lo que este formulario aporta al plan: es el único consumidor de la caché de justificaciones y el que decide las tres reglas de gestión (activa para elegir, en uso bloquea el borrado, baja lógica). En web las tres se resuelven en el servidor —una consulta con `WHERE activa` y paginación, y una clave foránea real que impida el borrado—, pero eso exige decidir si la baja lógica sigue siendo un `activa = False` o pasa a un estado explícito (`baja`), porque el filtro actual sólo conoce dos valores.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

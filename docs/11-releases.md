@@ -35,8 +35,13 @@ corta y fusionadas a `main` mediante PR. Y `release/vX.Y.x`, que existe
    entra desactivado, nunca acumulado en una rama paralela.
 2. **Se corta la candidata.** `git tag -a v1.4.0-rc.1` sobre el commit exacto de
    `main`. Ese es el congelamiento. `main` continúa; la candidata no.
-3. **Se construye y firma una vez.** El workflow `release` publica la imagen y
-   firma su digest con la identidad OIDC del propio workflow.
+3. **Se construye una vez y se identifica por digest.** El job `stage` del
+   workflow `release` construye la imagen y la empuja **sin la etiqueta de
+   release**, resuelve su digest y lo expone como output del job. El smoke
+   `e2e` descarga y arranca `nombre@sha256`: los mismos bytes, sin una etiqueta
+   que se pueda mover. El job `publish` promueve ese mismo digest bajo la
+   etiqueta de release —sin recompilar— y lo firma con la identidad OIDC del
+   propio workflow.
 4. **Se verifica antes de aceptar.** Cosign exige la identidad exacta del
    workflow y el emisor OIDC de GitHub antes de descargar el digest.
 5. **Aceptación sobre esa imagen.** El alcance se obtiene con
@@ -101,6 +106,12 @@ https://github.com/DysTelefonica/access2web-blueprint/.github/workflows/release.
 
 También exige el emisor `https://token.actions.githubusercontent.com`. Verifique
 siempre el digest, nunca sólo una etiqueta mutable.
+
+En el workflow `release` eso es literal: `stage` empuja la imagen sin la
+etiqueta de release y resuelve su digest; `e2e` consume `nombre@sha256`; y
+`publish` reetiqueta ese mismo digest —sin recompilar— cuando el smoke está en
+verde, comprobando que el registro publica exactamente ese digest. La etiqueta
+de release es un alias del digest, no su identidad.
 
 ### La regla de identidad
 

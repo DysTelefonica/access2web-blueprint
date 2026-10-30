@@ -46,7 +46,8 @@ def test_issue_form_declares_the_six_canonical_sections_in_order() -> None:
     fields = [block for block in body if block["type"] == "textarea"]
 
     assert [block["attributes"]["label"] for block in fields] == list(CANONICAL_SECTIONS)
-    assert all(block["validations"]["required"] for block in fields)
+    # R2 (team-skills#1093): the sections are a recommended template, not mandatory fields.
+    assert not any(block.get("validations", {}).get("required") for block in fields)
 
 
 def test_issue_config_disables_blank_issues() -> None:

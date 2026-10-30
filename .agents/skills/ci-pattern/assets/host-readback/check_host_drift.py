@@ -11,7 +11,16 @@ as a gate; HR-34). ``host_capabilities`` (#303) declares each area
 ``available`` or ``unavailable`` and the readback verifies it in both
 directions: the real plan-limit 403 body of a private free-tier repo
 records ``unavailable`` (it is evidence, not an error), a real payload
-records ``available``, and a contradiction is drift. The caller captures host API responses with read-only
+records ``available``, and a contradiction is drift. The class promises a
+different thing per area, and the contract must not promise more than the
+host applies: for a label, ``host-enforced`` means "the host holds it in
+its catalog" (``GET /labels``) — the host does not demand the label at
+merge time, the CI does; for a required check, a protection flag or a
+ruleset, it means "the host demands it", which is only possible when the
+area's capability is ``available`` — with ``unavailable`` the host cannot
+demand it and the honest class is ``documented-only``; for a merge method
+it means "the host shows that value" (repository settings exist on every
+plan). The caller captures host API responses with read-only
 GETs and passes them as snapshot files (``--snapshot kind=path``, all four
 kinds required); the script never touches the network, never mutates the
 host, never probes a write. Drift (exit 1) is either direction: a

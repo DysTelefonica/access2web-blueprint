@@ -25,6 +25,30 @@ assigns are locals, not environment reads; a shell variable that is read
 but never assigned in its file is treated as an environment read (fail
 closed: the scanner cannot prove it is local, HR-1).
 
+The allowlist has two directions and only one was visible (#1030). The gate
+reported a read the allowlist does not declare; it never reported an entry the
+allowlist declares and the suites no longer read, so an over-allowlisted entry
+passed in green and the list became an escape hatch. Since #1030 the gate also
+reports the second direction, as ``HR-28 STALE`` (the same shape it already uses
+for a stale ``dotenv_data_files`` entry) — an ``env_vars`` entry with no read in
+the scanned tree.
+
+Exception, and it is the reason this control needs a flag: a read the scanners
+cannot attribute to a name is not evidence that an entry is unused. A bulk read
+(``os.environ.copy()``, ``os.environ.items()``/``.keys()``, ``dict(os.environ)``,
+``in os.environ``) or a read with a non-literal key (``os.getenv(NAME)``,
+``os.environ[NAME]``) hands the whole environment on. Those entries are reported
+as ``HR-28 BLOCK-READ`` — named, and non-blocking — instead of ``HR-28 STALE``:
+the gate reports what it can prove, never that an entry is redundant when it
+cannot. Known limitation: a shell bulk read (``env``, ``printenv``, ``compgen``,
+indirect ``${!VAR}``) is not recognised, so an entry read only that way is still
+reported as stale.
+
+Because every consumer's allowlist was written over months, the second direction
+is opt-in: ``--strict-over-allowlist`` prints the finding and the gate exits 1.
+Without the flag nothing is printed, and the output and the exit code are exactly
+what they were before #1030.
+
 Exit codes: 0 clean · 1 findings · 2 invalid input (missing root, missing
 or malformed allowlist, empty subject — a tree with no suite files).
 """
@@ -100,6 +124,15 @@ SH_READ = re.compile(r"\$\{([A-Z_][A-Z0-9_]*)(?:\[|[:=+-]|\}|\b)|\$([A-Z_][A-Z0-
 PY_READ = re.compile(r"os\.environ(?:\.get)?\[\s*['\"]([A-Za-z_][A-Za-z0-9_]*)['\"]\]|"
                      r"os\.environ\.get\(\s*['\"]([A-Za-z_][A-Za-z0-9_]*)['\"]|"
                      r"os\.getenv\(\s*['\"]([A-Za-z_][A-Za-z0-9_]*)['\"]")
+# #1030: lectura EN BLOQUE — el gate no puede atribuirlas a un nombre, así que no
+# son evidencia de que una entrada declarada siga usándose. Se calcula sobre el
+# texto ya sin docstrings, igual que PY_READ.
+BULK_READ = re.compile(r"os\.environ\s*\.\s*(?:copy|items|keys|values)\s*\("
+                        r"|\bdict\s*\(\s*os\.environ\b"
+                        r"|\bin\s+os\.environ\b(?!\s*[\.\[])"
+                        r"|os\.getenv\s*\(\s*(?![\"'])"
+                        r"|os\.environ\.get\s*\(\s*(?![\"'])"
+                        r"|os\.environ\s*\[\s*(?![\"'])")
 # #635: `.env` como FICHERO es un punto con frontera de palabra a la izquierda:
 # `templates.env` (acceso a atributo) y `TEMPLATES.env` no lo son. El cargador
 # se detecta por su forma (`load_dotenv`, `from dotenv`, `import dotenv`), no
@@ -178,6 +211,39 @@ class GateError(Exception):
     """A condition the gate refuses to interpret; maps to exit 2."""
 
 
+class Scan:
+    """Context of one scan: the allowlist, the blocking findings, and the evidence
+    of the second direction (#1030) — the names read with a literal key, and
+    whether any file read the environment in bulk (unattributable to a name)."""
+
+    def __init__(self, allow: set):
+        self.allow = allow
+        self.report: list = []
+        self.vars: set = set()
+        self.bulk = False
+
+    def close(self, scanned: int, notes: list) -> None:
+        """The second direction (#1030), decided once the whole tree is read.
+
+        An entry with no read by name is reported as stale, and removed: the
+        allowlist only encoja. An entry the gate cannot account for —because some
+        file hands the whole environment on — is named in ``notes`` and does not
+        block: the gate reports what it can prove, never that an entry is
+        redundant when it cannot.
+        """
+        for name in sorted(self.allow - self.vars):
+            if self.bulk:
+                notes.append(f"HR-28 BLOCK-READ: env_vars declares {name!r} but no read "
+                             "references it by name; the tree reads the environment in "
+                             "bulk (os.environ.copy()/.items()/.keys(), dict(os.environ) "
+                             "or a non-literal getenv), so this entry cannot be proven "
+                             "unused: read it by name, or justify it in rationale_per_var")
+            else:
+                self.report.append(f"HR-28 STALE: env_vars declares {name!r} but no read "
+                                   f"in {scanned} suite file(s) references it: remove "
+                                   "the entry")
+
+
 def load_allowlist(path: str) -> tuple:
     try:
         doc = json.loads(Path(path).read_text(encoding="utf-8"))
@@ -245,7 +311,7 @@ def domain_finding(root: Path, fuera: list[Path]) -> str:
             "its own scanner; an incomplete subject is not a pass (HR-3).")
 
 
-def scan_sh(path: Path, rel: str, allow: set, report: list, data_ok: bool) -> bool:
+def scan_sh(path: Path, rel: str, scan: Scan, data_ok: bool) -> bool:
     text = path.read_text(encoding="utf-8", errors="replace")
     # Locals are file-wide: a variable assigned anywhere in the file is a
     # shell local, never an environment read (HR-1: structured, provable).
@@ -260,18 +326,22 @@ def scan_sh(path: Path, rel: str, allow: set, report: list, data_ok: bool) -> bo
         file_ref = dotenv_file_ref(line, False) and not DOTENV_EXEMPT.search(line)
         found_ref = found_ref or file_ref
         if DOTENV_LOADER.search(line) or (file_ref and not data_ok):
-            report.append(f"HR-28 {rel}:{number}: references a local .env file — "
-                          "the suite must not read the developer's local environment")
+            scan.report.append(f"HR-28 {rel}:{number}: references a local .env file — "
+                               "the suite must not read the developer's local environment")
         for m in SH_READ.finditer(line):
             name = m.group(1) or m.group(2)
-            if name in assigned or name in allow:
+            # A file-assigned shell variable is a local, not an environment read,
+            # so it is not evidence that a declared entry is still read (#1030).
+            if name not in assigned:
+                scan.vars.add(name)
+            if name in assigned or name in scan.allow:
                 continue
-            report.append(f"HR-28 {rel}:{number}: reads environment variable "
-                          f"{name!r} not declared in the versioned allowlist")
+            scan.report.append(f"HR-28 {rel}:{number}: reads environment variable "
+                               f"{name!r} not declared in the versioned allowlist")
     return found_ref
 
 
-def scan_py(path: Path, rel: str, allow: set, report: list, data_ok: bool) -> bool:
+def scan_py(path: Path, rel: str, scan: Scan, data_ok: bool) -> bool:
     # Refs #618: prose inside Python string literals (docstrings, regular
     # strings) is not a real env read or a real reference to the
     # developer's ``.env``. Strip string contents before applying the
@@ -285,15 +355,15 @@ def scan_py(path: Path, rel: str, allow: set, report: list, data_ok: bool) -> bo
         # lecturas de os.environ de la misma línea se siguen escaneando.
         # El strip de comentarios es quote-aware también aquí.
         line = strip_comment(raw)
+        if BULK_READ.search(line):
+            scan.bulk = True
         file_ref = dotenv_file_ref(line, True) and not DOTENV_EXEMPT.search(line)
         found_ref = found_ref or file_ref
         if DOTENV_LOADER.search(line) or (file_ref and not data_ok):
-            report.append(f"HR-28 {rel}:{number}: references a local .env file — "
-                          "the suite must not read the developer's local environment")
+            scan.report.append(f"HR-28 {rel}:{number}: references a local .env file — "
+                               "the suite must not read the developer's local environment")
         for m in PY_READ.finditer(line):
             name = m.group(1) or m.group(2) or m.group(3)
-            if name in allow:
-                continue
             # Refs #618: ``os.environ["X"] = value`` (LHS of plain ``=``)
             # is a write, not a read. Skip it. Augmented assignments
             # (``+=``, ``-=``, ...) and equality (``==``) keep being
@@ -301,9 +371,14 @@ def scan_py(path: Path, rel: str, allow: set, report: list, data_ok: bool) -> bo
             after = line[m.end():].lstrip()
             if after and after[0] == '=' and (len(after) < 2 or after[1] != '='):
                 continue
-            report.append(f"HR-28 {rel}:{number}: reads environment variable "
-                          f"{name!r} via os.environ/getenv not declared in the "
-                          "versioned allowlist")
+            # #1030: sólo una lectura prueba que una entrada declarada siga en
+            # uso; una escritura al entorno no lo prueba.
+            scan.vars.add(name)
+            if name in scan.allow:
+                continue
+            scan.report.append(f"HR-28 {rel}:{number}: reads environment variable "
+                               f"{name!r} via os.environ/getenv not declared in the "
+                               "versioned allowlist")
     return found_ref
 
 
@@ -314,11 +389,37 @@ def _pin_output_encoding() -> None:
         sys.stderr.reconfigure(encoding="utf-8")
 
 
+def emit(report: list, notes: list, files: list) -> int:
+    """Prints the verdict and returns the exit code: 1 findings · 0 clean.
+
+    ``ENV-ISOLATION OK`` keeps its exact wording (consumers compare it); the
+    non-blocking notes of ``--strict-over-allowlist`` only ever follow it.
+    """
+    if report:
+        print(f"HR-28 FAIL: {len(report)} finding(s) — suite environment is not "
+              "isolated from the local environment")
+        for line in report:
+            print(f"  - {line}")
+        return 1
+    print(f"ENV-ISOLATION OK: {len(files)} suite file(s) scanned — no .env reads, "
+          "no undeclared environment variables.")
+    for line in notes:
+        print(f"  note: {line}")
+    return 0
+
+
 def main(argv):
     _pin_output_encoding()
     ap = argparse.ArgumentParser(description="Env isolation gate (HR-28).")
     ap.add_argument("--root", required=True)
     ap.add_argument("--allowlist", required=True)
+    # #1030: la segunda dirección de la allowlist (una entrada que ya no se
+    # lee) sale opt-in. Sin la bandera el gate no cambia: mismo texto, mismo
+    # código de salida.
+    ap.add_argument("--strict-over-allowlist", action="store_true",
+                    help="fail when an env_vars entry has no read in the scanned tree "
+                         "(over-allowlisting, #1030); entries a bulk read cannot account "
+                         "for are reported as non-blocking HR-28 BLOCK-READ notes")
     args = ap.parse_args(argv)
     try:
         root = Path(args.root)
@@ -337,26 +438,26 @@ def main(argv):
     except GateError as exc:
         print(f"ENV-ISOLATION ERROR: {exc}", file=sys.stderr)
         return 2
-    report = [domain_finding(root, fuera)] if fuera else []
+    ctx = Scan(allow)
+    if fuera:
+        ctx.report.append(domain_finding(root, fuera))
     refs = set()
     for path in files:
         rel = path.relative_to(root).as_posix()
-        scan = scan_py if path.suffix == ".py" else scan_sh
-        if scan(path, rel, allow, report, rel in dotenv_data):
+        scanner = scan_py if path.suffix == ".py" else scan_sh
+        if scanner(path, rel, ctx, rel in dotenv_data):
             refs.add(rel)
     # #635: una exención que ya no hace falta falla, para que la lista solo encoja.
     for rel in sorted(set(dotenv_data) - refs):
-        report.append(f"HR-28 STALE: dotenv_data_files declares {rel!r} but it no longer "
-                      "references .env (or is not a suite file): remove the entry")
-    if report:
-        print(f"HR-28 FAIL: {len(report)} finding(s) — suite environment is not "
-              "isolated from the local environment")
-        for line in report:
-            print(f"  - {line}")
-        return 1
-    print(f"ENV-ISOLATION OK: {len(files)} suite file(s) scanned — no .env reads, "
-          "no undeclared environment variables.")
-    return 0
+        ctx.report.append(f"HR-28 STALE: dotenv_data_files declares {rel!r} but it no "
+                          "longer references .env (or is not a suite file): remove the "
+                          "entry")
+    notes: list = []
+    # #1030: la dirección contraria. No se decide durante el barrido —una entrada
+    # se lee en un fichero y en otro no— sino sobre el árbol entero ya recorrido.
+    if args.strict_over_allowlist:
+        ctx.close(len(files), notes)
+    return emit(ctx.report, notes, files)
 
 
 if __name__ == "__main__":

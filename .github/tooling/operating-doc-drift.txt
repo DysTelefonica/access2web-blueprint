@@ -1,0 +1,6 @@
+# CLI que el RUNNER debe aportar al job operating-doc-drift (G0.5 del canon).
+# Una CLI por linea; "#" abre comentario; la linea en blanco se ignora.
+git
+curl
+python3
+sh

@@ -3,7 +3,10 @@
 
 Un PR que toca código cubierto por una página del mapa toca la página o lleva
 la sección «Documentación» no vacía; las checklists por tipo de cambio existen
-y el cuerpo del PR enlaza la de su tipo. Sin declaración avisa y sale verde."""
+y el cuerpo del PR enlaza la de su tipo. Sin declaración avisa y sale verde.
+
+#1093 R1 (decisión del dueño, 2026-10-23): HR-64 es AVISO — el gate lo
+imprime y sale 0; el PR no se bloquea por la evidencia de documentación."""
 
 import contextlib
 import importlib.util
@@ -54,11 +57,11 @@ def run(files, body=LINK, evidence=EVIDENCE, labels=("type:feature",)):
         git(repo, "add", "-A")
         git(repo, "commit", "-q", "-m", "cambio")
         pr = {"body": body, "labels": [{"name": n} for n in labels]}
-        findings = []
+        advisories = []
         changed = subprocess.run(["git", "-C", str(repo), "diff", "--name-only", f"{base}..{sha(repo)}"],
                                  check=True, capture_output=True, text=True).stdout.split()
-        MOD.check_docs_evidence(pr, repo, changed, {"docs_evidence": evidence}, findings)
-        return findings
+        MOD.check_docs_evidence(pr, repo, changed, {"docs_evidence": evidence}, advisories)
+        return advisories
 
 
 class DocsEvidenceTests(unittest.TestCase):
@@ -69,7 +72,7 @@ class DocsEvidenceTests(unittest.TestCase):
         body = LINK + "\n## Documentación\n\nSolo renombra una variable local; la página no cambia.\n"
         self.assertEqual(run({"app/users/a.py": "x = 2\n"}, body=body), [])
 
-    def test_solo_codigo_sin_seccion_es_rojo_y_nombra_pagina_y_fichero(self):
+    def test_solo_codigo_sin_seccion_es_aviso_y_nombra_pagina_y_fichero(self):
         found = run({"app/users/a.py": "x = 2\n"})
         self.assertTrue(any("docs/codebase/users.md" in f and "app/users/a.py" in f for f in found), found)
 
@@ -91,7 +94,7 @@ class DocsEvidenceTests(unittest.TestCase):
         with self.assertRaises(MOD.DocsEvidenceConfigError):
             run({"app/users/a.py": "x\n"}, evidence={"pages": []})
 
-    def test_checklist_inexistente_o_ancla_inexistente_es_roja(self):
+    def test_checklist_inexistente_o_ancla_inexistente_es_aviso(self):
         bad = {**EVIDENCE, "checklists": {"type:feature": "docs/codebase/ghost.md#feature"}}
         found = run({"otro/b.py": "y\n"}, evidence=bad, body="Checklist: docs/codebase/ghost.md#feature\n")
         self.assertTrue(any("ghost.md" in f for f in found), found)

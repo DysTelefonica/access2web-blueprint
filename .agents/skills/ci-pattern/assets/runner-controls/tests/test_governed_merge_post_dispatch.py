@@ -164,12 +164,14 @@ class GovernedMergePostDispatchTests(unittest.TestCase):
     def assert_no_dispatch(self) -> None:
         self.assertEqual(self.stored().get("dispatches", []), [])
 
-    def assert_dispatched_on_base_branch(self, name: str) -> None:
+    def assert_dispatched_on_base_branch(self, dispatch_id: str) -> None:
+        # #1086: el identificador del dispatch es el nombre del fichero con su
+        # extension (`ci.yml`); el basename sin extension no lo acepta la API.
         # #933: el `ref` del cuerpo es la rama base; un SHA ahí es 422 en la API real.
         for dispatch in self.stored().get("dispatches", []):
-            if dispatch["name"] == name and dispatch["ref"] == BASE_BRANCH:
+            if dispatch["name"] == dispatch_id and dispatch["ref"] == BASE_BRANCH:
                 return
-        self.fail(f"expected dispatch of {name} on {BASE_BRANCH}; "
+        self.fail(f"expected dispatch of {dispatch_id} on {BASE_BRANCH}; "
                   f"got {self.stored().get('dispatches', [])}")
 
     def test_post_dispatch_absent_is_a_noop_with_a_warning(self) -> None:
@@ -196,9 +198,40 @@ class GovernedMergePostDispatchTests(unittest.TestCase):
             "name": "runner-detective.yml", "type": "file"}
         proc = run_gate(self.root, contract_with(["deploy", "runner-detective"]), state)
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-        self.assert_dispatched_on_base_branch("deploy")
-        self.assert_dispatched_on_base_branch("runner-detective")
+        self.assert_dispatched_on_base_branch("deploy.yml")
+        self.assert_dispatched_on_base_branch("runner-detective.yml")
         self.assertTrue(self.stored()["merges"])
+
+    def test_the_dispatch_carries_the_workflow_file_name_with_its_extension(self) -> None:
+        """#1086: la API resuelve el workflow por su nombre de fichero, con extension.
+
+        El endpoint de dispatch acepta el nombre del fichero (``ci.yml``), su
+        ruta o su id numerico. Sin la extension responde 404 y el detective
+        post-merge no dispara nunca: la fusion queda sin la auditoria que la
+        precedia, y el rojo real llega a ``main`` sin verse (#1086).
+        """
+        proc = run_gate(self.root, contract_with(["deploy"]),
+                        with_workflow("deploy", declares=True))
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(self.stored()["dispatches"][0]["name"], "deploy.yml")
+
+    def test_the_dispatch_id_is_the_real_file_name_not_a_guessed_extension(self) -> None:
+        """#1086: el identificador sale del listado, no de anadir ``.yml`` a ciegas.
+
+        Un consumer con ``deploy.yaml`` merece su dispatch igual: el nombre del
+        fichero se lee del listado de workflows, no se compone.
+        """
+        state = base_state()
+        path = ".github/workflows/deploy.yaml"
+        state["workflows"] = [{"id": 1, "name": "deploy", "path": path, "state": "active"}]
+        state["workflow_files"] = {path: {
+            "content": base64.b64encode(yaml_workflow(True).encode()).decode("ascii"),
+            "encoding": "base64", "path": path,
+            "name": "deploy.yaml", "type": "file"}}
+        state["base_tips"] = {"main": BASE_TIP}
+        proc = run_gate(self.root, contract_with(["deploy"]), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(self.stored()["dispatches"][0]["name"], "deploy.yaml")
 
     def test_post_dispatch_validation_blocks_when_workflow_dispatch_is_missing(self) -> None:
         # The workflow exists on the repo but only declares `push`; the merge
@@ -337,7 +370,7 @@ class GovernedMergeWorkflowsListingTests(unittest.TestCase):
                                            "name": "deploy.yml", "type": "file"}}
         proc = run_gate(self.root, contract_with(["deploy"]), state)
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-        self.assertEqual(self.stored()["dispatches"][0]["name"], "deploy")
+        self.assertEqual(self.stored()["dispatches"][0]["name"], "deploy.yml")
         self.assertEqual(self.stored()["workflows_queries"],
                          [{"per_page": ["100"], "page": ["1"]},
                           {"per_page": ["100"], "page": ["2"]}])

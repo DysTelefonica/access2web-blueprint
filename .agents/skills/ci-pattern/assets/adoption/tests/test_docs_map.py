@@ -131,7 +131,7 @@ def _roots_decl(roots=None):
 class DocsMapRootsTests(unittest.TestCase):
     """#727: docs_map admite varias raíces de código (lista de raíz + glob)."""
 
-    def _findings(self, decl, page="`app/users.py` y la plantilla home\n", templates=True):
+    def _findings(self, decl, page="`app/users.py` y `templates/home.html`\n", templates=True):
         with tempfile.TemporaryDirectory() as d:
             repo, _ = _repo(d, page=page)
             if templates:
@@ -146,7 +146,7 @@ class DocsMapRootsTests(unittest.TestCase):
         self.assertTrue(any("home" in f and "templates" in f for f in found), found)
 
     def test_modulo_sin_describir_en_la_primera_raiz_nombra_raiz_y_modulo(self):
-        found = self._findings(_roots_decl(), page="la plantilla home\n")
+        found = self._findings(_roots_decl(), page="la plantilla `templates/home.html`\n")
         self.assertTrue(any("users" in f and "app" in f for f in found), found)
 
     def test_la_ruta_citada_inexistente_se_informa_una_sola_vez(self):

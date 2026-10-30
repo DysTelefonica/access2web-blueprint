@@ -65,7 +65,7 @@ El bus se dispara desde `modIndicadores.Indicadores_NotificarMovimiento` (`modIn
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Ya se ve: SQL concatenado en `getUsuarioSICA` (`Constructor.bas:1274, 1279, 1284`); `On Error Resume Next` en el handler del bus (`:37`) que silencia errores de `Requery`.
+Pendiente de la coexistencia (documento aún no redactado). Ya se ve: SQL concatenado en `getUsuarioSICA` (`Constructor.bas:1274, 1279, 1284`); `On Error Resume Next` en el handler del bus (`:37`) que silencia errores de `Requery`.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

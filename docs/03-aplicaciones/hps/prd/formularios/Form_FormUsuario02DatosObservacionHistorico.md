@@ -72,7 +72,7 @@ Sin escritura. Sin transacciones. Sin correo.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Cosas que ya se ven: el visor reutiliza el layout y los nombres de control de `Form_FormUsuario02DatosObservacion` (mismo PRD), así que tres campos `Fecha`/`Observacion`/`TIPO` se duplican entre los dos formularios; ambos comparten `EncabezadoDelFormulario` y `PieDelFormulario` con la misma estructura. En web conviene no doblar la maquetación: un mismo componente `ObservacionLectura` con una prop `editable` cubriría las dos vistas.
+Pendiente de la coexistencia (documento aún no redactado). Cosas que ya se ven: el visor reutiliza el layout y los nombres de control de `Form_FormUsuario02DatosObservacion` (mismo PRD), así que tres campos `Fecha`/`Observacion`/`TIPO` se duplican entre los dos formularios; ambos comparten `EncabezadoDelFormulario` y `PieDelFormulario` con la misma estructura. En web conviene no doblar la maquetación: un mismo componente `ObservacionLectura` con una prop `editable` cubriría las dos vistas.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

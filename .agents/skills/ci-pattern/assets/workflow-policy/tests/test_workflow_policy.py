@@ -125,6 +125,14 @@ class TestHR26PinnedToolchain(GateCase):
             ("pip install without ==", yml(run="pip install requests\n          " + RUN_OK), 1, "HR-26"),
             ("pip -r without hashes", yml(run="pip install -r requirements.txt\n          " + RUN_OK), 1, "HR-26"),
             ("pip -c constraints unverifiable", yml(run="pip install -c constraints.txt\n          " + RUN_OK), 1, "HR-26"),
+            ("bare name with extras is a registry requirement", yml(
+                run="pip install \"app[dev]\"\n          " + RUN_OK), 1, "HR-26"),
+            ("local path mixed with an unpinned registry name", yml(
+                run="pip install ./app requests\n          " + RUN_OK), 1, "HR-26"),
+            ("local path with a requirements file without hashes", yml(
+                run="pip install ./app -r requirements.txt\n          " + RUN_OK), 1, "HR-26"),
+            ("editable bare name is a registry requirement", yml(
+                run="pip install -e app\n          " + RUN_OK), 1, "HR-26"),
             ("finding in non-required job", yml(
                 tail="  other:\n    timeout-minutes: 5\n    steps:\n      - uses: actions/checkout@v4\n"), 1, "HR-26"),
         ])
@@ -138,6 +146,12 @@ class TestHR26PinnedToolchain(GateCase):
             ("pip install with ==", yml(run="pip install requests==2.31.0\n          " + RUN_OK), 0, None),
             ("pip install -r with hashes stays clean", yml(
                 run="pip install -r requirements.txt --require-hashes\n          " + RUN_OK), 0, None),
+            ("pip install of a local path with extras", yml(
+                run="python -m pip install --quiet \"./app[dev]\"\n          " + RUN_OK), 0, None),
+            ("pip install -e of a local path", yml(run="pip install -e ./app\n          " + RUN_OK), 0, None),
+            ("pip install of the current directory", yml(run="pip install .\n          " + RUN_OK), 0, None),
+            ("pip install of several local paths", yml(
+                run="pip install --quiet ../x ./y /abs/z ~/w\n          " + RUN_OK), 0, None),
             ("local action needs no sha", yml(uses="uses: ./.github/actions/local"), 0, None),
             ("docker mutable tag", yml(uses="uses: docker://alpine:3.20"), 1, "HR-26"),
             ("docker digest clean", yml(uses="uses: docker://alpine@sha256:" + "c"*64), 0, None),
@@ -404,6 +418,171 @@ class TestHR30DeclaredRequiredChecks(RepoCase):
                 self.check(self.wf(), bad, 2)
 
 
+class TestHR30ReusableDeclaredNames(unittest.TestCase):
+    """#1311: el nombre de check que publica un workflow reutilizable es compuesto
+    (`<job que llama> / <job llamado>`), no el nombre del job solo.
+
+    El gate lo reconoce solo cuando puede PROBARlo (el workflow llamado está entre
+    los ficheros analizados); si no, falla cerrado: el nombre declarado sigue sin
+    publicarse y el finding se mantiene."""
+
+    PINNED = "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683"
+
+    #: El workflow que llama: su job `pr-size` llama al reusable con el mismo nombre.
+    CALLER = (
+        "name: pr-metadata\n"
+        "on:\n"
+        "  pull_request:\n"
+        "concurrency:\n"
+        "  group: wf-${{ github.ref }}\n"
+        "jobs:\n"
+        "  pr-size:\n"
+        "    name: pr-size\n"
+        "    uses: ./.github/workflows/pr-size.yml\n"
+    )
+
+    #: El workflow reutilizable: su job `pr-size` publica `pr-size / pr-size`.
+    REUSABLE = (
+        "name: pr-size\n"
+        "on:\n"
+        "  workflow_call:\n"
+        "  pull_request:\n"
+        "  schedule:\n"
+        "    - cron: '0 3 * * *'\n"
+        "concurrency:\n"
+        "  group: reusable-${{ github.workflow }}\n"
+        "jobs:\n"
+        "  pr-size:\n"
+        "    name: pr-size\n"
+        "    timeout-minutes: 5\n"
+        "    steps:\n"
+        "      - uses: " + PINNED + "\n"
+    )
+
+    #: Control: el mismo nombre, publicado por un job propio del workflow.
+    PLAIN = (
+        "name: plain\n"
+        "on:\n"
+        "  pull_request:\n"
+        "  schedule:\n"
+        "    - cron: '0 3 * * *'\n"
+        "concurrency:\n"
+        "  group: wf-${{ github.ref }}\n"
+        "jobs:\n"
+        "  pr-size:\n"
+        "    name: pr-size / pr-size\n"
+        "    timeout-minutes: 5\n"
+        "    steps:\n"
+        "      - uses: " + PINNED + "\n"
+    )
+
+    #: La forma medida en access2web-blueprint: `security (pull_request) / gitleaks`.
+    SECURITY_CALLER = (
+        "name: security\n"
+        "on:\n"
+        "  pull_request:\n"
+        "concurrency:\n"
+        "  group: wf-${{ github.ref }}\n"
+        "jobs:\n"
+        "  security:\n"
+        "    name: security (${{ github.event_name }})\n"
+        "    uses: ./.github/workflows/security.yml\n"
+    )
+
+    SECURITY_REUSABLE = (
+        "name: security\n"
+        "on:\n"
+        "  workflow_call:\n"
+        "concurrency:\n"
+        "  group: reusable-${{ github.ref }}\n"
+        "jobs:\n"
+        "  gitleaks:\n"
+        "    name: gitleaks\n"
+        "    timeout-minutes: 5\n"
+        "    steps:\n"
+        "      - uses: " + PINNED + "\n"
+    )
+
+    def policy(self, required="pr-size"):
+        return {"required_jobs": [required], "events": {"pull_request": {"accepted_skips": []}},
+                "state_dependent_gates": []}
+
+    def run_files(self, files, contract, required="pr-size"):
+        with tempfile.TemporaryDirectory() as d:
+            d_path = Path(d)
+            (d_path / "policy.json").write_text(json.dumps(self.policy(required)), encoding="utf-8")
+            (d_path / "host-contract.json").write_text(json.dumps(contract), encoding="utf-8")
+            args = []
+            for name, text in files.items():
+                (d_path / name).parent.mkdir(parents=True, exist_ok=True)
+                (d_path / name).write_text(text, encoding="utf-8")
+                args += ["--workflow", name]
+            out = subprocess.run([sys.executable, str(GATE), *args,
+                                  "--required-jobs", "policy.json", "--base-branch", "main",
+                                  "--host-contract", "host-contract.json"],
+                                 capture_output=True, text=True, cwd=str(d_path))
+        return out.returncode, out.stdout + out.stderr
+
+    def test_the_reusable_publishes_the_composite_name_and_enters_the_hr30_scope(self):
+        """(a) El nombre compuesto se reconoce y el job que lo publica entra en el
+        alcance de HR-30: el reusable dispara en `schedule` y eso es hallazgo."""
+        code, out = self.run_files({
+            ".github/workflows/pr-metadata.yml": self.CALLER,
+            ".github/workflows/pr-size.yml": self.REUSABLE,
+        }, contract_of("pr-size / pr-size"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("publishes its check name on 'schedule'", out)
+        self.assertNotIn("but no analyzed workflow job publishes it", out)
+
+    def test_the_control_keeps_todays_finding(self):
+        """(b) Control: el mismo nombre publicado por un job propio del workflow
+        conserva el finding de HR-30 de hoy."""
+        code, out = self.run_files({".github/workflows/plain.yml": self.PLAIN},
+                                   contract_of("pr-size / pr-size"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("publishes its check name on 'schedule'", out)
+        self.assertNotIn("but no analyzed workflow job publishes it", out)
+
+    def test_a_declared_name_nobody_publishes_is_still_a_finding(self):
+        """(c) Fail closed: un nombre declarado que nada publica sigue siendo hallazgo."""
+        code, out = self.run_files({
+            ".github/workflows/pr-metadata.yml": self.CALLER,
+            ".github/workflows/pr-size.yml": self.REUSABLE,
+        }, contract_of("pr-size / pr-size", "lint / lint"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("requires check 'lint / lint'", out)
+        self.assertNotIn("requires check 'pr-size / pr-size'", out)
+
+    def test_the_reusable_outside_the_analysed_files_publishes_nothing(self):
+        """(d) Fail closed: sin el workflow reusable entre los ficheros analizados no
+        se puede probar ningún nombre compuesto; el declarado sigue sin publicarse."""
+        code, out = self.run_files({".github/workflows/pr-metadata.yml": self.CALLER},
+                                   contract_of("pr-size / pr-size"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("requires check 'pr-size / pr-size'", out)
+        self.assertIn("pass the workflow that does", out)
+        self.assertNotIn("publishes its check name on 'schedule'", out)
+
+    def test_a_remote_reusable_publishes_nothing(self):
+        """(e) Fail closed: un `uses:` remoto no está entre los ficheros analizados."""
+        caller = self.CALLER.replace("uses: ./.github/workflows/pr-size.yml",
+                                     "uses: otro/repo/.github/workflows/pr-size.yml@" + "a" * 40)
+        code, out = self.run_files({".github/workflows/pr-metadata.yml": caller},
+                                   contract_of("pr-size / pr-size"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("requires check 'pr-size / pr-size'", out)
+
+    def test_the_composite_name_keeps_the_wildcard_of_the_caller(self):
+        """(f) La forma medida en access2web-blueprint: `security (pull_request) /
+        gitleaks`; el `${{ }}` del nombre del llamador sigue siendo comodín."""
+        code, out = self.run_files({
+            ".github/workflows/pr-metadata.yml": self.SECURITY_CALLER,
+            ".github/workflows/security.yml": self.SECURITY_REUSABLE,
+        }, contract_of("security (pull_request) / gitleaks"), required="security")
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("requires check 'security (pull_request) / gitleaks'", out)
+
+
 SCHED_PINNED = "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683"
 
 
@@ -549,6 +728,29 @@ class TestHR39StateDependentGates(unittest.TestCase):
         self.assertEqual(code, 1, (out, err))
         self.assertIn("HR-39", out)
         self.assertIn("wf_sched.yml", out)
+
+    def test_absolute_workflow_inputs_match_declared_relative_paths(self):
+        """(f) el adoption check pasa rutas absolutas (`@ruta` resuelta contra
+        el repo) y la política declara rutas relativas (`.github/workflows/x.yml`):
+        el mismo workflow tiene que casar, o HR-39 da un falso negativo en fase 4
+        del consumer con la política ya verde en CI."""
+        pol = {"required_jobs": ["build"], "state_dependent_gates": [dict(
+            GOOD_STATE_ENTRY,
+            pr_workflow=".github/workflows/wf_pr.yml",
+            scheduled_workflow=".github/workflows/wf_sched.yml")]}
+        with tempfile.TemporaryDirectory() as d:
+            d_path = Path(d)
+            wf_dir = d_path / ".github" / "workflows"
+            wf_dir.mkdir(parents=True)
+            (d_path / "policy.json").write_text(json.dumps(pol), encoding="utf-8")
+            (wf_dir / "wf_pr.yml").write_text(pr_wf(), encoding="utf-8")
+            (wf_dir / "wf_sched.yml").write_text(sched_wf(), encoding="utf-8")
+            cmd = [sys.executable, str(GATE),
+                   "--workflow", str(wf_dir / "wf_pr.yml"),
+                   "--workflow", str(wf_dir / "wf_sched.yml"),
+                   "--required-jobs", str(d_path / "policy.json"), "--base-branch", "main"]
+            out = subprocess.run(cmd, capture_output=True, text=True, cwd=str(d_path))
+        self.assert_clean_hr39(out.returncode, out.stdout, out.stderr)
 
     def test_scheduled_without_alert_is_finding(self):
         """(e) el workflow programado no ejecuta el alert_command: finding."""
@@ -698,6 +900,60 @@ class TestConcurrency(GateCase):
         code, out = self.run_gate(text)
         self.assertEqual(code, 1, out)
         self.assertIn("concurrency", out)
+
+
+class TestCancelInProgress(GateCase):
+    """#978: a run cancelled after its jobs exist leaves a `cancelled` check run on the head SHA,
+    and a cancelled required check blocks the merge even when a later run of the same SHA is green.
+    On `pull_request` only a new commit (`synchronize`) may cancel: its victim is the old SHA."""
+
+    def wf(self, concurrency, on="on:\n  pull_request:\n"):
+        return yml(on=on).replace("concurrency:\n  group: wf-${{ github.ref }}\n", concurrency)
+
+    def test_literal_true_on_a_pull_request_workflow_is_a_finding(self):
+        text = self.wf("concurrency:\n  group: wf\n  cancel-in-progress: true\n")
+        code, out = self.run_gate(text)
+        self.assertEqual(code, 1, out)
+        self.assertIn("cancel-in-progress", out)
+        self.assertIn("synchronize", out)
+
+    def test_string_true_is_a_finding_too(self):
+        text = self.wf("concurrency:\n  group: wf\n  cancel-in-progress: 'true'\n")
+        self.assertEqual(self.run_gate(text)[0], 1)
+
+    def test_a_job_level_true_is_a_finding(self):
+        text = self.wf("concurrency:\n  group: wf\n").replace(
+            "    timeout-minutes: 5\n",
+            "    timeout-minutes: 5\n    concurrency:\n      group: j\n      cancel-in-progress: true\n")
+        code, out = self.run_gate(text)
+        self.assertEqual(code, 1, out)
+        self.assertIn("job 'build'", out)
+
+    def test_false_passes(self):
+        text = self.wf("concurrency:\n  group: wf\n  cancel-in-progress: false\n")
+        self.assertEqual(self.run_gate(text)[0], 0)
+
+    def test_an_expression_that_names_synchronize_passes(self):
+        text = self.wf("concurrency:\n  group: wf\n"
+                       "  cancel-in-progress: ${{ github.event.action == 'synchronize' }}\n")
+        self.assertEqual(self.run_gate(text)[0], 0)
+
+    def test_an_expression_that_does_not_name_synchronize_is_a_finding(self):
+        text = self.wf("concurrency:\n  group: wf\n"
+                       "  cancel-in-progress: ${{ github.event_name == 'pull_request' }}\n")
+        self.assertEqual(self.run_gate(text)[0], 1)
+
+    def test_without_a_pull_request_trigger_true_is_not_judged(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("cwp", Path(__file__).resolve().parents[1] / "check_workflow_policy.py")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        doc = mod.parse_workflow(self.wf("concurrency:\n  group: wf\n  cancel-in-progress: true\n",
+                                         on="on:\n  push:\n    branches: [main]\n"), "wf.yml")
+        self.assertEqual(mod.cancel_in_progress_findings("wf.yml", doc), [])
+
+    def test_absent_cancel_in_progress_passes(self):
+        self.assertEqual(self.run_gate(yml())[0], 0)
 
 
 class TestServicePorts(GateCase):
@@ -921,5 +1177,524 @@ class TestWorkflowCallEmptyInputsDict(GateCase):
             f"el mensaje no reproduce el mapa rechazado para diagnóstico:\n{out}",
         )
 
+class TestInstanceIsolatedGroups(GateCase):
+    """HR-73: un gate que corre en dos instancias (su propio disparador y la llamada
+    `workflow_call` de otro workflow) no puede compartir el grupo de concurrencia: GitHub
+    guarda una sola petición pendiente por grupo y cancela la pendiente cuando llega otra,
+    así que una instancia pierde su veredicto y el PR queda rojo sin defecto
+    (BP#1371, run `ci` 40084048493 intento 1: job `pr-gate / pr-gate` cancelado a los 0 s)."""
+
+    PAIR_POLICY = {"required_jobs": ["pr-gate"], "events": {"pull_request": {"accepted_skips": []}},
+                   "state_dependent_gates": []}
+
+    CALLER = ("name: ci\non:\n  pull_request:\nconcurrency:\n  group: wf-${{ github.ref }}\n"
+              "jobs:\n  call:\n    uses: ./.github/workflows/callee.yml\n")
+
+    def callee(self, group, direct=True, inputs=""):
+        on = "on:\n  pull_request:\n  workflow_call:\n" if direct else "on:\n  workflow_call:\n"
+        return (on + inputs + "jobs:\n  pr-gate:\n    timeout-minutes: 5\n"
+                "    concurrency:\n      group: " + group + "\n      cancel-in-progress: false\n"
+                "    steps:\n      - " + PINNED + "\n")
+
+    def pair(self, caller, callee, policy=None):
+        with tempfile.TemporaryDirectory() as d:
+            c, w, p = Path(d, "caller.yml"), Path(d, "callee.yml"), Path(d, "policy.json")
+            c.write_text(caller, encoding="utf-8")
+            w.write_text(callee, encoding="utf-8")
+            p.write_text(json.dumps(policy or self.PAIR_POLICY), encoding="utf-8")
+            out = subprocess.run([sys.executable, str(GATE), "--workflow", str(c),
+                                  "--workflow", str(w), "--required-jobs", str(p),
+                                  "--base-branch", "main"], capture_output=True, text=True)
+        return out.returncode, out.stdout + out.stderr
+
+    def test_group_shared_by_the_two_instances_is_a_finding(self):
+        code, out = self.pair(
+            self.CALLER,
+            self.callee("gate-pr-gate-${{ github.event.pull_request.number || github.ref }}"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("pr-gate", out)
+        self.assertIn("gate-pr-gate-", out)
+        self.assertIn("HR-73", out)
+
+    def test_github_workflow_in_the_group_separates_the_instances(self):
+        code, out = self.pair(
+            self.CALLER,
+            self.callee("gate-pr-gate-${{ github.workflow }}-${{ github.event.pull_request.number }}"))
+        self.assertEqual(code, 0, out)
+
+    def test_github_run_id_in_the_group_separates_the_instances(self):
+        code, out = self.pair(self.CALLER, self.callee("gate-pr-gate-${{ github.run_id }}"))
+        self.assertEqual(code, 0, out)
+
+    def test_a_single_instance_is_clean(self):
+        # Sin disparador propio el reusable solo corre como llamada: una sola instancia.
+        # El required job pasa a ser el del caller (el reusable no publica nada de PR).
+        policy = {"required_jobs": ["call"], "events": {"pull_request": {"accepted_skips": []}},
+                  "state_dependent_gates": []}
+        code, out = self.pair(
+            self.CALLER,
+            self.callee("gate-pr-gate-${{ github.event.pull_request.number || github.ref }}",
+                        direct=False),
+            policy=policy)
+        self.assertEqual(code, 0, out)
+
+    def test_a_reusable_workflow_outside_the_analysed_set_is_clean(self):
+        # La segunda instancia no se puede probar si el reusable no está entre los
+        # workflows analizados: el gate no inventa.
+        policy = {"required_jobs": ["call"], "events": {"pull_request": {"accepted_skips": []}},
+                  "state_dependent_gates": []}
+        code, out = self.run_gate(self.CALLER, policy=policy)
+        self.assertEqual(code, 0, out)
+
+    def test_two_calls_from_the_same_caller_are_a_finding(self):
+        # `github.workflow` vale el caller: dos llamadas del mismo caller comparten valor.
+        caller = ("name: ci\non:\n  pull_request:\nconcurrency:\n  group: wf-${{ github.ref }}\n"
+                  "jobs:\n  call:\n    uses: ./.github/workflows/callee.yml\n"
+                  "  other:\n    uses: ./.github/workflows/callee.yml\n")
+        code, out = self.pair(
+            caller,
+            self.callee("gate-pr-gate-${{ github.workflow }}-${{ github.event.pull_request.number }}"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-73", out)
+
+    def test_an_input_the_caller_fills_separates_the_instances(self):
+        caller = ("name: ci\non:\n  pull_request:\nconcurrency:\n  group: wf-${{ github.ref }}\n"
+                  "jobs:\n  call:\n    uses: ./.github/workflows/callee.yml\n"
+                  "    with:\n      instance: ci\n")
+        inputs = "    inputs:\n      instance:\n        required: false\n"
+        code, out = self.pair(
+            caller,
+            self.callee("gate-pr-gate-${{ inputs.instance || github.event.pull_request.number }}",
+                        inputs=inputs))
+        self.assertEqual(code, 0, out)
+
+    def test_an_input_the_caller_leaves_empty_is_a_finding(self):
+        inputs = "    inputs:\n      instance:\n        required: false\n"
+        code, out = self.pair(
+            self.CALLER,
+            self.callee("gate-pr-gate-${{ inputs.instance || github.event.pull_request.number }}",
+                        inputs=inputs))
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-73", out)
+
+
+class TestHR30ApiPublishedCheckNames(RepoCase):
+    """A check the job POSTs through the check-runs API counts as published
+    under its literal CONTEXT (DysTelefonica/team-skills#1313, G3). The shape is the
+    canonical pr-contract template: a pull_request_target job, a name the host contract
+    requires, and no job display name that equals it."""
+
+    CONTRACT = {"contract_version": 1,
+                "required_checks": [{"name": "pr-contract / pr-contract", "class": "runner-enforced"}]}
+    POLICY_PRT = {"required_jobs": ["publish"],
+                  "events": {"pull_request_target": {"accepted_skips": []}},
+                  "state_dependent_gates": []}
+
+    @staticmethod
+    def workflow(context="\"pr-contract / pr-contract\"", on="on:\n  pull_request_target:\n",
+                 publish=True):
+        step = ""
+        if publish:
+            step = ("      - name: Publish the verdict as a check run on the PR head\n"
+                    "        env:\n"
+                    f"          CONTEXT: {context}\n"
+                    "        run: |\n"
+                    "          gh api --method POST \"repos/$GITHUB_REPOSITORY/check-runs\" --input x.json\n")
+        else:
+            step = "      - name: Verdict\n        run: |\n          echo ok\n"
+        return (on + "concurrency:\n  group: wf-${{ github.ref }}\njobs:\n  publish:\n"
+                "    name: publish\n    timeout-minutes: 5\n    steps:\n"
+                "      - " + PINNED + "\n" + step)
+
+    def run_prt(self, text):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            w, p, c = root / "wf.yml", root / "policy.json", root / "host-contract.json"
+            w.write_text(text, encoding="utf-8")
+            p.write_text(json.dumps(self.POLICY_PRT), encoding="utf-8")
+            c.write_text(json.dumps(self.CONTRACT), encoding="utf-8")
+            out = subprocess.run([sys.executable, str(GATE), "--workflow", str(w),
+                                  "--required-jobs", str(p), "--base-branch", "main",
+                                  "--repo-root", str(root), "--host-contract", str(c)],
+                                 capture_output=True, text=True)
+        return out.returncode, out.stdout + out.stderr
+
+    def test_literal_context_publishes_the_declared_name(self):
+        code, out = self.run_prt(self.workflow())
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("no analyzed workflow job publishes it", out)
+
+    def test_without_the_check_runs_step_the_name_is_still_a_finding(self):
+        code, out = self.run_prt(self.workflow(publish=False))
+        self.assertEqual(code, 1, out)
+        self.assertIn("requires check 'pr-contract / pr-contract'", out)
+
+    def test_non_literal_context_declares_no_name(self):
+        code, out = self.run_prt(self.workflow(context="\"${{ matrix.check }}\""))
+        self.assertEqual(code, 1, out)
+        self.assertIn("requires check 'pr-contract / pr-contract'", out)
+
+    def test_api_published_name_on_schedule_is_in_hr30_scope(self):
+        code, out = self.run_prt(self.workflow(on="on:\n  pull_request_target:\n  schedule:\n    - cron: '0 3 * * *'\n"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("does not evaluate the PR", out)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+GATE_OUTPUTS = ("    outputs:\n"
+                "      lockfile_scope_changed: ${{ steps.lanes.outputs.lockfile_scope_changed }}\n")
+
+
+def marker_pr_wf(if_expr, gate_outputs=GATE_OUTPUTS, gate_uses=None):
+    """PR sin paths: un gate de primer nivel que publica el marcador y un pr_job
+    `security` cuyo `if:` lo referencia (#1192)."""
+    gate = "  gate:\n    name: gate\n    timeout-minutes: 5\n    concurrency: g\n"
+    if gate_uses:
+        gate += f"    uses: {gate_uses}\n"
+    else:
+        gate += gate_outputs + "    steps:\n      - uses: " + SCHED_PINNED + "\n        id: lanes\n"
+    sec = ("  security:\n    name: security\n    timeout-minutes: 5\n    concurrency: j\n"
+           + (f"    if: {if_expr}\n" if if_expr is not None else "")
+           + "    steps:\n      - uses: " + SCHED_PINNED + "\n      - run: pip-audit\n")
+    return "on:\n  pull_request:\njobs:\n" + GOOD_BUILD + gate + sec
+
+
+PR_GATE_CALLED = """on:
+  workflow_call:
+    outputs:
+      lockfile_scope_changed:
+        value: ${{ jobs.pr-gate.outputs.lockfile_scope_changed }}
+jobs:
+  pr-gate:
+    name: pr-gate
+    timeout-minutes: 5
+    concurrency: g
+    steps:
+      - uses: """ + SCHED_PINNED + """
+"""
+
+MARKER_IF = "needs.gate.outputs.lockfile_scope_changed != 'false'"
+
+
+class TestHR39MarkerIfEquivalentToPaths(unittest.TestCase):
+    """#1192: un pr_job cuyo `if:` referencia el marcador de un job de primer
+    nivel que lo publica cuenta como filtro de ruta. Sin marcador, sigue el hallazgo."""
+
+    def run_files(self, files):
+        pol = dict(REQUIRED_POLICY)
+        pol["state_dependent_gates"] = [GOOD_STATE_ENTRY]
+        with tempfile.TemporaryDirectory() as d:
+            d_path = Path(d)
+            (d_path / "policy.json").write_text(json.dumps(pol), encoding="utf-8")
+            args = []
+            for name, text in files.items():
+                (d_path / name).parent.mkdir(parents=True, exist_ok=True)
+                (d_path / name).write_text(text, encoding="utf-8")
+                args += ["--workflow", name]
+            out = subprocess.run([sys.executable, str(GATE), *args,
+                                  "--required-jobs", "policy.json", "--base-branch", "main"],
+                                 capture_output=True, text=True, cwd=str(d_path))
+        return out.returncode, out.stdout + out.stderr
+
+    def sched(self):
+        return sched_wf()
+
+    def test_marker_if_on_first_level_gate_replaces_paths(self):
+        """(f) if: con marcador de un gate que lo publica: sin hallazgo de paths."""
+        code, out = self.run_files({"wf_pr.yml": marker_pr_wf(MARKER_IF),
+                                    "wf_sched.yml": self.sched()})
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("HR-39", out)
+
+    def test_marker_if_on_reusable_gate_replaces_paths(self):
+        """(g) el gate es un workflow reutilizable local que declara el marcador
+        en workflow_call.outputs: vale igual."""
+        pr = marker_pr_wf(MARKER_IF, gate_outputs=None,
+                          gate_uses="./.github/workflows/pr-gate.yml")
+        code, out = self.run_files({"wf_pr.yml": pr, "wf_sched.yml": self.sched(),
+                                    ".github/workflows/pr-gate.yml": PR_GATE_CALLED})
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("HR-39", out)
+
+    def test_marker_if_on_unknown_gate_is_finding(self):
+        """(h) el marcador apunta a un job que no existe: sigue sin paths."""
+        code, out = self.run_files({
+            "wf_pr.yml": marker_pr_wf("needs.nope.outputs.lockfile_scope_changed != 'false'"),
+            "wf_sched.yml": self.sched()})
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-39", out)
+        self.assertIn("paths", out)
+
+    def test_pr_job_without_if_is_finding(self):
+        """(i) pr_job sin if: ni paths: sigue siendo hallazgo."""
+        code, out = self.run_files({"wf_pr.yml": marker_pr_wf(None),
+                                    "wf_sched.yml": self.sched()})
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-39", out)
+        self.assertIn("paths", out)
+
+    def test_if_without_marker_comparison_is_finding(self):
+        """(j) un if: que no compara un marcador de salida (solo el evento) no cuenta."""
+        code, out = self.run_files({
+            "wf_pr.yml": marker_pr_wf("github.event_name == 'pull_request'"),
+            "wf_sched.yml": self.sched()})
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-39", out)
+
+    def test_marker_not_published_by_gate_is_finding(self):
+        """(k) el gate existe pero no publica el marcador que el if: referencia."""
+        code, out = self.run_files({
+            "wf_pr.yml": marker_pr_wf(MARKER_IF, gate_outputs="    outputs:\n      otro: x\n"),
+            "wf_sched.yml": self.sched()})
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-39", out)
+
+
+CALLED_AUDIT = """on:
+  workflow_call:
+jobs:
+  audit:
+    name: audit
+    timeout-minutes: 5
+    concurrency: a
+    steps:
+      - uses: """ + SCHED_PINNED + """
+      - run: pip-audit --strict
+"""
+
+CALLED_NO_COMMAND = CALLED_AUDIT.replace("pip-audit --strict", "echo nada")
+
+
+def pr_uses_wf(uses):
+    """PR con paths y un pr_job `security` que llama a un workflow reutilizable (#1196)."""
+    return ("on:\n  pull_request:\n    paths: [uv.lock, requirements*.txt]\njobs:\n"
+            + GOOD_BUILD
+            + f"  security:\n    uses: {uses}\n    concurrency: s\n")
+
+
+class TestHR39ReusableCommand(unittest.TestCase):
+    """#1196: la comprobacion de comando sigue un `uses:` local hacia el workflow
+    reutilizable llamado; un `uses:` externo sigue sin resolverse."""
+
+    def run_files(self, files):
+        pol = dict(REQUIRED_POLICY)
+        pol["state_dependent_gates"] = [GOOD_STATE_ENTRY]
+        with tempfile.TemporaryDirectory() as d:
+            d_path = Path(d)
+            (d_path / "policy.json").write_text(json.dumps(pol), encoding="utf-8")
+            args = []
+            for name, text in files.items():
+                (d_path / name).parent.mkdir(parents=True, exist_ok=True)
+                (d_path / name).write_text(text, encoding="utf-8")
+                args += ["--workflow", name]
+            out = subprocess.run([sys.executable, str(GATE), *args,
+                                  "--required-jobs", "policy.json", "--base-branch", "main"],
+                                 capture_output=True, text=True, cwd=str(d_path))
+        return out.returncode, out.stdout + out.stderr
+
+    def test_reusable_call_that_runs_the_command_is_clean(self):
+        """(a) el workflow llamado ejecuta el comando: sin hallazgo HR-39."""
+        code, out = self.run_files({
+            "wf_pr.yml": pr_uses_wf("./.github/workflows/audit.yml"),
+            ".github/workflows/audit.yml": CALLED_AUDIT,
+            "wf_sched.yml": sched_wf()})
+        self.assertNotIn("HR-39", out)
+
+    def test_reusable_call_without_the_command_names_the_called_workflow(self):
+        """(b) el workflow llamado no ejecuta el comando: el hallazgo nombra ese workflow."""
+        code, out = self.run_files({
+            "wf_pr.yml": pr_uses_wf("./.github/workflows/audit.yml"),
+            ".github/workflows/audit.yml": CALLED_NO_COMMAND,
+            "wf_sched.yml": sched_wf()})
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-39", out)
+        self.assertIn(".github/workflows/audit.yml", out)
+
+    def test_reusable_call_to_an_unlisted_workflow_names_the_path(self):
+        """(c) el workflow llamado no está entre los --workflow de entrada: hallazgo que lo nombra."""
+        code, out = self.run_files({
+            "wf_pr.yml": pr_uses_wf("./.github/workflows/audit.yml"),
+            "wf_sched.yml": sched_wf()})
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-39", out)
+        self.assertIn(".github/workflows/audit.yml", out)
+
+    def test_external_reusable_call_stays_a_finding(self):
+        """(d) un `uses:` externo no se resuelve: hallazgo (sin cambio de comportamiento)."""
+        code, out = self.run_files({
+            "wf_pr.yml": pr_uses_wf("otro/repo/.github/workflows/audit.yml@" + "a" * 40),
+            "wf_sched.yml": sched_wf()})
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-39", out)
+        self.assertIn("ejecuta", out)
+
+
+class TestHR79NeedsOutputsFromDirectDependencies(GateCase):
+    """HR-79: `needs.<job>.outputs` solo existe si el job es dependencia DIRECTA.
+
+    El contexto `needs` de un job expone los outputs de sus dependencias
+    directas: leer el de una transitiva devuelve vacío, sin error, y el
+    workflow queda en verde con el valor equivocado (#1277). El caso real es
+    el de access2web-blueprint: `publish` leía el canal de `preflight`, que
+    solo era dependencia transitiva, y una RC salía como release estable.
+    """
+
+    def workflow(self, read, where="env", needs="[e2e]"):
+        """Workflow de cuatro jobs: `build` (requerido), `preflight`, `e2e` y `publish`."""
+        head = f"    if: needs.{read}.outputs.kind == 'rc'\n" if where == "if" else ""
+        step = {
+            "env": f"      - run: echo ok\n        env:\n          KIND: ${{{{ needs.{read}.outputs.kind }}}}\n",
+            "with": f"      - uses: {PINNED}\n        with:\n          kind: ${{{{ needs.{read}.outputs.kind }}}}\n",
+            "if": "      - run: echo ok\n",
+        }[where]
+        return (
+            "on:\n  pull_request:\n"
+            "concurrency:\n  group: wf-${{ github.ref }}\n"
+            "jobs:\n"
+            "  build:\n"
+            "    name: build (${{ github.event_name }})\n"
+            "    timeout-minutes: 5\n"
+            "    steps:\n"
+            f"      - {PINNED}\n"
+            "  preflight:\n"
+            "    name: preflight\n"
+            "    timeout-minutes: 5\n"
+            "    outputs:\n"
+            "      kind: ${{ steps.id.outputs.kind }}\n"
+            "    steps:\n"
+            f"      - {PINNED}\n"
+            "  e2e:\n"
+            "    name: e2e\n"
+            "    needs: preflight\n"
+            "    timeout-minutes: 5\n"
+            "    steps:\n"
+            f"      - {PINNED}\n"
+            "  publish:\n"
+            "    name: publish\n"
+            f"{head}"
+            f"    needs: {needs}\n"
+            "    timeout-minutes: 5\n"
+            "    steps:\n"
+            f"{step}"
+        )
+
+    def test_output_of_a_direct_dependency_is_clean(self):
+        """`e2e` es dependencia directa de `publish`: su output llega."""
+        code, out = self.run_gate(self.workflow("e2e"))
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("HR-79", out)
+
+    def test_output_of_a_transitive_dependency_is_a_finding(self):
+        """`preflight` solo es transitiva para `publish`: el valor llega vacío."""
+        code, out = self.run_gate(self.workflow("preflight"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-79", out)
+        self.assertIn("preflight", out)
+        self.assertIn("publish", out)
+
+    def test_the_rule_does_not_depend_on_where_the_job_reads_it(self):
+        """`if:`, `env:` y `with:`: la regla no depende de dónde se lea."""
+        for where in ("if", "env", "with"):
+            with self.subTest(where=where):
+                code, out = self.run_gate(self.workflow("preflight", where=where))
+                self.assertEqual(code, 1, out)
+                self.assertIn("HR-79", out)
+
+
+class PullRequestCatalogSecretTests(GateCase):
+    """#1270: el token del catálogo solo en jobs que no pueden correr en un PR.
+
+    En `pull_request` el workflow, las acciones locales y el sello vienen de la
+    cabeza del PR: un job que puede correr ahí puede leer el token. Solo
+    `pull_request_target` (código de la base), `schedule` y `workflow_dispatch`
+    pueden tenerlo.
+    """
+
+    SECRET = "secrets.TEAM_SKILLS_READ_TOKEN"
+
+    def wf(self, on="on:\n  pull_request:\n", job="build", cond=None, secret=True):
+        s = (f"{on}concurrency:\n  group: wf-${{{{ github.ref }}}}\njobs:\n  {job}:\n"
+             f"    name: {job} (${{{{ github.event_name }}}})\n    timeout-minutes: 5\n")
+        if cond:
+            s += f"    if: {cond}\n"
+        s += "    steps:\n"
+        if secret:
+            s += ("      - name: Resolve the pattern\n"
+                  "        uses: ./.github/actions/pattern-at-pin\n"
+                  "        with:\n"
+                  f"          token: ${{{{ {self.SECRET} }}}}\n")
+        else:
+            s += "      - run: echo ok\n"
+        return s
+
+    def run_workflows(self, files: dict, required=("build",)):
+        """Analiza varios workflows a la vez (para el grafo de los reutilizables)."""
+        with tempfile.TemporaryDirectory() as d:
+            args = []
+            for name, text in files.items():
+                p = Path(d, name)
+                p.parent.mkdir(parents=True, exist_ok=True)
+                p.write_text(text, encoding="utf-8")
+                args += ["--workflow", str(p)]
+            policy = Path(d, "policy.json")
+            policy.write_text(json.dumps({"required_jobs": list(required),
+                                          "events": {"pull_request": {"accepted_skips": []}},
+                                          "state_dependent_gates": []}), encoding="utf-8")
+            out = subprocess.run([sys.executable, str(GATE), *args,
+                                  "--required-jobs", str(policy), "--base-branch", "main"],
+                                 capture_output=True, text=True)
+        return out.returncode, out.stdout + out.stderr
+
+    def test_a_pull_request_job_that_reads_the_secret_is_a_finding(self):
+        code, out = self.run_gate(self.wf())
+        self.assertEqual(code, 1, out)
+        self.assertIn(self.SECRET, out)
+        self.assertIn("#1270", out)
+
+    def test_the_same_job_in_pull_request_target_is_clean(self):
+        code, out = self.run_gate(self.wf(on="on:\n  pull_request_target:\n"))
+        self.assertEqual(code, 0, out)
+
+    def test_schedule_and_dispatch_are_clean(self):
+        """Un workflow programado puede tener el token: no evalúa el PR."""
+        for on in ("on:\n  schedule:\n    - cron: \"0 4 * * 1\"\n", "on:\n  workflow_dispatch:\n"):
+            with self.subTest(on=on):
+                code, out = self.run_workflows({
+                    "wf.yml": self.wf(on=on, job="other"),
+                    "pr.yml": self.wf(job="build", secret=False),
+                }, required=("build",))
+                self.assertEqual(code, 0, out)
+
+    def test_a_job_that_cannot_run_on_a_pr_is_clean(self):
+        """La condición del job lo excluye del PR: no lo puede leer."""
+        code, out = self.run_gate(self.wf(cond="github.event_name != 'pull_request'"))
+        self.assertEqual(code, 0, out)
+
+    def test_a_workflow_without_the_secret_is_clean(self):
+        code, out = self.run_gate(self.wf(secret=False))
+        self.assertEqual(code, 0, out)
+
+    def test_a_reusable_workflow_called_from_a_pr_inherits_the_event(self):
+        """El workflow reusable corre con los eventos de quien lo llama."""
+        caller = ("on:\n  pull_request:\nconcurrency:\n  group: wf-${{ github.ref }}\njobs:\n"
+                  "  call:\n    name: call\n    timeout-minutes: 5\n"
+                  "    uses: ./.github/workflows/callee.yml\n")
+        code, out = self.run_workflows({
+            ".github/workflows/callee.yml": self.wf(on="on:\n  workflow_call:\n", job="gate"),
+            ".github/workflows/caller.yml": caller,
+        }, required=("call",))
+        self.assertEqual(code, 1, out)
+        self.assertIn(self.SECRET, out)
+
+    def test_a_reusable_workflow_called_only_from_a_target_is_clean(self):
+        caller = ("on:\n  pull_request_target:\nconcurrency:\n  group: wf-${{ github.ref }}\njobs:\n"
+                  "  call:\n    name: call\n    timeout-minutes: 5\n"
+                  "    uses: ./.github/workflows/callee.yml\n")
+        code, out = self.run_workflows({
+            ".github/workflows/callee.yml": self.wf(on="on:\n  workflow_call:\n", job="gate"),
+            ".github/workflows/caller.yml": caller,
+        }, required=("call",))
+        self.assertEqual(code, 0, out)
