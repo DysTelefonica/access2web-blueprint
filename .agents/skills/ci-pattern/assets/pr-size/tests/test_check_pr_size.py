@@ -575,6 +575,41 @@ class TestGeneratedLockfilesAreExcluded(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 
+class TestGeneratedFilesFromTheBase(unittest.TestCase):
+    """#1440: lo que el ``.gitattributes`` de la BASE marca generado no cuenta."""
+
+    INVENTORY = "\n".join(f"<li>{i}</li>" for i in range(500)) + "\n"
+    ATTRS = "docs/inventory.html linguist-generated\n"
+
+    def test_a_file_marked_generated_in_the_base_does_not_count(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            _commit_file(repo, ".gitattributes", self.ATTRS, "chore: mark generated")
+            _commit_file(repo, "docs/inventory.html", self.INVENTORY, "docs: regenerate")
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("500 generated line(s) excluded", result.stdout)
+
+    def test_a_pr_cannot_mark_its_own_lines_generated(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            _commit_files(repo, {".gitattributes": self.ATTRS,
+                                 "docs/inventory.html": self.INVENTORY}, "docs: hide it")
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+
+    def test_handwritten_docs_still_count(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            _commit_file(repo, ".gitattributes", self.ATTRS, "chore: mark generated")
+            _commit_file(repo, "docs/guide.md", self.INVENTORY, "docs: write a guide")
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+
+
 class TestLockfileBumpRealCase(unittest.TestCase):
     """El caso real de APAP_WEB#2424: un bump que mueve 444 líneas de ``uv.lock``
     y 4 de ``pyproject.toml`` (448 en crudo). El presupuesto cuenta 4, no 448
@@ -803,6 +838,29 @@ class TestApiMode(unittest.TestCase):
 
     def test_a_rename_from_authored_into_a_lockfile_still_counts(self) -> None:
         result, _ = self.run_api([_file("uv.lock", 500, previous="app/a.py")])
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_a_generated_file_from_the_gitattributes_file_does_not_count(self) -> None:
+        """#1440: en modo API el workflow pasa el ``.gitattributes`` de la base."""
+        attrs = self.tmp / "base.gitattributes"
+        attrs.write_text("docs/inventory.html linguist-generated\n", encoding="utf-8")
+        result, _ = self.run_api([_file("docs/inventory.html", 500)],
+                                 extra=("--gitattributes-file", str(attrs)))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("500 generated line(s) excluded", result.stdout)
+
+    def test_an_unreadable_gitattributes_file_fails_with_an_envelope(self) -> None:
+        import json
+        attrs = self.tmp / "bad.gitattributes"
+        attrs.write_bytes(b"docs/\xff linguist-generated\n")
+        result, _ = self.run_api([_file("docs/inventory.html", 500)],
+                                 extra=("--gitattributes-file", str(attrs), "--json"))
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertEqual(json.loads(result.stdout)["status"], "error")
+
+    def test_without_the_gitattributes_file_a_generated_path_counts(self) -> None:
+        result, _ = self.run_api([_file("docs/inventory.html", 500)])
         self.assertEqual(result.returncode, 1, result.stdout)
 
     def test_a_lockfile_bump_counts_only_the_manifest(self) -> None:
