@@ -19,7 +19,7 @@
  */
 
 import { test, expect } from "@playwright/test";
-import { spawn } from "node:child_process";
+import { exec, spawn } from "node:child_process";
 import { promisify } from "node:util";
 
 import { TEST_USER_EMAIL, TEST_ADMIN_EMAIL } from "./fixtures/auth-fixture";

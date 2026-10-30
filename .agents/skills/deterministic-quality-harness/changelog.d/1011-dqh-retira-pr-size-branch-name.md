@@ -1,0 +1,5 @@
+type: minor
+
+Retira `assets/scripts/check_pr_size.py` y `assets/scripts/check_branch_name.py`: el canon de los dos gates es `ci-pattern`, que es el que ya ejecutan los tres consumers, y una segunda copia solo puede divergir en silencio (#1011, D1 de #809). La plantilla `assets/ci.yml` los invoca ahora desde `.agents/skills/ci-pattern/`, lo que le añade un requisito nuevo: quien la use tiene que vendorizar `ci-pattern`. `quality_report.py` se queda sin gates de PR, y sus dos indicadores salen vacíos.
+
+El cambio altera el veredicto de los dos gates, y la tabla del README lo dice con los dos patrones medidos ejecutando las copias una contra otra. `branch-name` deja de exigir el número de issue y admite 11 tipos en vez de 7, más las exenciones de `archive/`, `skill-fleet/` y dependabot: cinco formas de rama pasan de *falla* a *pasa*. `pr-size` excluye del presupuesto las raíces vendorizadas, cuenta por la API y falla cerrado si no puede medir, así que el presupuesto se relaja para lo vendorizado y se endurece cuando la medición falla.

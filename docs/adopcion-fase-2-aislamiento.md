@@ -5,8 +5,8 @@
 > qué intérprete y dependencias se miden las cifras, y cuántos actores trabajan
 > a la vez sobre este repositorio.
 
-> **Qué no es.** Un cambio de la suite, del plugin de cobertura ni de los
-> umbrales: el piso de cobertura (`--cov-fail-under=69`) y los cuatro objetivos
+> **Qué no es.** Un cambio de la suite ni de los umbrales: el plugin de cobertura
+> y su piso (`--cov-fail-under=69`) se retiraron en #877 y los cuatro objetivos
 > críticos quedan como están. Tampoco declara `governance` ni adelanta fases.
 
 ## La raíz que se escanea: `tests`
@@ -38,7 +38,7 @@ aparece. La suite no lee configuración de la aplicación.
 | Intérprete del runner | `3.12.11` | `.github/workflows/ci.yml` (`env.PYTHON_VERSION`), usado por `actions/setup-python` |
 | Intérprete del worktree | `3.12.11` | `app/.python-version` (era `3.12`, nivel menor; se alinea en este PR porque el propio repositorio trata un cambio de parche como un veredicto distinto) |
 | Dependencias | `python -m pip install --require-hashes --requirement app/requirements-dev.lock`, generado desde `app/uv.lock` con sus hashes | Paso `install` de los jobs de `ci.yml` |
-| Medición local | `make test` (`pytest -c app/pyproject.toml --rootdir=app -m "not integration" --cov --cov-fail-under=69`) | `Makefile` |
+| Medición local | `make test` (`pytest -c app/pyproject.toml --rootdir=app -m "not integration"`, sin cobertura desde #877) | `Makefile` |
 
 Premisa declarada: una cifra medida en local solo es comparable con el runner si
 el intérprete es el mismo parche (3.12.11) y las dependencias salen del mismo

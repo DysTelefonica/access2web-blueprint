@@ -95,12 +95,15 @@ import hmac
 import json
 import time
 
+
 def _b64url_encode(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
+
 
 def _b64url_decode(s: str) -> bytes:
     pad = "=" * (-len(s) % 4)
     return base64.urlsafe_b64decode(s + pad)
+
 
 class Hs256JwtSigner:
     def __init__(self, secret: bytes) -> None:
@@ -109,7 +112,9 @@ class Hs256JwtSigner:
         self._secret = secret
 
     def sign(self, payload: dict[str, Any]) -> str:
-        header = _b64url_encode(json.dumps({"alg": "HS256", "typ": "JWT"}, separators=(",", ":")).encode())
+        header = _b64url_encode(
+            json.dumps({"alg": "HS256", "typ": "JWT"}, separators=(",", ":")).encode()
+        )
         body = _b64url_encode(json.dumps(payload, separators=(",", ":")).encode())
         msg = f"{header}.{body}".encode()
         sig = hmac.new(self._secret, msg, hashlib.sha256).digest()

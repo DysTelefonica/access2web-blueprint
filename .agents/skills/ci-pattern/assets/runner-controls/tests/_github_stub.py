@@ -103,6 +103,16 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
         return 204, "", {}
     if method != "GET":
         return 404, {"message": "unsupported endpoint"}, {}
+    if method == "GET" and path.startswith("repos/") and path.count("/") == 3 \
+            and path.endswith("/pulls"):
+        base = query.get("base", [None])[0]
+        pulls = state.get("merged_pulls", [])
+        if base is not None:
+            pulls = [pull for pull in pulls
+                     if isinstance(pull, dict)
+                     and isinstance(pull.get("base"), dict)
+                     and pull["base"].get("ref") == base]
+        return 200, pulls, {}
     if path.startswith("repos/") and path.count("/") == 2:
         return 200, {"default_branch": state.get("default_branch", "main")}, {}
     if path.endswith("/pulls") and "/commits/" in path:

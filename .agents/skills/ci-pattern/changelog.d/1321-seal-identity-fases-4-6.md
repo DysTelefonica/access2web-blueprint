@@ -1,0 +1,3 @@
+type: patch
+
+`--seal-baseline <dir>` mide también las fases 4 y 6 contra la BASE del PR (DysTelefonica/team-skills#1321). En la fase 4 las rutas `@` que miden los gates tienen que ser las que mide la base: el conjunto de gates lo fija el canon, así que el consumer elige las entradas, no el subconjunto. En la fase 6 el operador es CONTENCIÓN: la cadena de aceptación crece, así que las entradas de la base tienen que seguir presentes y sin cambios (número, sha y veredicto), y la cabeza puede añadir las suyas. La retirada real de una ruta sigue permitida, y una base sin contrato legible sigue fallando cerrado con exit 2. Sin la opción el gate se mide como siempre.
