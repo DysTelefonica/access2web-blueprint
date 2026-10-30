@@ -1,0 +1,3 @@
+type: patch
+
+El disparo post-merge del merge gobernado (#817) identifica cada workflow por su **nombre de fichero con extensión** (`ci.yml`) en `POST /repos/<repo>/actions/workflows/<workflow_id>/dispatches`. Antes se enviaba el basename sin extensión (`ci`), que la API no reconoce: respondía 404 y el detective post-merge no llegó a dispararse nunca, con lo que las fusiones gobernadas de cadete quedaron sin auditar (#1086). El contrato `host-contract.json::post_merge_dispatch` no cambia: sigue declarando los basenames (`ci`, `deploy`), y el nombre del fichero sale del listado de workflows del propio repo.

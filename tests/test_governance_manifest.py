@@ -17,10 +17,126 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
+import subprocess
+import sys
 from pathlib import Path
+
+import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MANIFEST_PATH = REPO_ROOT / ".governance-manifest.json"
+ADOPTION_PATH = REPO_ROOT / ".github" / "ci-pattern-adoption.json"
+CI_PATTERN_CLI = REPO_ROOT / ".agents" / "skills" / "ci-pattern" / "assets" / "bin" / "ci-pattern"
+
+# Los tres gates de gobierno que BP#1040 sustituyó por el canon `ci-pattern`:
+# su copia local se borró del árbol y su ejecución la toma ahora la copia
+# vendorizada de `.agents/skills/ci-pattern/assets/`. Cada uno tiene que quedar
+# trazado en el inventario fase 0 como `retired` —como sus hermanos en las PR
+# #1041 y #1104— y ninguna superficie viva puede seguir citándolo como ruta.
+GATES_REPLACED_BY_CANON = (
+    "scripts/check_required_jobs.py",
+    "scripts/check_issue_spec.py",
+    "scripts/check_pr_size.py",
+)
+
+
+def _living_surfaces() -> list[Path]:
+    """Markdown que un lector o un agente sigue al abrir el repo.
+
+    Se excluyen los registros históricos (`odd/`, `openspec/`) a propósito:
+    narran lo que la cadena de #1040 hizo y reescribirlos falsificaría el
+    histórico. Un doc vivo nombra la ruta del canon, nunca la copia retirada.
+    """
+    found: list[Path] = []
+    for pattern in ("*.md", "docs/**/*.md", ".github/*.md"):
+        found.extend(REPO_ROOT.glob(pattern))
+    return sorted(set(found))
+
+
+def test_canon_replaced_gates_are_absent_from_the_tree() -> None:
+    """La copia local de cada gate sustituido por el canon está realmente borrada.
+
+    El otro lado del veredicto: una fila `retired` con el fichero todavía en el
+    árbol significaría que la retirada no ocurrió y que el inventario miente.
+    """
+    still_there = [rel for rel in GATES_REPLACED_BY_CANON if (REPO_ROOT / rel).exists()]
+
+    assert not still_there, (
+        "BP#1040 retiró estos gates en favour de la copia vendorizada del canon, pero "
+        "siguen en el árbol; o la retirada no ocurrió, o la lista debe cambiar:\n  - "
+        + "\n  - ".join(still_there)
+    )
+
+
+def test_adoption_inventory_traces_every_retired_canon_gate() -> None:
+    """Cada gate sustituido por el canon tiene su fila `retired` en la fase 0.
+
+    Sin la fila, la retirada es invisible en el contrato de adopción: se borra
+    el script y el inventario deja de hablar de él, que es como #1045 cerró la
+    retirada de `scripts/check_issue_spec.py` (borró la fila `adopted` en vez de
+    convertirla en `retired`, al contrario que #1041 y #1104 con sus scripts).
+    """
+    contract = json.loads(ADOPTION_PATH.read_text(encoding="utf-8"))
+    inventory = contract["phases"]["0"]["inventory"]
+    retired = {e.get("path") for e in inventory if e.get("disposition") == "retired"}
+
+    missing = [rel for rel in GATES_REPLACED_BY_CANON if rel not in retired]
+
+    assert not missing, (
+        "el inventario fase 0 de .github/ci-pattern-adoption.json no traza como `retired` "
+        "los gates que BP#1040 sustituyó por el canon; añádelos con su `path` y la nota "
+        "del canon que los ejecuta:\n  - " + "\n  - ".join(missing)
+    )
+
+
+def test_living_docs_do_not_cite_retired_canon_gate_paths() -> None:
+    """Ningún doc vivo cita la ruta de un gate que BP#1040 retiró.
+
+    Una ruta muerta en el doc que un agente o una persona sigue es el residuo
+    más caro de la migración: no rompe ningún gate, solo manda a leer un
+    fichero que ya no existe (así sobrevivió `scripts/check_pr_size.py` en la
+    plantilla de PR).
+    """
+    findings: list[str] = []
+    for doc in _living_surfaces():
+        text = doc.read_text(encoding="utf-8")
+        for rel in GATES_REPLACED_BY_CANON:
+            if rel in text:
+                line_no = next(i for i, line in enumerate(text.splitlines(), 1) if rel in line)
+                findings.append(f"{doc.relative_to(REPO_ROOT)}:{line_no}: cita {rel}")
+
+    assert not findings, (
+        "estos docs vivos citan rutas de gates que BP#1040 retiró; súmbranse la ruta "
+        "del canon en `.agents/skills/ci-pattern/assets/`:\n  - " + "\n  - ".join(findings)
+    )
+
+
+def test_architecture_gate_table_does_not_point_at_a_retired_path() -> None:
+    """La tabla «CI gates» de `docs/architecture.md` no lista un gate en `scripts/`.
+
+    La tabla separa nombre y ubicación en dos columnas, así que el barrido de
+    rutas completas no la ve: una fila puede seguir apuntando a `scripts/` para
+    un gate que ya vive en la copia vendorizada del canon sin que ninguna otra
+    comprobación lo note.
+    """
+    doc = REPO_ROOT / "docs" / "architecture.md"
+    retired_names = {Path(rel).name for rel in GATES_REPLACED_BY_CANON}
+
+    findings: list[str] = []
+    for line in doc.read_text(encoding="utf-8").splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) < 2 or not cells[0].startswith("`"):
+            continue
+        name = cells[0].strip("` ").split(" ")[0]
+        if name in retired_names and cells[1].strip("` ").strip() == "scripts/":
+            findings.append(f"docs/architecture.md: {name} -> {cells[1]}")
+
+    assert not findings, (
+        "la tabla de CI gates de docs/architecture.md sigue ubicando en `scripts/` gates "
+        "que BP#1040 retiró; la columna «Vive en» debe apuntar a "
+        "`.agents/skills/ci-pattern/assets/`:\n  - " + "\n  - ".join(findings)
+    )
 
 
 def _sha256_lf(path: Path) -> str:
@@ -28,16 +144,40 @@ def _sha256_lf(path: Path) -> str:
     return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 
 
-def test_manifest_schema_is_pinned() -> None:
-    """The manifest is the contrato de identidad del patrón; its schema is 1."""
-    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+def _cli_schema_version(cli: Path = CI_PATTERN_CLI) -> int:
+    """Read ``SCHEMA_VERSION`` from the vendored CLI without executing it.
 
-    assert manifest.get("schema_version") == 1, (
-        f"schema_version must be 1 (ci-pattern SKILL.md §3); got {manifest.get('schema_version')!r}"
+    The CLI is a script with no ``.py`` suffix, so it is parsed as text. A CLI
+    that does not declare the constant fails closed (HR-3): an unknown schema
+    is not a schema that can be declared conforming.
+    """
+    match = re.search(r"^SCHEMA_VERSION = (\d+)$", cli.read_text(encoding="utf-8"), re.MULTILINE)
+    if match is None:
+        raise AssertionError(f"{cli}: no module-level SCHEMA_VERSION = <int>")
+    return int(match.group(1))
+
+
+def test_manifest_schema_is_the_one_the_vendored_cli_writes() -> None:
+    """The manifest is the contrato de identidad del patrón; its schema is the CLI's."""
+    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    expected = _cli_schema_version()
+
+    assert manifest.get("schema_version") == expected, (
+        f"schema_version must be {expected} (ci-pattern SKILL.md §3, read from the "
+        f"vendored CLI); got {manifest.get('schema_version')!r}"
     )
     assert "files" in manifest and isinstance(manifest["files"], dict), (
         "manifest must declare a 'files' map (ruta → sha256)"
     )
+
+
+def test_cli_schema_version_parser_fails_closed_without_the_constant(tmp_path: Path) -> None:
+    """A CLI that stops declaring SCHEMA_VERSION must not read as a conforming schema."""
+    cli = tmp_path / "ci-pattern"
+    cli.write_text("ADOPTION_SCHEMA_VERSION = 1\n", encoding="utf-8")
+
+    with pytest.raises(AssertionError, match="no module-level SCHEMA_VERSION"):
+        _cli_schema_version(cli)
 
 
 def test_manifest_files_match_the_tree() -> None:
@@ -97,4 +237,41 @@ def test_manifest_files_are_the_pattern_paths() -> None:
     assert not extra_in_manifest, (
         f"manifest files not declared as pattern_paths (residuo o entrada no inventariada): "
         f"{sorted(extra_in_manifest)}"
+    )
+
+
+def test_every_job_the_manifest_requires_is_a_real_workflow_job() -> None:
+    """``P23_required_jobs`` nombra jobs que existen como clave de ``jobs:``.
+
+    El otro lado del veredicto: los tests de arriba sellan ``manifest.files``
+    contra el árbol, pero nadie miraba ``manifest.parameters``. El 2026-10-09
+    (``96d7c32``) el manifiesto declaró ``review-budget`` entre los jobs que el
+    patrón exige; el 2026-10-15 (``2a0fa5a``) ese job se renombró a ``pr-gate``
+    y el manifiesto no se re-selló. ``ci-pattern verify .`` quedó en rojo por
+    ``gate-not-wired`` y nadie lo ejecutó desde entonces: la puerta que cerró
+    las fases 0 a 6 es ``adoption check``, que no lee ``P23_required_jobs``.
+
+    El predicado es el del propio canon (``_jobs_in_workflow``, detección
+    estructural por indentación), no una segunda implementación: un test que
+    reimplementa la detección puede discrepar de la puerta que verifica.
+    """
+    completed = subprocess.run(
+        [sys.executable, str(CI_PATTERN_CLI), "verify", str(REPO_ROOT), "--json"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+    assert completed.returncode in (0, 1), (
+        "la CLI del canon no se pudo ejecutar sobre el árbol; sin veredicto no hay "
+        f"prueba: rc={completed.returncode}\n{completed.stderr[-800:]}"
+    )
+
+    report = json.loads(completed.stdout)
+    unwired = [f for f in report["findings"] if f.get("code") == "gate-not-wired"]
+
+    assert not unwired, (
+        "el manifiesto declara jobs que ningún workflow cablea; un job declarado y "
+        "ausente hace rojo `ci-pattern verify`, y la corrección es re-sellar el "
+        "manifiesto con los nombres reales, no crear un job nuevo para satisfacerlo "
+        "(BP#1354):\n  - " + "\n  - ".join(f["detail"] for f in unwired)
     )

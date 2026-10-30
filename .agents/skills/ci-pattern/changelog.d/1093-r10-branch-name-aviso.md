@@ -1,0 +1,3 @@
+type: minor
+
+R10 de #1093: el gate de nombre de rama (`assets/branch-name/check_branch_name.py`, P01) deja de bloquear. Un nombre que no cumple la convención imprime `AVISO` y sale 0; antes salía 1 y el PR quedaba en rojo. El preflight (`pr_preflight.py`) lo reporta como aviso no bloqueante. El exit 2 se mantiene ante regex ilegible o rama vacía, porque un gate que no puede medir no dice OK. El texto del generador del documento operativo pasa de «Regex obligatoria» a «Regex de la convención (aviso, no bloquea)», y `SKILL.md`, `parameters.md`, `gate-verdicts.md` y `docs/ci-pattern-flow.md` lo describen como aviso.

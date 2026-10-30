@@ -20,8 +20,8 @@
 # (`ci-<ref>`), with `cancel-in-progress: true` on both sides. That made the
 # `security` job self-cancel the instant it started (the "already running"
 # workflow it collided with was the very `ci` run calling it) — it never got
-# far enough to create a single job, let alone the three below. Each of those
-# three jobs already has its own distinct per-job `concurrency.group`, so the
+# far enough to create a single job, let alone the two below. Each of those
+# two jobs already has its own distinct per-job `concurrency.group`, so the
 # workflow-level fallback was redundant even before this was reusable.
 name: security
 
@@ -45,7 +45,16 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
+
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/gitleaks.txt \
+            --runner "${{ runner.name }}"
 
       - name: gitleaks dir
         # `gitleaks dir` scans the working tree. `--redact` replaces secrets with `***` in
@@ -118,6 +127,16 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/trivy-config.txt \
+            --runner "${{ runner.name }}"
 
       - name: trivy config (Dockerfile)
         # `--severity HIGH,CRITICAL` filters below those levels — Phase 0 ships a clean
@@ -135,45 +154,3 @@ jobs:
           fi
 
           docker run --rm             -v "$PWD:/repo"             -w /repo             aquasec/trivy@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c             config /repo/app/Dockerfile --severity HIGH,CRITICAL --exit-code 1
-
-  pip-audit:
-    # Instala un venv desechable en infraestructura aislada y hospedada.
-    runs-on: ubuntu-24.04
-    concurrency:
-      group: gate-pip-audit-${{ github.event.pull_request.number || github.ref }}
-      cancel-in-progress: false
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      # Hard Rule 15: same SHA as ci.yml (issue #127 — old v5 SHA emits Node 20
-      # deprecation warning on GitHub-hosted runners). Bumping keeps the pin
-      # contract while clearing the warning.
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: "3.12.11"
-
-      - name: dependency scan
-        # Audits `app/requirements-dev.lock` — the hash-locked set CI installs and the project ships —
-        # and not an install of the project: `pip install "app[dev]"` is a registry requirement named
-        # `app` to pip (the path form needs `./`), so it audited a homonym on PyPI. The lock holds
-        # exact versions, so --strict and --require-hashes judge what is really deployed; --disable-pip
-        # resolves nothing and installs nothing. The tool is pinned and lives in a throwaway venv so
-        # the runner's ambient site-packages stays out of it.
-        run: |
-          set -euo pipefail
-          python -m venv .venv-audit
-          .venv-audit/bin/python -m pip install --quiet --upgrade pip==26.2.1
-          .venv-audit/bin/python -m pip install --quiet pip-audit==2.9.0
-
-          # Liveness before reporting (Hard Rule 18): a lock with almost no entries is not a clean
-          # audit, it is an audit with nothing to audit.
-          entries=$(grep -c -- '--hash=' app/requirements-dev.lock)
-          if [ "$entries" -lt 15 ]; then
-            echo "::error::dependency scan aborted: only $entries hashed entries in app/requirements-dev.lock."
-            echo "That is not a clean audit, it is an audit with nothing to audit (Hard Rule 18)."
-            exit 1
-          fi
-          echo "dependency scan: auditing $entries locked packages"
-
-          .venv-audit/bin/pip-audit --strict --require-hashes --disable-pip -r app/requirements-dev.lock

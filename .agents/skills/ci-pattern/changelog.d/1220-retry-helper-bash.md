@@ -1,0 +1,3 @@
+type: patch
+
+El helper bash `assets/gh-api-retry/gh-api-retry.sh` reintenta también una respuesta malformada, no solo un fallo de llamada: un cuerpo vacío o que no empieza por `{` o `[` se trata como malformado, con un criterio de forma y sin dependencias. Una respuesta válida —incluida una lista vacía— se devuelve tal cual y nunca se reintenta. Agotados los intentos, el mensaje nombra el caso y conserva la salida de `gh` (el cuerpo de un 404, por ejemplo) y el helper sale con 1. La regla y sus cuatro casos viven en `assets/gh-api-retry/casos.tsv`, la misma tabla que recorre la suite del cliente Python (#1220).

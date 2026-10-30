@@ -4,7 +4,7 @@ Asset ejecutable de `ci-pattern` (issue DysTelefonica/team-skills#528,
 sección A2). Sustituye al camino manual que comprueba una sola raíz
 (`internal/components/`) por una verificación configurable en los dos
 sentidos: el codeguide cita solo rutas que existen, y cada módulo del
-code-root aparece mencionado en alguna página.
+code-root está nombrado en alguna página.
 
 Binario (exit 0/1/2), stdlib exclusivamente, mismo script en local y CI
 (TS#517 AC2). El veredicto es fail-closed: una entrada vacía en
@@ -23,7 +23,7 @@ cualquier lado es un FAIL — el comentario de la issue lo prohíbe:
 | Sentido | Origen | Destino | Verifica |
 |---|---|---|---|
 | Adelante | `docs/codebase/**/*.md` (default `--docs-path`) | repo | Cada ruta citada existe como fichero o directorio |
-| Atrás | `--code-root` (default `internal/components`) | `docs/codebase/**/*.md` | Cada módulo de primer nivel aparece mencionado por su nombre |
+| Atrás | `--code-root` (default `internal/components`) | `docs/codebase/**/*.md` | Cada módulo de primer nivel está nombrado por su nombre, completo y en contexto de código (backticks, bloque cercado) o como segmento de una ruta |
 
 Un módulo cuenta si:
 
@@ -126,6 +126,12 @@ Markdown `` | `path` | ... | `` se extraen igual que en prosa; una
 misma ruta citada varias veces en una página colapsa a una sola
 entrada.
 
+No son rutas del repo, y el sentido adelante no las evalúa (#1359): `owner/repo#N`
+(referencia a otro repo), `owner/repo@ref` (acción versionada) y un `owner/name`
+desnudo, sin barra final ni extensión, cuyo primer segmento no existe en la raíz del
+repo (`actions/checkout`). Un directorio muerto con barra final, o bajo un árbol que
+sí existe, sigue siendo enlace muerto.
+
 Los bloques de código cercados (tres o más comillas invertidas o `~~~`) no
 cuentan como citas: se descartan enteros antes de extraer, así que un ejemplo
 con barras no se toma por ruta ni invierte el emparejamiento del código en
@@ -166,7 +172,7 @@ del code-root (módulos carpeta).
 
 ### Varias raíces (#727)
 
-Repita `--code-root` y `--code-glob` por pares, en el mismo orden:
+No hay raíces por defecto (#1166): el gate no asume el árbol de ningún repo. Sin `--code-root` y su `--code-glob` sale con código 2 y nombra el flag. Repita `--code-root` y `--code-glob` por pares, en el mismo orden:
 
 ```bash
 python3 check_docs_codeguide.py . \

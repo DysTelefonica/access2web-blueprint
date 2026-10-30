@@ -86,3 +86,69 @@ def test_scope_identity_changes_when_subject_content_changes(tmp_path) -> None:
     assert before["candidate"] == after["candidate"]
     assert before["subject_manifest"] != after["subject_manifest"]
     assert before["scope_identity"] != after["scope_identity"]
+
+
+def _write_policy(tmp_path: Path, gates: dict) -> Path:
+    payload = json.loads((ROOT / "quality-policy.json").read_text(encoding="utf-8"))
+    payload["gates"] = gates
+    policy_path = tmp_path / "quality-policy.json"
+    policy_path.write_text(json.dumps(payload), encoding="utf-8")
+    return policy_path
+
+
+def _example_gates(*names: str) -> dict:
+    gates = json.loads((ROOT / "quality-policy.json").read_text(encoding="utf-8"))["gates"]
+    return {name: gates[name] for name in names}
+
+
+def test_policy_accepts_a_subset_of_known_gates(tmp_path) -> None:
+    module = _load_quality_policy()
+    _write_subjects(tmp_path)
+    policy_path = _write_policy(
+        tmp_path, _example_gates("complexity", "dry", "mutation_sites", "mutation")
+    )
+
+    policy = module.load_policy(policy_path)
+
+    assert set(policy["gates"]) == {"complexity", "dry", "mutation_sites", "mutation"}
+    assert module.build_evidence(tmp_path, policy, "dry")["tool"]["gate"] == "dry"
+    with pytest.raises(module.PolicyError, match="'crap' is not governed"):
+        module.build_evidence(tmp_path, policy, "crap")
+
+
+def test_policy_rejects_an_unknown_gate_name(tmp_path) -> None:
+    module = _load_quality_policy()
+    gates = _example_gates("complexity")
+    gates["complexty"] = gates["complexity"]
+    policy_path = _write_policy(tmp_path, gates)
+
+    with pytest.raises(module.PolicyError, match="unknown gates: complexty"):
+        module.load_policy(policy_path)
+
+
+def test_policy_rejects_an_empty_gates_object(tmp_path) -> None:
+    module = _load_quality_policy()
+    policy_path = _write_policy(tmp_path, {})
+
+    with pytest.raises(module.PolicyError, match="must declare at least one gate"):
+        module.load_policy(policy_path)
+
+
+def test_policy_subset_still_validates_each_declared_gate_shape(tmp_path) -> None:
+    module = _load_quality_policy()
+    gates = _example_gates("complexity", "dry")
+    del gates["dry"]["owner"]
+    policy_path = _write_policy(tmp_path, gates)
+
+    with pytest.raises(module.PolicyError, match="gate 'dry' requires non-empty owner"):
+        module.load_policy(policy_path)
+
+
+def test_bind_envelope_rejects_an_undeclared_gate_with_a_policy_error(tmp_path) -> None:
+    module = _load_quality_policy()
+    _write_subjects(tmp_path)
+    policy = module.load_policy(_write_policy(tmp_path, _example_gates("complexity")))
+    envelope = {"gate": "crap", "status": "pass", "ceilings": {"max_crap": 6.0}}
+
+    with pytest.raises(module.PolicyError, match="'crap' is not governed"):
+        module.bind_envelope(envelope, tmp_path, "crap", checked=[], policy=policy)

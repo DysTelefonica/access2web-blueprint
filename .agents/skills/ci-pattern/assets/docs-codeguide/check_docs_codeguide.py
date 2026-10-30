@@ -8,13 +8,23 @@
 - **Adelante (docs -> repo)**: toda ruta citada en una página del
   codeguide (``docs/codebase/**/*.md`` por defecto) existe en el repo.
 - **Atrás (repo -> docs)**: todo módulo de primer nivel bajo
-  ``--code-root`` que case con ``--code-glob`` aparece mencionado por
-  su nombre en alguna página del codeguide.
+  ``--code-root`` que case con ``--code-glob`` está nombrado en alguna
+  página del codeguide. Nombrado son dos condiciones que valen juntas
+  (team-skills#1004): el nombre aparece **completo**, delimitado por
+  caracteres que no son del nombre, y además lo hace
+  **en contexto de código** —dentro de backticks o de un bloque
+  cercado— o **como segmento de una ruta** en el texto de la página.
+  Un nombre que solo aparece en la prosa no cuenta: «nuevo» y «datos»
+  son palabras del español que cualquier mapa menciona, y «core» es un
+  trozo de «encore». Sin esa condición un módulo sin mapear pasaba el
+  gate por casualidad, que es lo que este gate existe para evitar.
 
 Visibilidad: idéntico en público y en privado Free — el script es
-local, no usa la API de GitHub, ni secretos, ni red. Sale 0 si ambos
-sentidos pasan, 1 ante cualquier ausente (y nombra cuáles), 2 si el
-directorio del repo no existe o el input es inválido.
+local, no usa la API de GitHub, ni secretos, ni red. Sale 1 si un doc
+cita una ruta que no existe (enlace muerto, sentido docs -> repo). Un
+módulo sin documentar (sentido repo -> docs) es AVISO y no bloquea:
+sale 0 (#1093, lote 2). Sale 2 si el directorio del repo no existe o
+el input es inválido.
 
 Veredicto fail-closed: una entrada vacía en cualquier lado
 (codeguide sin páginas, code-root sin módulos) es un FAIL — el
@@ -35,8 +45,13 @@ BACKTICK_RE = re.compile(r"`([^`]+)`")
 _MARKER_RE = re.compile(r"<[^<>/]+>")
 _GLOB_RE = re.compile(r"[*?\[]")
 
-DEFAULT_CODE_ROOT = "internal/components"
-DEFAULT_CODE_GLOB = "*.go"
+# Sin defaults de ruta ni de glob (#1166): el checker no asume el árbol de ningún
+# repo. Cada consumer declara sus raíces de código; si no lo hace, falla cerrado.
+NO_ROOTS_MSG = (
+    "FAIL input: falta --code-root (y su --code-glob): el checker no asume rutas de "
+    "ningún repo. Declare las raíces de código del consumer, por ejemplo "
+    "--code-root app --code-glob '*.py', una pareja por raíz."
+)
 
 # Prefijos que NO se tratan como rutas de repo aunque vivan entre
 # comillas invertidas: cualquier URL, dirección de correo o ruta de
@@ -242,8 +257,8 @@ def _list_modules(code_abs: Path, code_glob: str) -> list[str]:
 def check_docs_codeguide(
     repo: Path,
     docs_path: str = "docs/codebase",
-    code_root: str = "internal/components",
-    code_glob: str = "*.go",
+    code_root: str | None = None,
+    code_glob: str | None = None,
 ) -> dict[str, list[str]]:
     """Falla cerrada: devuelve el dict de ausentes; dos listas vacías = OK.
 
@@ -259,9 +274,34 @@ def check_docs_codeguide(
     Las listas vacías en ambas claves significan «OK»; cualquier
     entrada ausente en cualquier lado es un FAIL. La entrada
     ``"<empty docs/codebase/>"`` o ``"<empty internal/components/>"``
-    nombra el lado vacío cuando uno de los dos está sin contenido.
+    nombra el lado vacío cuando uno de los dos está sin contenido. En el
+    sentido atrás, «nombrado» es la regla de :func:`_backward_findings`:
+    nombre completo y en contexto de código o como segmento de ruta.
     """
+    if code_root is None or code_glob is None:
+        raise ValueError(NO_ROOTS_MSG)
+
     return check_docs_codeguide_roots(repo, [(code_root, code_glob)], docs_path)
+
+
+_OWNER_REPO_RE = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
+
+
+def _is_external_reference(repo: Path, token: str) -> bool:
+    """La cita nombra otro repo o una acción de GitHub, no una ruta del repo (#1359).
+
+    ``owner/repo#N`` y ``owner/repo@ref`` tienen sintaxis propia. Un ``owner/name``
+    desnudo (sin barra final ni extensión) cuyo primer segmento no existe en la raíz
+    del repo se toma por nombre de acción (``actions/checkout``). Un directorio muerto
+    con barra final, o bajo un árbol que sí existe, sigue siendo enlace muerto.
+    """
+    name = re.split(r"[#@]", token, maxsplit=1)[0]
+    if name != token:
+        return _OWNER_REPO_RE.fullmatch(name) is not None
+    if _OWNER_REPO_RE.fullmatch(token) is None:
+        return False
+    first, last = token.split("/")
+    return not (repo / first).exists() and "." not in last
 
 
 def _forward_findings(repo: Path, docs_path: str, pages: list[Path]) -> list[str]:
@@ -272,24 +312,74 @@ def _forward_findings(repo: Path, docs_path: str, pages: list[Path]) -> list[str
     cited: set[str] = set()
     for page in pages:
         cited.update(extract_path_refs(page.read_text(encoding="utf-8")))
-    problems = (check_citation(repo, path) for path in sorted(cited))
+    paths = [path for path in sorted(cited) if not _is_external_reference(repo, path)]
+    problems = (check_citation(repo, path) for path in paths)
     return [problem for problem in problems if problem is not None]
 
 
-def _backward_findings(repo: Path, roots: list[tuple[str, str]], docs_text: str) -> list[str]:
-    """Sentido atrás: módulos de cada raíz que el codeguide no menciona por su nombre.
+# team-skills#1004: qué cuenta como «nombrado». Un nombre de módulo solo
+# cuenta completo (delimitado por caracteres que no son del nombre) y, además,
+# en contexto de código: backticks, bloque cercado, o segmento de ruta. El
+# texto del codeguide es prosa además de ser documentación de código, y una
+# comparación por subcadena dejaba pasar un módulo sin mapear en cuanto su
+# nombre era una palabra corriente.
+_NAME_CHARS = r"A-Za-z0-9_-"
+_CODE_SPAN_RX = re.compile(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)")
 
-    El nombre debe aparecer literalmente en el texto del codeguide: una PR que
-    cambie un nombre de módulo debe actualizar el codeguide, mientras tanto el
-    gate lo nombra."""
+
+def _code_contexts(text: str) -> list[str]:
+    """Trozos del documento que son contexto de código, no prosa.
+
+    Los bloques cercados salen enteros con el detector compartido
+    (``markdown_fences``, el mismo que evita que las citas del sentido
+    adelante emparejen mal los backticks). Los backticks en línea se
+    emparejan por longitud: la apertura captura su propio número de
+    comillas y el cierre solo cierra con ese mismo número.
+    """
+    contexts = [body for _info, body, _start in _FENCES.fenced_blocks(text)]
+    for _number, line in _FENCES.unfenced_lines(text):
+        contexts.extend(match.group(2) for match in _CODE_SPAN_RX.finditer(line))
+    return contexts
+
+
+def _is_named_as_code(module: str, contexts: list[str]) -> bool:
+    """El nombre completo aparece dentro de backticks o de un bloque cercado."""
+    whole = re.compile(rf"(?<![{_NAME_CHARS}]){re.escape(module)}(?![{_NAME_CHARS}])")
+    return any(whole.search(context) for context in contexts)
+
+
+def _is_named_as_path_segment(module: str, text: str) -> bool:
+    """El nombre completo aparece justo detrás de un separador de ruta.
+
+    Un mapa que dibuja el árbol cita ``app/src/modules/lanzadera`` sin
+    adornarlo de backticks; eso lo nombra igual que `` `lanzadera` ``.
+    """
+    segment = re.compile(rf"(?<=[/\\]){re.escape(module)}(?![{_NAME_CHARS}])")
+    return segment.search(text) is not None
+
+
+def _backward_findings(repo: Path, roots: list[tuple[str, str]], docs_text: str) -> list[str]:
+    """Sentido atrás: módulos de cada raíz que el codeguide no nombra.
+
+    El nombre tiene que aparecer completo y en contexto de código (backticks,
+    bloque cercado) o como segmento de una ruta: el texto de un codeguide es
+    también prosa, y ahí cualquier nombre corriente se encuentra por casualidad.
+    Una PR que cambie el nombre de un módulo, o que añada uno sin documentar,
+    tiene que tocar el codeguide; mientras tanto, el gate lo nombra.
+    """
+    contexts = _code_contexts(docs_text)
     missing: list[str] = []
     for code_root, code_glob in roots:
         modules = _list_modules(repo / code_root, code_glob)
         if not modules:
             missing.append(f"<empty {code_root}/>")
             continue
-        missing += [module if len(roots) == 1 else f"{module} ({code_root})"
-                    for module in modules if module not in docs_text]
+        missing += [
+            module if len(roots) == 1 else f"{module} ({code_root})"
+            for module in modules
+            if not (_is_named_as_code(module, contexts)
+                    or _is_named_as_path_segment(module, docs_text))
+        ]
     return missing
 
 
@@ -344,8 +434,8 @@ def _build_parser() -> argparse.ArgumentParser:
         action="append",
         default=None,
         help=(
-            "Ruta relativa al repo con los módulos de primer nivel a enumerar "
-            f"(default: {DEFAULT_CODE_ROOT}). Repetible: un --code-glob por raíz."
+            "Ruta relativa al repo con los módulos de primer nivel a enumerar. "
+            "Obligatoria (#1166). Repetible: un --code-glob por raíz."
         ),
     )
     parser.add_argument(
@@ -353,8 +443,8 @@ def _build_parser() -> argparse.ArgumentParser:
         action="append",
         default=None,
         help=(
-            "Glob que un módulo de primer nivel debe contener para contar "
-            f"(default: {DEFAULT_CODE_GLOB}). Repetible, emparejado con --code-root."
+            "Glob que un módulo de primer nivel debe contener para contar. "
+            "Obligatorio, emparejado con cada --code-root."
         ),
     )
     return parser
@@ -366,8 +456,11 @@ def main(argv: list[str]) -> int:
     args = parser.parse_args(argv[1:])
 
     repo = Path(args.repo)
-    roots_arg = args.code_root or [DEFAULT_CODE_ROOT]
-    globs_arg = args.code_glob or [DEFAULT_CODE_GLOB] * len(roots_arg)
+    if not args.code_root or not args.code_glob:
+        print(NO_ROOTS_MSG, file=sys.stderr)
+        return 2
+    roots_arg = args.code_root
+    globs_arg = args.code_glob
     if len(roots_arg) != len(globs_arg):
         print(
             f"FAIL input: --code-root ({len(roots_arg)}) and --code-glob "
@@ -385,11 +478,13 @@ def main(argv: list[str]) -> int:
     missing_in_repo = result["missing_in_repo"]
     missing_in_codeguide = result["missing_in_codeguide"]
 
-    if missing_in_repo or missing_in_codeguide:
+    # #1093 lote 2: un módulo sin documentar es AVISO (no bloquea); una ruta
+    # citada que no existe es un enlace muerto y sigue bloqueando.
+    for module in missing_in_codeguide:
+        print(f"AVISO: repo -> docs: missing {module} (no bloquea)", file=sys.stderr)
+    if missing_in_repo:
         for path in missing_in_repo:
             print(f"FAIL docs -> repo: missing {path}", file=sys.stderr)
-        for module in missing_in_codeguide:
-            print(f"FAIL repo -> docs: missing {module}", file=sys.stderr)
         return 1
 
     pages = sum(1 for _ in (repo / args.docs_path).rglob("*.md"))

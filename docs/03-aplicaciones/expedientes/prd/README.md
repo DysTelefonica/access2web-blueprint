@@ -1,6 +1,6 @@
 # PRD — Expedientes
 
-> **Estado:** en curso · fases 0 (fijación), 1 (inventario) y 2 (formularios) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) completadas: los 45 formularios de RC1 tienen ficha. Pendientes las fases 3 (ERD de origen y matriz campo a campo), 4 (coexistencia) y 5 (capacidades, delta y issues propuestas).
+> **Estado:** estudio completo salvo el ERD de origen. Fases 0 (fijación), 1 (inventario), 2 (formularios: 45 de 45), 4 (coexistencia) y 5 (capacidades e issues propuestas) hechas; fase 3 (datos) hecha en lo que `src` permite: [matriz campo a campo](matriz-campos.md) entregada y ERD de origen pendiente de extraer con `dysflow` (D-EXP-4).
 
 | Campo | Valor |
 |---|---|
@@ -13,7 +13,7 @@
 
 ## Alcance actual
 
-Contiene el commit fijado, el inventario reconciliado, una ficha por cada uno de los 45 formularios de RC1 (en [formularios/](formularios/)) y la sección [Hallazgos del legacy](#hallazgos-del-legacy). Contiene además la [matriz campo a campo](matriz-campos.md) (fase 3, por tandas). No contiene aún ERD de origen (la extracción con `dysflow` no pudo ejecutarse), coexistencia, clasificación de capacidades ni issues propuestas. Los recuentos de líneas, controles y procedimientos son mecánicos (ver [Método del recuento](#método-del-recuento)). Las fichas son lectura estática de `src`: nada se ha ejecutado en Access y todo hallazgo queda «a verificar».
+Contiene el commit fijado, el inventario reconciliado, una ficha por cada uno de los 45 formularios de RC1 (en [formularios/](formularios/)) y la sección [Hallazgos del legacy](#hallazgos-del-legacy). Contiene además la [matriz campo a campo](matriz-campos.md) (fase 3, por tandas). Contiene también [coexistencia](coexistencia.md) (fase 4) y la [clasificación de capacidades](capacidades.md) (fase 5). Incluye las [issues propuestas](issues-propuestas.md). No contiene aún ERD de origen: la extracción con `dysflow` no pudo ejecutarse. Los recuentos de líneas, controles y procedimientos son mecánicos (ver [Método del recuento](#método-del-recuento)). Las fichas son lectura estática de `src`: nada se ha ejecutado en Access y todo hallazgo queda «a verificar».
 
 ## Inventario reconciliado
 
@@ -96,15 +96,35 @@ Los relevos son hipótesis por nombre, no hechos: no se confirman sin leer el c�
 
 ### Módulos y clases
 
-La mayoría de las diferencias son módulos `Test_*` y ayudantes `mod*Helper` del snapshot que RC1 no tiene. El estudio los clasifica en la fase 2 al analizar el formulario que los usa. Hasta entonces, el inventario de módulos y clases queda **pendiente** y no se enumera objeto a objeto en esta tanda.
+La mayoría de las diferencias son módulos `Test_*` y ayudantes `mod*Helper` del snapshot que RC1 no tiene. El estudio los clasifica en la fase 2 al analizar el formulario que los usa.
+
+Fichas de clase (`clases/`), una por objeto, con el mismo rigor que las de formulario:
+
+- [ExpedienteAGEDYS](clases/ExpedienteAGEDYS.md): sin llamadas en `src`; tabla `TbExpedientesDatosAGEDYS` ausente del volcado ERD.
+- [ExpedienteDatosAGEDY](clases/ExpedienteDatosAGEDY.md): sin uso en RC1.
+- [ExpedienteAntiguo](clases/ExpedienteAntiguo.md).
+
+- [ExpedienteCPV](clases/ExpedienteCPV.md), [ExpedienteConsulta](clases/ExpedienteConsulta.md) (sin uso en `src`) y [UltimoCambio](clases/UltimoCambio.md) (auditoría de creación y última modificación).
+- [ExpedientePECAL](clases/ExpedientePECAL.md), [ExpedienteRAC](clases/ExpedienteRAC.md), [ExpedienteCodigoCompra](clases/ExpedienteCodigoCompra.md), [ExpedienteBusquedaTecnica](clases/ExpedienteBusquedaTecnica.md) y [WebSocket](clases/WebSocket.md) (sin uso en RC1).
+
+Fichas de módulo (`modulos/`):
+
+- [Copiar y extender entidades](modulos/funciones-utiles-copiar-entidades.md) (`FUNCIONES UTILES.bas`): no estaba en el PRD; incluye un posible defecto grave en `CopiarSuministradores`.
+- [E2EFamilyExportHelper](modulos/E2EFamilyExportHelper.md), [modRealineacionCache](modulos/modRealineacionCache.md) y [modResponsableFiltroHelper](modulos/modResponsableFiltroHelper.md).
+
+**Fuera de alcance explícito:** los 53 módulos `Test_*` y `TEST` del snapshot son pruebas del legacy, no comportamiento a migrar; se usan como evidencia cuando una ficha los cita.
+
+### Cobertura de procedimientos de formulario
+
+Medida mecánica sobre `src/forms/*.cls` en el commit fijado: un procedimiento cuenta como cubierto si su nombre aparece en la ficha de su formulario o si un rango de línea citado de su `.cls` lo solapa. **579 de 621 (93,2 %)**; los 42 restantes están detallados en la sección «Procedimientos auxiliares» de `Form_FormExpedientesGestion`, `Form_FormExpedienteSuministradores` y `Form_FormExpedienteEntidades`, o son manejadores sin lógica propia que no se detallan: `m_Form*_Editado` de los seis formularios de gestión de catálogos (anulan la caché del catálogo en `m_ObjEntorno` y relanzan `ComandoBuscar_Click`, 22-24 líneas) y el de `FormSuministradoresGestion` (relanza la búsqueda y propaga el evento `Editado`), `CmdSalir_Click`, `ListaFiltrados_DblClick`, `ComandoIniciarJP_Click`, `ImagenTareasON_Click` y los `m_For*_Alta` de `FormExpedienteAltaParaHPS`.
 
 ## Delta frente al estudio previo
 
-Todo **pendiente**. Solo se afirma lo mecánico: 3 formularios añadidos (`Form_FormE2ECola`, `Form_FormE2EGestionEnlaces`, `Form_FormExpedientesResponsables`), 4 retirados (tabla anterior) y 42 comunes cuyo `.cls` difiere del snapshot. La clasificación de capacidades (añadida, modificada, retirada, sin cambios) no se ha hecho.
+Resumido en [capacidades.md](capacidades.md): de las 63 entradas del ledger, 6 no cambian en su lógica, 32 se modifican (cambia el texto de las clases que las implementan), 2 se añaden (enlaces E2E y cola E2E con panel), 2 se retiran (autosave de pestañas) 13 no tienen equivalente comprobado en Access (conceptos de la web), 1 solo tiene formulario y 7 son mecanismos legacy a retirar. «Modificada» es diferencia de texto, no de comportamiento. Formularios: 3 añadidos, 4 retirados y 42 comunes que difieren del snapshot.
 
 ## Capacidades
 
-Pendiente. Las 26 fichas `CAP-*` existentes en [capabilities/](../capabilities/) son contexto, no evidencia; #807 cubre las 37 fichas que faltan.
+La clasificación completa, con los objetos de lógica y las fichas de cada capacidad, está en [capacidades.md](capacidades.md). Las fichas `CAP-*` previas (26 de [capabilities/](../capabilities/)) siguen siendo contexto, no evidencia; #807 cubre las 37 que faltan.
 
 ## Discrepancias abiertas
 
@@ -113,7 +133,7 @@ Pendiente. Las 26 fichas `CAP-*` existentes en [capabilities/](../capabilities/)
 | D-EXP-1 | El roadmap y #1073 citan 142 módulos y clases en RC1 frente a 74 en `main`. | `main` (`13af0f6`, 2026-09-15) solo tiene 2 commits que RC1 no tiene (plantillas de issues de GitHub); RC1 tiene 244 que `main` no tiene; base común `495b965`. | Explicada en lo mecánico: `main` está muy atrasada respecto a RC1. Falta comprobar que ninguno de los 74 objetos de `main` se pierde en RC1. |
 | D-EXP-2 | El snapshot tiene 46 formularios y RC1 45. | Cuatro retirados y tres añadidos (tabla anterior). | Abierta: destino de los cuatro retirados sin verificar. |
 | D-EXP-3 | Los 42 formularios comunes difieren del snapshot (nombres de handlers en distinta capitalización, `Attribute VB_Name` ausente, cambios de contenido). | Comparación textual `.cls`. | Abierta: la diferencia mezcla cambios cosméticos y funcionales; se separa en cada ficha. |
-| D-EXP-4 | El ERD de origen de RC1 no se ha extraído: `dysflow` no está disponible en el entorno de trabajo y el backend `.accdb` no está en el clon de solo lectura (solo el frontend). La matriz usa las columnas del `ERD/schema.sql` del snapshot, que solo contiene columna y tipo. | `matriz-campos.md` (Fuente y límites) | Abierta: extraer metadatos de solo lectura (tablas, claves, índices, relaciones, nulabilidad) desde un entorno con `dysflow`. |
+| D-EXP-4 | El ERD de origen de RC1 no se ha extraído: `dysflow` no está disponible en el entorno de trabajo y el backend `.accdb` no está en el clon de solo lectura (solo el frontend). La matriz usa las columnas del `ERD/schema.sql` del snapshot, que solo contiene columna y tipo. | `matriz-campos.md` (Fuente y límites) | Abierta, **pendiente del propietario**: extraer en su máquina Windows, con `dysflow` y el backend `.accdb` y en solo lectura, los metadatos (tablas, claves, índices, relaciones, nulabilidad). Bloqueado en el entorno de trabajo, que no tiene `dysflow` ni el backend. |
 
 ## Hallazgos del legacy
 
@@ -202,6 +222,8 @@ Comportamientos sospechosos detectados al analizar el código de RC1. Son hallaz
 | H-EXP-79 | RC1 amplía `TbExpedientesConEntidades` con `OrdinalE2E` y `EnlazadoE2E`, columnas que el `ERD/schema.sql` del snapshot no tiene (solo `OrdinalE2E` figura en `TbExpedientes`): el ERD de origen debe confirmar que existen en el backend real. | `ExpedienteEntidadOperaciones.cls:133, 137` | [definidas-en-src](matriz-campos/definidas-en-src.md) | a verificar |
 | H-EXP-80 | Las tablas `TbE2ECola` y `TbE2EEnlaces` solo existen por DDL DAO en `src` (`M_E2EMigration.bas`), sin claves foráneas (`EnsureRelation` no se invoca) y con identidad de usuario como `LONG` (`IDUsuarioAlta`, `IDUsuarioBaja`, `IDUsuarioOrigen`), mientras `TbExpedientes` guarda `IDUsuarioCreacion` como `TEXT(255)`: tipos de identidad de usuario incoherentes. | `M_E2EMigration.bas:76-83, 112-121, 327-356`; `ERD/schema.sql` (`TbExpedientes.IDUsuarioCreacion`) | [definidas-en-src](matriz-campos/definidas-en-src.md) | a verificar |
 | H-EXP-81 | Las cuatro tablas E2E del snapshot (`TbE2EExportBatch`, `TbE2EExportBatchDetalle`, `TbE2EExportSeleccionTemp`, `TbE2EJsonDestinationUserConfig`) no se citan en ningún fichero de producción de RC1, lo que concuerda con la retirada de `Form_FormE2EGestionBatch`; hipótesis a verificar. | búsqueda por nombre en `src` (0 ficheros) | [transversales](matriz-campos/transversales.md) | a verificar |
+| H-EXP-82 | `RunE2EMigration` sin `p_Db` trabaja sobre `CurrentDb` (la cabecera lo invoca así desde la ventana inmediata): crearía `TbE2EEnlaces` y `TbE2ECola` en el frontend, contra la regla de que el frontend no tiene tablas propias; ningún módulo de producción la llama con `getdb()`. | `M_E2EMigration.bas:9, 34-38` | [coexistencia](coexistencia.md#verificación-de-la-regla-el-frontend-no-tiene-más-tablas-propias) | a verificar |
+| H-EXP-83 | `ListaCola` de `Form_FormE2ECola` es el único listado con `RowSourceType = "Table/View/StoredProc"`: su SQL sobre `TbE2ECola` la resuelve el motor del frontend y no `getdb()`; el formulario ya no se abre desde el menú. | `Form_FormE2ECola.form.txt:288`; `Form_FormE2ECola.cls:137`; `modE2EColaPanelHelper.bas:74-86` | [coexistencia](coexistencia.md#verificación-de-la-regla-formularios-desconectados) | a verificar |
 
 ## Método del recuento
 

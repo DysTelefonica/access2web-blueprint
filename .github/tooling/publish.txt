@@ -1,0 +1,6 @@
+# CLI que el RUNNER debe aportar al job publish (G0.5 del canon).
+# Una CLI por linea; "#" abre comentario; la linea en blanco se ignora.
+docker
+gh
+git
+sh

@@ -1,0 +1,15 @@
+{
+  "action": "opened",
+  "number": 2198,
+  "repository": {"full_name": "DysTelefonica/team-skills"},
+  "pull_request": {
+    "number": 2198,
+    "title": "Bump lodash from 4.17.20 to 4.17.21",
+    "body": "Bumps [lodash](https://github.com/lodash/lodash) from 4.17.20 to 4.17.21.\n\nSin enlace a ninguna issue: Dependabot no lo escribe.",
+    "user": {"login": "dependabot[bot]", "type": "Bot"},
+    "head": {"ref": "dependabot/npm_and_yarn/lodash-4.17.21", "sha": "1111111111111111111111111111111111111111"},
+    "base": {"ref": "main", "sha": "2222222222222222222222222222222222222222"},
+    "labels": []
+  },
+  "sender": {"login": "dependabot[bot]", "type": "Bot"}
+}

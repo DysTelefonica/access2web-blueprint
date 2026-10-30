@@ -1,0 +1,3 @@
+type: patch
+
+`--seal-baseline` compara también el contenido de lo que miden las fases 0 y 2 (DysTelefonica/team-skills#1341). La identidad de la ruta no decía nada de lo que hay dentro: un PR que reescribía el allowlist de aislamiento en su sitio —una variable de entorno, una extensión excluida o un fichero de datos nuevo— y re-sellaba el manifiesto salía en verde, y con él la fase 3. Ahora la cabeza no puede medir menos que la base: el allowlist no puede autorizar de más y la instantánea de etiquetas del host no puede dejar de cubrir las etiquetas que cubría. Medir más se admite: quitar una autorización o añadir una etiqueta sigue en verde. Sin la opción el gate se mide como siempre, y una base sin el allowlist declarado falla cerrado con exit 2.

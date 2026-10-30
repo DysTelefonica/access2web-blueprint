@@ -1,0 +1,371 @@
+"""El `.github/dependabot.yml` del consumer es el que genera el canon (#1182).
+
+Regla de direccion: un ecosystem por manifiesto, el `directory` de cada uno en
+el directorio donde vive ese manifiesto, y el fichero del consumer comparado
+con el generado. Solo stdlib, ``unittest`` y fixtures en ``tempfile``: el gate
+lee el arbol y el contrato, no la historia.
+"""
+
+from __future__ import annotations
+
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from config import (  # noqa: E402
+    CONSUMER_PATH,
+    declared_ecosystems,
+    directories_in,
+    findings,
+    render,
+)
+
+BP = {"ecosystems": {"pip": "app", "github-actions": ".", "npm": "e2e"}}
+
+
+def _repo(tmp: Path, files: dict[str, str]) -> Path:
+    repo = tmp / "consumer"
+    for rel, content in files.items():
+        target = repo / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+    repo.mkdir(parents=True, exist_ok=True)
+    return repo
+
+
+def _bp_files() -> dict[str, str]:
+    return {"app/pyproject.toml": "[project]\nname='x'\n",
+            ".github/workflows/ci.yml": "name: ci\n",
+            "e2e/package.json": "{}\n"}
+
+
+class TestDeclaration(unittest.TestCase):
+    def test_the_declared_ecosystems_are_read(self) -> None:
+        self.assertEqual(declared_ecosystems(BP),
+                         {"pip": "app", "github-actions": ".", "npm": "e2e"})
+        self.assertEqual(
+            declared_ecosystems({"ecosystems": {"pip": {"directory": "app"}}}),
+            {"pip": "app"})
+
+    def test_a_shape_that_cannot_be_read_gives_nothing(self) -> None:
+        self.assertEqual(declared_ecosystems(None), {})
+        self.assertEqual(declared_ecosystems({"ecosystems": "app"}), {})
+        self.assertEqual(declared_ecosystems({"ecosystems": {"pip": 3}}), {})
+
+
+class TestRender(unittest.TestCase):
+    def test_one_ecosystem_per_declared_manifest(self) -> None:
+        text = render(BP)
+        for ecosystem in ("pip", "github-actions", "npm"):
+            self.assertIn(f"- package-ecosystem: {ecosystem}", text)
+        self.assertNotIn("{{ECOSYSTEMS}}", text)
+    def test_the_directory_points_at_the_manifest(self) -> None:
+        text = render(BP)
+        self.assertIn("directory: /app", text)
+        self.assertIn("directory: /\n", text)
+        self.assertIn("directory: /e2e", text)
+        self.assertEqual(directories_in(text),
+                         {"pip": "/app", "github-actions": "/", "npm": "/e2e"})
+    def test_the_canonical_data_is_there(self) -> None:
+        text = render(BP)
+        self.assertIn("version: 2", text)
+        self.assertIn("open-pull-requests-limit: 5", text)
+        self.assertIn("- dependencies", text)
+        self.assertIn("- type:chore", text)
+        self.assertIn("prefix: chore(platform)", text)
+        self.assertIn("prefix: ci(platform)", text)
+    def test_the_note_about_the_lock_is_in_the_file(self) -> None:
+        """El fichero dice que el lock lo regenera el PR, no Dependabot (#1181)."""
+        self.assertIn("lock", render(BP))
+
+
+class TestFindings(unittest.TestCase):
+    def test_a_consumer_that_matches_has_no_findings(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {**_bp_files(), CONSUMER_PATH: render(BP)})
+            self.assertEqual(findings(repo, BP), [])
+    def test_a_missing_consumer_file_is_a_finding(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), _bp_files())
+            found = findings(repo, BP)
+            self.assertTrue(any(CONSUMER_PATH in item for item in found), found)
+    def test_a_directory_without_manifest_is_a_finding(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {CONSUMER_PATH: render(BP)})
+            found = findings(repo, BP)
+            self.assertTrue(any("no hay manifiesto" in item for item in found), found)
+            self.assertTrue(any("'pip'" in item for item in found), found)
+    def test_a_directory_that_points_elsewhere_is_a_finding(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {
+                **_bp_files(),
+                CONSUMER_PATH: render(BP).replace("directory: /app", "directory: /")})
+            found = findings(repo, BP)
+            self.assertTrue(any("'pip'" in item and "/app" in item
+                                for item in found), found)
+    def test_an_uninvited_ecosystem_is_a_finding(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {
+                **_bp_files(),
+                CONSUMER_PATH: render(BP) + ("  - package-ecosystem: docker\n"
+                                             "    directory: /docker\n")})
+            found = findings(repo, BP)
+            self.assertTrue(any("docker" in item for item in found), found)
+    def test_a_declaration_without_ecosystems_is_a_finding(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {CONSUMER_PATH: "version: 2\n"})
+            found = findings(repo, {"ecosystems": {}})
+            self.assertTrue(found)
+            self.assertIn("dependabot", found[0])
+
+
+class TestExtras(unittest.TestCase):
+    """#1193: la declaracion admite groups, ignore, directories y target-branch por ecosystem."""
+
+    CODEQL = {"github-actions": {"directory": ".",
+                                 "groups": {"codeql-action": {"patterns": ["github/codeql-action/*"]}}}}
+
+    def test_a_group_is_emitted_as_the_consumer_writes_it(self) -> None:
+        """Caso de prueba: el grupo codeql-action/* de BP, con el mismo formato que su fichero."""
+        text = render({"ecosystems": self.CODEQL})
+        self.assertIn('    groups:\n      codeql-action:\n        patterns:\n          - "github/codeql-action/*"\n', text)
+
+    def test_ignore_is_emitted(self) -> None:
+        text = render({"ecosystems": {"pip": {"directory": "/", "ignore": [{"dependency-name": "ruff"}, {"dependency-name": "cosmic-ray"}]}}})
+        self.assertIn('    ignore:\n      - dependency-name: "ruff"\n      - dependency-name: "cosmic-ray"\n', text)
+
+    def test_directories_replace_the_single_directory(self) -> None:
+        text = render({"ecosystems": {"github-actions": {"directories": ["/", "/.github/actions/*"]}}})
+        self.assertIn('    directories:\n      - "/"\n      - "/.github/actions/*"\n', text)
+        self.assertNotIn("    directory: ", text)
+
+    def test_target_branch_is_emitted(self) -> None:
+        text = render({"ecosystems": {"npm": {"directory": "/tailwindcss", "target-branch": "main"}}})
+        self.assertIn('    target-branch: "main"\n', text)
+
+    def test_an_unknown_key_is_a_finding_not_a_silent_drop(self) -> None:
+        """HR-3: una clave que el canon no conoce no se descarta en silencio."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), _bp_files())
+            found = findings(repo, {"ecosystems": {"pip": {"directory": "app", "bogus": 1}}})
+            self.assertTrue(any("bogus" in item for item in found), found)
+
+    def test_a_consumer_that_drops_a_declared_group_is_a_finding(self) -> None:
+        """HR-75: el fichero del consumer sin el grupo declarado no coincide."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {CONSUMER_PATH: render({"ecosystems": {"github-actions": {"directory": "."}}})})
+            found = findings(repo, {"ecosystems": self.CODEQL})
+            self.assertTrue(found, found)
+
+
+APAP_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "apap-dependabot.yml"
+APAP_DECLARATION = {"ecosystems": {"pip": "/", "npm": "/tailwindcss",
+                                   "github-actions": {"directories": ["/", "/.github/actions/*"]}}}
+
+
+def _apap_repo(tmp: Path) -> Path:
+    """Un consumer con la forma de APAP: su dependabot.yml real y sus manifiestos."""
+    return _repo(tmp, {
+        CONSUMER_PATH: APAP_FIXTURE.read_text(encoding="utf-8"),
+        "pyproject.toml": "[project]\nname='x'\n",
+        "tailwindcss/package.json": "{}\n",
+        ".github/workflows/ci.yml": "name: ci\n",
+        ".github/actions/setup-python/action.yml": "name: setup\n",
+    })
+
+
+class TestCoverage(unittest.TestCase):
+    """#TS1207: HR-75 mide cobertura de lo declarado, no igualdad con la plantilla."""
+
+    def test_the_real_dependabot_file_of_apap_is_covered(self) -> None:
+        """Caso 1: el dependabot.yml real de APAP (comillas, directories, globs) pasa."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _apap_repo(Path(tmp))
+            self.assertEqual(findings(repo, APAP_DECLARATION), [])
+
+    def test_quoted_directories_cover_the_same_as_unquoted(self) -> None:
+        """Caso 2: `directory: "/"` y `directory: '/'` cubren lo mismo que `directory: /`."""
+        with tempfile.TemporaryDirectory() as tmp:
+            text = (
+                "version: 2\nupdates:\n"
+                "  - package-ecosystem: \"pip\"\n    directory: \"/\"\n"
+                "  - package-ecosystem: 'npm'\n    directory: '/tailwindcss'\n"
+            )
+            repo = _repo(Path(tmp), {
+                CONSUMER_PATH: text,
+                "pyproject.toml": "[project]\nname='x'\n",
+                "tailwindcss/package.json": "{}\n",
+            })
+            found = findings(repo, {"ecosystems": {"pip": "/", "npm": "/tailwindcss"}})
+            self.assertEqual(found, [], found)
+
+    def test_a_directories_list_covers_each_declared_directory(self) -> None:
+        """Caso 3: `directories:` con dos entradas cubre cada directorio declarado."""
+        with tempfile.TemporaryDirectory() as tmp:
+            text = (
+                "version: 2\nupdates:\n"
+                "  - package-ecosystem: github-actions\n    directories:\n"
+                "      - \"/\"\n      - \"/.github/actions/*\"\n"
+            )
+            repo = _repo(Path(tmp), {
+                CONSUMER_PATH: text,
+                ".github/workflows/ci.yml": "name: ci\n",
+                ".github/actions/setup-python/action.yml": "name: setup\n",
+            })
+            found = findings(repo, {"ecosystems": {"github-actions": {"directories": ["/", "/.github/actions/*"]}}})
+            self.assertEqual(found, [], found)
+
+    def test_a_glob_expands_to_the_existing_directories(self) -> None:
+        """Caso 4: el glob se expande; el manifiesto de un composite es su action.yml."""
+        with tempfile.TemporaryDirectory() as tmp:
+            text = ("version: 2\n"
+                    "updates:\n"
+                    "  - package-ecosystem: github-actions\n"
+                    "    directories:\n"
+                    "      - \"/.github/actions/*\"\n")
+            repo = _repo(Path(tmp), {
+                CONSUMER_PATH: text,
+                ".github/actions/setup-python/action.yml": "name: setup\n",
+            })
+            self.assertEqual(findings(repo, {"ecosystems": {"github-actions": {"directories": ["/.github/actions/*"]}}}), [])
+
+    def test_a_glob_that_matches_no_directory_is_a_finding(self) -> None:
+        """Caso 4 (negativo): un glob sin ningun directorio existente falla cerrado."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {".github/workflows/ci.yml": "name: ci\n"})
+            found = findings(repo, {"ecosystems": {"github-actions": {"directories": ["/", "/.github/nada/*"]}}})
+            self.assertTrue(any("no expande a ningún directorio" in item for item in found), found)
+
+    def test_a_consumer_with_the_canonical_template_still_passes(self) -> None:
+        """Caso 5: el fichero generado por el canon pasa."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {
+                CONSUMER_PATH: render(APAP_DECLARATION),
+                "pyproject.toml": "[project]\nname='x'\n",
+                "tailwindcss/package.json": "{}\n",
+                ".github/workflows/ci.yml": "name: ci\n",
+                ".github/actions/setup-python/action.yml": "name: setup\n",
+            })
+            self.assertEqual(findings(repo, APAP_DECLARATION), [])
+
+    def test_a_declared_directory_not_covered_is_a_finding(self) -> None:
+        """Caso 6 (negativo): npm declarado y ausente del fichero es un hallazgo."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _apap_repo(Path(tmp))
+            (repo / CONSUMER_PATH).write_text(
+                (repo / CONSUMER_PATH).read_text(encoding="utf-8").replace('"/tailwindcss"', '"/otro"'),
+                encoding="utf-8")
+            found = findings(repo, APAP_DECLARATION)
+            self.assertTrue(any("'npm'" in item for item in found), found)
+
+    def test_an_uninvited_ecosystem_is_still_a_finding(self) -> None:
+        """Caso 6 (negativo): un ecosystem que nadie declaró sigue fallando."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _apap_repo(Path(tmp))
+            (repo / CONSUMER_PATH).write_text(
+                (repo / CONSUMER_PATH).read_text(encoding="utf-8")
+                + "  - package-ecosystem: docker\n    directory: /docker\n",
+                encoding="utf-8")
+            found = findings(repo, APAP_DECLARATION)
+            self.assertTrue(any("docker" in item for item in found), found)
+
+
+class TestHardening(unittest.TestCase):
+    """#1221: el endurecimiento de HR-75, un test por criterio de aceptacion."""
+
+    def test_dotdot_in_a_consumer_directory_is_a_finding(self) -> None:
+        """Criterio 1: `..` en `directory` sale del consumer aunque el manifiesto exista fuera."""
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            (base / "outside").mkdir()
+            (base / "outside" / "pyproject.toml").write_text("x\n", encoding="utf-8")
+            repo = _repo(base, {CONSUMER_PATH: (
+                "version: 2\nupdates:\n  - package-ecosystem: pip\n"
+                "    directory: \"/../outside\"\n")})
+            found = findings(repo, {"ecosystems": {"pip": "/../outside"}})
+            self.assertTrue(any("`..`" in item for item in found), found)
+
+    def test_dotdot_in_the_middle_of_a_path_is_a_finding(self) -> None:
+        """Criterio 1: el traversal cuenta aunque no empiece la ruta."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {"app/pyproject.toml": "x\n", CONSUMER_PATH: (
+                "version: 2\nupdates:\n  - package-ecosystem: pip\n"
+                "    directory: /app/../../etc\n")})
+            found = findings(repo, {"ecosystems": {"pip": "/app/../../etc"}})
+            self.assertTrue(any("`..`" in item for item in found), found)
+
+    def test_a_dotted_name_without_traversal_is_not_rejected(self) -> None:
+        """Criterio 1 (negativo): `/app/..data` es un directorio DENTRO del repo."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {"app/..data/pyproject.toml": "x\n", CONSUMER_PATH: (
+                "version: 2\nupdates:\n  - package-ecosystem: pip\n"
+                "    directory: /app/..data\n")})
+            found = findings(repo, {"ecosystems": {"pip": "/app/..data"}})
+            self.assertFalse(any("`..`" in item for item in found), found)
+            self.assertEqual(found, [])
+
+    def test_a_comment_after_the_directory_value_is_read(self) -> None:
+        """Criterio 2: `directory: "/app"  # comentario` cubre /app."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {"app/pyproject.toml": "x\n", CONSUMER_PATH: (
+                "version: 2\nupdates:\n  - package-ecosystem: pip\n"
+                "    directory: \"/app\"  # el manifiesto del pip\n")})
+            self.assertEqual(findings(repo, {"ecosystems": {"pip": "/app"}}), [])
+
+    def test_a_comment_inside_the_directories_list_is_read(self) -> None:
+        """Criterio 2: un item de `directories:` con comentario detras cubre su directorio."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {"app/pyproject.toml": "x\n", CONSUMER_PATH: (
+                "version: 2\nupdates:\n  - package-ecosystem: pip\n"
+                "    directories:\n      - \"/app\"  # el pip\n")})
+            self.assertEqual(findings(repo, {"ecosystems": {"pip": {"directories": ["/app"]}}}), [])
+
+    def test_a_hash_inside_a_quoted_value_is_not_a_comment(self) -> None:
+        """Criterio 2 (negativo): un `#` entre comillas no trunca el valor."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {"app#1/pyproject.toml": "x\n", CONSUMER_PATH: (
+                "version: 2\nupdates:\n  - package-ecosystem: pip\n"
+                "    directory: \"/app#1\"\n")})
+            self.assertEqual(findings(repo, {"ecosystems": {"pip": "/app#1"}}), [])
+
+    def test_a_flow_directories_list_covers_each_directory(self) -> None:
+        """Criterio 3: `directories: ["/app", "/other"]` cubre los dos."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {"app/pyproject.toml": "x\n", "other/pyproject.toml": "x\n",
+                                     CONSUMER_PATH: (
+                "version: 2\nupdates:\n  - package-ecosystem: pip\n"
+                "    directories: [\"/app\", \"/other\"]\n")})
+            decl = {"ecosystems": {"pip": {"directories": ["/app", "/other"]}}}
+            self.assertEqual(findings(repo, decl), [])
+
+    def test_a_flow_list_with_one_item_is_read(self) -> None:
+        """Criterio 3: una lista flow de un solo elemento tambien se lee."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {"app/pyproject.toml": "x\n", CONSUMER_PATH: (
+                "version: 2\nupdates:\n  - package-ecosystem: pip\n"
+                "    directories: [\"/app\"]\n")})
+            self.assertEqual(findings(repo, {"ecosystems": {"pip": {"directories": ["/app"]}}}), [])
+
+    def test_a_group_named_like_another_key_is_not_covered_by_it(self) -> None:
+        """Criterio 4: un grupo `labels` no se da por cubierto por la clave `labels:` del bloque."""
+        decl = {"ecosystems": {"pip": {"directory": "/app", "groups": {"labels": {"patterns": ["github/x/*"]}}}}}
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {"app/pyproject.toml": "x\n", CONSUMER_PATH: (
+                "version: 2\nupdates:\n  - package-ecosystem: pip\n    directory: /app\n"
+                "    labels:\n      - dependencies\n"
+                "    schedule:\n      interval: weekly\n")})
+            found = findings(repo, decl)
+            self.assertTrue(any("grupo 'labels'" in item for item in found), found)
+
+    def test_a_declared_group_present_in_its_groups_block_passes(self) -> None:
+        """Criterio 4 (positivo): el grupo declarado dentro de `groups:` si cubre."""
+        decl = {"ecosystems": {"github-actions": {"directory": "/", "groups": {"codeql-action": {"patterns": ["github/codeql-action/*"]}}}}}
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {".github/workflows/ci.yml": "name: ci\n", CONSUMER_PATH: render(decl)})
+            self.assertEqual(findings(repo, decl), [])
+
+
+if __name__ == "__main__":
+    unittest.main()

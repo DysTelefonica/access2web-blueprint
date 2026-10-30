@@ -10,9 +10,17 @@ Un push ordinario o una rama no protegida devuelve 0 sin llamar a la API;
 cualquier evento malformado o fallo de `gh` falla cerrado con 2 (HR-3).
 Runner-enforced (HR-34); el resto de la rama protegida lo audita el
 detective de HR-49. Solo stdlib; cada llamada a `gh api` lleva timeout.
+
+#1266: el merge gobernado despacha este guard por `workflow_dispatch` (#817),
+y ese evento no trae `forced`/`deleted` ni el rango de nivel superior: el rango
+viaja en `inputs`. El rango se lee con el lector compartido `push_range`
+(#933) —el mismo que usa el detective post-push—, de modo que hay una sola
+implementación de «el rango de este evento». Un dispatch no trae las banderas
+y su ausencia se dice en la salida: no es una medición que haya pasado. Un
+dispatch con el rango mal formado falla cerrado con 2, como un push con el
+rango mal formado.
 """
 import argparse
-import re
 import sys
 
 from check_push_compliance import (
@@ -21,13 +29,12 @@ from check_push_compliance import (
     gh_open_incident,
     load_json,
     protected_branches,
+    push_range,
 )
 
-SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 
-
-def event_fields(event: dict) -> tuple[str, dict, bool, bool]:
-    """Rama, repositorio y banderas del evento; cualquier forma dudosa es fallo cerrado (HR-3)."""
+def event_identity(event: dict) -> tuple[str, dict]:
+    """Rama y repositorio del evento; cualquier forma dudosa es fallo cerrado (HR-3)."""
     ref = event.get("ref")
     if not isinstance(ref, str) or not ref.startswith("refs/heads/"):
         fail("event has no 'refs/heads/' ref to audit")
@@ -35,25 +42,57 @@ def event_fields(event: dict) -> tuple[str, dict, bool, bool]:
     if not isinstance(repo, dict) or not isinstance(repo.get("full_name"), str) \
             or repo["full_name"].count("/") != 1:
         fail("event has no OWNER/REPO 'repository.full_name'")
+    return ref[len("refs/heads/"):], repo
+
+
+def is_dispatch(event: dict) -> bool:
+    """El dispatch del merge gobernado (#817) lleva el rango auditado en `inputs`."""
+    return "inputs" in event
+
+
+def event_flags(event: dict) -> tuple[bool, bool] | None:
+    """`forced`/`deleted` del evento; `None` cuando el evento no las trae.
+
+    El dispatch del merge gobernado no las trae: no existen en su payload. Su
+    ausencia se distingue de «el evento dice que no hubo force-push», y la
+    salida lo dice en vez de callar un veredicto que no se midió (#1266). Un
+    push que no las trae sigue fallando cerrado (HR-3).
+    """
     forced, deleted = event.get("forced"), event.get("deleted")
+    if forced is None and deleted is None:
+        if is_dispatch(event):
+            return None
+        fail("event 'forced'/'deleted' flags are missing")
     if not isinstance(forced, bool) or not isinstance(deleted, bool):
         fail("event 'forced'/'deleted' flags are missing")
-    before, after = event.get("before"), event.get("after")
-    if not isinstance(before, str) or not SHA_RE.match(before) or not isinstance(after, str) \
-            or not SHA_RE.match(after):
-        fail("event 'before'/'after' are not 40-char commit ids")
-    return ref[len("refs/heads/"):], repo, forced, deleted
+    return forced, deleted
 
 
-def incident(event: dict, branch: str, forced: bool, deleted: bool,
-             findings: list[str]) -> tuple[str, str]:
+def event_fields(event: dict) -> tuple[str, dict, tuple[bool, bool] | None, str, str]:
+    """Rama, repositorio, banderas y rango auditado del evento.
+
+    El rango se lee con el lector compartido `push_range` (#933): el dispatch
+    lo lleva en `inputs` y el push en el nivel superior. Una forma dudosa es
+    fallo cerrado (HR-3).
+    """
+    branch, repo = event_identity(event)
+    flags = event_flags(event)
+    before, after = push_range(event)
+    return branch, repo, flags, before, after
+
+
+def incident(event: dict, branch: str, flags: tuple[bool, bool], findings: list[str],
+             rango: tuple[str, str]) -> tuple[str, str]:
+    """Titulo y cuerpo de la incidencia; el rango llega ya resuelto (#1266)."""
+    forced, deleted = flags
+    before, after = rango
     head = event.get("head_commit") if isinstance(event.get("head_commit"), dict) else {}
     message = str(head.get("message", "")).splitlines()[0] if head.get("message") else "<none>"
     pusher = event.get("pusher") if isinstance(event.get("pusher"), dict) else {}
     title = f"incident: {'force-push' if forced else 'deletion'} on protected branch '{branch}'"
     body = ("Force-push guard (`check_force_push_guard`), rama protegida por contrato: "
             f"{branch}\n\npusher: {pusher.get('name', 'unknown')}\n"
-            f"rango: {event['before']}..{event['after']}\n"
+            f"rango: {before}..{after}\n"
             f"forced: {forced} · deleted: {deleted}\n"
             f"head commit: {message}\n\n" + "\n".join(findings)
             + "\n\nLas ramas protegidas por contrato no se reescriben ni se borran; "
@@ -66,20 +105,28 @@ def audit(args: argparse.Namespace) -> int:
     contract = load_json(args.contract, "contract")
     if not isinstance(event, dict) or not isinstance(contract, dict):
         fail("event and contract must be JSON objects")
-    branch, repo, forced, deleted = event_fields(event)
+    branch, repo, flags, before, after = event_fields(event)
     if branch not in protected_branches(contract, repo.get("default_branch")):
         print(f"SKIP: branch '{branch}' is not protected by contract; nothing to guard")
         return 0
-    rango = f"{event['before']} -> {event['after']}"
+    rango = f"{before} -> {after}"
     findings = []
-    if forced:
-        findings.append(f"force-push to protected branch '{branch}': {rango}")
-    if deleted:
-        findings.append(f"deletion of protected branch '{branch}': {rango}")
+    forced = deleted = False
+    if flags is not None:
+        forced, deleted = flags
+        if forced:
+            findings.append(f"force-push to protected branch '{branch}': {rango}")
+        if deleted:
+            findings.append(f"deletion of protected branch '{branch}': {rango}")
     if not findings:
-        print(f"OK: push on protected branch '{branch}' is neither forced nor a deletion")
+        if flags is None:
+            print(f"OK: dispatch on protected branch '{branch}' audited the range {rango}: "
+                  "well-formed range, no force-push nor deletion reported for it; "
+                  "the event carries no 'forced'/'deleted' flag")
+        else:
+            print(f"OK: push on protected branch '{branch}' is neither forced nor a deletion")
         return 0
-    title, body = incident(event, branch, forced, deleted, findings)
+    title, body = incident(event, branch, (forced, deleted), findings, (before, after))
     url = gh_open_incident(repo["full_name"], title, body)
     for finding in findings:
         print(f"  VIOLATION  {finding}")

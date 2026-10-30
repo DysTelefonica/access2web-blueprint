@@ -4,8 +4,9 @@
 
 El unico camino para mergear un PR cuando no existe proteccion de rama,
 rulesets ni merge queue: verifica que el PR apunta a la rama por defecto,
-que no va atrasado, que el CI es verde sobre la cabeza y que la etiqueta
-de cadena y la palabra de cierre son coherentes. Si algo falla no fusiona
+que el CI es verde sobre la cabeza y que la etiqueta de cadena y la palabra
+de cierre son coherentes. El CI corre una vez, en la PR: un PR atrasado
+respecto de la base solo se rechaza con ``--require-fresh`` (#1397). Si algo falla no fusiona
 y devuelve 1 con el hallazgo; un entorno insalvable o un error de la API
 falla cerrado con 2 (HR-3): nunca un 504 se toma como <<0 fallos>>. Con todo
 en verde fusiona por la API, cierra la rama remota y la local y hace
@@ -224,8 +225,9 @@ def load_pull(repo: str, number: int) -> dict:
     return pull
 
 
-def base_findings(repo: str, number: int, pull: dict) -> tuple[list[str], str, int]:
-    """Steps 1-3: open state, base = default branch, behind_by == 0.
+def base_findings(repo: str, number: int, pull: dict,
+                  require_fresh: bool = False) -> tuple[list[str], str, int]:
+    """Steps 1-3: open state, base = default branch, behind_by == 0 if ``require_fresh``.
 
     Returns the findings, the default branch and the number of commits behind.
     """
@@ -246,7 +248,7 @@ def base_findings(repo: str, number: int, pull: dict) -> tuple[list[str], str, i
     if not isinstance(compare, dict) or not isinstance(compare.get("behind_by"), int):
         raise CompareShapeError()
     behind = compare.get("behind_by", -1)
-    if behind > 0:
+    if behind > 0 and require_fresh:
         findings.append(
             f"PR #{number} is behind by {behind} commit(s) against '{default_branch}'; "
             f"run `git fetch origin && git merge origin/{default_branch}`, wait for CI green, "
@@ -307,6 +309,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repo", default="", help="OWNER/REPO (default: detecta desde cwd)")
     parser.add_argument("--required-check", action="append", default=[],
                         help="check requerido que debe estar verde (repitelo para varios)")
+    parser.add_argument("--require-fresh", action="store_true",
+                        help="rechaza un PR atrasado respecto de la base (por defecto se "
+                             "acepta: el CI corre una vez, en la PR, #1397)")
     parser.add_argument("--check-only", action="store_true",
                         help="solo verifica; no fusiona")
     return parser.parse_args()
@@ -323,7 +328,8 @@ def run(args: argparse.Namespace) -> int:
     body = pull.get("body") if isinstance(pull.get("body"), str) else ""
     labels = {label.get("name") for label in pull["labels"]
               if isinstance(label, dict) and isinstance(label.get("name"), str)}
-    findings, default_branch, _behind = base_findings(args.repo, args.pr, pull)
+    findings, default_branch, _behind = base_findings(args.repo, args.pr, pull,
+                                                     args.require_fresh)
     findings += ci_findings(args.repo, args.pr, pull["head"]["sha"], set(args.required_check))
     findings += chain_findings(args.pr, labels, body)
     if findings:
