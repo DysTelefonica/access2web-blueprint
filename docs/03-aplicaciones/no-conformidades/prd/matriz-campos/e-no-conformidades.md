@@ -2,7 +2,7 @@
 
 Esta parte de la matriz recoge, columna a columna, las tablas `TbNoConformidades` y `TbNoConformidadesAuditoria` del esquema previo, que es el volcado de `NoConformidades_Datos.accdb` de 2026-08-06 (`../../ERD/schema.sql`). Ese esquema es contexto, no autoridad: solo trae tipos, sin claves, relaciones ni nulabilidad, y el ERD de origen real sigue pendiente del propietario. Por eso todo destino es una propuesta hasta que se apruebe el ERD global, y las claves y relaciones se marcan «inferida por código» con su cita. La línea base es el código de `main` (producción) en el commit fijado del clon de solo lectura. Cada afirmación cita `fichero:línea` de `src`; lo que el código no muestra queda como «pendiente» o «a verificar». El destino sigue la forma `no_conformidades.<tabla>.<columna>` y los tipos de destino son orientativos para PostgreSQL. No se incluyen datos de negocio ni recuentos de filas.
 
-Las fichas de los formularios que operan estas tablas están en `../formularios/`; el contexto general, en [el PRD de la aplicación](../README.md).
+Las fichas de los formularios que operan estas tablas están en el [inventario de formularios](../README.md#formularios); el contexto general, en [el PRD de la aplicación](../README.md).
 
 ## TbNoConformidades
 
