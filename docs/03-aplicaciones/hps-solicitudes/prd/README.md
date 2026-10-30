@@ -65,11 +65,18 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormSolicitudRenovacion | src/forms/Form_FormSolicitudRenovacion.cls | 151 | 25 | 5 | igual | analizado | [formularios/Form_FormSolicitudRenovacion.md](formularios/Form_FormSolicitudRenovacion.md) |
 | Form_FormSolicitudRenovacionDatos | src/forms/Form_FormSolicitudRenovacionDatos.cls | 957 | 64 | 19 | igual | pendiente | — |
 | Form_FormSolicitudRenovacionFechas | src/forms/Form_FormSolicitudRenovacionFechas.cls | 1652 | 82 | 40 | igual | pendiente | — |
+| Form_FormSolicitudesAltaFechas | src/forms/Form_FormSolicitudesAltaFechas.cls | 1661 | 82 | 40 | igual | analizado | [formularios/Form_FormSolicitudesAltaFechas.md](formularios/Form_FormSolicitudesAltaFechas.md) |
+| Form_FormSolicitudesAltaRenovacionFechas | src/forms/Form_FormSolicitudesAltaRenovacionFechas.cls | 751 | 63 | 18 | igual | analizado | [formularios/Form_FormSolicitudesAltaRenovacionFechas.md](formularios/Form_FormSolicitudesAltaRenovacionFechas.md) |
+| Form_FormSolicitudesAltaTraspasoDatos | src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls | 953 | 66 | 23 | igual | pendiente | — |
+
 | Form_FormSolicitudesAltaFechas | src/forms/Form_FormSolicitudesAltaFechas.cls | 1661 | 82 | 40 | igual | pendiente | — |
 | Form_FormSolicitudesAltaRenovacionFechas | src/forms/Form_FormSolicitudesAltaRenovacionFechas.cls | 751 | 63 | 18 | igual | pendiente | — |
 | Form_FormSolicitudesAltaTraspasoDatos | src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls | 953 | 66 | 23 | igual | analizado | [formularios/Form_FormSolicitudesAltaTraspasoDatos.md](formularios/Form_FormSolicitudesAltaTraspasoDatos.md) |
 | Form_FormSolicitudesGestion | src/forms/Form_FormSolicitudesGestion.cls | 912 | 48 | 23 | igual | analizado | [formularios/Form_FormSolicitudesGestion.md](formularios/Form_FormSolicitudesGestion.md) |
 | Form_FormSolicitudesTraspasoFechas | src/forms/Form_FormSolicitudesTraspasoFechas.cls | 1166 | 56 | 29 | igual | pendiente | — |
+| Form_FormTareasTramitadorPendientes | src/forms/Form_FormTareasTramitadorPendientes.cls | 652 | 29 | 14 | igual | analizado | [formularios/Form_FormTareasTramitadorPendientes.md](formularios/Form_FormTareasTramitadorPendientes.md) |
+| Form_FormUsuariosHPSBusqueda | src/forms/Form_FormUsuariosHPSBusqueda.cls | 295 | 26 | 9 | igual | pendiente | — |
+
 | Form_FormTareasTramitadorPendientes | src/forms/Form_FormTareasTramitadorPendientes.cls | 652 | 29 | 14 | igual | pendiente | — |
 | Form_FormUsuariosHPSBusqueda | src/forms/Form_FormUsuariosHPSBusqueda.cls | 295 | 26 | 9 | igual | analizado | [formularios/Form_FormUsuariosHPSBusqueda.md](formularios/Form_FormUsuariosHPSBusqueda.md) |
 | Form_FormWeb | src/forms/Form_FormWeb.cls | 56 | 16 | 2 | igual | analizado | [formularios/Form_FormWeb.md](formularios/Form_FormWeb.md) |
@@ -207,6 +214,19 @@ Comportamientos sospechosos detectados al analizar los formularios. No se corrig
 | H-HPS-S-41 | `txtBuscar_AfterUpdate` actúa sobre el resultado único sin pedir confirmación: una tecla abre el editor o elige la justificación y cierra el buscador. | `Form_frmBuscarJustificacion.cls:51-62` | [Form_frmBuscarJustificacion](formularios/Form_frmBuscarJustificacion.md) |
 
 > Nota: esta tanda arranca en `H-HPS-S-31` porque las fichas-1 y fichas-2 de esta cadena ya publicaron `1..13` y la cadena de `apap3` continúa con su propia numeración. Rango reservado para esta tanda: `H-HPS-S-31` a `H-HPS-S-41`.
+
+### Hallazgos del legado — tareas del tramitador y panel de fechas (H-HPS-S-58 a H-HPS-S-65)
+
+| Id | Hallazgo | Evidencia | Ficha |
+|---|---|---|---|
+| H-HPS-S-58 | Editar una tarea cierra el contenedor de solicitud con `acSaveNo` y lo reabre, descartando trabajo en curso sin aviso. | `Form_FormTareasTramitadorPendientes.cls:179, 184, 193` | [Form_FormTareasTramitadorPendientes](formularios/Form_FormTareasTramitadorPendientes.md) |
+| H-HPS-S-59 | La rama de error de `Gestor_BeforeUpdate` sólo envía correo: el usuario ve la lista anterior sin ninguna explicación. | `Form_FormTareasTramitadorPendientes.cls:240-246` | [Form_FormTareasTramitadorPendientes](formularios/Form_FormTareasTramitadorPendientes.md) |
+| H-HPS-S-60 | `Filtrar` sobrescribe con `m_ObjEntorno.Error` el `p_Error` que acaban de devolver las doce consultas de cola. | `Form_FormTareasTramitadorPendientes.cls:42-71` | [Form_FormTareasTramitadorPendientes](formularios/Form_FormTareasTramitadorPendientes.md) |
+| H-HPS-S-61 | `FU.bas` invoca `EstablecerDatos` sobre el nombre de clase del formulario para forzar el repintado desde un módulo. | `FU.bas:59-63` | [Form_FormTareasTramitadorPendientes](formularios/Form_FormTareasTramitadorPendientes.md) |
+| H-HPS-S-62 | Los dos handlers de registro leen `SolicitudFechas` sin la comprobación de `Is Nothing` que sí hace `EstablecerDatos`. | `Form_FormSolicitudesAltaRenovacionFechas.cls:248, 309, 624` | [Form_FormSolicitudesAltaRenovacionFechas](formularios/Form_FormSolicitudesAltaRenovacionFechas.md) |
+| H-HPS-S-63 | La fecha del alta en ONS se pide con `InputBox` y se pasa a la capa de datos sin validar que sea una fecha. | `Form_FormSolicitudesAltaRenovacionFechas.cls:252, 263` | [Form_FormSolicitudesAltaRenovacionFechas](formularios/Form_FormSolicitudesAltaRenovacionFechas.md) |
+| H-HPS-S-64 | La rama `If IsDate(Me.FechaEnvioExcel) Then` tiene el cuerpo vacío: el estado de los botones de recordatorio depende de qué ruta se ejecutó, no de las fechas. | `Form_FormSolicitudesAltaRenovacionFechas.cls:726-733` | [Form_FormSolicitudesAltaRenovacionFechas](formularios/Form_FormSolicitudesAltaRenovacionFechas.md) |
+| H-HPS-S-65 | El mensaje de error de `ComandoRegistroEnvioONS_Click` nombra `ComandoRegistrarAltaMarga_Click`. | `Form_FormSolicitudesAltaRenovacionFechas.cls:288` | [Form_FormSolicitudesAltaRenovacionFechas](formularios/Form_FormSolicitudesAltaRenovacionFechas.md) |
 
 ### Hallazgos del legado — formularios de datos de alta, traspaso y renovación (H-HPS-S-50 a H-HPS-S-57)
 
