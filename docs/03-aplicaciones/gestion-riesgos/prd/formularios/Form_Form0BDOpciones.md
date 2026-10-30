@@ -41,12 +41,12 @@ Los rótulos de texto son etiquetas fijas (`lblMisProyectos`, `lblNuevoProyecto`
 ### Apertura (`Form_Load`, `:425-470`)
 
 1. Reloj de arena y `AjustarTamaño Me` (`:436`; `Funciones Generales.bas:1043`).
-2. `Me.Caption` pasa a título del usuario conectado y `lblVersion` a la versión de la aplicación (`:438, 444`).
-3. `Avance "Obteniendo las tareas"` y `EntrarComo.RowSource = m_ObjEntorno.ListaUsuarios` (`:443-444`).
-4. `lblUltimoProyecto` muestra el nombre del último proyecto o el texto genérico (`:445-449`).
+2. `Me.Caption` pasa a título del usuario conectado y `lblVersion` a la versión de la aplicación (`:438, 448`).
+3. `Avance "Obteniendo las tareas"` y `EntrarComo.RowSource = m_ObjEntorno.ListaUsuarios` (`:441-442`).
+4. `lblUltimoProyecto` muestra el nombre del último proyecto o el texto genérico (`:443-447`).
 5. `ActivarBotonera` habilita siete controles y `AvanceCerrar` cierra el rótulo de estado (`:450-452`).
 
-Su manejador de error **termina la aplicación** (`:468`).
+Su manejador de error **termina la aplicación** (`:469`).
 
 ### Normal (patrón común de los once handlers)
 
@@ -54,13 +54,13 @@ Su manejador de error **termina la aplicación** (`:468`).
 
 ### Alternativo
 
-- **Sin último proyecto:** `ComandoUltimoProyecto_Click` delega en `ComandoGestionesDeRiesgo_Click` (`:331-336`).
-- **Biblioteca:** si el formulario ya estaba abierto, lo cierra sin guardar y lo reabre; después oculta un botón suyo desde fuera (`Form_FormRiesgosBibliotecaGestion.ComandoNoExisteRiesgo.Visible = False`, `:240-242`).
-- **Alta de gestión:** cierra `FormGestionRiesgos` si estaba abierto y reabre en modo alta (`:290-296`).
+- **Sin último proyecto:** `ComandoUltimoProyecto_Click` delega en `ComandoGestionesDeRiesgo_Click` (`:330-334`).
+- **Biblioteca:** si el formulario ya estaba abierto, lo cierra sin guardar y lo reabre; después oculta un botón suyo desde fuera (`Form_FormRiesgosBibliotecaGestion.ComandoNoExisteRiesgo.Visible = False`, `:237-240`).
+- **Alta de gestión:** cierra `FormGestionRiesgos` si estaba abierto y reabre en modo alta (`:291-296`).
 
 ### De error
 
-`Err.Raise 1000` no lleva descripción (`:72` y ocho ocurrencias más): el texto mostrado es siempre el `m_Error` asignado justo antes. `CmdSalir_Click` y `ActivarBotonera` usan `On Error Resume Next` y no tienen manejador (`:49`, `:361`).
+`Err.Raise 1000` no lleva descripción (`:72` y diez ocurrencias más): el texto mostrado es siempre el `m_Error` asignado justo antes. `CmdSalir_Click` y `ActivarBotonera` usan `On Error Resume Next` y no tienen manejador (`:49`, `:361`).
 
 ## Reglas, validaciones y cálculos
 
@@ -74,10 +74,10 @@ Su manejador de error **termina la aplicación** (`:468`).
 | Operación | Origen | Evidencia |
 |---|---|---|
 | Identidad, tareas, cachés | Globales de sesión `m_ObjEntorno`, `m_ObjUltimoProyecto` | `Variables Globales.bas:73, 130` |
-| Lista de usuarios | `m_ObjEntorno.ListaUsuarios` | `:444` |
+| Lista de usuarios | `m_ObjEntorno.ListaUsuarios` | `:442` |
 | Modelo de árbol | TempVar `CadenaJerarquicaModelo` | `:33-38` |
 | Rótulos de avance | `Avance` y `AvanceCerrar` | `Funciones Generales.bas:4879, 4920` |
-| Apertura externa | `ShellExecuteA` vía `Ejecutar` | `Variables Globales.bas:15`, `:487` |
+| Apertura externa | `ShellExecuteA` vía `Ejecutar` | `Variables Globales.bas:15`, `:485` |
 
 Sin escrituras en base de datos.
 
@@ -87,17 +87,17 @@ Panel de navegación con once destinos, un selector de usuario, un enlace al ví
 
 ## Posibles defectos (sin corregir, a verificar)
 
-- **H-GR-19.** `ActivarBotonera` (`:360-372`) habilita indiscriminadamente bajo `On Error Resume Next` y nunca deshabilita: el único filtro real de rol son tres `If` dentro de handlers (`:109, 203, 267`), de modo que la botonera **muestra** opciones que el propio formulario **rechaza**. Conviene verificar si el diseño deja algún control deshabilitado por defecto.
-- **H-GR-20.** `Me.ComandoVerControlCambios.Enabled = True` aparece dos veces seguidas (`:367-368`): la segunda es inerte y apunta a copia de código.
-- **H-GR-21.** La misma routine no toca `ComandoEntrarComo`, `cmdSalir` ni `ComandoAyuda` (`:360-372`): la «botonera activada» no es la botonera completa, y esos tres quedan en el estado que traiga el diseño.
-- **H-GR-22.** `ComandoNuevaGestionDeRiesgo_Click` repite el bloque `On Error GoTo errores` / `DoEvents` / `Hourglass True` / `m_Error = ""` ya ejecutado (`:276-282`). El segundo bloque **descarta** el `m_Error` anterior y reinicia el reloj de arena sin cerrar el anterior.
-- **H-GR-23.** `Form_Load` asigna `Me.lblTitulo1.Caption = m_Titulo` (`:439`) con una variable declarada y **nunca asignada** (`:430`): el rótulo queda siempre vacío.
-- **H-GR-24.** El manejador de error de `Form_Load` acaba en `DoCmd.Quit acQuitSaveNone` (`:468`): un fallo de carga —por ejemplo, `m_ObjEntorno` sin inicializar— cierra la aplicación sin preguntar y descarta el trabajo de sesión.
-- **H-GR-25.** `CmdSalir_Click` (`:48-58`) muestra el aviso con `On Error Resume Next` y un texto truncado («aplicaciónº», `:50`), y la llamada a `CerrarAplicacion` está comentada (`:55`); `Application.Quit acQuitSaveNone` (`:56`) descarta cambios sin guardar.
-- **H-GR-26.** Los `Err.Raise 1000` (`:72, 76, 80, 84, 111, 142, 170, 205, 274, 338, 483`) no llevan `vbObjectError`, y el manejador decide entre aviso y crítico comparando `Err.Number <> 1000`. Un error real de Access con número 1000 se mostraría como advertencia y **no se enviaría al administrador**.
-- **H-GR-27.** El selector de usuario carga la lista completa sin filtrar por rol (`:444`) y `ComandoEntrarComo_Click` no comprueba `EsTecnico` en ningún punto: el único control del salto de perfil está en `Form_Load` del menú técnico (`Form_Form0BDOpcionesTecnico.cls:259`). El acceso está en el destino, no en el origen.
-- **H-GR-28.** El diseño congela rótulos capturados en una ejecución real: `lblUltimoProyecto` guarda un nombre de proyecto concreto (`.form.txt:3733`) y `lblVersion` una versión concreta (`.form.txt:3542`). No es un fallo en ejecución (`Form_Load` los sobrescribe) pero documenta que el diseño se ha extraído con datos cargados.
-- **H-GR-29.** `lblVideo_Click` comprueba existencia con `fso.FileExists` sobre la ruta configurada y luego delega en `ShellExecuteA` (`:479-487`, `Variables Globales.bas:15`): la comprobación y la apertura son dos actos separados y la disponibilidad real depende del momento del clic.
+- **H-GR-192.** `ActivarBotonera` (`:360-372`) habilita indiscriminadamente bajo `On Error Resume Next` y nunca deshabilita: el único filtro real de rol son tres `If` dentro de handlers (`:109, 203, 267`), de modo que la botonera **muestra** opciones que el propio formulario **rechaza**. Conviene verificar si el diseño deja algún control deshabilitado por defecto.
+- **H-GR-193.** `Me.ComandoVerControlCambios.Enabled = True` aparece dos veces seguidas (`:369-370`): la segunda es inerte y apunta a copia de código.
+- **H-GR-194.** La misma routine no toca `ComandoEntrarComo`, `cmdSalir` ni `ComandoAyuda` (`:360-372`): la «botonera activada» no es la botonera completa, y esos tres quedan en el estado que traiga el diseño.
+- **H-GR-195.** `ComandoNuevaGestionDeRiesgo_Click` repite el bloque `On Error GoTo errores` / `DoEvents` / `Hourglass True` / `m_Error = ""` ya ejecutado (`:276-282`). El segundo bloque **descarta** el `m_Error` anterior y reinicia el reloj de arena sin cerrar el anterior.
+- **H-GR-196.** `Form_Load` asigna `Me.lblTitulo1.Caption = m_Titulo` (`:439`) con una variable declarada y **nunca asignada** (`:430`): el rótulo queda siempre vacío.
+- **H-GR-197.** El manejador de error de `Form_Load` acaba en `DoCmd.Quit acQuitSaveNone` (`:469`): un fallo de carga —por ejemplo, `m_ObjEntorno` sin inicializar— cierra la aplicación sin preguntar y descarta el trabajo de sesión.
+- **H-GR-198.** `CmdSalir_Click` (`:48-58`) muestra el aviso bajo `On Error Resume Next` (`:50`) y con un texto truncado («aplicaciónº», `:51`), y la llamada a `CerrarAplicacion` está comentada (`:55`); `Application.Quit acQuitSaveNone` (`:56`) descarta cambios sin guardar.
+- **H-GR-199.** Los `Err.Raise 1000` (`:72, 76, 80, 84, 111, 142, 170, 205, 274, 338, 483`) no llevan `vbObjectError`, y el manejador decide entre aviso y crítico comparando `Err.Number <> 1000`. Un error real de Access con número 1000 se mostraría como advertencia y **no se enviaría al administrador**.
+- **H-GR-200.** El selector de usuario carga la lista completa sin filtrar por rol (`:442`) y `ComandoEntrarComo_Click` no comprueba `EsTecnico` en ningún punto: el único control del salto de perfil está en `Form_Load` del menú técnico (`Form_Form0BDOpcionesTecnico.cls:259`). El acceso está en el destino, no en el origen.
+- **H-GR-201.** El diseño congela rótulos capturados en una ejecución real: `lblUltimoProyecto` guarda un nombre de proyecto concreto (`.form.txt:3733`) y `lblVersion` una versión concreta (`.form.txt:3542`). No es un fallo en ejecución (`Form_Load` los sobrescribe) pero documenta que el diseño se ha extraído con datos cargados.
+- **H-GR-202.** `lblVideo_Click` comprueba existencia con `fso.FileExists` sobre la ruta configurada (`:481`) y luego delega en `ShellExecuteA` (`:485`, `Variables Globales.bas:15`): la comprobación y la apertura son dos actos separados y la disponibilidad real depende del momento del clic.
 
 ## Propuestas web pendientes de decisión
 

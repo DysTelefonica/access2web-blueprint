@@ -1,6 +1,6 @@
 # PRD — HPS
 
-> **Estado:** fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 37 de 38.
+> **Estado:** fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 38 de 38.
 
 | Campo | Valor |
 |---|---|
@@ -69,7 +69,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormUsuario02DatosObservacion | src/forms/Form_FormUsuario02DatosObservacion.cls | 194 | 23 | 3 | igual | analizada | [Form_FormUsuario02DatosObservacion.md](formularios/Form_FormUsuario02DatosObservacion.md) |
 | Form_FormUsuario02DatosObservacionHistorico | src/forms/Form_FormUsuario02DatosObservacionHistorico.cls | 60 | 22 | 2 | igual | analizada | [Form_FormUsuario02DatosObservacionHistorico.md](formularios/Form_FormUsuario02DatosObservacionHistorico.md) |
 | Form_FormUsuario02Edicion | src/forms/Form_FormUsuario02Edicion.cls | 977 | 70 | 24 | igual | analizada | [Form_FormUsuario02Edicion.md](formularios/Form_FormUsuario02Edicion.md) |
-| Form_FormUsuario02HPS | src/forms/Form_FormUsuario02HPS.cls | 988 | 90 | 16 | igual | pendiente | — |
+| Form_FormUsuario02HPS | src/forms/Form_FormUsuario02HPS.cls | 988 | 90 | 16 | igual | analizada | [Form_FormUsuario02HPS.md](formularios/Form_FormUsuario02HPS.md) |
 | Form_FormUsuario07SICAAlta | src/forms/Form_FormUsuario07SICAAlta.cls | 516 | 56 | 10 | igual | analizada | [Form_FormUsuario07SICAAlta.md](formularios/Form_FormUsuario07SICAAlta.md) |
 | Form_FormUsuario07SICAEdicion | src/forms/Form_FormUsuario07SICAEdicion.cls | 911 | 57 | 14 | igual | analizada | [Form_FormUsuario07SICAEdicion.md](formularios/Form_FormUsuario07SICAEdicion.md) |
 | Form_FormUsuarioHistorico00Principal | src/forms/Form_FormUsuarioHistorico00Principal.cls | 98 | 19 | 3 | igual | analizada | [Form_FormUsuarioHistorico00Principal.md](formularios/Form_FormUsuarioHistorico00Principal.md) |

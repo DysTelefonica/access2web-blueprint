@@ -52,7 +52,62 @@ Fase de lectura pura: ningún cambio de código, workflow ni gobernanza.
   Preflight canónico:
   `assets/tooling-preflight/tooling-preflight.sh` (lista declarada como dato
   versionado del job, `command -v` de cada binario, nombra TODOS los
-  ausentes y falla si la lista no existe o está vacía).
+  ausentes —una línea por ausente, `falta <cli> en el runner <nombre>`— y
+  falla si la lista no existe, no es legible o está vacía). La identidad del
+  runner es la opción opt-in `--runner <nombre>`: sin ella el preflight
+  nombra la lista de ausentes como antes; con ella nombra cada ausente, en
+  qué runner falta y cómo se instala. Desde #1172 el preflight distingue dos
+  fallos que antes compartían salida: **binario ausente en el runner → AVISO**
+  (sale 0: el fix aterriza en la definición del servicio del runner, no en el
+  PR que se está abriendo) y **contrato roto** —lista vacía, ilegible o
+  ausente, sin `--binaries`— → **bloqueo** (sale 2). El cableado por job es
+  la sección «Cableado del preflight de tooling por job (G0.5)» de esta misma
+  fase.
+- **G0.5b — El job `gates` en sombra (fase 1 de #1179).** Un job que ejecuta
+  los gates declarados del repo una vez y emite un **veredicto único** —cuántos
+  gates están en verde y, para cada uno que falla, su causa— en vez de N checks
+  que se ponen en rojo por el mismo defecto. Va **en sombra**: publica su check
+  y NADIE lo exige; no cambia `required_jobs` ni la protección de rama. Su
+  veredicto se compara con el rollup actual para decidir la fase 2 (criterio C6
+  de #1179). El asset es `assets/gates/run_gates.py` y la lista de gates es un
+  fichero versionado en el repo del consumer (`.github/gates.txt`, una línea por
+  gate: `nombre: comando`).
+
+  ```yaml
+  jobs:
+    gates:
+      name: gates (sombra, no exigido)
+      # Único evento que evalúa el PR (HR-30).
+      if: github.event_name == 'pull_request'
+      runs-on: [self-hosted, Linux, mi-consumer]
+      # El techo del job cubre el gate MÁS LENTO (los gates corren en paralelo).
+      timeout-minutes: 20
+      permissions:
+        contents: read
+      steps:
+        - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+          with:
+            persist-credentials: false
+
+        - name: Veredicto único de los gates (sombra)
+          run: |
+            python3 .agents/skills/ci-pattern/assets/gates/run_gates.py \
+              --gates .github/gates.txt
+  ```
+
+  La lista de gates:
+
+  ```text
+  # .github/gates.txt — los gates del repo, uno por línea: `nombre: comando`.
+  unit: bash testing/run-unit-suites.sh
+  lint: bash scripts/lint.sh
+  ```
+
+  Tres reglas: el job **no** entra en `required_jobs` ni en el `needs:` del
+  agregador (si entró, dejaría de ser sombra); su nombre de check lleva
+  «(sombra)» para que nadie lo confunda con un check exigido; y **duplica el
+  trabajo de los gates**, que es el precio de la sombra y el motivo por el que
+  es temporal.
 - **G0.6 — Estado de release.** Qué está sin liberar en el repo. Nunca adoptar
   a mitad de un fix sin liberar: el ruido del cambio de gobernanza se mezcla
   con el fix pendiente y ambos quedan sin dueño claro.
@@ -60,6 +115,95 @@ Fase de lectura pura: ningún cambio de código, workflow ni gobernanza.
   workspaces de CI del repo y declárelos fuera de límites para cualquier
   edición. Previene C5: los workspaces de CI pertenecen al runner; editar en
   ellos compite con el runner sobre el mismo working tree.
+
+- **G0.6 — La página «dónde trabajo» (#1201).** El consumer escribe
+  `docs/codebase/where-to-work.md` con una fila por tarea canónica en la forma
+  «lee → toca → prueba» y una fila `local` con su índice y sus skills
+  obligatorias. El asset `assets/where-to-work/check_where_to_work.py` mide
+  **presencia y deriva**: que la página exista, que tenga las filas `form`,
+  `ci`, `schema` y `local`, que cada fila declare las tres columnas y que cada
+  ruta citada exista en el repo. No juzga la prosa. La plantilla está en
+  `assets/where-to-work/templates/where-to-work.md`. Lo ejecuta la fase 5 con
+  el modo que declara `docs_where_to_work` (HR-77): el job `docs-gates` no
+  lleva un paso propio para el asset, que daría un segundo rojo por la misma
+  causa (#1396).
+
+### Cableado del preflight de tooling por job (G0.5)
+
+El censo de la fase 0 no se queda en un inventario: se cablea. TODO job
+migrado —TODOS, no solo el primero— lleva el preflight como primer paso
+ejecutable después del checkout, con la lista de CLI del job versionada en el
+repo del consumer y la identidad del runner que lo ejecuta:
+
+```yaml
+jobs:
+  unit:
+    runs-on: [self-hosted, Linux, ARM64, apap, oracle, coolify, noble, deploy]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+        with:
+          persist-credentials: false
+
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (regla 16 del runner-skill), no en el
+      # runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/unit.txt \
+            --runner "${{ runner.name }}"
+
+      - name: Suite del job
+        run: make test
+```
+
+Y la lista del job, versionada en el repo del consumer: una CLI por línea,
+`#` abre comentario y la línea en blanco se ignora. Una entrada puede
+declarar **cómo se instala** con el comentario `# instalar: <comando>` (o
+`# install:`): el aviso del binario ausente lo nombra, y sin esa declaración
+el aviso remite a la definición del servicio del runner (#1172).
+
+```text
+# .github/tooling/unit.txt — CLI que el RUNNER debe aportar a este job.
+python3
+make
+ruff # instalar: pip install ruff==0.15.21
+```
+
+Cuatro reglas del cableado:
+
+1. **La ruta es la del consumer propagado**:
+   `.agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh`.
+   Es la copia que la propagación deja en el repo del consumer; el asset del
+   catálogo (`personal/ardelperal/ci-pattern/assets/tooling-preflight/`) no
+   se cablea en un workflow.
+2. **El cableado canónico pasa siempre `--runner "${{ runner.name }}"`.** Sin
+   la identidad del runner, «falta <cli>» no dice dónde mirar: el fix aterriza
+   en la definición del servicio del runner concreto, nunca en una
+   instalación manual del host. Con identidad, el preflight nombra cada
+   ausente, uno por línea: `falta <cli> en el runner <nombre>`. La opción es
+   opt-in (una invocación heredada `--binaries FICHERO` a secas sigue siendo
+   válida y conserva su texto anterior), pero el cableado nuevo la declara
+   siempre: es lo que cierra el hueco.
+3. **La lista declara lo que el runner aporta, no lo que instala el job.** La
+   lista son las CLI que el host del runner debe tener por definición de
+   servicio. Una CLI que el job instala con un `setup-*` (node, python) la
+   aporta el propio job y falla sola si el `setup-*` no la deja; no va en la
+   lista. Si un consumer quiere verificarla también, pone el paso del
+   preflight justo después del `setup-*` —sigue siendo el primer paso
+   ejecutable del job— y la incluye.
+4. **La lista es dato, no script.** Se versiona junto al workflow del job
+   (`.github/tooling/<job>.txt`); el preflight la lee con `command -v` y
+   nombra los ausentes por stderr. Con `--runner` cada ausente sale con su
+   instrucción de instalación (la que declara la entrada con
+   `# instalar: <comando>`, o la definición del servicio del runner): el
+   aviso es accionable sin que quien abre el PR tenga que buscar el fix.
+
+APAP (`ardelperal/APAP_WEB`), BP (`DysTelefonica/access2web-blueprint`) y
+cadete (`DysTelefonica/cadete`) copian este patrón en SUS jobs, con SU lista
+versionada: este catálogo publica el patrón y no edita ningún
+`.github/workflows` —el workflow de cada consumer es de su propietario—, así
+que cada consumer abre su propio PR con su cableado.
 
 Cierre determinista de fase 0: cada artefacto de gobierno del destino queda en
 el inventario del contrato de adopción (`.github/ci-pattern-adoption.json`,
@@ -158,6 +302,24 @@ Cierre: `ci-pattern adoption check --phase 1 <repo>` = 0.
   la rama por defecto. Previene C1: la batería se lanzó con los tests de main
   contra la revisión desplegada y produjo 18 falsos fallos; el worktree en la
   revisión correcta tuvo que prepararlo la IA de otra sesión.
+- **G2.6 — Lo que la fase 2 mide lo declara la base, si la hay.** Con
+  `--seal-baseline <dir>` la fase 2 exige que el allowlist y el árbol que
+  escanea el gate HR-28 sean los que mide la base (operador de identidad, ver
+  la fase 3): el PR no puede apartar una fuga del gate cambiando lo que el
+  gate lee. Si la ruta de la base ya no existe en la cabeza, solo se admite un
+  movimiento puro: la ruta nueva tiene el mismo contenido que la base, byte a
+  byte. Un movimiento con edición en el mismo PR da hallazgo. Sin la opción,
+  la fase 2 se mide como siempre.
+- **G2.7 — Con la misma ruta, el contenido tampoco mide menos (#1341).** La
+  identidad de la ruta no dice nada de lo que hay dentro: un PR que reescribe
+  el allowlist en su sitio (una variable de entorno nueva, una extensión
+  excluida nueva) se lleva la medición sin que nada lo detecte. Con
+  `--seal-baseline`, el allowlist no puede autorizar de más y la instantánea
+  de etiquetas del host no puede dejar de cubrir las que cubría. Medir más se
+  admite. Una ampliación del allowlist se admite si el allowlist la declara
+  como **exención con identidad** (HR-33): la superficie, el elemento y quién
+  la autoriza (`actor` o `issue`). Sin identidad la exención no exime de
+  nada: nadie puede responder por ella.
 
 ### Camino Windows/WSL — worktree y `git`
 
@@ -237,15 +399,326 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
    el contrato de adopción (la identidad del patrón no es autodeclarada).
 3. Declare en `pattern_paths` los artefactos que el patrón instala. El gate
    verifica EN PROCESO el manifiesto de gobierno `.governance-manifest.json`
-   (existencia y sha256 de cada fichero, con las mismas funciones de
+   (existencia y sha256 gobernado de cada fichero, con las mismas funciones de
    `ci-pattern verify`): todo `pattern_path` debe estar cubierto por el
    manifiesto y todo artefacto de gobernanza del árbol o de las
    instantáneas — workflows, CODEOWNERS, dependabot, `.pre-commit-config.yaml`,
    `.husky/`, `lefthook.yml`, `.github/*.json` — que no esté en el manifiesto
-   o inventariado es residual y el gate lo nombra uno a uno.
+   o inventariado es residual y el gate lo nombra uno a uno. Los workflows se
+   sellan NORMALIZADOS (`schema_version: 3`, #1199 y #1361): el hash es el del
+   contenido con cada pin de `uses:` y cada `image:` con digest a un marcador
+   fijo, de modo que un bump de Dependabot no los desalinea y un cambio de lógica
+   sí. Lo que no se normaliza (un `docker run` dentro de `run:`, una `image:`
+   entre comillas, un `container:` en forma corta) falla cerrado: su bump exige
+   re-sellar. El hash se calcula con el algoritmo del formato que declara el
+   manifiesto: el canon vigente mide el formato 2 y el 3, cada uno con el suyo
+   (#1371), porque la base del consumer mide el PR con su canon y su formato
+   puede ser el anterior.
 4. Registre la evidencia del PR de sustitución en
    `docs/adoption/governance-replacement-pr.md` y declárela en `evidence.path`
    de la fase: el gate también la comprueba.
+5. **Cablee la fase 3 dentro del PR (HR-72).** Sin este paso la fase 3 se mide
+   fuera del pull request y un fichero gobernado puede llegar a `main` sin
+   re-sellarse. Declare en el contrato de adopción:
+
+   ```json
+   "governance_seals": { "job": "governance-seals" }
+   ```
+
+   y añada el job al `ci.yml` del consumer, con esta forma:
+
+   ```yaml
+   name: pr-gates
+
+   on:
+     pull_request_target:
+       types: [opened, edited, labeled, unlabeled, synchronize, reopened]
+
+   permissions:
+     contents: read
+     pull-requests: read
+     checks: write
+
+   concurrency:
+     group: pr-gates-${{ github.event.pull_request.number }}
+     # Solo un commit nuevo cancela una corrida (#978).
+     cancel-in-progress: ${{ github.event.action == 'synchronize' }}
+
+   jobs:
+     governance-seals:
+       name: governance-seals
+       # HR-72 (#1027). El gate evalua el PR, asi que corre en `pull_request_target`,
+       # que ejecuta el workflow de la base (#1270).
+       runs-on: [self-hosted, Linux, mi-consumer]
+       timeout-minutes: 15
+       env:
+         # El patron vendorizado en la BASE: ni token ni artefacto (#1396).
+         PATTERN_DIR: base/.agents/skills/ci-pattern
+       steps:
+         - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+           with:
+             ref: ${{ github.event.pull_request.head.sha || github.sha }}
+             path: pr-head
+             fetch-depth: 0
+             persist-credentials: false
+
+         # La CONFIGURACION que gobierna el gate y el PATRON que lo ejecuta
+         # salen de la BASE (#1270, #1396): el CONTRATO DE ADOPCION se lee de
+         # ahi, sin credenciales. Un PR no puede
+         # reescribir el contrato que lo mide. El estado (el manifiesto de
+         # gobernanza, los ficheros gobernados y las instantaneas del host)
+         # sigue siendo el del PR (#1351).
+         - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+           with:
+             ref: ${{ github.event.pull_request.base.sha }}
+             path: base
+             persist-credentials: false
+
+         # UNA sola forma de medir (#1339): el gate corre una vez y la base es
+         # el suelo. El PR puede AÑADIR (el artefacto de gobierno que acaba de
+         # crear, con su entrada de inventario y su sello) y no puede QUITAR
+         # (lo que la base sellaba no se reduce mientras el fichero siga en el
+         # arbol). Antes el fragmento llevaba DOS invocaciones y su
+         # combinacion ponia en rojo un PR legitimo (E9).
+         - name: Governance identity (HR-46, HR-72)
+           run: python3 "$PATTERN_DIR/assets/bin/ci-pattern" adoption check --phase 3 pr-head --config-from base
+
+         # El espejo del veredicto sobre la CABEZA del PR (#1396): el check run
+         # nativo de un run de `pull_request_target` queda en la BASE y el merge
+         # gobernado, que lee los check runs de la cabeza, no lo ve. Solo
+         # `GITHUB_TOKEN`, nunca el secreto del catalogo.
+         - name: Publish the verdict as a check run on the PR head
+           if: always()
+           env:
+             HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+             GH_TOKEN: ${{ github.token }}
+             CONTEXT: governance-seals
+           run: |
+             set -euo pipefail
+             if [ "${{ job.status }}" = "success" ]; then conclusion=success; else conclusion=failure; fi
+             printf '{"head_sha": "%s", "name": "%s", "status": "completed", "conclusion": "%s"}' \
+               "$HEAD_SHA" "$CONTEXT" "$conclusion" > "$RUNNER_TEMP/check-run.json"
+             gh api --method POST "repos/$GITHUB_REPOSITORY/check-runs" --input "$RUNNER_TEMP/check-run.json"
+
+         # #1172 (decisión del dueño, 2026-10-24): cuando el sello no coincide,
+         # el mensaje del gate da el hash esperado y el comando de re-sellar.
+         # El job deja además el manifiesto RE-SELLADO como artefacto, para que
+         # el fix sea un fichero y no una instrucción. Sin push automático: el
+         # manifiesto re-sellado no se commitea ni se empuja desde el job.
+         # `if: failure()` corre solo cuando el gate falló, y el paso no usa
+         # `|| true` ni `continue-on-error`: el veredicto del gate no se traga.
+         # El artefacto solo se sube cuando el gate YA falló: el veredicto no
+         # depende de él, y una cuota de artefactos no salta el check (#1396).
+         - name: Manifiesto re-sellado (sin push)
+           if: failure()
+           run: |
+             python3 "$PATTERN_DIR/assets/bin/ci-pattern" manifest seal pr-head \
+               --out "$RUNNER_TEMP/governance-manifest.resealed.json"
+
+         - name: Publicar el manifiesto re-sellado como artefacto
+           if: failure()
+           uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+           with:
+             name: governance-manifest-resealed
+             path: ${{ runner.temp }}/governance-manifest.resealed.json
+             if-no-files-found: warn
+```
+
+   El commit del patrón **no se escribe**: es el de la copia vendorizada en la
+   base, la que fija el sello `catalog @ <sha40>` de la primera línea de
+   `.team-skills.yaml`, que el propagador reescribe en cada corrida (#1062). Un
+   `pin:` literal queda viejo en la siguiente propagación y el `diff` que
+   produce no dice nada.
+
+   El fragmento es un **workflow completo** en `pull_request_target` (#1270) con
+   un solo job (#1396). El patrón es la copia vendorizada en el checkout de la
+   BASE (`base/.agents/skills/ci-pattern`), como en los jobs del `ci.yml`: el PR
+   no puede tocar el código que lo mide ni apuntar a un commit más antiguo del
+   catálogo, el job no necesita el token del catálogo y ningún artefacto se
+   interpone entre el patrón y el gate, así que una cuota de facturación de
+   artefactos no puede saltar el check requerido (`DysTelefonica/cadete#752`).
+
+   Por qué el gate aparece dos veces entre los checks del PR (#1396): un run de
+   `pull_request_target` adjunta su check run **nativo** al commit de la BASE
+   (`GITHUB_SHA`, el último commit de la rama base), no a la cabeza del PR. El
+   merge gobernado lee los check runs de la cabeza
+   (`repos/{repo}/commits/{head_sha}/check-runs`, `check_push_compliance`), así
+   que solo el **espejo** que el job publica sobre la cabeza con `CONTEXT`
+   satisface el check requerido; el nativo es informativo. El espejo usa solo
+   `GITHUB_TOKEN`, nunca el secreto del catálogo.
+
+   La CONFIGURACION que gobierna el gate sale de la base (`--config-from base`):
+   el **contrato de adopción** se lee del checkout de la base, sin
+   credenciales. Un PR no puede reescribir el contrato que lo mide: si lo
+   cambia, el gate sigue midiendo con el de la base, y el cambio solo surte
+   efecto al llegar a `main`. El ESTADO —el manifiesto de gobernanza, los
+   ficheros gobernados y las instantáneas del host— sigue siendo el del PR.
+
+   El `host-contract` y el `ci-pattern.yaml` NO salen de la base (#1351): son la
+   declaración del consumer sobre su host y sus parámetros, y miden contra las
+   instantáneas que el PR trae. Medir el contrato del host con el de la base
+   haría que un PR legítimo quedara rojo para siempre: el que declara un
+   ruleset propio del host —el único canal que el canon ofrece para el
+   gobierno del host que el consumer conserva— y el que corrige una lectura
+   obsoleta del plan del host. Su cambio surtiría efecto al llegar a `main`,
+   con el veredicto, y el PR quedaría bloqueado.
+
+   Lo que el PR no puede es apartar la medición: el INVENTARIO del patrón (que
+   con `--config-from` sale de la base) manda sobre la lista de exenciones del
+   `host-contract`. Un ruleset que el inventario declara retirado no se exime
+   por declararlo en el contrato del host: la sustitución del patrón tiene que
+   verse en el host, y el gate lo nombra mientras siga vivo.
+
+   Con la base como suelo, el PR puede AÑADIR y no puede QUITAR (#1339). El
+   fragmento mide el gate UNA vez: antes llevaba dos invocaciones
+   (`--config-from base` y `--seal-baseline base`) y su combinación ponía en
+   rojo un PR legítimo, porque la que gobierna con el contrato de la base no
+   puede conocer el artefacto de gobierno que el PR acaba de crear (E9).
+   Medir dos veces con dos reglas no es medir más: es medir con dos
+   configuraciones, y el veredicto es el peor de los dos.
+
+   - **AÑADIR**: lo que el PR declara de más se mide con la unión de la base y
+     la cabeza. El inventario de la fase 0 y las rutas gobernadas declaradas se
+     unen, y los `pattern_paths` de la fase 3 son los que declara el PR: el
+     artefacto de gobierno que el PR acaba de crear, con su entrada de
+     inventario y su sello, es un PR legítimo y sale en verde (E9). Retirar un
+     workflow también se permite: si el fichero ya no existe, no hay nada que
+     sellar.
+   - **QUITAR**: la base manda en el conflicto. La entrada de inventario que
+     declara la base sigue siendo la que mide (un PR no puede reapuntarla
+     para que un residuo deje de nombrarse) y lo que la base sellaba no se
+     reduce en un PR mientras el fichero siga en el árbol (E8b): el PR que
+     deja de declararlo recibe un hallazgo, y el que lo retira de verdad
+     (borrando el fichero) sale en verde.
+
+   `--seal-baseline <dir>` sigue siendo la opción para el consumer que quiere
+   que gobierne el contrato de SU CABEZA, con el de la base como suelo por
+   fases. Es una alternativa a `--config-from`, no un añadido: el canon mide
+   con `--config-from` y no con las dos.
+
+   La BASE DE SELLADO no se reduce en un PR (#1317). Con `--seal-baseline <dir>`
+   la fase 3 mide el conjunto que hay que sellar como la UNIÓN de los
+   `pattern_paths` de la base y los de la cabeza: lo que la base sellaba no
+   puede desaparecer de un PR mientras el fichero siga en el árbol, y lo nuevo
+   de la cabeza también se sella. Retirar un workflow sí se permite: si el
+   fichero ya no existe, no hay nada que sellar y la base deja de exigirlo. Sin
+   la opción el gate se mide como siempre, y una base sin contrato legible
+   falla cerrado (exit 2).
+
+   La misma opción mide las fases 0 y 2 contra la base (#1319), con el
+   operador de IDENTIDAD: la instantánea de etiquetas del host
+   (`host_labels`, fase 0) y el allowlist y el árbol que escanea el gate de
+   aislamiento (`env_isolation.allowlist` y `env_isolation.root`, fase 2)
+   tienen que ser los que mide la base. El motivo es el mismo que en la fase
+   3: el PR no puede apartar el gate cambiando lo que el gate lee — con un
+   allowlist propio o con un árbol más corto, una fuga deja de medirse y la
+   fase sale en verde. Si la ruta de la base ya no existe en la cabeza, solo se
+   admite un MOVIMIENTO PURO: la ruta nueva tiene el mismo contenido que la base,
+   byte a byte (en un directorio, cada fichero de la base con el mismo contenido;
+   la cabeza puede añadir ficheros, que solo añaden medición). Un movimiento
+   con edición en el mismo PR da hallazgo: es el hueco que cerraba la excepción
+   de retirada en la primera versión. Un operador por fase, la misma opción:
+
+   | Fase | Declaración | Operador |
+   |---|---|---|
+   | 3 | `pattern_paths` | unión de conjuntos |
+   | 2 | `env_isolation.allowlist`, `env_isolation.root` | identidad; contenido del allowlist |
+   | 0 | `host_labels` | identidad; contenido |
+   | 1 | `evidence.path` | identidad |
+   | 3 | `evidence.path` | identidad (la evidencia se declara por fase) |
+   | 4 | rutas `@` de `gates[].args` | identidad (el conjunto de gates lo fija el canon) |
+   | 5 | `operating_doc.doc`, `operating_doc.linked_from` | identidad |
+   | 6 | `prs` (número, sha y veredicto de cada entrada) | contención (la cadena crece) |
+
+   Con la MISMA ruta, el contenido tampoco puede medir menos que el de la base
+   (#1341): la identidad de la ruta no dice nada de lo que hay dentro, y un PR
+   que reescribe el allowlist en su sitio se llevaría la medición sin que nada
+   lo detectara. El allowlist no puede **autorizar de más** —una variable de
+   entorno, una extensión excluida o un fichero de datos nuevo es una
+   autorización que la base no daba— y la instantánea de etiquetas no puede
+   **dejar de cubrir** las que cubría: una etiqueta que desaparece apaga la
+   obligación de inventariarla. Medir más sí se admite: quitar una
+   autorización o añadir una etiqueta endurece la medición. La ampliación
+   legítima se declara como exención con identidad en el propio allowlist
+   (`exemptions`), que nombra la superficie, el elemento y quién la autoriza:
+   sin `actor` o `issue` la exención no exime de nada.
+
+   El contenido del árbol que escanea la fase 2 (`env_isolation.root`) NO se
+   compara con el de la base: ese árbol es el código que el PR cambia, y
+   compararlo pondría en rojo todo PR legítimo. Lo que sí vigila la identidad
+   es que la ruta sea la misma y que un movimiento sea puro.
+
+   En la fase 6 la base solo obliga a conservar sus entradas tal como están:
+   la cabeza puede añadir las suyas. Cambiar el sha o el veredicto de una
+   entrada de la base es apartar una aceptación, y el gate lo rechaza.
+
+   La evidencia es una declaración POR FASE (#1348): la fase 1 mide la
+   evidencia de la propagación y la fase 3 la del reemplazo de gobernanza, y
+   son documentos distintos. Cada fase se compara con la de SU fase en la
+   base. Con una sola ruta para las dos, la fase 3 se comparaba contra la
+   declaración de la fase 1 y el gate daba un hallazgo falso: con base y
+   cabeza idénticas salía en rojo, y el rojo no dependía del PR.
+
+   La fase 4 mide el conjunto de rutas que los gates declaran medir (el
+   consumer elige las entradas de cada gate, no el subconjunto), así que su
+   operador es de conjunto y no de ruta. La excepción de retirada es la misma
+   que en las demás fases de identidad (#1344): si una ruta que mide la base
+   ya no está en el árbol medido, solo se admite un movimiento puro — la
+   cabeza mide una ruta nueva con el mismo contenido, byte a byte. Un
+   movimiento con edición en el mismo PR da hallazgo, y retirar la ruta sin
+   medir otra con su contenido también.
+
+   El sello entra del PR como **dato**: el job hace checkout de un solo fichero
+   (`.team-skills.yaml`) y lo copia al workspace, porque la acción lo lee de ahí.
+   Del PR no entra nada más, y nada de lo que entra se ejecuta. Es lo que
+   mantiene verdes las PRs de propagación, que cambian el sello y re-sellan el
+   manifiesto. El residuo de esta forma es que un PR puede apuntar el sello a un
+   commit más antiguo del catálogo: degrada el gate, no roba el token.
+
+   Cuando el sello no coincide, el gate nombra el hash esperado, el hash
+   encontrado y el comando `ci-pattern manifest seal <repo>` (#1172). El job
+   publica la copia re-sellada como artefacto `governance-manifest-resealed`:
+   descargarla y commitearla es de quien abre el PR; el job no empuja nada.
+
+   Tres cosas que el gate no perdona:
+
+   - El job va en el `needs:` del agregador `required` **y** en `required_jobs`
+     de `.github/required-jobs-policy.json`. En un repositorio privado con plan
+     Free es la única vía de enforcement: `host_capabilities` deja ahí
+     `branch_protection`, `rulesets` y `required_checks` en `unavailable` y el
+     único check exigido es el agregador del propio CI
+     (`required_checks: [{"name": "required", "class": "runner-enforced"}]`).
+     Sin esa entrada el job corre y nadie lo exige.
+   - La CLI se invoca como **comando de primer nivel** del paso, nunca a través
+     de otro gate. `verify` ejecutaba `adoption check` en proceso y el ciclo
+     superó 1.300 procesos de python y tumbó el VPS por OOM el 2026-10-05
+     (HR-46). La marca `CI_PATTERN_NESTED=1` hace fallar el anidamiento con
+     exit 2, pero es una red, no un permiso para encadenar.
+   - Sin declaración `governance_seals` la fase 3 avisa a `stderr` y sale 0: la
+     adopción previa no se rompe. En cuanto la declara, el rojo aparece en el PR
+     que declara, que es justo lo que se busca.
+
+**Dónde se mide cada fase.** La tabla nombra el destino de la 0 a la 6 y por
+qué; las que dependen de credenciales del host o de un merge ya ocurrido no son
+gates de PR por construcción, y no se fuerzan:
+
+| Fase | Qué mide | Dónde se mide | Por qué |
+| --- | --- | --- | --- |
+| 0 | Inventario exhaustivo y etiquetas del host | Fuera del PR (`operating-doc-drift`, host-readback) | Lee el host, no el árbol: necesita credencial y, en plan Free, el 403 que #330 solo acepta si el contrato declara el área `unavailable` |
+| 1 | Evidencia de propagación | Fuera del PR por ahora | Solo existencia de ficheros; medible en un PR, pero cablearla es trabajo de un PR propio, no de la adopción de la 3 |
+| 2 | Aislamiento | Job propio `env-isolation` (HR-28) | Ya cableado en los consumers que lo declararon; el job invoca el asset, no la fase |
+| 3 | Sellos del manifiesto y cableado de `P23_required_jobs` | **Job de PR `governance-seals` (HR-72)** | Lee el árbol y el contrato; es la única cuya rojo puede invertir un PR antes del merge |
+| 4 | Los cinco gates del patrón en verde, host-readback, presupuesto y cableado HR-74 | **`docs-gates` en el PR** (`--only-phase 4 pr-head`, #1359) | El cableado del árbol del PR solo lo ve un gate de PR; si nadie la lanza, la deriva pasa (#1396) |
+| 5 | Deriva del documento operativo | Job programado o `docs-gates` en el PR | Medirlo en cada PR «gastaría minutos sin valor de revisión» (#858) |
+| 6 | Cadena de aceptación | Fuera del PR | Necesita el PR fusionado: número, SHA de 40 hex y `conclusion: success` |
+
+En el PR cada job mide solo su fase. El `docs-gates` invoca, en dos pasos,
+`ci-pattern adoption check --only-phase 4 pr-head` y
+`ci-pattern adoption check --only-phase 5 pr-head`: con `--phase 5` repetía las
+fases 2 y 3, que ya miden `env-isolation` y `governance-seals`, y una misma causa
+daba dos rojos (#1396). La fase 4 necesita su paso: `governance-seals` llega a la
+3, y sin él ningún job de PR la mide (lo vio cadete#799). El job programado sigue
+con `--phase 5 .`, que mide 0..5 en orden.
 
 Cierre: `ci-pattern adoption check --phase 3 <repo>` = 0.
 
@@ -257,7 +730,16 @@ Cierre: `ci-pattern adoption check --phase 3 <repo>` = 0.
   PR, 400). La única excepción es la etiqueta `size:exception`, aplicada solo
   por el mantenedor cuando partir la PR rompería `main`; el campo
   `size-exception-reason:` del cuerpo está retirado. Encadenar PRs es el camino
-  normal cuando el trabajo no cabe.
+  normal cuando el trabajo no cabe. Si el consumer mide A1 con el gate de
+  contrato de PR (`pr-contract`), su workflow `MUST` generar el mapa de
+  orígenes y pasarlo con `--origins-file` (plantilla:
+  `assets/templates/.github/workflows/pr-contract.yml.tmpl`; generador:
+  `assets/bin/origins_file.py`): sin el mapa el árbol vendorizado cuenta como
+  líneas de autoría y la primera PR de propagación revienta el presupuesto
+  (#1133, #1149). La fase 4 lo mide (#1159, HR-74). Y el CI del consumer `MUST`
+  ejecutarla en cada PR (`adoption check --phase 4 pr-head`), como ya hace con la
+  fase 5: si solo la lanza quien la corre a mano, ningún gate ve la deriva del
+  cableado (#1359).
 - **G4.3 — Preflight ejecutable** en local con un solo comando, paridad con el
   job de lint (HR-4). La política de paridad declara lo que cada comprobación
   necesita del entorno: `requires` en cada exclusión y `local.capabilities` con
@@ -282,6 +764,11 @@ Cierre: `ci-pattern adoption check --phase 3 <repo>` = 0.
   de exenciones bootstrap es simétrica entre los contextos requeridos
   (HR-41) — nunca por heurísticas de listas de runs ni por exención ad-hoc
   de un solo contexto.
+
+- **G4.6 — Imágenes de CI fijadas por digest (opt-in).** Declare
+  `P56_ci_images_gate: on` en `ci-pattern.yaml` y ejecute el gate
+  `assets/ci-images/check_ci_images_pinned.py` en un job de CI; las excepciones
+  van en `P57_ci_image_exceptions` (referencia → motivo). Sin declaración, inerte (HR-78).
 
 Previene C3 en G4.1-G4.3: la receta de trabajo mencionaba una ruta de tests
 inexistente (`tests/test_required_jobs.py`) y el repo equivocado para la wave
@@ -385,6 +872,26 @@ dedujeron sobre la marcha las reglas de cadenas (`Closes #N` en prosa cerró
   mide existencia y secciones. La plantilla canónica está en
   `assets/templates/docs/CONTRIBUTING.md.tmpl`; copiada byte a byte en
   títulos, el repo la reescribe a su gusto en contenido.
+
+- **G5.7 — Las tablas de checks escritas a mano, declaradas (HR-82, #1382).**
+  El consumer que tenga una tabla de jobs escrita a mano (la que explica qué
+  hace cada check del CI) la declara en su contrato de adopción:
+
+  ```json
+  "checks_tables": {
+    "tables": [
+      {"path": "docs/codebase/testing-and-ci.md", "workflow": "ci.yml",
+       "section": "Los jobs de CI"}
+    ]
+  }
+  ```
+
+  La fase 5 mide cada fila contra los workflows reales: un job que ningún
+  workflow define (fabricado), un job que vive en otro workflow (la fila lo
+  atribuye a otro) y un job requerido que no aparece en ninguna tabla
+  declarada son rojos. La clave es **opcional**: sin ella el gate no se mide y
+  el consumer no cambia de veredicto hasta que la declara. La página del gate
+  es `assets/checks-table/README.md`.
 
 Gate de salida de fase: el doc operativo generado, enlazado y en verde en el
 gate de deriva sobre el árbol real del consumer.

@@ -45,11 +45,11 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormAltaDatosSolicitante | src/forms/Form_FormAltaDatosSolicitante.cls | 452 | 63 | 15 | igual | pendiente | — |
 | Form_FormCambioTipo | src/forms/Form_FormCambioTipo.cls | 107 | 26 | 4 | igual | pendiente | — |
 | Form_FormConfiguracion | src/forms/Form_FormConfiguracion.cls | 418 | 50 | 11 | igual | analizado | [formularios/Form_FormConfiguracion.md](formularios/Form_FormConfiguracion.md) |
-| Form_FormCorreo | src/forms/Form_FormCorreo.cls | 403 | 36 | 10 | igual | pendiente | — |
-| Form_FormCorreoPruebas | src/forms/Form_FormCorreoPruebas.cls | 259 | 38 | 8 | igual | pendiente | — |
-| Form_FormCorreosGestion | src/forms/Form_FormCorreosGestion.cls | 541 | 34 | 19 | igual | pendiente | — |
+| Form_FormCorreo | src/forms/Form_FormCorreo.cls | 403 | 36 | 10 | igual | analizado | [formularios/Form_FormCorreo.md](formularios/Form_FormCorreo.md) |
+| Form_FormCorreoPruebas | src/forms/Form_FormCorreoPruebas.cls | 259 | 38 | 8 | igual | analizado | [formularios/Form_FormCorreoPruebas.md](formularios/Form_FormCorreoPruebas.md) |
+| Form_FormCorreosGestion | src/forms/Form_FormCorreosGestion.cls | 541 | 34 | 19 | igual | analizado | [formularios/Form_FormCorreosGestion.md](formularios/Form_FormCorreosGestion.md) |
 | Form_FormEntidades | src/forms/Form_FormEntidades.cls | 170 | 17 | 7 | igual | analizado | [formularios/Form_FormEntidades.md](formularios/Form_FormEntidades.md) |
-| Form_FormEnvioCorreo | src/forms/Form_FormEnvioCorreo.cls | 428 | 36 | 10 | igual | pendiente | — |
+| Form_FormEnvioCorreo | src/forms/Form_FormEnvioCorreo.cls | 428 | 36 | 10 | igual | analizado | [formularios/Form_FormEnvioCorreo.md](formularios/Form_FormEnvioCorreo.md) |
 | Form_FormExpedienteDetalle | src/forms/Form_FormExpedienteDetalle.cls | 79 | 32 | 3 | igual | analizado | [formularios/Form_FormExpedienteDetalle.md](formularios/Form_FormExpedienteDetalle.md) |
 | Form_FormExpedientesBusqueda | src/forms/Form_FormExpedientesBusqueda.cls | 352 | 27 | 10 | igual | analizado | [formularios/Form_FormExpedientesBusqueda.md](formularios/Form_FormExpedientesBusqueda.md) |
 | Form_FormMotivoHPS | src/forms/Form_FormMotivoHPS.cls | 124 | 23 | 4 | igual | pendiente | — |
@@ -69,9 +69,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormSolicitudesTraspasoFechas | src/forms/Form_FormSolicitudesTraspasoFechas.cls | 1166 | 56 | 29 | igual | pendiente | — |
 | Form_FormTareasTramitadorPendientes | src/forms/Form_FormTareasTramitadorPendientes.cls | 652 | 29 | 14 | igual | pendiente | — |
 | Form_FormUsuariosHPSBusqueda | src/forms/Form_FormUsuariosHPSBusqueda.cls | 295 | 26 | 9 | igual | analizado | [formularios/Form_FormUsuariosHPSBusqueda.md](formularios/Form_FormUsuariosHPSBusqueda.md) |
-| Form_FormWeb | src/forms/Form_FormWeb.cls | 56 | 16 | 2 | igual | pendiente | — |
-| Form_frmBuscarJustificacion | src/forms/Form_frmBuscarJustificacion.cls | 333 | 29 | 17 | igual | pendiente | — |
-| Form_frmJustificacion | src/forms/Form_frmJustificacion.cls | 139 | 28 | 6 | igual | pendiente | — |
+| Form_FormWeb | src/forms/Form_FormWeb.cls | 56 | 16 | 2 | igual | analizado | [formularios/Form_FormWeb.md](formularios/Form_FormWeb.md) |
+| Form_frmBuscarJustificacion | src/forms/Form_frmBuscarJustificacion.cls | 333 | 29 | 17 | igual | analizado | [formularios/Form_frmBuscarJustificacion.md](formularios/Form_frmBuscarJustificacion.md) |
+| Form_frmJustificacion | src/forms/Form_frmJustificacion.cls | 139 | 28 | 6 | igual | analizado | [formularios/Form_frmJustificacion.md](formularios/Form_frmJustificacion.md) |
 | Form_frmSplash | src/forms/Form_frmSplash.cls | 63 | 15 | 2 | igual | analizado | [formularios/Form_frmSplash.md](formularios/Form_frmSplash.md) |
 
 ### Módulos estándar
@@ -124,7 +124,8 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | UsuarioEntidad | src/classes/UsuarioEntidad.cls | 1099 | — | 3 | igual | pendiente | — |
 | UsuarioHPS | src/classes/UsuarioHPS.cls | 409 | — | 7 | igual | pendiente | — |
 
-Totales: 12 analizados · 0 no aplicables · 62 pendientes.
+Totales: 19 analizados · 0 no aplicables · 55 pendientes.
+
 
 
 
@@ -174,6 +175,62 @@ Comportamientos sospechosos detectados al analizar los formularios. No se corrig
 | H-HPS-S-47 | Filas de la lista concatenadas con `;` incluyendo el DNI: un `;` en un campo desplaza las columnas que se leen por posición. | `Form_FormUsuariosHPSBusqueda.cls:43, 64` | [Form_FormUsuariosHPSBusqueda](formularios/Form_FormUsuariosHPSBusqueda.md) |
 | H-HPS-S-48 | `cmdSalir_Click` y `ListaFiltrados_DblClick` arrancan con `On Error Resume Next`: tragan cualquier fallo sin aviso ni correo. | `Form_FormUsuariosHPSBusqueda.cls:14, 171` | [Form_FormUsuariosHPSBusqueda](formularios/Form_FormUsuariosHPSBusqueda.md) |
 | H-HPS-S-49 | `ComandoAyuda` y `ComandoActualizar` comparten el rótulo de diseño `Comando46`: ninguno tiene texto visible. | `Form_FormUsuariosHPSBusqueda.form.txt:811, 904` | [Form_FormUsuariosHPSBusqueda](formularios/Form_FormUsuariosHPSBusqueda.md) |
+
+### Hallazgos del legado — visor HTML y justificaciones (H-HPS-S-31 a H-HPS-S-41)
+
+| Id | Hallazgo | Evidencia | Ficha |
+|---|---|---|---|
+| H-HPS-S-31 | `Caption` de diseño «EXPEDIENTES Versión 2024-001 Administrador», de otra aplicación, y ningún handler lo sobrescribe. | `Form_FormWeb.form.txt:35` | [Form_FormWeb](formularios/Form_FormWeb.md) |
+| H-HPS-S-32 | Con el centinela interno `Err.Number = 1000`, `m_Error` queda vacío y se muestra igualmente un `MsgBox` crítico sin texto. | `Form_FormWeb.cls:38-44` | [Form_FormWeb](formularios/Form_FormWeb.md) |
+| H-HPS-S-33 | Si el HTML a proyectar no existe, el visor se cierra sin comunicar nada; el llamador, que ya pagó la generación, no recibe señal. | `Form_FormWeb.cls:22-26` | [Form_FormWeb](formularios/Form_FormWeb.md) |
+| H-HPS-S-34 | `JustificacionRepositorio.Guardar` sólo sabe hacer `INSERT`: editar una justificación reenvía el alta con la clave primaria ya cargada. | `JustificacionRepositorio.bas:35-51` | [Form_frmJustificacion](formularios/Form_frmJustificacion.md) |
+| H-HPS-S-35 | `GuardarJustificacion` es un `Sub` que ignora el `Boolean` y el `p_Error` del repositorio: un guardado fallido se comunica como exitoso. | `JustificacionServicio.cls:53` | [Form_frmJustificacion](formularios/Form_frmJustificacion.md) |
+| H-HPS-S-36 | El id del alta se reserva con `Max(id)+1` y se recupera con una segunda consulta de `Max` tras el `INSERT`: entre ambas, el id anunciado puede no ser el creado y dos altas simultáneas colisionan. | `JustificacionRepositorio.bas:36, 86-104` | [Form_frmJustificacion](formularios/Form_frmJustificacion.md) |
+| H-HPS-S-37 | `Form_Load` no tiene manejador de error: un `OpenArgs` no numérico o un id inexistente producen un error no controlado en vez de un aviso. | `Form_frmJustificacion.cls:17-20, 37-44` | [Form_frmJustificacion](formularios/Form_frmJustificacion.md) |
+| H-HPS-S-38 | `IsNull(Me.lstResultados)` comprueba el control y no la selección: sin fila elegida, «Eliminar» pide confirmación y sólo falla después con id `0`. | `Form_frmBuscarJustificacion.cls:156, 172, 238` | [Form_frmBuscarJustificacion](formularios/Form_frmBuscarJustificacion.md) |
+| H-HPS-S-39 | La lista se arma con los cinco campos unidos por `;`: un `;` en título o descripción desplaza columnas y rompe el `CBool` que decide si se puede elegir. | `Form_frmBuscarJustificacion.cls:102, 129-133, 299` | [Form_frmBuscarJustificacion](formularios/Form_frmBuscarJustificacion.md) |
+| H-HPS-S-40 | Búsqueda y filtro se resuelven recorriendo en memoria la caché completa de justificaciones, que se carga sin `WHERE`: no hay `LIKE` en la base ni paginación. | `Form_frmBuscarJustificacion.cls:98, 106-136` | [Form_frmBuscarJustificacion](formularios/Form_frmBuscarJustificacion.md) |
+| H-HPS-S-41 | `txtBuscar_AfterUpdate` actúa sobre el resultado único sin pedir confirmación: una tecla abre el editor o elige la justificación y cierra el buscador. | `Form_frmBuscarJustificacion.cls:51-62` | [Form_frmBuscarJustificacion](formularios/Form_frmBuscarJustificacion.md) |
+
+> Nota: esta tanda arranca en `H-HPS-S-31` porque las fichas-1 y fichas-2 de esta cadena ya publicaron `1..13` y la cadena de `apap3` continúa con su propia numeración. Rango reservado para esta tanda: `H-HPS-S-31` a `H-HPS-S-41`.
+
+### Hallazgos del legado — correos-a (H-HPS-S-31 a S-36 + S-50 a S-58)
+
+| Id | Hallazgo | Evidencia | Ficha |
+|---|---|---|---|
+| H-HPS-S-31 | `ComandoReenviar_Click` clona `cadenaRecursos` y `URLAdjunto` antiguos: si la plantilla o el adjunto cambiaron, el clon usa los valores obsoletos. | `Form_FormCorreo.cls:151-174` | [Form_FormCorreo](formularios/Form_FormCorreo.md) |
+| H-HPS-S-32 | Los `Comando*_Click` repiten el patrón de error copy-paste: literal «Al ComandoAyuda_Click se ha devuelto el error» reutilizado en todos los handlers. | `Form_FormCorreo.cls:42, 132-137` | [Form_FormCorreo](formularios/Form_FormCorreo.md) |
+| H-HPS-S-33 | `ComandoReenviar_Click` no recalcula `cadenaRecursos` desde la solicitud origen: la cadena queda con los `||parametros||` del correo original aunque la solicitud haya cambiado. | `Form_FormCorreo.cls:165` | [Form_FormCorreo](formularios/Form_FormCorreo.md) |
+| H-HPS-S-34 | `HaHabidoCambios` solo compara 5 campos y devuelve `True` con la primera diferencia. | `Form_FormCorreo.cls:187-235` | [Form_FormCorreo](formularios/Form_FormCorreo.md) |
+| H-HPS-S-35 | `BloquearControles True` con `On Error Resume Next` no bloquea controles no presentes. | `Form_FormCorreo.cls:305-318` | [Form_FormCorreo](formularios/Form_FormCorreo.md) |
+| H-HPS-S-36 | `Me.OpenArgs = "MODO_GESTION"` se valida como string literal: cualquier llamante puede desactivar la edición. | `Form_FormCorreo.cls:60-65, 278-285` | [Form_FormCorreo](formularios/Form_FormCorreo.md) |
+| H-HPS-S-50 | `ComandoEnviar_Click` refresca el padre según `TIPO`: para `Renovación` solo cubre `AltaRenovacionFechas`, no las demás pantallas de renovación abiertas. | `Form_FormEnvioCorreo.cls:113-119` | [Form_FormEnvioCorreo](formularios/Form_FormEnvioCorreo.md) |
+| H-HPS-S-51 | `Registrar` aborta con «Acción no codificada» ante `m_TipoEnvioCorreo` desconocido: el usuario pierde el trabajo. | `Form_FormEnvioCorreo.cls:275-277` | [Form_FormEnvioCorreo](formularios/Form_FormEnvioCorreo.md) |
+| H-HPS-S-52 | `HabilitarEdicionFecha` desenlaza el `ControlSource` cuando parece calculado; con `Form_Current` re-ejecutándose, el desenlace ocurre en cada cambio. | `Form_FormEnvioCorreo.cls:395-441` | [Form_FormEnvioCorreo](formularios/Form_FormEnvioCorreo.md) |
+| H-HPS-S-53 | `ComandoEnviar_Click` usa `On Error Resume Next` solo al refrescar el padre: errores quedan silenciados. | `Form_FormEnvioCorreo.cls:108-119` | [Form_FormEnvioCorreo](formularios/Form_FormEnvioCorreo.md) |
+| H-HPS-S-54 | `Registrar` no actualiza `m_ObjSolicitudActiva.SolicitudFechas` antes de volver: la versión en memoria queda obsoleta. | `Form_FormEnvioCorreo.cls:244-292` | [Form_FormEnvioCorreo](formularios/Form_FormEnvioCorreo.md) |
+| H-HPS-S-55 | `Me.Caption = m_TituloFormulario` y el caption calculado en `EstablecerDatos` compiten en `Form_Open`. | `Form_FormEnvioCorreo.cls:174-181, 375` | [Form_FormEnvioCorreo](formularios/Form_FormEnvioCorreo.md) |
+| H-HPS-S-56 | `chkActualizarFecha.Enabled = False` cuando el hito no existe; `ComandoGrabarFecha` no tiene caption explícito de su rol. | `Form_FormEnvioCorreo.cls:220-222, 310-352` | [Form_FormEnvioCorreo](formularios/Form_FormEnvioCorreo.md) |
+| H-HPS-S-57 | `ComandoGrabarFecha_Click` no refresca el padre tras grabar. | `Form_FormEnvioCorreo.cls:310-340` | [Form_FormEnvioCorreo](formularios/Form_FormEnvioCorreo.md) |
+| H-HPS-S-58 | `ValidarFechaEdicion` rechaza fechas futuras pero acepta cualquier fecha anterior. | `Form_FormEnvioCorreo.cls:407-422` | [Form_FormEnvioCorreo](formularios/Form_FormEnvioCorreo.md) |
+
+### Hallazgos del legado — correos-b (H-HPS-S-37 a S-49)
+
+| Id | Hallazgo | Evidencia | Ficha |
+|---|---|---|---|
+| H-HPS-S-37 | La SQL del combo concatena sin protección: un solicitante sin `Apellido1` muestra el ID pegado al nombre con espacio doble. | `Form_FormCorreoPruebas.cls:41-42` | [Form_FormCorreoPruebas](formularios/Form_FormCorreoPruebas.md) |
+| H-HPS-S-38 | `m_SolicitudOrigen` no se inicializa en `Form_Load`; los handlers abortan con `MsgBox` distintos. | `Form_FormCorreoPruebas.cls:5, 161-200` | [Form_FormCorreoPruebas](formularios/Form_FormCorreoPruebas.md) |
+| H-HPS-S-39 | `cmdEnviarPrueba_Click` no valida que `p_FechaOrden` no esté en el pasado. | `Form_FormCorreoPruebas.cls:228-232` | [Form_FormCorreoPruebas](formularios/Form_FormCorreoPruebas.md) |
+| H-HPS-S-40 | `Form_Load` no usa `On Error GoTo errores:`. | `Form_FormCorreoPruebas.cls:23-79` | [Form_FormCorreoPruebas](formularios/Form_FormCorreoPruebas.md) |
+| H-HPS-S-41 | El `Caption` del formulario es literal, sin el sufijo de versión de `m_TituloFormulario`. | `Form_FormCorreoPruebas.cls:25` | [Form_FormCorreoPruebas](formularios/Form_FormCorreoPruebas.md) |
+| H-HPS-S-42 | `CONST_IDSOLICITUD_PRUEBA` se referencia pero no se define en este `.cls`. | `Form_FormCorreoPruebas.cls:241` | [Form_FormCorreoPruebas](formularios/Form_FormCorreoPruebas.md) |
+| H-HPS-S-43 | `ComandoLimpiarSolicitud` y `ComandoLimpiarEstado` solo actúan si el valor es distinto del destino. | `Form_FormCorreosGestion.cls:67-83` | [Form_FormCorreosGestion](formularios/Form_FormCorreosGestion.md) |
+| H-HPS-S-44 | `ComandoEliminar_Click` permite eliminar correos «Programados» si la columna `FechaEnvio` aún está vacía. | `Form_FormCorreosGestion.cls:325-350` | [Form_FormCorreosGestion](formularios/Form_FormCorreosGestion.md) |
+| H-HPS-S-45 | `ComandoInformeControl_Click` registra log con `m_ObjUsuarioConectado.UsuarioRed` literal. | `Form_FormCorreosGestion.cls:42` | [Form_FormCorreosGestion](formularios/Form_FormCorreosGestion.md) |
+| H-HPS-S-46 | `m_Form_Alta` y `m_Form_Editado` invocan `Filtrar` sin argumento. | `Form_FormCorreosGestion.cls:397-403` | [Form_FormCorreosGestion](formularios/Form_FormCorreosGestion.md) |
+| H-HPS-S-47 | El formulario tiene `Estado_BeforeUpdate` y `Estado_AfterUpdate` que llaman ambos a `Filtrar`. | `Form_FormCorreosGestion.cls:75-78, 372-375` | [Form_FormCorreosGestion](formularios/Form_FormCorreosGestion.md) |
+| H-HPS-S-48 | `ComandoInformeControl_Click` no comprueba permisos. | `Form_FormCorreosGestion.cls:23-58` | [Form_FormCorreosGestion](formularios/Form_FormCorreosGestion.md) |
+| H-HPS-S-49 | `ComandoLimpiarSolicitud` y `ComandoLimpiarEstado` no se deshabilitan cuando ya están en su valor por defecto. | `Form_FormCorreosGestion.cls:80-83` | [Form_FormCorreosGestion](formularios/Form_FormCorreosGestion.md) |
 
 ## Discrepancias abiertas
 

@@ -15,7 +15,15 @@
     "outputs": {},
     "result": "success"
   },
+  "pip-audit": {
+    "outputs": {},
+    "result": "success"
+  },
   "codeql": {
+    "outputs": {},
+    "result": "success"
+  },
+  "e2e-smoke": {
     "outputs": {},
     "result": "success"
   },
@@ -32,6 +40,22 @@
     "result": "success"
   },
   "docs-architecture": {
+    "outputs": {},
+    "result": "success"
+  },
+  "governance-seals": {
+    "outputs": {},
+    "result": "success"
+  },
+  "docs-commands": {
+    "outputs": {},
+    "result": "success"
+  },
+  "pip-audit-alert": {
+    "outputs": {},
+    "result": "skipped"
+  },
+  "ci-images": {
     "outputs": {},
     "result": "success"
   }

@@ -14,12 +14,18 @@ import json
 import os
 import re
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 # Fuente única del presupuesto (#931): la regla A1 la comparte con pr-size.
+# A1 es el único check de tamaño en CI (#1396): pr-size es medida local.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "budget"))
-from vendored_budget import budget_lines, parse_origins  # noqa: E402
+from vendored_budget import (  # noqa: E402
+    VENDORED_ROOTS,
+    budget_lines,
+    parse_origins,
+    vendored_lines,
+)
 
 MIN_MERGE_PARENTS = 2
 
@@ -150,28 +156,77 @@ def fetch_pr_live(data, pr):
     return labels, pull.get("body") or ""
 
 
+def _same_file(a, b):
+    """`a` y `b` nombran el mismo fichero (rutas resueltas)."""
+    try:
+        return Path(a).resolve() == Path(b).resolve()
+    except (OSError, RuntimeError):
+        return False
+
+
+def use_live_api(event_file, pr, env):
+    """#938/#996: ¿juzgar etiquetas y cuerpo vivos por API en vez de los del payload?
+
+    El payload de un `pull_request` queda congelado al abrir el PR: un PR que se etiqueta
+    después falla HR-6 aunque la etiqueta ya esté puesta cuando el job corre. Por eso:
+
+    - `PR_CONTRACT_USE_LIVE_API=0`: opt-out explícito, siempre el payload.
+    - `PR_CONTRACT_USE_LIVE_API=1`: siempre por API (sin token es fallo cerrado).
+    - Sin la variable: por API si se juzga el evento real de Actions (`--event-file` es
+      `GITHUB_EVENT_PATH`), el payload es de un `pull_request` y hay token. Los scripts
+      locales, el propagador y la suite de parity pasan su propio fichero de evento y no
+      cambian. Con la API caída o rechazada el gate falla cerrado (exit 2).
+    """
+    flag = env.get("PR_CONTRACT_USE_LIVE_API")
+    if flag == "0":
+        return False
+    if flag == "1":
+        return True
+    actions_event = env.get("GITHUB_EVENT_PATH")
+    has_token = bool(env.get("GITHUB_TOKEN") or env.get("GH_TOKEN"))
+    return bool(actions_event and has_token and pr and _same_file(event_file, actions_event))
+
+
 def read_data_file(path):
     """Texto de un fichero de datos del rango; ausente o ilegible: FileNotFoundError."""
     return Path(path).read_text(encoding="utf-8")
 
 
-CHECK_NAMES = ("labels", "closes", "chain_context", "issue_links", "closure_tests",
+CHECK_NAMES = ("closes", "chain_context", "issue_links", "closure_tests",
                "docs_evidence", "budget", "commits", "ai_disclosure")
+
+# #1113: comprobaciones que #1093 (R1/R2) retiraron del gate. `labels` estuvo
+# en CHECK_NAMES hasta 938754363; `required_labels` era su campo de politica
+# (nunca una clave de `checks`, pero una politica puede anidarla ahi). Una
+# politica de consumer que las siga declarando (APAP_WEB, cadete) no puede
+# romper el gate: se ignoran como no-op y avisan de una linea. Una clave que
+# NUNCA existio sigue siendo un error de configuracion (exit 2): la deteccion
+# de erratas no se pierde.
+RETIRED_CHECK_NAMES = ("labels", "required_labels")
 
 
 def active_checks(policy):
     """#735: comprobaciones activas. Sin `checks` lo están todas; con `checks`,
     una ausente está activa y `false` la apaga. Valor inválido o ninguna
-    activa: ChecksConfigError (HR-3, un gate sin nada que comprobar no da OK)."""
+    activa: ChecksConfigError (HR-3, un gate sin nada que comprobar no da OK).
+
+    #1113: una clave retirada se ignora como no-op y avisa en stderr; una clave
+    que nunca existió sigue errorizando (exit 2)."""
     config = policy.get("checks")
     if config is None:
         return set(CHECK_NAMES)
     if not isinstance(config, dict):
         raise ChecksNotObjectError
     unknown = sorted(set(config) - set(CHECK_NAMES))
-    if unknown:
-        raise UnknownChecksError(unknown, CHECK_NAMES)
-    bad = sorted(name for name, value in config.items() if not isinstance(value, bool))
+    retired = [name for name in unknown if name in RETIRED_CHECK_NAMES]
+    if retired:
+        print("PR-CONTRACT: comprobación retirada, se ignora; "
+              f"quítala de la política: {', '.join(retired)}", file=sys.stderr)
+    typos = [name for name in unknown if name not in RETIRED_CHECK_NAMES]
+    if typos:
+        raise UnknownChecksError(typos, CHECK_NAMES)
+    bad = sorted(name for name, value in config.items()
+                 if name not in RETIRED_CHECK_NAMES and not isinstance(value, bool))
     if bad:
         raise NonBooleanChecksError(bad)
     active = {name for name in CHECK_NAMES if config.get(name, True)}
@@ -186,12 +241,14 @@ def _anchor_exists(text, anchor):
     return anchor.lower() in slugs
 
 
-def check_docs_evidence(pr, repo, files, policy, findings):
+def check_docs_evidence(pr, repo, files, policy, advisories):
     """#710 (HR-64): un PR que toca codigo cubierto por una pagina del mapa toca
     la pagina o lleva la seccion «Documentacion» no vacia (`files`: ficheros del
     rango, uno por elemento); las checklists por
     tipo de cambio existen y el cuerpo enlaza la de su tipo. Activacion por
-    DECLARACION `docs_evidence` en la politica: sin ella avisa y no falla."""
+    DECLARACION `docs_evidence` en la politica: sin ella avisa y no falla.
+    #1093 R1 (decision del dueno, 2026-10-23): HR-64 es AVISO, no bloqueo: sus
+    hallazgos van a `advisories` y no cambian el exit code."""
     config = policy.get("docs_evidence")
     if config is None:
         print("HR-64: docs_evidence no declarado en la politica; la evidencia de "
@@ -206,7 +263,7 @@ def check_docs_evidence(pr, repo, files, policy, findings):
     for entry in pages:
         touched = [f for f in files if any(fnmatch.fnmatch(f, g) for g in entry["covers"])]
         if touched and entry["page"] not in files and not reason:
-            findings.append(
+            advisories.append(
                 f"HR-64: el PR toca {', '.join(touched)}, cubierto por {entry['page']}, y ni "
                 "cambia la pagina ni lleva la seccion «Documentación» con el motivo.")
     body = pr.get("body") or ""
@@ -215,27 +272,38 @@ def check_docs_evidence(pr, repo, files, policy, findings):
         path, _, anchor = link.partition("#")
         target = Path(repo) / path
         if not target.is_file() or (anchor and not _anchor_exists(target.read_text(encoding="utf-8"), anchor)):
-            findings.append(f"HR-64: la checklist de {label} apunta a {link} y no existe.")
+            advisories.append(f"HR-64: la checklist de {label} apunta a {link} y no existe.")
         elif label in types and link not in body:
-            findings.append(f"HR-64: el cuerpo del PR ({label}) no enlaza su checklist {link}.")
+            advisories.append(f"HR-64: el cuerpo del PR ({label}) no enlaza su checklist {link}.")
 
 
-def check_labels(pr, policy, findings):
-    required = policy.get("required_labels", [])
-    labels = {item["name"] for item in pr.get("labels", [])}
-    if not required:
-        return
-    if not labels:
-        findings.append("HR-6: el PR no tiene etiquetas; se requiere al menos una de " + str(required) + ".")
-        return
-    matching = labels & set(required)
-    if not matching:
-        findings.append(
-            f"HR-6: falta etiqueta obligatoria; se requiere una de {required}, "
-            f"el PR tiene {sorted(labels)}."
-        )
+# HR-7 (#1059): el gate decia «tiene o no tiene una palabra de cierre», no
+# «cuáles». Un PR punta que declara `Closes #1056` y que ademas nombra
+# `Closes #1035` al citar un ejemplo pasaba igual, y GitHub cerraba LAS DOS al
+# mergearse: pasó con la PR 1058 de este repo, que habria cerrado la issue 1035
+# —la que tenia trabajo pendiente— al mergearse. Cerrar varias issues en un PR
+# punta es legitimo, asi que el veredicto NO cambia: lo que se agrega es la lista
+# por `stderr`, para que la segunda issue se vea antes del merge. Con
+# `chain:partial` el hallazgo de HR-7 no se toca: ahi la palabra de cierre ya es
+# el aviso. La lista sale solo si hay MAS DE UNA issue, que es el caso
+# sorprendente; un PR normal no paga ruido. Las nueve palabras clave son las de
+# GitHub y las mismas que lee el mensaje de los commits (#1056).
+# SAME. La clave `closes` es la de los avisos (HR-7); esta lista es solo
+# visibilidad por `stderr`, asi que no toca el codigo de salida y ningun
+# consumer se pone rojo por ella.
+GITHUB_CLOSING_RX = re.compile(
+    r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?\s+#(\d+)", re.IGNORECASE)
 
-def check_closes(pr, base, default_branch, policy, findings):
+
+def check_closes(pr, base, default_branch, policy, advisories):
+    """HR-7: la palabra de cierre del cuerpo.
+
+    #1172 (decision del dueno, 2026-10-24; auditoria #1093): HR-7 es AVISO, no
+    bloqueo — sus hallazgos van a `advisories` y no cambian el exit code. La
+    regla sigue viva y visible: la punta de cadena lleva `Closes #<issue>`, los
+    intermedios `Refs #<issue>`, y el enlace a una issue del repo lo sigue
+    exigiendo `issue-spec` (regla del dueno).
+    """
     body = pr.get("body") or ""
     pattern = policy.get("closes_pattern", "Closes|Fixes|Resolves")
     requires = policy.get("chain_tip_requires_closes", True)
@@ -251,24 +319,35 @@ def check_closes(pr, base, default_branch, policy, findings):
     if is_partial:
         # Cadena apilada: Refs obligatorio, Closes prohibido.
         if not has_refs:
-            findings.append(
+            advisories.append(
                 "HR-7: el PR con etiqueta chain:partial debe llevar 'Refs #<issue>' "
                 "en el cuerpo (la issue la cierra el PR punta de cadena)."
             )
         if has_closes:
-            findings.append(
+            advisories.append(
                 "HR-7: el PR con etiqueta chain:partial no debe llevar "
                 "'Closes #<issue>'; solo el PR punta de cadena la cierra."
             )
     elif is_tip and requires and not has_closes:
-        findings.append(
+        advisories.append(
             "HR-7: el PR punta de cadena debe llevar 'Closes #<issue>' en el cuerpo."
         )
     elif not is_tip and has_closes:
-        findings.append(
+        advisories.append(
             "HR-7: solo el PR punta de cadena lleva 'Closes #<issue>'; "
             "los PR encadenados intermedios no deben cerrar la issue."
         )
+    # HR-7 (#1059): la lista, sin cambiar el veredicto. Con `chain:partial` ya
+    # hay aviso por la palabra de cierre, asi que la nota solo aporta en el
+    # punta, y solo cuando el cuerpo apuna a mas de una issue.
+    targets = sorted(set(GITHUB_CLOSING_RX.findall(body)), key=int)
+    if len(targets) > 1 and not is_partial:
+        print(
+            f"HR-7 AVISO: el cuerpo cierra {len(targets)} issues "
+            f"({', '.join('#' + num for num in targets)}); GitHub las cerrara todas "
+            f"al mergearse. Si solo debe cerrar una, quita de las demas la palabra "
+            f"de cierre.",
+            file=sys.stderr)
 
 def size_exception_applied(pr, policy):
     """A1: la excepción de presupuesto la aplica solo el mantenedor cuando
@@ -284,22 +363,55 @@ def size_exception_applied(pr, policy):
     return label_name in labels
 
 
-def check_budget(pr, diff_lines, policy, findings):
+@dataclass(frozen=True)
+class BudgetFigure:
+    """La cifra que A1 mide y de qué parte es árbol vendorizado (#1133).
+
+    `lines` son las líneas que cuentan para el presupuesto; `vendored` son las
+    que caen bajo una raíz vendorizada (las que el mapa de origenes excluye) y
+    `origins_supplied` dice si el gate recibió ese mapa. Los tres van juntos
+    porque el hallazgo necesita los dos datos a la vez: sin el mapa, el árbol
+    vendorizado cuenta hacia dentro del presupuesto (#931).
+    """
+    lines: int
+    vendored: int = 0
+    origins_supplied: bool = False
+
+
+def check_budget(pr, figure, policy, findings):
     """A1: el presupuesto es 400 (adiciones + eliminaciones del PR, sin
     exclusiones). Si el diff lo supera, la única vía válida es la
     etiqueta `size:exception` aplicada por el mantenedor; el campo
-    `size-exception-reason:` del cuerpo está retirado."""
+    `size-exception-reason:` del cuerpo está retirado.
+
+    Sin el mapa de orígenes (--origins-file) el árbol vendorizado cuenta
+    hacia dentro del presupuesto (#931). Entonces el hallazgo nombra cuántas de
+    esas líneas son vendorizadas y cómo pasar el mapa: sin ese dato, quien lee
+    el fallo ve «527 > 400» y no sabe que sus 527 líneas son el catálogo que
+    le trajo el canon (#1133).
+    """
     budget = policy.get("review_budget_lines", 400)
     label_name = policy.get("size_exception_label", "size:exception")
-    if diff_lines <= budget:
+    if figure.lines <= budget:
         return
     if not size_exception_applied(pr, policy):
-        findings.append(
-            f"A1: el diff supera el presupuesto ({diff_lines} > {budget}) y "
+        message = (
+            f"A1: el diff supera el presupuesto ({figure.lines} > {budget}) y "
             f"no lleva la etiqueta '{label_name}' aplicada por el mantenedor. "
             "Encadene PRs o pida al mantenedor la etiqueta tras responder las "
             "4 preguntas de '## Excepción de tamaño' en el cuerpo."
         )
+        if figure.vendored and not figure.origins_supplied:
+            roots = ", ".join(VENDORED_ROOTS)
+            message += (
+                f" Ojo: {figure.vendored} de esas líneas son del árbol vendorizado "
+                f"({roots}), que NO cuenta para el presupuesto (#931): "
+                "este gate no recibió el mapa de orígenes (--origins-file) y por "
+                "eso las cuenta todas. Genere el mapa con "
+                "assets/bin/origins_file.py y páselo con --origins-file (plantilla "
+                "canónica: assets/templates/.github/workflows/pr-contract.yml.tmpl)."
+            )
+        findings.append(message)
 
 # #944: los patrones de atribución de IA se aplicaban con `re.search(pat, msg,
 # re.IGNORECASE)`, sin límite de palabra ni ancla, así que una palabra que
@@ -353,15 +465,57 @@ def check_commits(messages, policy, findings):
                 findings.append(f"HR-14: atribución de IA detectada en commit '{subject[:80]}'.")
                 break
 
+# HR-7 (#1056): GitHub cierra una issue por el CUERPO del PR y también por los
+# MENSAJES de commit, y HR-7 solo miraba el cuerpo. Un PR con `chain:partial`
+# cuyo commit dice «(Closes #N)» cerraba su issue al mergearse con la cadena
+# abierta: el PR 1050 cerró la issue 1035 con la fricción (c) pendiente —el
+# timeline la registra cerrada por `commit_id: 27d6817d`, cinco segundos después
+# del merge, y hubo que reabrirla— y el PR 1037 cerró la 1033 a medias. Se lee el
+# MISMO texto que juzga HR-14, que el workflow genera con merge-base desde
+# #1013: ni una llamada nueva a la API ni git dentro del gate. Las nueve palabras
+# clave son las de GitHub, sin distinguir mayúsculas; un «close» sin «#N» no
+# cierra nada y no dispara el hallazgo. La definición vive arriba, en
+# `GITHUB_CLOSING_RX` (#1059): el cuerpo y los commits de un PR se riegan con la
+# misma lista, porque es la misma lista de GitHub.
+
+
+def check_closing_in_commits(messages, pr, policy, advisories):
+    """HR-7 sobre los mensajes de commit: el intermedio no cierra la issue.
+
+    Sin la etiqueta de intermedio no hace nada: en el PR punta `Closes #N` en el
+    commit es exactamente lo que HR-7 pide. El aviso nombra el commit por su
+    subject —el dato del rango es `%P%n%B`, sin SHA— y propone `Refs #N` con el
+    número que el propio commit cita.
+    #1172 (decision del dueno, 2026-10-24; auditoria #1093): es AVISO, no
+    bloqueo: sus hallazgos van a `advisories` y no cambian el exit code.
+    """
+    label = policy.get("chain_partial_label", "chain:partial")
+    if label not in {item["name"] for item in pr.get("labels", [])}:
+        return
+    for block in messages.split("---COMMIT-END---"):
+        # El bloque es `%P` (parents) + `%B` (mensaje); el cierre se busca en el
+        # mensaje entero porque GitHub también lee el cuerpo del commit.
+        message = block.strip().partition("\n")[2]
+        match = GITHUB_CLOSING_RX.search(message)
+        if not match:
+            continue
+        subject = message.split("\n", 1)[0].strip()
+        advisories.append(
+            f"HR-7: el commit «{subject}» del PR con «{label}» lleva «{match.group(0)}»: "
+            f"GitHub cierra la issue con los mensajes de commit, no solo con el cuerpo "
+            f"del PR. Escriba `Refs #{match.group(1)}` en el mensaje del commit; el "
+            f"cierre lo pone el PR punta de cadena (HR-7).")
+
 CLOSES_RX = re.compile(r"\b(?:Closes|Fixes|Resolves)\s+#\d+", re.IGNORECASE)
 # #334 (HR-53): el cierre se demuestra con una LISTA ESTRUCTURADA de entradas
 # `ruta/al/fichero_de_test.ext` o `ruta::nombre_de_caso`. El formato libre
 # dejaba pasar prosa —«test assert» da el token `assert`, presente en
 # cualquier fichero de test— y a la vez producía falsos «no existe» con «test
 # cubre». La ruta debe estar versionada (git ls-files) y el caso, DEFINIDO en
-# ese fichero, no solo aparecer como subcadena.
+# ese fichero, no solo aparecer como subcadena. Un directorio de primer nivel
+# puede empezar por punto (`.agents/...`) porque es una ruta relativa válida.
 CLOSURE_ENTRY_RX = re.compile(
-    r"`([A-Za-z0-9_][A-Za-z0-9_./-]*\.[A-Za-z0-9]+(?:::[A-Za-z_][A-Za-z0-9_]*)?)`")
+    r"`(\.?[A-Za-z0-9_][A-Za-z0-9_./-]*\.[A-Za-z0-9]+(?:::[A-Za-z_][A-Za-z0-9_]*)?)`")
 TEST_FILE_RX = re.compile(
     r"(?:^|/)(?:tests?|__tests__|spec)/|(?:^|/)test_[^/]+$|_test\.[a-z]+$", re.IGNORECASE)
 # Definiciones admitidas del caso, por ecosistema. `\b` y el nombre exacto: la
@@ -520,12 +674,14 @@ def missing_section_finding(body, heading, marker):
             "comportamiento, no el merge.")
 
 
-def check_closure_tests(pr, data, policy, findings):
+def check_closure_tests(pr, data, policy, advisories):
     """#334 (HR-53): un PR que cierra una issue nombra el test que demuestra
     el comportamiento corregido, en formato estructurado y con el test
     existiendo de verdad (`tracked`: rutas de `git ls-files`). Un «debería estar arreglado» no cierra nada.
     #911: si el cierre no tiene test, la sección declara «No aplica» y nombra la
-    evidencia del cierre (una ruta versionada); la etiqueta no exonera nada."""
+    evidencia del cierre (una ruta versionada); la etiqueta no exonera nada.
+    #1093 R1 (decision del dueno, 2026-10-23): HR-53 es AVISO, no bloqueo: sus
+    hallazgos van a `advisories` y no cambian el exit code."""
     body = pr.get("body") or ""
     if not CLOSES_RX.search(body):
         return
@@ -535,24 +691,24 @@ def check_closure_tests(pr, data, policy, findings):
     text = section_body(body, heading)
     marker_text = section_body(text, marker) if text else ""
     if not text:
-        findings.append(missing_section_finding(body, heading, marker))
+        advisories.append(missing_section_finding(body, heading, marker))
         return
     if marker_text:
-        findings.extend(not_applicable_findings(data, heading, marker, marker_text))
+        advisories.extend(not_applicable_findings(data, heading, marker, marker_text))
         return
     if section_body(body, marker):
-        findings.append(
+        advisories.append(
             f"HR-53: la declaración '{marker}' debe ir dentro de la sección "
             f"'{heading}'.")
         return
     entries = closure_entries(text)
     if not entries:
-        findings.append(
+        advisories.append(
             f"HR-53: la sección '{heading}' no tiene ninguna entrada en el "
             "formato `ruta/al/fichero_de_test.ext` o `ruta::nombre_de_caso`: "
             "la prosa no nombra un test.")
         return
-    findings.extend(structured_test_findings(data.repo, data.tracked, entries, heading))
+    advisories.extend(structured_test_findings(data.repo, data.tracked, entries, heading))
 
 
 def structured_test_findings(repo, tracked, entries, heading):
@@ -574,10 +730,11 @@ def structured_test_findings(repo, tracked, entries, heading):
             + "; ".join(problems) + "."]
 
 
-# #333: la sección Chain Context es obligatoria en un PR con `chain:partial` y
-# en la punta de una cadena (base == rama por defecto). Sus campos son DATO y
-# el gate los verifica: base contra baseRefName, posición y presupuesto con
-# forma N/M, y exactamente un 📍 marcando el PR actual.
+# #333: la sección Chain Context describe un PR con `chain:partial` y la punta de
+# una cadena (base == rama por defecto). Sus campos son DATO y el gate los
+# verifica: base contra baseRefName, posición y presupuesto con forma N/M, y
+# exactamente un 📍 marcando el PR actual. #1093 R3: los hallazgos son AVISOS,
+# no bloquean; la sección sigue en la plantilla como ayuda, sin forma obligatoria.
 CHAIN_CONTEXT_HEADING = "Chain Context"
 CHAIN_FIELDS = ("chain", "position", "base", "depends-on", "follow-up",
                 "starts-at", "ends-with", "review-budget")
@@ -597,8 +754,9 @@ def chain_fields(text):
     return {m.group(1): m.group(2).strip() for m in CHAIN_FIELD_RX.finditer(text)}
 
 
-def check_chain_context(pr, base, default_branch, policy, findings):
-    """#333: la cadena se declara como dato, no se reconstruye a mano."""
+def check_chain_context(pr, base, default_branch, policy, advisories):
+    """#333: la cadena se declara como dato, no se reconstruye a mano. #1093 R3:
+    cada desvío es un aviso (`advisories`), no un hallazgo que tumbe el PR."""
     body = pr.get("body") or ""
     labels = {item["name"] for item in pr.get("labels", [])}
     chain_label = policy.get("chain_partial_label", "chain:partial")
@@ -607,32 +765,103 @@ def check_chain_context(pr, base, default_branch, policy, findings):
     heading = policy.get("chain_context_heading", CHAIN_CONTEXT_HEADING)
     text = section_body(body, heading)
     if not text:
-        findings.append(
+        advisories.append(
             f"HR-54: falta la sección '{heading}': un PR con '{chain_label}' y la punta "
-            "de una cadena declaran posición, base, dependencias y presupuesto como "
-            "datos, y marcan el PR actual con un 📍.")
+            "de una cadena suelen declarar posición, base, dependencias y presupuesto, "
+            "y marcar el PR actual con un 📍 (aviso, no bloquea).")
         return
     fields = chain_fields(text)
     missing = [name for name in CHAIN_FIELDS if not fields.get(name)]
     if missing:
-        findings.append(
+        advisories.append(
             f"HR-54: la sección '{heading}' no declara: {', '.join(missing)} "
-            f"(campos obligatorios: {', '.join(CHAIN_FIELDS)}).")
+            f"(campos sugeridos: {', '.join(CHAIN_FIELDS)}).")
     declared_base = fields.get("base", "")
     if declared_base and declared_base != base:
-        findings.append(
+        advisories.append(
             f"HR-54: 'base' declara {declared_base!r} y el PR se abre contra {base!r}: "
-            "la base de la cadena se verifica contra baseRefName.")
+            "conviene alinearlo con baseRefName.")
     for name in ("position", "review-budget"):
         value = fields.get(name, "")
         if value and not PAIR_RX.match(value):
-            findings.append(
-                f"HR-54: '{name}' debe tener la forma N/M (p. ej. 2/4) y declara {value!r}.")
+            advisories.append(
+                f"HR-54: '{name}' debería tener la forma N/M (p. ej. 2/4) y declara {value!r}.")
     markers = text.count(CHAIN_MARKER)
     if markers != 1:
-        findings.append(
+        advisories.append(
             f"HR-54: el diagrama de '{heading}' marca el PR actual con exactamente un "
             f"📍 y tiene {markers}.")
+
+
+# #1190: cadena nueva. La punta declara `- chain: <id>` en su Chain Context y
+# lista en `Closes` cada issue que sus eslabones (mismo id) referencian con `Refs`.
+# Solo avisa (HR-7, #1172): el autor escribe la lista; el gate solo señala lo que falta.
+CHAIN_ID_FIELD = "chain"
+CHAIN_PULLS_PATH = "/repos/{repo}/pulls?state=all&per_page=100"
+CHAIN_LISTING_MSG = "listado de PR no es una lista"
+REFS_NUMBER_RX = re.compile(r"\bRefs\s+#(\d+)", re.IGNORECASE)
+
+
+def _chain_id(body, heading):
+    return chain_fields(section_body(body or "", heading)).get(CHAIN_ID_FIELD, "")
+
+
+def chain_closes_findings(tip_body, siblings, policy):
+    """Avisos de la punta de una cadena nueva: `Refs` de sus eslabones que no lleva en `Closes`.
+
+    `siblings` son PR de la misma cadena (mismo `chain:`); los que no coinciden se ignoran.
+    Una cadena sin `chain:` en la punta no es nueva y no se mide.
+    """
+    heading = policy.get("chain_context_heading", CHAIN_CONTEXT_HEADING)
+    chain_id = _chain_id(tip_body, heading)
+    if not chain_id:
+        return []
+    refs = set()
+    for sibling in siblings:
+        if _chain_id(sibling.get("body"), heading) == chain_id:
+            refs.update(REFS_NUMBER_RX.findall(sibling.get("body") or ""))
+    closes = set(GITHUB_CLOSING_RX.findall(tip_body or ""))
+    missing = sorted(refs - closes, key=int)
+    if not missing:
+        return []
+    return [
+        f"HR-7: los eslabones de la cadena '{chain_id}' referencian "
+        f"{', '.join('#' + num for num in missing)} y la punta no lo cierra con Closes; "
+        "añádalo a la lista de Closes del cuerpo o quítelo del alcance de la cadena."]
+
+
+def check_chain_closes(pr, data, policy, advisories, fetch=None):
+    """#1190: lee las PR de la cadena por API y añade los avisos de `chain_closes_findings`.
+
+    Sin token no hay API y el chequeo se omite. Un fallo de la API es un aviso, no un
+    bloqueo. Lee las 100 PR más recientes: una cadena más antigua no se mide completa.
+    """
+    heading = policy.get("chain_context_heading", CHAIN_CONTEXT_HEADING)
+    body = pr.get("body") or ""
+    chain_id = _chain_id(body, heading)
+    if not chain_id:
+        return
+    if not (os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")):
+        return
+    repo = (data.get("repository") or {}).get("full_name") or ""
+    number = pr.get("number")
+    fetch = fetch or fetch_chain_siblings
+    try:
+        siblings = fetch(repo, number)
+    except _GITHUB_REST.GitHubApiError:
+        # El texto de la excepción lleva un id de petición que cambia en cada llamada: no va al aviso.
+        advisories.append(
+            f"HR-7: no se pudo leer la cadena '{chain_id}' por API; aviso, no bloquea.")
+        return
+    advisories.extend(chain_closes_findings(body, siblings, policy))
+
+
+def fetch_chain_siblings(repo, number):
+    """PR del mismo repo sin la punta (`number`), leídas por API; el cliente pagina el listado."""
+    listing = _GITHUB_REST.get_json(CHAIN_PULLS_PATH.format(repo=repo))
+    if not isinstance(listing, list):
+        raise _GITHUB_REST.GitHubApiError(CHAIN_LISTING_MSG)
+    return [p for p in listing if isinstance(p, dict) and p.get("number") != number]
 
 
 # #876: la asistencia de IA se declara en el CUERPO del PR; los commits no llevan
@@ -641,13 +870,14 @@ AI_DISCLOSURE_HEADING = "Asistencia de IA"
 AI_DISCLOSURE_TEXT_RX = re.compile(r"[^\W\d_]")  # al menos una letra
 
 
-def check_ai_disclosure(pr, findings):
+def check_ai_disclosure(pr, advisories):
     """#876: el cuerpo del PR declara la asistencia de IA en su sección. Ausente,
-    vacía o solo con comentarios HTML falla; «ninguna» o una descripción pasan."""
+    vacía o solo con comentarios HTML avisa; «ninguna» o una descripción pasan.
+    #1093 R9: es un aviso, no un bloqueo: la sección la sigue poniendo el agente."""
     text = re.sub(r"<!--.*?-->", "", section_body(pr.get("body"), AI_DISCLOSURE_HEADING),
                   flags=re.S).strip()
     if not AI_DISCLOSURE_TEXT_RX.search(text):
-        findings.append(
+        advisories.append(
             f"HR-14: falta la sección '{AI_DISCLOSURE_HEADING}' en el cuerpo del PR, o está "
             "vacía: escriba «ninguna» o la herramienta de IA y la parte que ayudó. La "
             "declaración va en el PR, no en los commits.")
@@ -656,7 +886,7 @@ def check_ai_disclosure(pr, findings):
 def check_issue_links(pr, data, findings):
     """#333: el enlace de la issue no enlaza una issue de otro repositorio; una
     mención informativa del cuerpo no es un enlace. Cerrar y referenciar el
-    mismo número no es un fallo aquí ni en issue-spec (#787 retiró el aviso)."""
+    mismo número no es un fallo aquí ni en issue-spec: el aviso que añadió #787 lo retiró `47f74411` (Refs #840)."""
     body = pr.get("body") or ""
     current = (data.get("repository") or {}).get("full_name") or ""
     for owner_repo, number in sorted(set(FOREIGN_LINK_RX.findall(body))):
@@ -664,6 +894,18 @@ def check_issue_links(pr, data, findings):
             findings.append(
                 f"HR-54: enlace a una issue de otro repositorio "
                 f"({owner_repo}#{number}): el enlace apunta al repositorio del PR.")
+
+
+@dataclass
+class Verdict:
+    """Lo que el gate acumula: `findings` bloquean, `advisories` avisan.
+
+    #1172: un mismo objeto lleva las dos listas, para que las comprobaciones
+    que assinan a una de ellas no crezcan en argumentos (PLR0913).
+    """
+
+    findings: list = field(default_factory=list)
+    advisories: list = field(default_factory=list)
 
 
 def _pin_output_encoding() -> None:
@@ -724,21 +966,28 @@ def _load_range_data(args, active):
     return texts, None
 
 
-def _pr_level_checks(active, data, pr, ctx, findings):
-    repo, policy = ctx
+def _pr_level_checks(active, data, pr, ctx, verdict):
+    """Comprueba el nivel de PR: `verdict.findings` bloquean, `verdict.advisories` avisan.
+
+    Los avisos se acumulan en el veredicto que recibe el llamante (#1093,
+    #1172): no cambian el exit code.
+    """
+    _repo, policy = ctx
     base_ref = pr.get("base", {}).get("ref", "main")
     default_branch = data.get("repository", {}).get("default_branch", "main")
-    if "labels" in active:
-        check_labels(pr, policy, findings)
+    # #1172: HR-7 avisa (no bloquea), como HR-53, HR-64, HR-54 y la asistencia
+    # de IA. El enlace a la issue lo sigue exigiendo `issue-spec`.
     if "closes" in active:
-        check_closes(pr, base_ref, default_branch, policy, findings)
+        check_closes(pr, base_ref, default_branch, policy, verdict.advisories)
+    # #1093 R3/R9: Chain Context y Asistencia de IA avisan; no bloquean.
     if "chain_context" in active:
-        check_chain_context(pr, base_ref, default_branch, policy, findings)
+        check_chain_context(pr, base_ref, default_branch, policy, verdict.advisories)
+    if "closes" in active:
+        check_chain_closes(pr, data, policy, verdict.advisories)
     if "issue_links" in active:
-        check_issue_links(pr, data, findings)
+        check_issue_links(pr, data, verdict.findings)
     if "ai_disclosure" in active:
-        check_ai_disclosure(pr, findings)
-    return repo
+        check_ai_disclosure(pr, verdict.advisories)
 
 
 def closure_data(repo, texts, policy):
@@ -754,18 +1003,30 @@ def closure_data(repo, texts, policy):
                        changed, paths)
 
 
-def _range_checks(active, pr, ctx, texts, findings):
-    """Comprobaciones sobre el rango git; `DocsEvidenceConfigError` sube a main."""
+def _range_checks(active, pr, ctx, texts, verdict):
+    """Comprobaciones sobre el rango git; `DocsEvidenceConfigError` sube a main.
+    #1093 R1: HR-53 y HR-64 avisan; #1172: HR-7 también (cuerpo y commits).
+    El resto sigue bloqueando. Los avisos se acumulan en el veredicto que
+    recibe el llamante."""
     repo, policy = ctx
     if "closure_tests" in active:
-        check_closure_tests(pr, closure_data(repo, texts, policy), policy, findings)
+        check_closure_tests(pr, closure_data(repo, texts, policy), policy, verdict.advisories)
     if "docs_evidence" in active:
-        check_docs_evidence(pr, repo, texts["changed_files"].split(), policy, findings)
+        check_docs_evidence(pr, repo, texts["changed_files"].split(), policy, verdict.advisories)
     if "budget" in active:
         origins = parse_origins(texts["origins_file"]) if "origins_file" in texts else None
-        check_budget(pr, budget_lines(texts["numstat_file"], origins), policy, findings)
+        figure = BudgetFigure(
+            lines=budget_lines(texts["numstat_file"], origins),
+            vendored=vendored_lines(texts["numstat_file"]),
+            origins_supplied=origins is not None,
+        )
+        check_budget(pr, figure, policy, verdict.findings)
     if "commits" in active:
-        check_commits(texts["commits_file"], policy, findings)
+        check_commits(texts["commits_file"], policy, verdict.findings)
+        # HR-7 (#1056) sobre el mismo texto: cuelga de `commits` porque comparte
+        # el fichero de datos, así la política lo apaga con la clave que ya usa
+        # para HR-14 y el contrato `checks` no crece. #1172: avisa.
+        check_closing_in_commits(texts["commits_file"], pr, policy, verdict.advisories)
 
 
 def main(argv=None):
@@ -774,8 +1035,8 @@ def main(argv=None):
     parser.add_argument("--event-file", required=True, help="Payload del evento de PR.")
     parser.add_argument("--policy-file", required=True, help="Política del gate.")
     parser.add_argument("--repo", default=".", help="Raíz del repo, para leer ficheros (no ejecuta git).")
-    parser.add_argument("--changed-files", help="`git diff --name-only BASE..HEAD`.")
-    parser.add_argument("--numstat-file", help="`git diff --numstat BASE..HEAD`.")
+    parser.add_argument("--changed-files", help="`git diff --name-only BASE...HEAD` (merge-base: los cambios de la PR, no los de main).")
+    parser.add_argument("--numstat-file", help="`git diff --numstat BASE...HEAD`.")
     parser.add_argument("--commits-file",
                         help="`git log --format='%%P%%n%%B%%n---COMMIT-END---' BASE..HEAD`.")
     parser.add_argument("--tracked-files", help="`git ls-files`.")
@@ -797,11 +1058,8 @@ def main(argv=None):
     if off:
         print(f"PR-CONTRACT: apagadas por política: {', '.join(off)}", file=sys.stderr)
 
-    # #938: el modo por defecto del gate es leer del payload, como en
-    # `origin/main`. El modo vivo por API es opt-in (`PR_CONTRACT_USE_LIVE_API=1`
-    # + `GITHUB_TOKEN`); preserva el contrato de modo local, parity y
-    # propagador, que invocan el gate como subproceso sin token.
-    if os.environ.get("PR_CONTRACT_USE_LIVE_API") == "1":
+    # #938/#996: etiquetas y cuerpo se leen por API (vivos) o del payload (congelado al abrir).
+    if use_live_api(args.event_file, pr, os.environ):
         try:
             live_labels, live_body = fetch_pr_live(data, pr)
         except _GITHUB_REST.GitHubApiError as exc:
@@ -819,20 +1077,24 @@ def main(argv=None):
         return 2
 
     ctx = (Path(args.repo), policy)
-    findings = []
-    _pr_level_checks(active, data, pr_with_live, ctx, findings)
+    verdict = Verdict()
+    _pr_level_checks(active, data, pr_with_live, ctx, verdict)
     try:
-        _range_checks(active, pr_with_live, ctx, texts, findings)
+        _range_checks(active, pr_with_live, ctx, texts, verdict)
     except DocsEvidenceConfigError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
     # HR-31: el gate procesa el estado actual sin importar la acción
     # (opened, edited, labeled, unlabeled, synchronize).
-    return _verdict(findings, pr, action_text=data.get("action", "opened"))
+    return _verdict(verdict.findings, pr, action_text=data.get("action", "opened"),
+                    advisories=verdict.advisories)
 
 
-def _verdict(findings, pr, *, action_text):
-    """Imprime el veredicto y devuelve 0 (OK) o 1 (hallazgos)."""
+def _verdict(findings, pr, *, action_text, advisories=()):
+    """Imprime los avisos (#1093: no cambian el veredicto) y el veredicto:
+    0 (OK) o 1 (hallazgos)."""
+    for advisory in advisories:
+        print(f"AVISO (no bloquea): {advisory}")
     if findings:
         print(f"FAIL: contrato de PR con {len(findings)} hallazgo(s):")
         for f in findings:

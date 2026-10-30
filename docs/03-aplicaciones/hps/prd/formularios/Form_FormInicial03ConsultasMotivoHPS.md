@@ -76,7 +76,7 @@ Sin escrituras, sin transacciones.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. El valor del motivo elegido **sí se concatena dentro del literal SQL** (`Filtro.bas:143-145`), a diferencia del estado. Un motivo con comilla simple rompería la sentencia; el patrón web equivalente es un parámetro vinculado. El `WHERE` se construye con `If/ElseIf` sobre cuatro combinaciones de vacío/no vacío (`Filtro.bas:98-107`), una forma que no se traslada tal cual.
+Pendiente de la coexistencia (documento aún no redactado). El valor del motivo elegido **sí se concatena dentro del literal SQL** (`Filtro.bas:143-145`), a diferencia del estado. Un motivo con comilla simple rompería la sentencia; el patrón web equivalente es un parámetro vinculado. El `WHERE` se construye con `If/ElseIf` sobre cuatro combinaciones de vacío/no vacío (`Filtro.bas:98-107`), una forma que no se traslada tal cual.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

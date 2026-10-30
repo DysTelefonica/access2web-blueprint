@@ -35,28 +35,31 @@ classifiers = [
 dependencies = [
     "argon2-cffi==25.1.0",         # DA-2: Argon2id PHC strings for password hashing.
     "cryptography>=50.0,<51",      # AES-GCM for NationalIdCipher (CA-S4). Pinned above the 49.0.0 CVE floor (PYSEC-2026-3553/3554) and the 48.0.1 floor (GHSA-537c-gmf6-5ccf).
-    "sqlalchemy==2.0.*",           # Core ORM for adapters (Phase 4).
-    "alembic==1.13.*",             # Migrations 0001..0006 (Phase 2).
+    # `asyncio` extra: SQLAlchemy 2.1 dejó de traer `greenlet` como dependencia
+    # transitiva y el motor async de la app (`sqlalchemy.ext.asyncio`) lo
+    # necesita en tiempo de import (#1405).
+    "sqlalchemy[asyncio]>=2.0,<2.2",  # Core ORM for adapters (Phase 4).
+    "alembic>=1.13,<1.21",             # Migrations 0001..0006 (Phase 2).
     "asyncpg>=0.30,<0.33",             # Postgres driver for SQLAlchemy (Phase 4).
-    "fastapi>=0.142,<0.144",           # Sobre 0.121.3: es la versión cuya restricción deja entrar starlette 1.x.
+    "fastapi>=0.142,<0.162",           # Sobre 0.121.3: es la versión cuya restricción deja entrar starlette 1.x.
     "starlette>=1.0,<2",           # Línea con los arreglos de PYSEC-2026-161/248/249/2280/2281.
     "jinja2==3.1.*",               # Async templates for HTMX views (Phase 5).
     "jinja2==3.1.*",               # Async templates for HTMX views (Phase 5).
     "httpx==0.28.*",               # Test client + downstream HTTP.
     "cachetools>=5,<8",             # TTLCache adapter (DA-8).
     "python-multipart==0.0.*",     # FastAPI form parsing.
-    "uvicorn[standard]==0.30.*",   # ASGI server for delivery.
+    "uvicorn[standard]>=0.30,<0.55",   # ASGI server for delivery.
 ]
 
 [project.optional-dependencies]
 # Dev pins — exact, per Hard Rule 2. Drift graduates rules; the gate enforces
 # the version it was designed against.
 dev = [
-    "ruff==0.15.21",               # QC-3 lint.
+    "ruff==0.17.2",               # QC-3 lint.
     "mypy==2.4.0",                # QC-4 typecheck (platform/src/ only).
     "pytest==9.0.*",               # Strict-TDD runner. Sobre 8.4.2 por PYSEC-2026-1845.
     "pytest-asyncio==1.4.0",       # Async test runner (DR2 reset-flow fixtures in tests/lanzadera/auth/ use async; pytest-asyncio honours asyncio_mode = \"auto\").
-    "pytest-socket==0.7.0",        # Network isolation for the unit suite (issue #883).
+    "pytest-socket==0.8.1",        # Network isolation for the unit suite (issue #883).
     "pyyaml==6.0.3",               # Required by tests/test_ci_workflow.py.
     "pip-audit==2.9.0",            # Dependency scan (security.yml).
     "types-cachetools==7.0.0.20260713",     # Type stubs for cachetools (DA-8, WU AD5).

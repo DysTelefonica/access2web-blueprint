@@ -13,7 +13,7 @@ Menú principal del perfil técnico. Es una reducción de `Form_Form0BDOpciones`
 
 **Sí acepta un parámetro**, y le importa: `Form_Load` solo llama a `EVE` si `OpenArgs` viene vacío (`:235-240`). Entrado desde el menú de calidad, el entorno **no** se reinicializa.
 
-Salidas: `FormProyectosGestion` (`:69`), `FormTecnicoTareas` (`:96`), `FormRiesgosGestion` (`:138`), `FormControlCambiosGestion` (`:170`), el menú de calidad (`:205`), la ayuda (`:35`), el vídeo externo (`:310`) y la aplicación (`:23`).
+Salidas: `FormProyectosGestion` (`:69`), `FormTecnicoTareas` (`:96`), `FormRiesgosGestion` (`:138`), `FormControlCambiosGestion` (`:170`), el menú de calidad (`:205`), la ayuda (`:35`), el vídeo externo (`:300`) y la aplicación (`:23`).
 
 ## Controles y eventos
 
@@ -41,7 +41,7 @@ Los rótulos (`lblTareasPendientes`, `lblMisProyectos`, `lblUltimoProyecto`, `lb
 4. **Puerta de retorno**: si `m_ObjUsuarioConectadoInicialmente` existe y su `EsTecnicoCalculado` **no** es `Sí`, muestra y habilita `ComandoVolverAlPerfilInicial`; en cualquier otro caso lo oculta (`:257-267`).
 5. `ActivarBotonera` y `AvanceCerrar` (`:269-270`).
 
-Su manejador de error, como en el menú de calidad, **termina la aplicación** (`:285`).
+Su manejador de error, como en el menú de calidad, **termina la aplicación** (`:286`).
 
 ### Normal
 
@@ -87,7 +87,7 @@ Panel de navegación con cuatro destinos, un botón de retorno al perfil inicial
 - **H-GR-34.** `ComandoVolverAlPerfilInicial_Click` llama a `EVE` sin argumentos (`:201`) para reponer la identidad del usuario real de la sesión. Es una dependencia fuerte del orden de llamadas entre los dos menús, no verificable leyendo uno solo.
 - **H-GR-35.** `ComandoTareasPendientes_Click` abre `FormTecnicoTareas` sin ninguna validación (`:96`), mientras su gemelo bloquea al técnico antes de abrir el suyo (`Form_Form0BDOpciones.cls:203-207`): dos handlers con el mismo nombre y propósito opuesto en el mismo menú. La corrección depende de que el destino sea correcto, no de una comprobación.
 - **H-GR-36.** La divergencia entre menús es de **superficie, no de permiso**: aquí no existen `ComandoInformeIndicador`, `ComandoNuevaGestionDeRiesgo`, `ComandoBibliotecaRiesgos` ni `ComandoEntrarComo`, y el diseño no los declara. Un técnico no puede crear una gestión, consultar el indicador, ir a la biblioteca ni cambiar de usuario desde su menú.
-- **H-GR-37.** El manejador de error de `Form_Load` termina la aplicación sin preguntar (`:285`), igual que en el menú de calidad (`Form_Form0BDOpciones.cls:468`): una inicialización fallida en el perfil técnico cierra la sesión completa.
+- **H-GR-37.** El manejador de error de `Form_Load` termina la aplicación sin preguntar (`:286`), igual que en el menú de calidad (`Form_Form0BDOpciones.cls:468`): una inicialización fallida en el perfil técnico cierra la sesión completa.
 - **H-GR-38.** Los dos menús comparten el patrón de error con `Err.Raise 1000` sin descripción (`:197, 203, 238, 298`) y con el global `pregunta` (`Variables Globales.bas:69`) usado como retorno de `MsgBox` sin declarar; también aquí un error real con número 1000 se mostraría como advertencia y no se enviaría al administrador.
 - **H-GR-39.** Los rótulos de versión del diseño están desincronizados entre los dos menús (`2024-001` en `.form.txt:2194` frente a `2024-025` en `Form0BDOpciones.form.txt:3542`) y el rótulo del último riesgo usa distinta capitalización («Últimos riesgos», `.form.txt:2505`). `Form_Load` los sobrescribe, así que no afecta a ejecución, pero delata copias de diseño sin sincronizar.
 
