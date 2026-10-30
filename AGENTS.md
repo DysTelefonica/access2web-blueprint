@@ -1,6 +1,6 @@
 # access2web-blueprint
 
-<!-- personal-skills:slice:access2web-blueprint @ v037c761 -->
+<!-- personal-skills:slice:access2web-blueprint @ v925df78 -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
