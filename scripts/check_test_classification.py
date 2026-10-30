@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — scripts/check_test_classification.py
+# HARNESS-PROVENANCE: access2web-blueprint local policy — scripts/check_test_classification.py
+# This is NOT a copy of the canon's asset (team-skills#809 T6, BP issue #1316). The canon
+# publishes `check_test_classification` (team-skills#985, decision D2), but it measures a
+# different rule: every `tests/integration/test_*.py` carries the `integration` marker, over a
+# single integration directory. BP has no such directory — the tests that carry that marker live
+# in `tests/lanzadera/{migrations,adapters,delivery}/` — and this gate classifies by LAYER
+# directory instead (HR-2: no MagicMock under `application/`; HR-6: `delivery/` tests touching
+# `admin_routes` declare an auth gate; HR-8: root-level files belong to `WIRE_ALLOWLIST`).
+# Pointed at BP's tree, the canon's asset reports "directory not found" and fails closed (HR-18):
+# it would measure the wrong taxonomy. It is adopted the day BP grows `tests/integration/`.
+# The taxonomy and its rollout live in docs/testing/testing-strategy.md §Pieza 4 (epic #535).
 """Test classification gate (--dry-run default).
 
 Enforces three rules of the taxonomy in ``docs/testing/testing-strategy.md``:

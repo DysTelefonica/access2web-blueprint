@@ -42,6 +42,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/gitleaks-history.txt \
+            --runner "${{ runner.name }}"
+
       - name: gitleaks full history
         # `detect --source=.` with `fetch-depth: 0` walks every commit ever recorded.
         #
@@ -90,11 +98,21 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/trivy-image.txt \
+            --runner "${{ runner.name }}"
+
       # `trivy image` requires Docker-in-Docker; we pin `docker/setup-buildx-action` by SHA
       # alongside the trivy digest so the deep scan is reproducible.
-      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v3
+      # buildkit is pinned by digest (multi-platform index) like the other images; the
+      # tag it resolved from, moby/buildkit:v0.18.0, is kept here for humans.
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         with:
-          driver-opts: image=moby/buildkit:v0.18.0
+          driver-opts: image=moby/buildkit:v0.18.0@sha256:36c65534fcd9e8b2c38f7e549aeae3ed5b5389fe6de2f44996f313112ebf0e18
 
       - name: Docker daemon preflight
         # Preflight `docker info` with `timeout 30` (#131). The `trivy image` itself

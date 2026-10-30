@@ -1,10 +1,9 @@
 {
   "contract_version": 1,
-  "protected_branches": ["main"],
   "host_capabilities": {
-    "branch_protection": "available",
-    "rulesets": "available",
-    "required_checks": "available"
+    "branch_protection": "unavailable",
+    "rulesets": "unavailable",
+    "required_checks": "unavailable"
   },
   "labels": [
     {
@@ -23,7 +22,7 @@
   "required_checks": [
     {
       "name": "required",
-      "class": "host-enforced"
+      "class": "documented-only"
     }
   ],
   "merge_methods": {
@@ -47,11 +46,11 @@
   "protection": {
     "enforce_admins": {
       "declared": true,
-      "class": "host-enforced"
+      "class": "documented-only"
     },
     "required_linear_history": {
       "declared": true,
-      "class": "host-enforced"
+      "class": "documented-only"
     },
     "required_conversation_resolution": {
       "declared": true,
@@ -59,18 +58,12 @@
     },
     "allow_force_pushes": {
       "declared": false,
-      "class": "host-enforced"
+      "class": "documented-only"
     },
     "allow_deletions": {
       "declared": false,
-      "class": "host-enforced"
+      "class": "documented-only"
     }
   },
-  "rulesets": [
-    {
-      "name": "default-branch-ruleset",
-      "enforcement": "active",
-      "class": "host-enforced"
-    }
-  ]
+  "rulesets": []
 }

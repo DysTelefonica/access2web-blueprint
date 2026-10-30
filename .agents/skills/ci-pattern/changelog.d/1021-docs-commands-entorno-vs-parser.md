@@ -1,0 +1,3 @@
+type: patch
+
+HR-65 (#1021): `docs-commands` distingue las tres causas por las que un comando documentado no pasa, porque cada una se arregla distinto y antes el gate no las separaba. El rechazo del parser sigue rojo con `fichero:línea`; el timeout de `TIMEOUT`s tiene su propio hallazgo; y la CLI ausente es **un** hallazgo de entorno que nombra la CLI que falta y dice instalarla en la imagen del runner, en vez de una línea `no se pudo ejecutar: [Errno 2]` por cada comando documentado (55 con el `make` ausente que midió APAP#2324). Los tres son rojos: cambia el diagnóstico, no la severidad. `assets/docs-commands/README.md` documenta que el runner del job necesita `cli_command[0]` instalada.

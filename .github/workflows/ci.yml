@@ -34,16 +34,24 @@ on:
     #                    after the gate went red, the size verdict
     #                    does not re-evaluate.
     # Pinning the set here is what guarantees the verdict refreshes
-    # on those events. `tests/test_ci_workflow.py::test_pull_request_types_cover_edit_and_label_events`
-    # pins the exact list — order and contents — so a silent drift
-    # cannot pass review.
+    # on those events.
+    # Issue #1368: this workflow carries the HEAVY suite, so it listens to the
+    # three events that can change the code. `edited`, `labeled` and
+    # `unlabeled` only change the PR body and its labels; they moved to
+    # .github/workflows/pr-gate.yml, which carries the `pr-gate` and listens to
+    # all six. The audit measured those events as 1.411 re-runs of the same SHA
+    # in one week (72 % of 1.956 PR runs) and 846 cancelled runs.
+    # Issue #1375: this event list is no longer pinned by a test. The event
+    # surface of the workflow belongs to the canon's required-jobs gate —
+    # `tests/test_required_jobs_policy.py::test_every_event_ci_listens_to_is_declared`
+    # proves that every event listened to is declared in the policy — and the
+    # list of `pr-gate.yml`, the one that has to refresh when the body or the
+    # labels change, is still pinned by
+    # `tests/test_ci_workflow.py::test_pr_gate_listens_to_edit_and_label_events`.
     types:
       - opened
       - synchronize
       - reopened
-      - edited
-      - labeled
-      - unlabeled
   push:
     # Issue #857, PR-D: after the merge lands on `main`, the safety net runs
     # `ci` on the new commit. The PR's `pr-gate` does NOT run on push (its
@@ -76,9 +84,13 @@ env:
 
 jobs:
   pr-gate:
-    # Public pull requests are untrusted input. Every PR-reachable job runs on
-    # an ephemeral GitHub-hosted runner, never on repository infrastructure.
-    runs-on: ubuntu-24.04
+    # Issue #1368: the `pr-gate` job (body, labels, walkthrough) lives in
+    # .github/workflows/pr-gate.yml, so the `edited`/`labeled`/`unlabeled`
+    # events no longer drag the heavy suite along. ci.yml CALLS that file, so
+    # the aggregator `required` keeps reading its result and its outputs
+    # (`needs:` cannot cross workflow files) and the per-SHA verdict of
+    # `required` does not change.
+    uses: ./.github/workflows/pr-gate.yml
     if: github.event_name == 'pull_request'
     # `issues: read` lets the issue-spec step fetch the issue linked by the PR body.
     # `pull-requests: read` lets the pr-size step read the per-file breakdown (issue #918).
@@ -86,77 +98,6 @@ jobs:
       contents: read
       issues: read
       pull-requests: read
-    # Per-gate FIFO: if a `pr-gate` is already in flight on the runner, the next
-    # call waits in submission order rather than racing the runner (Hard Rule 1: a gate
-    # that skips its own check is not a gate). Different gates are not in this group.
-    concurrency:
-      group: gate-pr-gate-${{ github.event.pull_request.number || github.ref }}
-      cancel-in-progress: false
-    # Fail fast: pr-size + walkthrough schema run in seconds; anything beyond 5 min is hung.
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-          # ``sparse-checkout-cone-mode: false
-          # sparse-checkout: disable`` is the real fix for #414: the
-          # default ``sparse-checkout-cone-mode: true`` only materialises
-          # paths touched by the PR diff, so writing to
-          # ``app/pyproject.toml`` (not in the diff) fails with
-          # "Read-only file system" and the worktree guard trips.
-          # (the git-show fallback in the install step remains as a secondary path.)
-          sparse-checkout-cone-mode: false
-
-      - name: disable sparse-checkout cone mode (runtime fallback)
-        # The v7 ``actions/checkout`` ``sparse-checkout: disable`` input
-        # is unreliable on the self-hosted a2w runner (issue #414): the
-        # cached cone config from a previous run sometimes overrides
-        # the step's config. Re-running ``git sparse-checkout disable``
-        # after the checkout guarantees every file in the branch is
-        # materialised in the worktree; the worst case is ``command not
-        # found`` on an older git, which is absorbed by ``|| true``.
-        run: |
-          if ! git sparse-checkout disable 2>/dev/null; then
-            :
-          fi
-
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        id: setup-python
-        with:
-          python-version: "3.12.11"
-
-      - name: pr size
-        # Gate del canon (DysTelefonica/team-skills#806, BP#1040): ya no hay copia propia en scripts/.
-        # GITHUB_EVENT_PATH is the GitHub-controlled path of the webhook payload.
-        # The script reads it as data; the body is never interpolated into the shell.
-        # GITHUB_TOKEN reads the per-file breakdown so vendored skills are not counted
-        # as author lines (issue #918). Without it the gate counts the whole PR.
-        env:
-          GITHUB_EVENT_PATH: ${{ github.event_path }}
-          GITHUB_TOKEN: ${{ github.token }}
-        run: python .agents/skills/ci-pattern/assets/pr-size/check_pr_size.py --event "$GITHUB_EVENT_PATH"
-
-      - name: issue spec
-        # Gate del canon (DysTelefonica/team-skills#806, BP#1040): ya no hay copia propia en scripts/.
-        # The PR body is attacker-controlled: the event file is read as data by the
-        # gate, and the token is only used for the read-only issue lookup.
-        # --required-sections cablea la regla 7 del canon (DysTelefonica/team-skills#644):
-        # la lista de secciones obligatorias la declara el consumer en
-        # scripts/required-sections.json (las 6 secciones del contrato de issue de
-        # .github/ISSUE_TEMPLATE/issue-canonical.yml). Sin la bandera, el gate solo
-        # ejecuta las reglas 1..6; con ella, la regla 7 se aplica al cuerpo de la
-        # issue consultada por la API en modo pr-event.
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH" --required-sections scripts/required-sections.json
-
-      - name: walkthrough schema
-        # Cheap contract gate: every docs/03-aplicaciones/*/walkthrough-*.json MUST
-        # contain the documented MUST fields (template at
-        # skills/documentation-alan-style/references/templates/walkthrough.json.tmpl).
-        # Catches drift before merge; SHOULD/MAY fields are conventions, not enforced.
-        # --strict promoted after #375 migrated the 43 walkthroughs to v2.1.
-        run: python scripts/check_walkthrough_schema.py --strict
 
   quality:
     # HR-30 (#857 PR-D + fase 4 de la adopción del patrón de CI, #780):
@@ -174,7 +115,7 @@ jobs:
     # (`schedule`) y el manual (`workflow_dispatch`). `pr-gate` solo se
     # ejecuta en `pull_request`, así que en los otros tres su `result`
     # es `skipped` y este `if:` lo acepta explícitamente.
-    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped') && needs.pr-gate.outputs.docs_changed != 'true'
     # This job executes code from public pull requests, so it must use isolated,
     # ephemeral GitHub-hosted infrastructure.
     runs-on: ubuntu-24.04
@@ -189,6 +130,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
           # ``sparse-checkout-cone-mode: false
           # 
@@ -199,7 +141,15 @@ jobs:
           # (the git-show fallback in the install step remains as a secondary path.)
           sparse-checkout-cone-mode: false
 
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/quality.txt \
+            --runner "${{ runner.name }}"
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         id: setup-python
         with:
           python-version: "3.12.11"
@@ -346,10 +296,13 @@ jobs:
         # duplicadas, `timeout-minutes`, puertos fijos, pines por SHA, preflight de docker y grupo de
         # `concurrency` (HR-3, HR-26, HR-30). El `workflow gate` local conserva solo lo que el canon no
         # comprueba: permisos, PYTHON_VERSION, unicidad del grupo y runners alcanzables por PR.
+        # #1464: `--host-contract` es lo que le dice al gate qué nombres exige el host
+        # (`required`); sin él, la regla HR-30 no tiene sobre que aplicar y el defecto
+        # queda invisible en CI.
         run: |
           args=()
           for f in .github/workflows/*.yml; do args+=(--workflow "$f"); done
-          python .agents/skills/ci-pattern/assets/workflow-policy/check_workflow_policy.py "${args[@]}" --base-branch main --required-jobs .github/required-jobs-policy.json
+          python .agents/skills/ci-pattern/assets/workflow-policy/check_workflow_policy.py "${args[@]}" --base-branch main --required-jobs .github/required-jobs-policy.json --host-contract .github/host-contract.json
 
       - name: suites populated
         # Issue #882 (PR-1): a green CI with zero tests in a suite is a false
@@ -376,10 +329,18 @@ jobs:
         run: pytest -c app/pyproject.toml --rootdir=app -m "not integration"
 
 
+      - name: record policy time
+        # DQH 2.2: the aggregator and the ratchet gates judge their BASELINE against this
+        # explicit date, never the wall clock, and the report records it (BP #1324).
+        run: |
+          POLICY_DATE="$(date -u +%F)"
+          echo "POLICY_DATE=$POLICY_DATE" >> "$GITHUB_ENV"
+          echo "Policy date: \`$POLICY_DATE\`" >> "$GITHUB_STEP_SUMMARY"
+
       - name: quality gates and indicators
         # Runs layers -> complexity -> DRY in that fixed order, writes
         # quality-report.json, and renders the indicator table into the job summary.
-        run: python scripts/quality_report.py
+        run: python scripts/quality_report.py --policy-date "$POLICY_DATE"
 
       # The `actions/upload-artifact` step that previously published
       # `quality-report.json` as a downloadable blob is intentionally
@@ -409,7 +370,7 @@ jobs:
     # accepts pr-gate's skip on push/schedule/dispatch (#857 PR-D).
     needs: pr-gate
     runs-on: ubuntu-24.04
-    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped') && needs.pr-gate.outputs.docs_changed != 'true'
     # Per-gate FIFO same shape as the other heavy jobs.
     concurrency:
       group: gate-integration-${{ github.event.pull_request.number || github.ref }}
@@ -448,8 +409,17 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
           sparse-checkout-cone-mode: false
+
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/integration.txt \
+            --runner "${{ runner.name }}"
 
       - name: disable sparse-checkout cone mode (runtime fallback)
         # See the same step in the `quality` job (#109, #110, #117 F2, #414).
@@ -458,7 +428,7 @@ jobs:
             :
           fi
 
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         id: setup-python
         with:
           python-version: "3.12.11"
@@ -542,7 +512,7 @@ jobs:
     name: security (${{ github.event_name }})
     # Issue #702: security.yml is now `on: workflow_call` only (no
     # independent triggers). Invoking it here as a job — rather than
-    # requiring its three inner checks (pip-audit, gitleaks, trivy-config)
+    # requiring its two inner checks (gitleaks, trivy-config)
     # separately in branch protection — is what lets `required` below
     # `needs:` it: `needs:` cannot cross workflow files, but a job invoked
     # via `uses: ./...` still has an ordinary job id and result.
@@ -551,13 +521,67 @@ jobs:
     # Mismo criterio que `quality` (HR-30, #857 PR-D): los heavy jobs
     # aceptan `pr-gate` saltado en cualquier evento en el que este
     # tiene `if: github.event_name == 'pull_request'`.
-    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped') && needs.pr-gate.outputs.docs_changed != 'true'
     permissions:
       contents: read
     concurrency:
       group: gate-security-call-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
 
+  pip-audit:
+    # HR-30: nombre event-qualified, mismo criterio que `quality` (#780).
+    name: pip-audit (${{ github.event_name }})
+    # Issue #1377: la auditoria de dependencias es un job de PRIMER NIVEL y no
+    # uno interno de security.yml: `needs:` no cruza ficheros de workflow, asi
+    # que el agregador `required` solo puede leer el resultado de un job de
+    # primer nivel, y sin esa lectura su salto por diseño no se puede
+    # DECLARAR en la politica.
+    needs: pr-gate
+    uses: ./.github/workflows/pip-audit.yml
+    # El marcador del lockfile es el permiso para saltarse el job: lo publica
+    # el pr-gate y vale 'false' solo cuando el diff no toca ningun lockfile.
+    # En `schedule` (nightly) corre siempre —un aviso publicado entre medias
+    # sale ahi, no en un PR ajeno— y en `push` a main se salta: el PR que
+    # cambio el lockfile ya lo audito.
+    if: (github.event_name == 'pull_request' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped') && (github.event_name != 'pull_request' || needs.pr-gate.outputs.lockfile_scope_changed != 'false')
+    permissions:
+      contents: read
+    concurrency:
+      group: gate-pip-audit-call-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+
+  pip-audit-alert:
+    # HR-39 (#1414): un pip-audit programado en rojo deja una issue con el enlace al run,
+    # y comenta la issue abierta si ya existe (un nightly roto no abre una issue cada noche).
+    # Es el unico job del workflow con `issues: write`; no es requerido por PR.
+    name: pip-audit-alert (${{ github.event_name }})
+    needs: pip-audit
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      issues: write
+    concurrency:
+      group: gate-pip-audit-alert-${{ github.run_id }}
+      cancel-in-progress: false
+    timeout-minutes: 5
+    steps:
+      - name: Abrir o comentar la issue del nightly de pip-audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          title="ci(ci): pip-audit nightly en rojo"
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+            --search "pip-audit nightly en rojo in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "Nightly en rojo: $RUN_URL"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" \
+              --label type:ci --label status:needs-triage \
+              --body "El nightly de pip-audit ha fallado. Run: $RUN_URL"
+          fi
   codeql:
     # HR-30: nombre event-qualified, mismo criterio que `quality` (#780).
     name: codeql (${{ github.event_name }})
@@ -567,7 +591,13 @@ jobs:
     needs: pr-gate
     uses: ./.github/workflows/codeql.yml
     # Mismo criterio que `quality` y `security` (HR-30, #857 PR-D).
-    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
+    # Issue #1376: CodeQL escanea el Python del repo, asi que se pagaba en
+    # pull requests que no tocan una linea de Python. El `pr-gate` publica el
+    # marcador de su superficie (`app/**`, `scripts/**`) y el job corre cuando
+    # el marcador no vale exactamente 'false'. En `push`, `schedule` y
+    # `workflow_dispatch` el marcador no existe y el job corre como antes: el
+    # nightly es la red de una superficie que ninguna pull request paga.
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped') && needs.pr-gate.outputs.docs_changed != 'true' && (github.event_name != 'pull_request' || needs.pr-gate.outputs.codeql_scope_changed != 'false')
     permissions:
       contents: read
       security-events: write
@@ -592,10 +622,20 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12.11"
+
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/docs-architecture.txt \
+            --runner "${{ runner.name }}"
 
       - name: Install import-linter
         # Version exacta, igual que los demas pines de herramientas (Hard Rule 2).
@@ -608,6 +648,51 @@ jobs:
             --code-root app/src/modules/lanzadera --code-glob "*.py" \
             --code-root app/src/modules/expedientes --code-glob "*.py" \
             --stack python --linter-config .importlinter
+
+  governance-seals:
+    # HR-72 (canon DysTelefonica/team-skills#1027): la identidad del gobierno se
+    # mide dentro del pull request. La fase 3 comprueba los sellos sha256 de
+    # .governance-manifest.json y el cableado de P23_required_jobs; hasta ahora
+    # solo corria programada (operating-doc-drift.yml), asi que un fichero
+    # gobernado podia llegar a main sin re-sellarse y el rojo aparecia ya
+    # integrado (ardelperal/APAP_WEB#2327, corregido a mano en #2328).
+    #
+    # La CLI se invoca como comando de primer nivel (HR-46): encadenarla a otro
+    # gate ejecutaba el ciclo verify->adoption, que supero 1.300 procesos de
+    # python y tumbo el host por OOM el 2026-10-05.
+    #
+    # Solo pull_request (HR-30): en push, schedule y workflow_dispatch no hay PR
+    # que evaluar, asi que el nombre del check no se publica desde ahi. Esos
+    # tres eventos aceptan su salto en .github/required-jobs-policy.json.
+    #
+    # Repositorio publico: entrada no confiable y runner hospedado. El job no
+    # pide ningun secreto —los PR de fork no lo recibirian y el gate se saltaria
+    # justo donde tiene que ser mas duro—, asi que mide con el catalogo
+    # vendorizado en .agents/skills/ci-pattern/, la ruta del resto de gates.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    concurrency:
+      group: gate-governance-seals-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    # Lee sellos y contrato sobre el arbol local, sin red: mas de 5 minutos es un cuelgue.
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/governance-seals.txt \
+            --runner "${{ runner.name }}"
+
+      - name: Governance identity (HR-46, HR-72)
+        run: python3 .agents/skills/ci-pattern/assets/bin/ci-pattern adoption check --phase 3 .
 
   docs-codeguide:
     # HR-63: mapa del codigo <-> codigo, en los dos sentidos. Mismo script que en
@@ -623,6 +708,16 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/docs-codeguide.txt \
+            --runner "${{ runner.name }}"
       - name: Map and code in sync
         run: |
           python3 .agents/skills/ci-pattern/assets/docs-codeguide/check_docs_codeguide.py . \
@@ -640,6 +735,12 @@ jobs:
             --code-root app/migrations \
             --code-glob "*.py"
 
+      # TS#1201 (HR-77): la pagina donde trabajo es exigida por el contrato
+      # (docs_where_to_work.mode = exigido). Fallo cerrado: sin pagina o con una
+      # ruta citada muerta, este job falla.
+      - name: Check the where-to-work page (HR-77)
+        run: python3 .agents/skills/ci-pattern/assets/where-to-work/check_where_to_work.py .
+
   docs-links:
     # HR-66: enlaces locales de README.md, AGENTS.md y docs/. Check requerido por PR.
     name: docs-links (${{ github.event_name }})
@@ -653,8 +754,83 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/docs-links.txt \
+            --runner "${{ runner.name }}"
       - name: Local links resolve
         run: python3 .agents/skills/ci-pattern/assets/docs-links/run_docs_links.py . --config .github/docs-links.json
+
+  docs-commands:
+    # HR-65: los comandos que el mapa documenta se prueban. La fuente única de
+    # la declaración es `docs_commands` en el contrato de adopción (#1020), asi
+    # que este job ejecuta exactamente lo que la fase 5 valida.
+    # tests/test_docs_commands_wiring.py ata la declaracion al job que la mide.
+    # Los ocho comandos de BP salen en `parse-only` —`executed_verbs` no cubre
+    # ninguno—, asi que este job no lanza la suite de tests.
+    name: docs-commands (${{ github.event_name }})
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    concurrency:
+      group: gate-docs-commands-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12.11"
+          # Mismo cache y mismo lock que el job `quality` (#1067): el lockfile
+          # es el gate, el cache solo evita repetir la descarga.
+          cache: 'pip'
+          cache-dependency-path: app/requirements-dev.lock
+
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/docs-commands.txt \
+            --runner "${{ runner.name }}"
+
+      # El gate mide si la herramienta acepta los comandos que el mapa
+      # documenta, y para eso tiene que estar donde corre el job: sin esto sale
+      # con un unico hallazgo de entorno —la CLI ausente— y los ocho comandos
+      # quedan sin probar (#1021). Se instala el lock hasheado del repo, que es
+      # el mismo pytest con el que se prueba BP.
+      - name: La CLI que usan los comandos documentados
+        # El lock hasheado y los guards son los del job `quality`: cualquier paso
+        # que instale el toolchain pineado los lleva, porque el agujero de cadena
+        # y el sparse-checkout obsoleto del runner no son exclusivos de `quality`.
+        run: |
+          set -euo pipefail
+          # F2 de #117: una cadena puede traer pyproject.fragment.toml sin
+          # consolidar en app/pyproject.toml. Este job instala el lock, que es lo
+          # que necesita, asi que eso no lo detiene: lo dice para que el rojo, si
+          # lo hay, no se lea como un fallo de pip.
+          if [ ! -f app/pyproject.toml ] && [ ! -f pyproject.fragment.toml ]; then
+            echo "::error::Ni app/pyproject.toml ni pyproject.fragment.toml en el arbol: cadena sin consolidar (F2 de #117)." >&2
+            exit 1
+          fi
+          if [ ! -f app/requirements-dev.lock ]; then
+            echo "::error::Falta app/requirements-dev.lock: sin el lock hasheado no se instala el toolchain pineado (#117)." >&2
+            exit 1
+          fi
+          python -m pip install --require-hashes --requirement app/requirements-dev.lock
+
+      - name: Comandos documentados
+        run: python3 .agents/skills/ci-pattern/assets/docs-commands/run_docs_commands.py .
 
   docs-decisions:
     # HR-67: registro de decisiones (formato, sustitucion, citas e indice). El canon
@@ -670,6 +846,16 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/docs-decisions.txt \
+            --runner "${{ runner.name }}"
       - name: Decision register
         run: |
           python3 -I - <<'PY'
@@ -682,6 +868,214 @@ jobs:
           print("\n".join(findings) if findings else "docs-decisions: OK")
           sys.exit(1 if findings else 0)
           PY
+
+  e2e-smoke:
+    # HR-30: nombre event-qualified, mismo criterio que `quality` (#780).
+    name: e2e-smoke (${{ github.event_name }})
+    # Issue #876: humo E2E en cada PR. Imagen de la PR, /health y 2 specs
+    # de Playwright (smoke + login). La suite completa va en release.yml.
+    # Mismo patron que los heavy jobs: acepta `pr-gate` saltado y no
+    # usa `always()`; en push/workflow_dispatch el job se salta y la
+    # politica lo acepta (#876).
+    #
+    # Issue #1376: el job solo se paga cuando el diff toca la superficie que
+    # analiza (la imagen de la app y las specs de `e2e/`): el `pr-gate`
+    # publica el marcador de esa superficie y el job corre cuando el marcador
+    # no vale exactamente 'false'. El nightly lo vuelve a ejecutar —`release.yml`
+    # solo corre con tags y el repo no tiene ninguno, asi que el nightly es la
+    # unica red de la superficie E2E.
+    if: (github.event_name == 'pull_request' || github.event_name == 'schedule') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped') && needs.pr-gate.outputs.docs_changed != 'true' && (github.event_name != 'pull_request' || needs.pr-gate.outputs.e2e_scope_changed != 'false')
+    needs: pr-gate
+    runs-on: ubuntu-24.04
+    # Cada PR tiene su propio run; no lo cancela el workflow.
+    concurrency:
+      group: gate-e2e-smoke-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    timeout-minutes: 5
+    # Mismo service que el job `integration` (#882/#901); puerto dinámico.
+    services:
+      postgres:
+        image: postgres:16-alpine@sha256:1a66d744c1b459e13b05a8fca341da84cb63383e99ce262210efee5a319d4551
+        env:
+          POSTGRES_DB: lanzadera
+          POSTGRES_USER: lanzadera
+          POSTGRES_PASSWORD: lanzadera-dev-only
+        ports:
+          - 5432
+        options: >-
+          --health-cmd "pg_isready -U lanzadera -d lanzadera"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/e2e-smoke.txt \
+            --runner "${{ runner.name }}"
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12.11"
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          # Exact version (HR-26): the one the hosted runner ships and the one
+          # the smoke specs were validated with.
+          node-version: "22.23.3"
+
+      - name: Build the PR image
+        working-directory: app
+        run: docker build --tag test-app:pr .
+
+      - name: Resolve the DSN from the assigned host port
+        env:
+          POSTGRES_HOST_PORT: ${{ job.services.postgres.ports['5432'] }}
+        run: |
+          set -euo pipefail
+          if [ -z "$POSTGRES_HOST_PORT" ]; then
+            echo "::error::service port did not resolve; refusing to run with a DSN that cannot connect" >&2
+            exit 1
+          fi
+          echo "E2E_DATABASE_URL=postgresql+asyncpg://lanzadera:lanzadera-dev-only@127.0.0.1:${POSTGRES_HOST_PORT}/lanzadera" >> "$GITHUB_ENV"
+
+      - name: Install the runtime lock and apply the real migrations
+        # Mismo conjunto que instala la imagen (app/Dockerfile): el lock runtime exportado
+        # de app/uv.lock (BP #1456). Así el esquema y la app usan las mismas versiones.
+        # 0003 lee data/fixtures/, fuera de la imagen.
+        run: |
+          set -euo pipefail
+          if [ -f app/pyproject.toml ]; then
+            python -m pip install --require-hashes --requirement app/requirements.lock
+          elif [ -f pyproject.fragment.toml ]; then
+            echo "::error::pyproject.fragment.toml is present at the repo root, but app/pyproject.toml is missing."
+            echo "::error::This is a chain hole — the fragment must be consolidated into app/pyproject.toml before the install step can succeed."
+            echo "::error::See issue #117 (umbrebola) and the F2 acceptance criterion."
+            exit 1
+          else
+            echo "::error::Neither app/pyproject.toml nor pyproject.fragment.toml found in the worktree."
+            echo "::error::The CI cannot install a Python project that does not exist. See issue #117 F2."
+            exit 1
+          fi
+          PLATFORM_SECRET_KEY="$(python -c 'import base64; print(base64.urlsafe_b64encode(b"0" * 32).decode())')"
+          DATABASE_URL="$E2E_DATABASE_URL" PLATFORM_SECRET_KEY="$PLATFORM_SECRET_KEY" \
+            alembic -c app/migrations/alembic.ini upgrade head
+
+      - name: Start the app and wait for the health check
+        env:
+          E2E_SECRET_KEY: e2e-smoke-test-key-not-a-real-secret
+        run: |
+          set -euo pipefail
+          if ! timeout 30 docker info > /dev/null 2>&1; then
+            echo "::error::docker daemon is not responding on the runner."
+            exit 1
+          fi
+          # PLATFORM_SECRET_KEY: 0004_seed_users cifra el DNI con AES-256-GCM
+          # y necesita la clave; mismo valor que el job `integration`.
+          PLATFORM_SECRET_KEY="$(python -c 'import base64; print(base64.urlsafe_b64encode(b"0" * 32).decode())')"
+          # --network host: el contenedor llega al Postgres en 127.0.0.1.
+          docker run -d --name test-app --network host \
+            -e DATABASE_URL="$E2E_DATABASE_URL" \
+            -e SECRET_KEY="$E2E_SECRET_KEY" \
+            -e PLATFORM_SECRET_KEY="$PLATFORM_SECRET_KEY" \
+            test-app:pr
+          # Espera a /health hasta 60 s (criterio 1 de #876). Solo cuenta un 200 de la app:
+          # otra respuesta HTTP (por ejemplo un 302 de otro servicio en el puerto) no lo es.
+          # Si el contenedor deja de correr, no tiene sentido seguir esperando (BP #1459).
+          ready=0
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/health 2>/dev/null) || code=000
+            if [ "$code" = "200" ]; then
+              ready=1
+              break
+            fi
+            if [ "$(docker inspect -f '{{.State.Running}}' test-app 2>/dev/null)" != "true" ]; then
+              echo "::error::test-app is not running; it exited before answering /health."
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then
+            echo "::error::app did not respond on /health within 60s"
+            # Diagnóstico (BP #1456): sin esto el rojo no dice por qué no arrancó la app.
+            docker ps -a
+            docker logs test-app 2>&1 | tail -n 300
+            exit 1
+          fi
+          echo "App is ready"
+
+      - name: Install Playwright dependencies
+        working-directory: e2e
+        run: npm ci
+
+      - name: Install Chromium browser
+        # From e2e/: the Playwright that npx resolves there is the one locked in
+        # e2e/package-lock.json. From the root, npx downloads the latest release.
+        working-directory: e2e
+        run: npx playwright install chromium
+
+      - name: Run the E2E smoke specs
+        # Desde e2e/: ahí está la copia de @playwright/test que usan los specs.
+        # Desde la raíz, npx baja otra y Playwright no encuentra tests.
+        working-directory: e2e
+        env:
+          BASE_URL: http://localhost:8000
+          TEST_CONTAINER_NAME: test-app
+        run: |
+          set -euo pipefail
+          npx playwright test smoke.spec.ts auth.spec.ts
+
+  ci-images:
+    # Gate HR-78 (canon DysTelefonica/team-skills#1264): toda imagen LITERAL que
+    # el CI descarga (container.image, services.<id>.image, driver-opts image=
+    # de buildx, docker run|pull|build y uses: docker://) lleva @sha256:<64 hex>.
+    #
+    # Con P56_ci_images_gate: on la fase 4 exige que el job que ejecuta el gate
+    # figure en required_jobs: la única vía de enforcement en un repositorio
+    # privado con plan Free (HR-72).
+    #
+    # HR-30 (#857 PR-D): el nombre lleva el evento, así el nombre resuelto por
+    # evento es `ci-images (pull_request)`, `ci-images (push)`, etc. — schedule
+    # y workflow_dispatch siguen ejecutando el job (la red de seguridad), pero
+    # el nombre de check que publican ya no es estático.
+    name: ci-images (${{ github.event_name }})
+    # El job corre en los cuatro eventos que la red de seguridad del repo
+    # evalúa: la PR, el post-merge (push a main), el nightly (schedule) y el
+    # manual (workflow_dispatch).
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()
+    # Repositorio público: entrada no confiable y runner hospedado. El job no
+    # pide ningún secreto —los PR de fork no lo recibirían y el gate se saltaría
+    # justo donde tiene que ser más duro—, así que mide con el catálogo
+    # vendorizado en .agents/skills/ci-pattern/, la ruta del resto de gates.
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    concurrency:
+      group: gate-ci-images-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    # Lee el árbol local sin red: más de 5 minutos es un cuelgue.
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/ci-images.txt \
+            --runner "${{ runner.name }}"
+
+      - name: Gate de imágenes de CI fijadas por digest (HR-78)
+        run: python3 .agents/skills/ci-pattern/assets/ci-images/check_ci_images_pinned.py .
 
   required:
     # Issue #702: deterministic replacement for the six hand-configured
@@ -703,12 +1097,22 @@ jobs:
     # el requerido de la proteccion de rama—. Issue #857, PR-D: el conjunto de
     # eventos pasa a `pull_request || push || schedule || workflow_dispatch`;
     # `merge_group` desaparece con la cola de merge.
-    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()
+    #
+    # #1464 (HR-30): `required` es el nombre que exige el contrato del host
+    # (.github/host-contract.json, required_checks), asi que solo puede
+    # publicarse desde un evento que evalua el pull request. En `schedule` y
+    # `workflow_dispatch` no lo evalua: un verde ahi es un falso verde
+    # indistinguible del bueno, y un dispatch manual sobre la rama de un PR
+    # publicaba `required` en verde sin que `pr-gate` —el gate del enlace a la
+    # issue y del presupuesto de revision— hubiera corrido nunca. El `push` a
+    # la base se mantiene: su run reporta sobre la base, no sobre la cabeza de
+    # un PR, y es el que satisface la proteccion de rama de `main`.
+    if: (github.event_name == 'pull_request' || github.event_name == 'push') && !cancelled()
     # Issue #882, PR-3: `integration` joins the required aggregator. The
     # job runs the full integration suite against the in-job Postgres
     # service; a red integration gate holds the PR the same way `quality`
     # does.
-    needs: [pr-gate, quality, integration, security, codeql, docs-codeguide, docs-links, docs-decisions, docs-architecture]
+    needs: [pr-gate, quality, integration, security, pip-audit, codeql, e2e-smoke, docs-codeguide, docs-links, docs-decisions, docs-architecture, governance-seals, docs-commands, pip-audit-alert, ci-images]
     runs-on: ubuntu-24.04
     concurrency:
       group: gate-required-${{ github.event.pull_request.number || github.ref }}
@@ -716,6 +1120,16 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/required.txt \
+            --runner "${{ runner.name }}"
 
       - name: Enforce the required-job policy
         # Canon DysTelefonica/team-skills#806 (BP#1040): el agregador ya no es un script

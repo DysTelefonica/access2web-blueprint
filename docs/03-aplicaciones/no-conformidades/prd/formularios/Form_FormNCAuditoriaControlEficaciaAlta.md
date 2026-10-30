@@ -57,7 +57,7 @@ El formulario no accede a datos por sí mismo. La persistencia ocurre en `Form_F
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Sin SQL propio; las fechas viajan como texto (`:65`).
+Pendiente de la coexistencia (documento aún no redactado). Sin SQL propio; las fechas viajan como texto (`:65`).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 
