@@ -1,0 +1,3 @@
+type: minor
+
+Los jobs que solo miden el árbol (lint, nombre de rama, sellos de gobierno) disparan solo con `opened`, `synchronize` y `reopened`, y viven fuera del workflow de contrato de PR. Ese workflow es el único que lee el cuerpo y las etiquetas, y por eso re-ejecuta con `edited`, `labeled` y `unlabeled` (HR-73). La forma canónica del job `governance-seals` en la guía de porting cambia en consecuencia: es un workflow propio con esos disparadores y con su cola de `concurrency` (`governance-seals-<PR>`), que deja de compartir la `pr-gates-<PR>` del contrato de PR. Hasta ahora se copiaba con los disparadores del contrato, y en cadete `pr-gates` corría 1,58 veces por commit. Refs #1440.
