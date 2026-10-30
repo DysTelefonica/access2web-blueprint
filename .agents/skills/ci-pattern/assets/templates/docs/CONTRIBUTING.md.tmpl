@@ -32,6 +32,11 @@ declaración es vinculante: el catálogo no la rellena por usted.
   no exonera.
 - El commit no lleva atribución de IA (`Co-Authored-By: ... <noreply>`):
   la trazabilidad va en el cuerpo de la PR, no en la firma del commit.
+- El autor del commit es una persona con cuenta de GitHub (HR-84): configure
+  `git config user.name` y `git config user.email` con un correo verificado
+  de su cuenta o su dirección noreply. Si un agente hace los commits, revise
+  también `GIT_AUTHOR_*` y `GIT_COMMITTER_*` en su entorno: una identidad
+  propia del agente (`pi-agent <pi-agent@local>`) no queda vinculada a nadie.
 
 ## Etiquetas
 
