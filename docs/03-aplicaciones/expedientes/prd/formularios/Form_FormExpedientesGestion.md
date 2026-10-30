@@ -168,6 +168,22 @@ Propuestos, no aprobados:
 6. Enlazar o desvincular informa del número de expedientes de la familia afectados.
 7. Los contadores muestran las filas de cada lista y su suma.
 
+## Procedimientos auxiliares
+
+Procedimientos que sostienen los flujos anteriores. Citas `Form_FormExpedientesGestion.cls:línea`.
+
+| Procedimiento | Qué hace | Evidencia |
+|---|---|---|
+| `RellenarAM`, `RellenarBasado`, `RellenarLote` | Despachan a la variante `PorMemoria` o `PorTabla` según `m_DatosEnMemoria`; ante un error reponen `AllowEdits = True` y solo rellenan `p_Error` si el error no es el interno 1000 | `:235-254`, `:366`, `:521-540` |
+| `RellenarLotePorTabla`, `RellenarBasadoPorTabla` | Mismas columnas y reglas que la variante en memoria; `RellenarLotePorTabla` filtra por `p_IdPadre` y `p_IDExpediente` (`:479-480`); `RellenarBasadoPorTabla` deja el ejército vacío si el basado no tiene (`:621-624`) | `:451-520`, `:594-651` |
+| `RellenarComboIDExp` | «Todos» más los `IDExpediente` de `ColExpedientesCompletos`; sin datos en memoria invalida antes esa caché | `:3425-3455` |
+| `RellenarComboComercial`, `RellenarComboRAC` | «Todos» más los nombres de `m_ObjEntorno.Comerciales` y `m_ObjEntorno.RACs` | `:3526-3578` |
+| `RellenarComboResponsableCalidad`, `RellenarComboResponsableSeguridad` | `0;Todos` más `id;Nombre` de los usuarios con el rol «Calidad» o «Seguridad» (`modResponsablePorRolHelper.GetUsuariosPorRol`); la lista se despliega con todas sus filas (`ListRows = ListCount`) | `:3456-3525` |
+| `Reestablecer` | Anula las cachés `ColExpedientesParaCombo`, `Comerciales`, `RACs` y `JPs` del entorno, vuelve a llamar a `RellenarCombos` y `setExpBusqueda`. `ReestablecerTitulosListas` repone los rótulos «Acuerdos Marco y los Expedientes individuales», «Lotes» y «Basados» | `:3579-3620` |
+| `ListaSeleccionada` | `Verdadero` si alguna fila de la lista, sin contar la de cabecera, está seleccionada; una lista con solo cabecera da `Falso` | `:2253-2275` |
+| `DeseleccionarLista` | Quita la primera fila seleccionada de la lista indicada; sin nombre, recorre AM, Lotes y Basados en ese orden | `:2101-2139` |
+| `InvalidarCacheCambioE2E` | Descarta `m_MarcadoresCambioE2E`; `MarcadorCambioE2E` los recarga una sola vez al siguiente uso | `:35-50` |
+
 ## Pendientes
 
 - Si el código embebido en `.form.txt` (`:5796` en adelante), más antiguo que el `.cls` (sin columna «Cambio» ni `EnlazadoE2E_AfterUpdate`), es el que contiene el binario.

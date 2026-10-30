@@ -1,0 +1,7 @@
+type: patch
+
+El guard de force-push (`check_force_push_guard.py`) leía el rango del evento en el nivel superior y exigía las banderas `forced`/`deleted`, así que fallaba cerrado con exit 2 en el `workflow_dispatch` que le despacha el merge gobernado (#817): ese evento no trae esas banderas y lleva el rango auditado en `inputs`. El resultado era un rojo permanente en cada merge gobernado de cadete (#693, #695, #697, #700, #703, #705) que no llevaba información y que ocupaba el lugar de la evidencia real del mismo grupo de workflows.
+
+Ahora el guard lee el rango con `push_range`, el lector compartido que ya usa el detective post-push (#933): el rango sale de `inputs` cuando el evento es un dispatch y del nivel superior cuando es un push. Un dispatch con el rango bien formado sale con 0 y dice qué midió —el rango auditado, bien formado, sin force-push ni borrado reportado para él— y declara que el evento no trae las banderas, porque su ausencia no es una medición que haya pasado. Un dispatch con el rango mal formado falla cerrado con 2 nombrando la causa, igual que un push con el rango mal formado. El camino del push no cambia: `forced: true` o `deleted: true` sobre una rama protegida abre el incidente y sale con 1, y un push ordinario sale con 0.
+
+El guard no busca reescrituras dentro del rango despachado: las reescrituras llegan como evento `push`, que es el camino que ya audita. El paso de exit 2 a exit 0 en el dispatch no añade ninguna capacidad de detección; quita un rojo que no medía nada.

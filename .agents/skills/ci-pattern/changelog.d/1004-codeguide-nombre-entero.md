@@ -1,0 +1,3 @@
+type: patch
+
+El sentido atrás de `docs-codeguide` (repo → docs) deja de dar por mapeado un módulo cuyo nombre aparece como subcadena del texto del mapa, y exige que el nombre esté **completo** y además en contexto de código (backticks o bloque cercado) o como segmento de una ruta. Antes `module not in docs_text` bastaba: en `DysTelefonica/access2web-blueprint` un `app/src/modules/nuevo/` sin ninguna entrada en el mapa pasaba el gate porque «nuevo» salía 15 veces en las páginas como adjetivo, y lo mismo pasaba con «datos» o con «core» dentro de «encore». La prosa de un codeguide ya no da cobertura por accidente (#1004).

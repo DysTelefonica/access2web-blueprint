@@ -24,8 +24,8 @@ Para ADOPTAR o AUDITAR el patrón (gates, contratos, HRs, fases) cargue
 | Mi rama está desfasada de main | 1 — `git merge origin/main` |
 | El PR está en verde y hay que integrarlo | 2 — lo lanza un mantenedor, camino gobernado; un agente solo por orden registrada |
 | El cambio no cabe en un PR | 3 y 5 — cadena de unidades, punta cierra |
-| Añadir o elegir etiquetas | 4 — solo `type:*` del contrato del host |
-| El diff pasa de 400 líneas | 5 — partir o `size-exception-reason:`, nunca recortar |
+| Añadir o elegir etiquetas | 4 — `type:*` orientativa, del contrato del host |
+| El diff pasa de 400 líneas | 5 — partir o pedir la etiqueta `size:exception` al mantenedor, nunca recortar |
 | Después del merge | 6 — la rama remota se conserva |
 | Empujé algo que la política prohíbe | 7 — el detective/guard abre el incidente |
 | El consumer decide la estrategia de merge | 8 — `--squash` o `--no-ff`, ambos válidos; la rama remota sobrevive |
@@ -39,14 +39,18 @@ PR-1 (chain:partial, Refs #N) ──> PR-2 (chain:partial, Refs #N) ──> PR-N
 
 ## Las siete reglas
 
+Antes de `gh pr create`, ejecute `ci-pattern pr preflight --draft --pr-body <cuerpo.md> --base <rama-base> --label <etiqueta>`: comprueba cuerpo, etiquetas y tamaño sin API.
+
 1. **Actualice con `git merge origin/main`.** Nunca rebase de una rama ya
    publicada, ni `--amend`, ni force-push: la historia publicada es de
    todos y reescribirla rompe los enlaces, los PRs y el trabajo de quien
    venía revisando. — *referencia: `ci-pattern`, HR-54.*
 
-2. **El merge y `status:approved` los lanza un mantenedor, por el camino
-   gobernado** (`gh workflow run <workflow> -f pr=<N>`). Un agente ejecuta
-   una de estas acciones solo por orden de un mantenedor, y cuando se
+2. **El merge lo lanza un mantenedor, por el camino gobernado**
+   (`gh workflow run <workflow> -f pr=<N>`). `status:approved` no es
+   puerta: la puede poner cualquiera, agentes incluidos (decisión del
+   dueño del 2026-10-23, 17:24, en los comentarios de #1093). El agente
+   ejecuta el merge solo por orden de un mantenedor, y cuando se
    cumplen las tres condiciones siguientes:
    - **Permiso:** la cuenta de `gh` en uso es de mantenedor en el repositorio.
      Lo comprueba justo antes de actuar con
@@ -60,27 +64,27 @@ PR-1 (chain:partial, Refs #N) ──> PR-2 (chain:partial, Refs #N) ──> PR-N
 
    Tras la acción, el agente relee la etiqueta o el estado del merge con un
    solo intento; si el resultado es incierto, se detiene sin reintentar. El
-   merge exige CI en verde y el camino gobernado; nunca `--admin`. Nunca se
-   auto-aprueba: sin orden registrada del mantenedor, el agente crea la issue
-   y para. Un mantenedor puede aprobar y mergear su propio cambio si la
-   protección de la rama lo admite. — *referencia: `ci-pattern`, flujo
-   §«Pedir un merge».*
+   merge exige CI en verde y el camino gobernado; nunca `--admin`. El merge
+   nunca lo hace el agente sin esa orden registrada; la etiqueta
+   `status:approved` sí se puede poner sin ella. Un mantenedor puede aprobar
+   y mergear su propio cambio si la protección de la rama lo admite. —
+   *referencia: `ci-pattern`, flujo §«Pedir un merge».*
 
 3. **Las cadenas**: los intermedios llevan `chain:partial` y `Refs #N`;
    solo la punta lleva `Closes #N`. El merge avanza de abajo arriba —
    re-apunte del PR siguiente sobre main y empujón, porque re-apuntar por
    sí solo no lanza el CI. — *referencia: `ci-pattern`, HR-7 y HR-54.*
 
-4. **Una sola etiqueta `type:*`, y de las que declara el contrato del
-   host.** Una etiqueta que el host no tiene es ruido que ningún gate
-   verá jamás: se documenta o se usa la existente, nunca se inventa. —
-   *referencia: `ci-pattern`, HR-34.*
+4. **Etiqueta `type:*` orientativa, de las que declara el contrato del
+   host.** Ningún gate la exige (team-skills#1093, R1). Una etiqueta que el
+   host no tiene es ruido que ningún gate verá jamás: se documenta o se usa
+   la existente, nunca se inventa. — *referencia: `ci-pattern`, HR-34.*
 
 5. **400 líneas por PR.** Corte por unidad de trabajo —cada commit, una
-   pieza entregable con sus tests y su doc—; `size-exception-reason:` solo
-   cuando el corte honesto no cabe, y nunca recortar comentarios,
-   documentación ni tests para entrar en el presupuesto. — *referencia:
-   `ci-pattern`, HR-8 y HR-54.*
+   pieza entregable con sus tests y su doc—. La etiqueta `size:exception` la
+   pone el mantenedor, solo cuando el corte honesto no cabe; nunca se recortan
+   comentarios, documentación ni tests para entrar en el presupuesto. —
+   *referencia: `ci-pattern`, HR-8 y HR-54.*
 
 6. **La rama remota se conserva tras el merge** (nunca `git push origin
    --delete <rama>`): permite seguir o revertir con exactitud algo que se
@@ -110,13 +114,12 @@ PR-1 (chain:partial, Refs #N) ──> PR-2 (chain:partial, Refs #N) ──> PR-N
   incidente.
 - Declarar un PR listo con el CI en rojo, o encadenar sin re-apuntar y
   empujar el siguiente tramo.
-- Dos etiquetas `type:*`, o una etiqueta inventada fuera del contrato
-  del host.
+- Una etiqueta inventada fuera del contrato del host.
 - Recortar documentación, comentarios o tests para caber en las 400
   líneas: se parte el cambio, no se adelgaza el diff.
-- Que un agente ejecute el merge o aplique `status:approved` sin orden
-  explícita de un mantenedor registrada en la issue o el PR, o con una
-  cuenta sin permiso de mantenedor.
+- Que un agente ejecute el merge sin orden explícita de un mantenedor
+  registrada en la issue o el PR, o con una cuenta sin permiso de
+  mantenedor.
 
 ## Qué cargar junto a esto
 

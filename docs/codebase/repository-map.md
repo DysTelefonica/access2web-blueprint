@@ -22,12 +22,13 @@
 | `app/src/modules/expedientes/` | Módulo de Expedientes (F04 scaffold): `application` con 30+ use cases (`create_expediente`, `edit_expediente`, `transition_expediente`, `delete_expediente`, `anexos`, `audit`, `authorization`, `autosave_general`, `autosave_related`, `batch_e2e`, `catalogs`, `current_principal`, `e2e_dto`, `e2e_hash`, `e2e_session`, `export_package`, `feedback_guard`, `json_canonical`, `nc`, `ordinal_e2e`, `queries`, `register_anualidad`, `register_hito`, `register_juridica`, `register_responsable`, `register_suministrador`, `riesgos`, `runtime_policies`, `session_state`), `domain` con entidades, `ports`, `migration` (extracción legacy → moderno), `app/src/modules/expedientes/shared/uow.py`. `delivery` está en scaffold (sólo `__init__.py`). | Código de Lanzadera. |
 | `app/migrations/versions/` | Migraciones Alembic 0001..0006 (D82, Expand and Contract). | Lógica de aplicación. |
 | `app/migrations/env.py` | Runtime Alembic: lee `DATABASE_URL` y aplica `target_metadata`. | Modelos de dominio. |
-| `app/pyproject.toml` | Pins exactos de ruff==0.15.21, mypy==1.13.0, argon2-cffi==25.1.0 y del resto del toolchain (Hard Rule 2). | Configuración de runtime. |
+| `app/pyproject.toml` | Pins exactos de ruff==0.17.2, mypy==1.13.0, argon2-cffi==25.1.0 y del resto del toolchain (Hard Rule 2). | Configuración de runtime. |
 | `app/requirements-dev.lock` | Lockfile con hashes de la transitiva (Hard Rule 15). | — |
+| `app/requirements.lock` | Lockfile runtime con hashes, export de `app/uv.lock` sin grupos de desarrollo (BP #1456). | — |
 | `tests/lanzadera/`, `tests/expedientes/` | Suites TDD por módulo. | Generadores de legacy. |
 | `e2e/` | Suite Playwright (F1-F5, 5 fases merged). | Tests unitarios. |
 | `scripts/check_*.py` | Quality gates deterministas (ver `docs/gates.md` §2). | Lógica de aplicación. |
-| `docs/03-aplicaciones/<app>/` | Research por app: `epic.md`, `walkthrough-G*.json`, `capabilities.md`, `data-model.md`, `forms.md`, `integrations-security.md`, `ERD`. | Código fuente. |
+| `docs/03-aplicaciones/<app>/` | Research por app: `epic.md`, `walkthrough-G*.json`, `capabilities.md` (el estudio por sistema), `data-model.md`, `forms.md`, `integrations-security.md`, `ERD`. Las fichas de capacidad tienen su ruta canónica en `docs/03-aplicaciones/<app>/capabilities/CAP-00X-*.md`, con el índice del sistema en `docs/03-aplicaciones/<app>/capabilities/index.md` (#1288). | Código fuente. |
 | `data/staging/<app>/` | Binarios `.accdb` R2-pulled (NO se commitean). | Scripts reproducibles; van en `scripts/`. |
 | `openspec/changes/<change>/` | Specs SDD: `proposal.md`, `design.md`, `openspec/changes/<change>/specs/<capability>/spec.md`, `tasks.md`. | Implementación. |
 | `inputs/` | Material externo versionado ligero (automatizaciones-legacy, etc.). | — |

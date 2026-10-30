@@ -1,0 +1,3 @@
+type: minor
+
+La canon trae el asset `assets/where-to-work/`, que exige la página `docs/codebase/where-to-work.md` en cada consumer: una fila por tarea canónica en la forma «lee → toca → prueba» (`form`, `ci`, `schema`) más la fila `local` con el índice del repo y sus skills obligatorias. El gate mide presencia y deriva, no prosa: que la página exista, que declare las cuatro filas con sus tres columnas y que cada ruta citada exista en el repo. Una receta con texto equivocado pero rutas que existen pasa; una ruta muerta, una fila que falta o una página que no está, fallan. La plantilla para el consumer está en `assets/where-to-work/templates/where-to-work.md` (#1201).
