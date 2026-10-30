@@ -1,6 +1,6 @@
 # Matriz campo a campo: configuración, caché por NC, logs, documentos y catálogos (No Conformidades)
 
-Parte «c-configuracion-logs» de la matriz campo a campo del PRD de No Conformidades (#1080). Cubre las tablas del esquema previo `TbCacheListadoNCAuditoria`, `TbCacheNCProyecto`, `TbConexiones`, `TbConfiguracion`, `TbConsultasPorFechas`, `TbDocumentosAuditorias`, `TbEstadoCatalogo`, `TbHerramientaDocAyuda`, `TbLog`, `TbLogAuditoria` y `TbLogCache`. Índice de formularios y capacidades en [el PRD de la aplicación](../README.md); las fichas de formulario están en `../formularios/`.
+Parte «c-configuracion-logs» de la matriz campo a campo del PRD de No Conformidades (#1080). Cubre las tablas del esquema previo `TbCacheListadoNCAuditoria`, `TbCacheNCProyecto`, `TbConexiones`, `TbConfiguracion`, `TbConsultasPorFechas`, `TbDocumentosAuditorias`, `TbEstadoCatalogo`, `TbHerramientaDocAyuda`, `TbLog`, `TbLogAuditoria` y `TbLogCache`. Índice de formularios y capacidades en [el PRD de la aplicación](../README.md); las fichas de formulario están en el [inventario de formularios](../README.md#formularios).
 
 ## Método
 
