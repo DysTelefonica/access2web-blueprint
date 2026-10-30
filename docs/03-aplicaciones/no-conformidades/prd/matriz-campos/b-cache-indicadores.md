@@ -1,6 +1,6 @@
 # Matriz campo a campo: caché de indicadores y de listados (No Conformidades)
 
-Parte «b-cache-indicadores» de la matriz campo a campo del PRD de No Conformidades (#1080). Cubre las tablas del esquema previo `TbCacheIndicadoresAuditoriaDetalle`, `TbCacheIndicadoresAuditoriaHeader`, `TbCacheIndicadoresConfig`, `TbCacheIndicadoresProyectoDetalle`, `TbCacheIndicadoresProyectoHeader` y `TbCacheListadoNC`. Índice de formularios y capacidades en [el PRD de la aplicación](../README.md); las fichas de formulario están en `../formularios/`.
+Parte «b-cache-indicadores» de la matriz campo a campo del PRD de No Conformidades (#1080). Cubre las tablas del esquema previo `TbCacheIndicadoresAuditoriaDetalle`, `TbCacheIndicadoresAuditoriaHeader`, `TbCacheIndicadoresConfig`, `TbCacheIndicadoresProyectoDetalle`, `TbCacheIndicadoresProyectoHeader` y `TbCacheListadoNC`. Índice de formularios y capacidades en [el PRD de la aplicación](../README.md); las fichas de formulario están en el [inventario de formularios](../README.md#formularios).
 
 ## Método
 
