@@ -1,0 +1,7 @@
+type: patch
+
+#1113: `check_pr_contract.py` acepta las comprobaciones retiradas por #1093 como no-op con un aviso, en vez de salir con exit 2. `labels` estuvo en `CHECK_NAMES` hasta 938754363 (R1/R2) y `required_labels` era su campo de política; las políticas de APAP_WEB y cadete las siguen declarando dentro de `checks`, así que la siguiente propagación ponía el gate en rojo en los dos (`ERROR: 'checks' nombra comprobaciones desconocidas: labels`, exit 2).
+
+El cambio: una clave retirada se ignora por completo —no cuenta como comprobación activa y su valor tampoco se juzga— y el gate avisa en una línea de stderr, «PR-CONTRACT: comprobación retirada, se ignora; quítala de la política: labels». Una clave que NUNCA existió sigue dando exit 2, para no perder la detección de erratas: `docs_evidnce` continúa siendo un error de configuración, y una política con `checks` que no sea un objeto, con un valor no booleano o con todas las comprobaciones apagadas, sigue saliendo con 2 y con el mismo mensaje.
+
+Tres tests nuevos en `assets/pr-contract/tests/test_pr_contract.py` (`ChecksSwitchTests`): una política con `"labels": true` da el mismo veredicto que sin ella —mismo código de salida y misma stdout— y avisa; las claves retiradas se avisan en una sola línea nombrándolas; y el valor de una clave retirada no se juzga. El resto del gate no cambia: mensajes, códigos de salida y veredictos, iguales.

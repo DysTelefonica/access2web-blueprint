@@ -12,6 +12,12 @@ alwaysApply: true
 > bloque propagado + una sola sección local). El contenido se conserva
 > verbatim; su destino natural es este documento, no el `AGENTS.md`.
 
+> **Índice de referencia del registro de skills.** Este documento es el índice de
+> referencia del registro de skills del repositorio: las tablas de aquí son la
+> puerta de entrada del contribuyente. El registro generado —
+> `.atl/skill-registry.md`, refrescado con `gentle-ai skill-registry refresh` —
+> es la fuente de verdad de descubrimiento (`AGENTS.md` §«Skill Registry
+> Protocol»); este índice no lo sustituye, lo señala.
 
 When working on this project, load the relevant skill(s) BEFORE writing any code or docs.
 
@@ -135,17 +141,17 @@ Este orden lo operacionaliza la skill **`architecture-guardrails`** (§Hard Rule
 `main` tiene branch protection desde el 2026-09-09, tras hacer público el
 repositorio en GitHub Free. La protección se aplica también a administradores.
 
-El CI corre una vez en la PR contra la cabeza actual: `required` debe estar
-en verde antes de fusionar. Sin `strict` ni cola de merge, una PR que ya pasó
-el CI se integra aunque quede atrás de `main` (no hay que sincronizar la rama
-con `main` a mano). La red de seguridad tras el merge es el mismo workflow
-`ci` en `push` a `main` y un `schedule` diario. Todas las conversaciones
-deben estar resueltas y (tras issue #702) un único check en verde: `required`. Ese job agrega (`needs:`) `review-budget`, `quality`,
-`security` y `codeql` — los dos últimos invocan `security.yml`/`codeql.yml` como
-jobs `uses:` porque `needs:` no cruza archivos de workflow — y falla cerrado ante
-cualquier job faltante, en `failure`, o en un `skipped` no permitido para ese
-evento (gate `required-jobs` del canon). No permite force-push ni borrar la
-rama.
+El CI corre una vez en la PR contra la cabeza actual: `required` y
+`pr-gate` deben estar en verde antes de fusionar. Sin `strict` ni
+cola de merge, una PR que ya pasó el CI se integra aunque quede atrás de `main`
+(no hay que sincronizar la rama con `main` a mano). La red de seguridad tras el
+merge es el mismo workflow `ci` en `push` a `main` y un `schedule` diario.
+Todas las conversaciones deben estar resueltas. El job `required` agrega
+(`needs:`) la suite pesada y falla cerrado ante cualquier job faltante, en
+`failure`, o en un `skipped` no permitido para ese evento (gate
+`required-jobs` del canon). El contexto `pr-gate` lo publica el
+workflow H1 en `pull_request_target` sobre la cabeza del PR (#1461). No permite
+force-push ni borrar la rama.
 
 Todo job alcanzable desde un PR público usa un runner hospedado por GitHub. El
 gate `check_workflows.py` rechaza etiquetas propias o dinámicas en esa ruta;
@@ -158,7 +164,7 @@ misma regla cuando se lo analiza por su cuenta.
 
 Pasos del revisor antes de mergear:
 
-1. Verifique que `required` pertenece al último SHA del PR.
+1. Verifique que `required` y `pr-gate` pertenecen al último SHA del PR.
 2. Compruebe que las conversaciones están resueltas.
 3. Si un check falla por una dependencia externa, abra un issue y corrija el
    bloqueo antes de integrar. No eluda la protección.
@@ -170,11 +176,11 @@ Refuerza esta disciplina con `gentle-ai review status --cwd <repo>` antes de mer
 
 Toda entrega pasa por una issue canónica y un PR; el merge lo lanza un mantenedor por el camino del host.
 
-- **Issue.** El formulario canónico (`.github/ISSUE_TEMPLATE/issue-canonical.yml`) tiene seis secciones obligatorias: `Problema y contexto`, `Evidencia verificable`, `Alcance y no objetivos`, `Criterios de aceptación`, `Plan de validación` y `Dependencias y riesgos`. Cualquier mantenedor del repositorio con rol de administración aplica `status:approved` tras la revisión, incluso sobre su propia issue; ninguna rama ni PR se crea sin esa etiqueta.
+- **Issue.** El formulario canónico (`.github/ISSUE_TEMPLATE/issue-canonical.yml`) recomienda seis secciones: `Problema y contexto`, `Evidencia verificable`, `Alcance y no objetivos`, `Criterios de aceptación`, `Plan de validación` y `Dependencias y riesgos`. `status:approved` puede ponerla cualquiera, agentes incluidos, y ningún gate la exige (`DysTelefonica/team-skills#1093`, R1/R2).
 - **Rama.** `<tipo>/<slug>` con el patrón de gentle-ai (`feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert`), sin número de issue; lo aplica el ruleset del host. La trazabilidad vive en el cuerpo del PR con `Closes #N`.
-- **PR.** El cuerpo sigue la plantilla del repositorio: `Closes #N` o `Refs #N`, la sección `Chain Context` en la punta de una cadena o con `chain:partial`, y la sección de los tests que prueban el cierre cuando el PR cierra una issue. Si el diff supera las 400 líneas, el mantenedor pone la etiqueta `size:exception` tras responder las 4 preguntas de `AGENTS.md` §F.7.
-- **Check requerido.** `required` debe estar en verde en la PR antes de fusionar. Sin `strict` ni cola de merge, una PR que ya pasó el CI se integra aunque quede atrás de `main` (no hay que sincronizar la rama con `main` a mano); la red de seguridad tras el merge es el mismo `ci` en `push` a `main` y un `schedule` diario.
-- **Merge.** Lo lanza un mantenedor por el camino del host: el ruleset `main-maintainers-and-admins-merge` solo deja actualizar `main` a los mantenedores y administradores, y solo mediante un PR. **Ningún agente mergea ni aplica `status:approved`.**
+- **PR.** El cuerpo sigue la plantilla del repositorio: `Closes #N` o `Refs #N`; `Chain Context` y la sección de tests que prueban el cierre son ayudas y su ausencia avisa, pero no bloquea (#1093 R3/HR-53). Si el diff supera las 400 líneas, el mantenedor pone la etiqueta `size:exception` tras responder las 4 preguntas de `AGENTS.md` §F.7.
+- **Checks requeridos.** `required` y `pr-gate` deben estar en verde en la PR antes de fusionar. Sin `strict` ni cola de merge, una PR que ya pasó el CI se integra aunque quede atrás de `main` (no hay que sincronizar la rama con `main` a mano); la red de seguridad tras el merge es el mismo `ci` en `push` a `main` y un `schedule` diario.
+- **Merge.** Lo lanza un mantenedor por el camino del host: el ruleset `main-maintainers-and-admins-merge` solo deja actualizar `main` a los mantenedores y administradores, y solo mediante un PR. **Ningún agente hace merge.**
 - **Rama remota.** Se conserva tras el merge; nunca se borra.
 - **Documentación.** Vive en el repositorio, bajo `docs/`.
 
