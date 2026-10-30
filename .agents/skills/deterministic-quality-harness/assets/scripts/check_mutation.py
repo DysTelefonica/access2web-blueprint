@@ -67,7 +67,8 @@ class BaselineEntry:
 
     survivors: int
     target: int
-    target_date: str  # ISO-8601, YYYY-MM-DD
+    target_date: str  # ISO-8601, YYYY-MM-DD; renegotiable, recomputed on every --emit-baseline
+    acquired_on: str = ""  # ISO-8601, YYYY-MM-DD; when the survivor was measured. "" predates this field
 
 
 @dataclass(frozen=True)
@@ -173,6 +174,11 @@ def check_run_health(rows: list[dict[str, Any]]) -> tuple[list[str], dict[str, f
         )
     if killed == 0 and survived == 0:
         violations.append("degenerate run: no mutant was killed or survived; nothing was measured")
+    elif killed == 0:
+        violations.append(
+            f"degenerate run: 0/{len(rows)} mutants were killed; the test suite did not run "
+            "against the mutated code, so every survivor in this session is noise, not debt"
+        )
 
     scored = killed + survived
     metrics = {
@@ -225,6 +231,10 @@ def check_ratchet(survivors: dict[str, str], today: date) -> tuple[list[str], li
                 f"{identity}: BASELINE expired on {allowance.target_date}; "
                 f"target was {allowance.target}"
             )
+        elif not allowance.acquired_on:
+            notices.append(
+                f"{identity}: entry predates acquired_on; re-emit the BASELINE to record it"
+            )
     for identity, allowance in sorted(BASELINE.items()):
         if identity not in survivors and isinstance(allowance, BaselineEntry):
             notices.append(f"{identity}: survivor was killed; remove it from BASELINE")
@@ -251,13 +261,35 @@ def check_pending_overdue(today: date) -> list[str]:
     return violations
 
 
-def render_baseline(survivors: dict[str, str], today: date, horizon_days: int = 90) -> str:
+def _acquired_on(identity: str, today: date, baseline: dict[str, Any]) -> str:
+    """The date a survivor was measured, never moved by a re-emission.
+
+    ``target_date`` is renegotiable on every ``--emit-baseline``: it is recomputed as
+    today + horizon, so it answers "when was this baseline last written". The acquisition
+    date answers "when was this debt measured", and handing a year-old entry another ninety
+    days is how a ratchet entry stays alive forever. An entry that predates the field has no
+    recorded acquisition; per #809 D7 the emission date starts its clock and is written out
+    explicitly, so the next reader sees when the clock started.
+    """
+    entry = baseline.get(identity)
+    if isinstance(entry, BaselineEntry) and entry.acquired_on:
+        return entry.acquired_on
+    return today.isoformat()
+
+
+def render_baseline(
+    survivors: dict[str, str],
+    today: date,
+    baseline: dict[str, Any],
+    horizon_days: int = 90,
+) -> str:
     target_date = date.fromordinal(today.toordinal() + horizon_days).isoformat()
     lines = ["BASELINE: dict[str, BaselineEntry | AwaitingAcquisition] = {"]
     for identity in sorted(survivors):
+        acquired = _acquired_on(identity, today, baseline)
         lines.append(
             f'    "{identity}": BaselineEntry(survivors=1, '
-            f'target=0, target_date="{target_date}"),'
+            f'target=0, acquired_on="{acquired}", target_date="{target_date}"),'
         )
     lines.append("}")
     return "\n".join(lines)
@@ -362,7 +394,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     if args.emit_baseline:
-        payload = render_baseline(survivors, today)
+        payload = render_baseline(survivors, today, BASELINE)
         if args.baseline_output is None:
             print(payload)
         else:
@@ -370,6 +402,13 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     ratchet, notices = check_ratchet(survivors, today)
+    if not rows:
+        # Zero mutants is not the case the "nothing was killed" rule covers: the refusal above
+        # stands on its own, and this note says why there is no "0/0" line beside it.
+        notices = [
+            *notices,
+            "zero mutants were measured; the refusal above is about the session, not the code",
+        ]
     overdue = check_pending_overdue(today)
     violations = health + ratchet + overdue
     if unexpected_subjects:

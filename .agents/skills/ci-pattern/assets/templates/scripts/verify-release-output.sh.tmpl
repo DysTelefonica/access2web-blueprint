@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Comprobación de salida del release (HR-19; canon #1015): lo que queda
+# desplegado lleva el commit del tag. No es una batería de tests — el CI ya
+# quedó verde en el job `preflight` del workflow de release—, es el cierre de
+# la cadena «lo publicado corresponde a lo firmado».
+#
+# Plantilla canónica. Para adoptarla: copie a
+# `scripts/verify-release-output.sh`, con permiso de ejecución, y cambie los dos
+# valores de abajo. El workflow de release la invoca con `RELEASE_TAG` y
+# `RELEASE_SHA` en el entorno y falla si el script no existe o no sale 0.
+#
+#   RELEASE_HEALTH_URL  endpoint que expone la revisión desplegada (parámetro 6
+#                       del canon: `https://<host>/healthz`).
+#   REVISION_JSON_PATH  clave JSON que contiene el SHA, en notación de punto
+#                       (`revision`, `git.sha`). Por defecto `revision`.
+set -euo pipefail
+
+: "${RELEASE_TAG:?el workflow debe exportar RELEASE_TAG}"
+: "${RELEASE_SHA:?el workflow debe exportar RELEASE_SHA}"
+: "${RELEASE_HEALTH_URL:?defina RELEASE_HEALTH_URL con el endpoint de salud del consumer}"
+
+export REVISION_JSON_PATH="${REVISION_JSON_PATH:-revision}"
+
+die() {
+  printf 'release verify: %s\n' "$*" >&2
+  exit 1
+}
+
+[[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]] || die "RELEASE_SHA no es un SHA: $RELEASE_SHA"
+
+body=$(curl --fail --silent --show-error --location --max-time 30 "$RELEASE_HEALTH_URL") ||
+  die "no se pudo leer $RELEASE_HEALTH_URL"
+
+revision=$(printf '%s' "$body" | python3 -c '
+import json, os, sys
+
+data = json.load(sys.stdin)
+for key in os.environ["REVISION_JSON_PATH"].split("."):
+    data = data[key]
+print(data)
+') || die "la respuesta de $RELEASE_HEALTH_URL no expone «$REVISION_JSON_PATH»"
+
+[[ "$revision" == "$RELEASE_SHA" ]] ||
+  die "lo desplegado sirve la revisión $revision y el tag $RELEASE_TAG es $RELEASE_SHA"
+
+printf 'release verify: %s sirve el commit %s del tag %s\n' \
+  "$RELEASE_HEALTH_URL" "$revision" "$RELEASE_TAG"

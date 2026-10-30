@@ -1,0 +1,3 @@
+type: patch
+
+La suite del propagador **no se ejecutaba en ningun PR**: el paso de `dorny/paths-filter` no declaraba `id:`, y el `if` del paso siguiente leia `steps.propagate-changed`. Sin ese paso la expresion resuelve a vacio, el `if` nunca daba true y el job salia en verde sin hacer nada (#1033). Con el `id` puesto, la suite sale a un job propio con `timeout-minutes: 6` —`unit` conserva su presupuesto de <=3min— y su filtro pasa a cubrir `skills/**` y `personal/**`, de donde crece el numero de trozos vendorizados. Se retira la exclusion de `local-ci-parity` para `run-propagate-contract.sh`, que quedaba obsoleta al salir la suite del job `unit`; la garantia de que corre en CI la da ahora un job declarado en `required_checks`.

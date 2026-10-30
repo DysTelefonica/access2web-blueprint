@@ -1,0 +1,206 @@
+# The lightweight PR gate (issue #1368).
+#
+# Issue #1368 (auditoría de runners del 2026-10-23): `ci.yml` escuchaba los seis
+# tipos de evento de `pull_request` y la suite pesada (`quality`, `integration`,
+# `security`, `codeql`, `e2e-smoke`) corría en los seis. `edited`, `labeled` y
+# `unlabeled` no cambian el código: solo el cuerpo y las etiquetas del PR. En la
+# ventana medida fueron 1.411 re-ejecuciones del mismo SHA (72 % de 1.956 runs de
+# PR) y 846 canceladas.
+#
+# Aquí vive el `pr-gate`: el trabajo que sí debe volver a correr cuando el
+# cuerpo o las etiquetas cambian y que no necesita ni un minuto de runner
+# pesado. Desde #1461 los gates que miden el pull request (el tamaño y el
+# issue-spec) viven en el workflow H1 (`pr-gates.yml`), que corre en
+# `pull_request_target` y ejecuta el catálogo publicado por su job `canon` en
+# lugar de los scripts del árbol del pull request. Aquí queda el contexto y
+# los carriles (el walkthrough y los marcadores de superficie).
+#
+# `ci.yml` llama a este fichero (`workflow_call`) para que el agregador
+# `required` siga leyendo su veredicto: `needs:` no cruza ficheros de workflow.
+name: pr-gate
+
+on:
+  pull_request:
+    # Los seis eventos: los tres que pueden cambiar el código y los tres que
+    # cambian el cuerpo o las etiquetas. Los pesados viven en `ci.yml`, que solo
+    # escucha los tres primeros.
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
+      - labeled
+      - unlabeled
+  workflow_call:
+    # `ci.yml` invoca este fichero para que `required` siga agregando el
+    # veredicto del pr-gate y su marcador `docs_changed`.
+    outputs:
+      docs_changed:
+        description: >-
+          "true" when the whole diff of the pull request lives under `docs/`.
+          Anything else — an empty diff, a path outside `docs/`, a diff that
+          could not be computed — is "false", and the heavy jobs run.
+        value: ${{ jobs.pr-gate.outputs.docs_changed }}
+      e2e_scope_changed:
+        description: >-
+          "false" when the diff of the pull request does not touch the surface
+          the `e2e-smoke` job analyzes (`app/**`, `e2e/**`). Anything else is
+          "true", and the job runs.
+        value: ${{ jobs.pr-gate.outputs.e2e_scope_changed }}
+      codeql_scope_changed:
+        description: >-
+          "false" when the diff of the pull request does not touch the surface
+          the `codeql` job analyzes (`app/**`, `scripts/**`). Anything else is
+          "true", and the job runs.
+        value: ${{ jobs.pr-gate.outputs.codeql_scope_changed }}
+      lockfile_scope_changed:
+        description: >-
+          "false" when the diff of the pull request does not touch the lock
+          files the `pip-audit` job audits (`app/requirements-dev.lock`,
+          `app/uv.lock`). Anything else is "true", and the job runs.
+        value: ${{ jobs.pr-gate.outputs.lockfile_scope_changed }}
+
+permissions:
+  contents: read
+
+jobs:
+  pr-gate:
+    # The context of this check run is `pr-gate / pr-context`: the verdict of
+    # the pull request gates is published by the H1 workflow under `pr-gate /
+    # pr-gate` (#1461), and a job without a name of its own would publish the
+    # same context twice.
+    name: pr-context
+    # Public pull requests are untrusted input. Every PR-reachable job runs on
+    # an ephemeral GitHub-hosted runner, never on repository infrastructure.
+    runs-on: ubuntu-24.04
+    if: github.event_name == 'pull_request'
+    # What is left of this job reads the tree and the diff: no token, no
+    # issue, no per-file breakdown (the gates that needed them moved to the
+    # H1 workflow).
+    permissions:
+      contents: read
+    outputs:
+      # Issue #1368: the docs-only marker. The heavy jobs skip a
+      # documentation-only pull request only when this is exactly 'true'.
+      docs_changed: ${{ steps.diff-lanes.outputs.docs_changed }}
+      # Issue #1376: one marker per surface. A job skips a pull request only
+      # when its marker is exactly 'false' — the diff does not touch the code
+      # that job analyzes. 'true' means "run": the permission to skip is not
+      # granted by default.
+      e2e_scope_changed: ${{ steps.diff-lanes.outputs.e2e_scope_changed }}
+      codeql_scope_changed: ${{ steps.diff-lanes.outputs.codeql_scope_changed }}
+      # Issue #1377: the marker of the dependency audit. The advisories depend
+      # on the time, not on the diff, so the job only runs when the lock moves.
+      lockfile_scope_changed: ${{ steps.diff-lanes.outputs.lockfile_scope_changed }}
+    # Per-gate FIFO: if a `pr-gate` is already in flight on the runner, the next
+    # call waits in submission order rather than racing the runner (Hard Rule 1: a gate
+    # that skips its own check is not a gate). Different gates are not in this group.
+    #
+    # The group also names the INSTANCE (#1372): this job runs twice — as this workflow
+    # and as the call from `ci.yml` — and a concurrency group holds one pending request:
+    # GitHub cancels the pending one when another arrives, so the instance called from
+    # `ci.yml` was cancelled at 0 s and `required` read that cancellation as a failure
+    # (run `ci` 40084048493, attempt 1: "Canceling since a higher priority waiting
+    # request for gate-pr-gate-1371 exists"). Inside a reusable workflow
+    # `github.workflow` is the CALLER's name, so the two instances land in different
+    # queues and neither cancels the other. `cancel-in-progress: false` stays: nothing
+    # in flight is cut.
+    concurrency:
+      group: gate-pr-gate-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    # Fail fast: pr-size + walkthrough schema run in seconds; anything beyond 5 min is hung.
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          # ``sparse-checkout-cone-mode: false
+          # sparse-checkout: disable`` is the real fix for #414: the
+          # default ``sparse-checkout-cone-mode: true`` only materialises
+          # paths touched by the PR diff, so writing to
+          # ``app/pyproject.toml`` (not in the diff) fails with
+          # "Read-only file system" and the worktree guard trips.
+          # (the git-show fallback in the install step remains as a secondary path.)
+          sparse-checkout-cone-mode: false
+
+      - name: disable sparse-checkout cone mode (runtime fallback)
+        # The v7 ``actions/checkout`` ``sparse-checkout: disable`` input
+        # is unreliable on the self-hosted a2w runner (issue #414): the
+        # cached cone config from a previous run sometimes overrides
+        # the step's config. Re-running ``git sparse-checkout disable``
+        # after the checkout guarantees every file in the branch is
+        # materialised in the worktree; the worst case is ``command not
+        # found`` on an older git, which is absorbed by ``|| true``.
+        run: |
+          if ! git sparse-checkout disable 2>/dev/null; then
+            :
+          fi
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        id: setup-python
+        with:
+          python-version: "3.12.11"
+
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/pr-gate.txt \
+            --runner "${{ runner.name }}"
+
+      # Cadena de dependencias (HR-76, DysTelefonica/team-skills#1181): un PR que cambia el
+      # manifiesto de dependencias y no su lock es rojo. Una sola línea, la misma que
+      # scripts/local-preflight.sh (paridad local/CI).
+      - name: Dependency chain (HR-76)
+        run: git diff --name-only origin/${GITHUB_BASE_REF:-main}...HEAD > "${RUNNER_TEMP:-/tmp}/changed-files.txt" && python3 .agents/skills/ci-pattern/assets/deps-chain/check_deps_chain.py --repo . --changed-files "${RUNNER_TEMP:-/tmp}/changed-files.txt"
+
+      - name: walkthrough schema
+        # Cheap contract gate: every docs/03-aplicaciones/*/walkthrough-*.json MUST
+        # contain the documented MUST fields (template at
+        # skills/documentation-alan-style/references/templates/walkthrough.json.tmpl).
+        # Catches drift before merge; SHOULD/MAY fields are conventions, not enforced.
+        # --strict promoted after #375 migrated the 43 walkthroughs to v2.1.
+        run: python scripts/check_walkthrough_schema.py --strict
+
+      - name: classify the diff (docs-only and surface lanes)
+        # Issue #1368: the docs-only marker. Fail-closed: any doubt (no base
+        # ref, no merge-base, an empty diff, a path outside `docs/`) answers
+        # `false` and the heavy suite runs. The anti-self-exemption toll is
+        # implicit: this script, this workflow and the policy live outside
+        # `docs/`.
+        # Issue #1376: the same diff answers the surface markers. A marker is
+        # the PERMISSION to skip a job, so it starts at `true` (run the job)
+        # and is only lowered to `false` with the complete list of paths.
+        id: diff-lanes
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          docs_changed=false
+          e2e_scope_changed=true
+          codeql_scope_changed=true
+          lockfile_scope_changed=true
+          if [ -n "$BASE_REF" ] && git rev-parse --verify --quiet "origin/${BASE_REF}" >/dev/null; then
+            if BASE="$(git merge-base "origin/${BASE_REF}" HEAD)"; then
+              # `--no-renames`: a rename touches BOTH paths. With rename
+              # detection on, `git diff --name-only` reports only the
+              # destination, so moving `app/moved.py` out of `app/` made the
+              # app surface look untouched and the heavy jobs skipped a pull
+              # request that had just removed application code.
+              if CHANGED="$(git diff --name-only --no-renames "${BASE}...HEAD")"; then
+                if [ -n "$CHANGED" ]; then
+                  docs_changed="$(printf '%s\n' "$CHANGED" | python scripts/check_docs_only_lane.py)"
+                  e2e_scope_changed="$(printf '%s\n' "$CHANGED" | python scripts/check_change_scope.py e2e)"
+                  codeql_scope_changed="$(printf '%s\n' "$CHANGED" | python scripts/check_change_scope.py codeql)"
+                  lockfile_scope_changed="$(printf '%s\n' "$CHANGED" | python scripts/check_change_scope.py lockfile)"
+                fi
+              fi
+            fi
+          fi
+          echo "docs_changed=${docs_changed}" >> "$GITHUB_OUTPUT"
+          echo "e2e_scope_changed=${e2e_scope_changed}" >> "$GITHUB_OUTPUT"
+          echo "codeql_scope_changed=${codeql_scope_changed}" >> "$GITHUB_OUTPUT"
+          echo "lockfile_scope_changed=${lockfile_scope_changed}" >> "$GITHUB_OUTPUT"
+          echo "::notice::pr-gate: docs_changed=${docs_changed} e2e_scope_changed=${e2e_scope_changed} codeql_scope_changed=${codeql_scope_changed} lockfile_scope_changed=${lockfile_scope_changed}"
