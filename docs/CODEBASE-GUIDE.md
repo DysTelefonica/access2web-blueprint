@@ -45,6 +45,7 @@ Apps legadas (Access/VBA)         Este monorepo                          Código
 | [Testing y CI](codebase/testing-and-ci.md) | Niveles PR / nightly / release y qué corre en cada uno. |
 | [Lo que no está aquí](codebase/what-is-not-here.md) | Lo que NO existe en este repo y cómo no inventarlo. |
 | [Manual del mantenedor](codebase/maintainer-playbook.md) | Listas de comprobación por tipo de cambio. |
+| [Dónde trabajar](codebase/where-to-work.md) | Qué leer, qué tocar y qué probar para cada tarea canónica. |
 
 ## Ruta de lectura
 

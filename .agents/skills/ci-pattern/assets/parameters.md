@@ -10,13 +10,13 @@ solo como ejemplo verificado.
 | # | Parámetro | Valor en ardelperal/APAP_WEB (consumer de origen; ejemplo verificado) | Dónde vive | Quién lo lee |
 |---|---|---|---|---|
 | 8 | Política de merge | Commit de fusión, rama remota conservada, sin `strict`, sin cola de merge; CI una vez en la PR; `push` a `main` más nightly diario como red de seguridad | Settings del repo | Gate de evidencia del deploy |
-| 3 | Etiquetas canónicas | `chain:partial`, `size:exception`, `type:*`, `status:approved` | Configuración de labels del repo | Gates de issue-spec y de tamaño |
+| 3 | Etiquetas canónicas | `chain:partial`, `size:exception`, `type:*`, `status:approved` | Configuración de labels del repo | `type:*` y `status:approved` son convención (desde #1093 ningún gate las exige); `chain:partial` y `size:exception` los leen los gates de cadena y de tamaño |
 | 4 | Contextos de estado por SHA | `release/smoke-production`, `release/e2e-production` | Lista cerrada de contextos | `scripts/check_release_evidence.py` |
 | 5 | Rutas sensibles | Globs de auth, sesión, CSRF, migraciones y runtime (49 líneas) | `.github/release-e2e-paths.txt` | `scripts/check_release_e2e_required.py` |
 | 6 | URL de salud | `https://<host>/healthz` (expone `.revision` del deploy) | Constante del smoke | `scripts/production_smoke.py` |
 | 7 | User-Agent del smoke | Agente propio con reintentos y host de la redirección | Constante del smoke | `scripts/production_smoke.py` (403 de Cloudflare sin él) |
 | 1 | Regex de rama | `^(feat\|fix\|chore\|docs\|refactor\|perf\|test\|build\|ci\|revert)/[a-z0-9._-]+$` | Ruleset de protección de rama del repo | El ruleset del host enforza la regex; no hay gate local de nombre — la derivación de la issue por nombre de rama está retirada (A5) |
-| 2 | Presupuesto de revisión | `400` líneas (adiciones + eliminaciones del PR, sin exclusiones — ni lockfiles ni generados) | Constante del gate de tamaño | `scripts/check_pr_size.py`; la única excepción es la etiqueta `size:exception`, aplicada solo por el mantenedor cuando partir la PR rompería `main` (A1) |
+| 2 | Presupuesto de revisión | `400` líneas (adiciones + eliminaciones del PR; los lockfiles generados —`uv.lock`, `package-lock.json`, `pnpm-lock.yaml`, `poetry.lock`, `requirements*.lock`— no cuentan, y ningún otro fichero generado queda fuera) | Constante del gate de tamaño | `assets/pr-size/check_pr_size.py`; la única excepción es la etiqueta `size:exception`, aplicada solo por el mantenedor cuando partir la PR rompería `main` (A1, #1177) |
 | 9 | Ruta de post-mortems | `docs/postmortems/<date>-<slug>.md` | Convención de docs del repo | HR-21 (post-mortem blameless); HR-19 (notas de release); HR-48 (la documentación del proyecto vive en su repo, y el gate de las fases 3 y 5 lo comprueba) |
 | 10 | Playbook de release | `RELEASE-<TAG>.md` en la raíz del repo | Raíz del repo | HR-22 |
 | 11 | Runbook e2e de producción | `docs/runbooks/e2e-production.md` | `docs/runbooks/` | Exclusión de §1; registro del veredicto (HR-10); el runbook es parte del arnés de evidencia y queda sujeto a HR-42 (premisas con comando de siembra o verificación) |
@@ -44,6 +44,10 @@ EAD
 | 32 | Excepciones hosted justificadas | mapa job→motivo (causa de indivisibilidad, estilo HR-15) | `ci-pattern.yaml` (`P53_hosted_exceptions`) | gate `assets/runner-profile/check_runner_profile.py` (HR-61) |
 | 33 | Despacho post-merge via `workflow_dispatch` | lista opcional de basenames de workflows re-disparados por `gh workflow run` tras el merge gobernado (#817): ausente o vacia = no-op con warning; entrada inexistente o que no declara `workflow_dispatch` en su YAML = exit 1 antes del merge (el `POST .../dispatches` devolveria 404); 4xx/5xx tras el merge = exit 4 con el nombre del workflow y merge intacto (sin rollback). Sin secretos nuevos ni App ni PAT: `workflow_dispatch` se dispara con el `GITHUB_TOKEN` del job aunque este fusione con esa misma identidad | `.github/host-contract.json` (`post_merge_dispatch`) | gate `assets/runner-controls/check_governed_merge.py:250` (Refs #817); la adopcion por consumer (workflow_dispatch en `ci.yml`/`push-compliance.yml`/`force-push-guard.yml` en cadete, etc.) es PRs separadas posteriores |
 | 34 | Versionado del registro operativo de incidentes | `versioned`: el registro vive en el repo, en la ruta de P49 (por defecto `docs/incidents/`), y el gate de fase 5 lo escanea. `local-unversioned`: el registro es local, fuera de git; el gate no lo escanea ni lo exige y el documento operativo lo describe con esa frase, sin ruta. Con `local-unversioned` P49 no se usa. Si la ruta de P49 coincide con la del post-mortem (`docs/postmortems`), el gate de fase 5 falla con exit 1 nombrando `P49_incident_log_dir` (#927: endurecido a fallo tras la migración de cadete en #562; el resto de consumers ya no chocaba con el post-mortem). | `ci-pattern.yaml` (`P55_incident_log_versioning`), con default del esquema | HR-21 (el post-mortem se versiona siempre; el registro local no sale del equipo); gate de fase 5 |
+| 35 | Job de PR que mide la fase 3 (gobierno) | El job que el consumer declara en `governance_seals.job` dentro del contrato de adopción; convención del canon: `governance-seals` | `.github/ci-pattern-adoption.json` (clave `governance_seals`), bloque `jobs:` de `ci.yml` y `required_jobs` de `.github/required-jobs-policy.json` | HR-72: la fase 3 —los sellos de `.governance-manifest.json` y el cableado de `P23_required_jobs` (HR-46)— se mide dentro del pull request; en un repo privado con plan Free es el agregador `required` del propio CI la única vía de enforcement, porque `branch_protection`, `rulesets` y `required_checks` están `unavailable` |
+| 36 | Gate de imágenes de CI fijadas por digest | `off` (default: inerte) u `on` (mide el gate sobre los workflows del consumer) | `ci-pattern.yaml` (`P56_ci_images_gate`) | gate `assets/ci-images/check_ci_images_pinned.py` (HR-78) |
+| 37 | Excepciones al gate de imágenes por digest | mapa referencia→motivo (motivo no vacío; la excepción que no casa con ninguna referencia es hallazgo) | `ci-pattern.yaml` (`P57_ci_image_exceptions`) | gate `assets/ci-images/check_ci_images_pinned.py` (HR-78) |
+| 38 | Frescura exigida en el merge gobernado | `off` (por defecto: el CI corre una vez, en la PR; un PR atrasado en verde se fusiona y el árbol integrado lo verifica el CI post-merge del parámetro 33 más el nightly; sin parámetro 33 el atraso sigue bloqueando) o `required` (un PR atrasado se bloquea y un árbol integrado distinto del head sale con 5; precedente APAP_WEB, cuyo deploy compara el árbol fusionado con el revisado, #426). El solape de workflows (#783) se rechaza con cualquier valor; otro valor falla cerrado (2) | `.github/host-contract.json` (`merge_freshness`) | gate `assets/runner-controls/check_governed_merge.py` (Refs #1397) |
 origin/main
 
 El nombre de rama (parámetro 1) lo aplica el **ruleset del repo** sobre el
@@ -53,7 +57,7 @@ Parámetros secundarios documentados en las fuentes: host de producción, versi�
 de Python y lista de checks requeridos (en este repo: `required`,
 `pr-size / pr-size`; con ruleset en el host, este aplica la regex y el gate
 `branch-name` no hace falta; en un host sin rulesets —repo privado de plan Free—
-lo cumple `assets/branch-name/check_branch_name.py`, que compensa).
+lo mide `assets/branch-name/check_branch_name.py`, que avisa sin bloquear: R10 de #1093).
 
 ## Policy file de gates dormibles (HR-18)
 
@@ -158,10 +162,13 @@ esta skill: `assets/required-jobs/` (gate fail-closed + comprobación de
 paridad contra el workflow del consumer + política de ejemplo + suite; véase
 su `README.md`). El presupuesto de revisión también: `assets/pr-size/`
 (gate de presupuesto con la regla BP portada como dato
-`VENDORED_ROOTS = (".agents/skills/", "skills/")` — las rutas vendorizadas
-por el propagador quedan fuera del presupuesto de 400, pero un renombrado
+`VENDORED_ROOTS = (".agents/skills/",)` — el árbol vendorizado que recibe
+el consumer queda fuera del presupuesto de 400, pero un renombrado
 desde una ruta de autoría hacia una vendorizada sigue contando porque el
-trabajo fue authored — más suite RED/GREEN de 15 tests; `#623`). El resto
+trabajo fue authored — más suite RED/GREEN de 15 tests; `#623`). `skills/`
+**no** está excluido (`#1088`): en el canon es el catálogo de autoría y en
+un consumer es su catálogo propio, así que sus líneas cuentan para el
+presupuesto. El resto
 sigue
 versionado en el repositorio de origen del patrón, `ardelperal/APAP_WEB`
 (bajo `scripts/` y `.github/`), pendiente de publicarse como asset portátil;

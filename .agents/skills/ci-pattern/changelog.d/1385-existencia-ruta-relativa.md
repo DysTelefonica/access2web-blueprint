@@ -1,0 +1,7 @@
+type: patch
+
+La capa de existencia de `docs-commands` (`HR-65`, la que activa la clave `existence` del bloque `docs_commands` del contrato de adopción) resuelve ahora la cita contra el directorio del DOCUMENTO que la escribe, y no contra la raíz del repositorio (DysTelefonica/team-skills#1385). Es la convención de los enlaces markdown, que el gate de `docs-links` ya aplica («resuelve cada enlace local contra el directorio de su fichero»): una cita con `./` o `../` es relativa a su documento. La base anterior daba 234 rojos falsos en `DysTelefonica/access2web-blueprint`, todos de documentos que citaban un fichero de su propio directorio (`docs/03-aplicaciones/brass/prd/capacidades.md` citaba `../capacidades.md`, que vive en `docs/03-aplicaciones/brass/`).
+
+Tres casos, todos deterministas: la cita resuelta dentro del repositorio que existe no dice nada; la que no existe sale en rojo nombrando la ruta resuelta —la que el gate ha mirado—; y la que sale del repositorio sale en rojo con su propio motivo, porque un script de fuera del repo no es un script del repo. Una cita sin `./` ni `../` no se resuelve contra el repo: sigue siendo un ejecutable del `PATH` que la política declara permitido, o no se mide. Un documento en la raíz del repo tiene por directorio la raíz, así que ahí la cita se resuelve como antes.
+
+Ningún consumer cambia de veredicto: la capa la activa la declaración `existence` y hoy ninguno la declara. El arreglo va con test en rojo del caso de BP y con un test que fija que una ruta sin `./` ni `../` sigue resolviéndose como antes.

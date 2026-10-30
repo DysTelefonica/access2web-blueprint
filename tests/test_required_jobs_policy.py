@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 CANON = ROOT / ".agents" / "skills" / "ci-pattern" / "assets" / "required-jobs"
@@ -112,6 +113,35 @@ def test_a_failed_job_fails_and_leads_the_verdict() -> None:
     result = _gate("pull_request", _needs(quality="failure"))
     assert result.returncode == 1
     assert "quality" in result.stdout + result.stderr
+
+
+def test_the_aggregator_runs_the_canon_gate_against_the_base_policy() -> None:
+    """The `required` check is only a gate if the gate actually runs (issue #1375).
+
+    The shape of `ci.yml` is no longer pinned by `tests/test_ci_workflow.py`: the
+    canon's structural gates and the policy own it. What this file keeps is the
+    contract nothing else owns — that the aggregator IS the gate:
+
+      * it runs the canon's `check_required_jobs.py`;
+      * it hands the gate the job results (`toJSON(needs)`) and the event, so
+        the verdict is computed from the run and not from a constant;
+      * it hands the gate the BASE policy, so a skip this PR introduces is
+        compared with `main` instead of looking like an inherited one.
+    """
+    workflow = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+    step = workflow["jobs"]["required"]["steps"][-1]
+    assert "check_required_jobs.py" in step["run"], (
+        "the `required` job must run the canon gate: a job that checks nothing "
+        "publishes a green check that blocks nothing and gates nothing"
+    )
+    assert step["env"]["NEEDS_JSON"] == "${{ toJSON(needs) }}"
+    assert step["env"]["EVENT_NAME"] == "${{ github.event_name }}"
+    assert "--base-policy" in step["run"], (
+        "the `required` job must pass --base-policy to the canon gate: without the "
+        "base copy of the policy the gate cannot tell a relaxation apart from a skip "
+        "that `main` already accepted"
+    )
+    assert step["env"]["BASE_SHA"] == "${{ github.event.pull_request.base.sha }}"
 
 
 def test_dropping_a_job_from_the_policy_needs_a_relaxation(tmp_path: Path) -> None:

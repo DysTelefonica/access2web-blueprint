@@ -1,0 +1,15 @@
+{
+  "tree": "www",
+  "image_path": "/var/www/html",
+  "exclude": ["vendor/"],
+  "image": "quay.example.test/wcdy/cadete",
+  "github_repo": "DysTelefonica/cadete",
+  "default_branch": "main",
+  "containerfile": "Dockerfile",
+  "openshift": {
+    "context": "prod",
+    "namespace": "cadete",
+    "deployment": "cadete",
+    "container": "cadete"
+  }
+}
