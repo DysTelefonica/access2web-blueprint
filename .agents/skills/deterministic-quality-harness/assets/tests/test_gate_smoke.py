@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import os
 import sqlite3
 import subprocess
 import sys
@@ -219,156 +218,6 @@ def test_complexity_ceiling_is_absolute_not_top_n() -> None:
     """
     result = _run("check_complexity.py", "--root", str(FIXTURES / "complexity_violation"))
     assert "too_many_branches" in result.stdout, result.stdout
-
-
-# ---------------------------------------------------------------------------------------------
-# check_branch_name
-# ---------------------------------------------------------------------------------------------
-
-
-@pytest.mark.parametrize("branch", ["feat/42-lanzadera-auth", "fix/7-crlf-count", "main"])
-def test_branch_name_gate_accepts_valid_names(branch: str) -> None:
-    assert _run("check_branch_name.py", "--branch", branch).returncode == 0
-
-
-@pytest.mark.parametrize(
-    "branch",
-    ["lanzadera-auth", "feat/lanzadera-auth", "feat/42_lanzadera_auth", "FEAT/42-auth", "develop"],
-)
-def test_branch_name_gate_rejects_invalid_names(branch: str) -> None:
-    assert _run("check_branch_name.py", "--branch", branch).returncode == 1
-
-
-# ---------------------------------------------------------------------------------------------
-# check_pr_size
-#
-# A1 (#518): the budget counts additions + deletions as GitHub reports them, with no exclusions,
-# and the only override is the ``size:exception`` label applied by a separate identity. The body
-# carries no override field, so a ``size-exception-reason:`` line must not change the verdict.
-# The diff runs in a real throwaway repository and the gate is observed through its exit code.
-# ---------------------------------------------------------------------------------------------
-
-
-def _pr_repo(root: Path, path: str, added_lines: int) -> None:
-    """Make ``root`` a repo whose ``feature`` branch adds ``added_lines`` lines to ``path``."""
-
-    def git(*args: str) -> None:
-        subprocess.run(["git", *args], cwd=root, check=True, capture_output=True)
-
-    git("init", "-q", "-b", "main")
-    git("config", "user.email", "gate@example.com")
-    git("config", "user.name", "gate")
-    (root / "README.md").write_text("base\n", encoding="utf-8")
-    git("add", "-A")
-    git("commit", "-q", "-m", "base")
-    git("checkout", "-q", "-b", "feature")
-    target = root / path
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text("".join(f"line {i}\n" for i in range(added_lines)), encoding="utf-8")
-    git("add", "-A")
-    git("commit", "-q", "-m", "feat")
-
-
-#: What the interpreter itself needs to start. A Python built with a shared libpython (the one
-#: actions/setup-python installs on CI) finds libpython through LD_LIBRARY_PATH; without it the child
-#: dies with exit 127 before the gate runs, so the test fails for a reason that has nothing to do with
-#: the gate. Everything else of the CI environment stays out on purpose (#789).
-INTERPRETER_ENV = ("LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH", "SYSTEMROOT")
-
-
-def _gate_env(root: Path, **env: str) -> dict[str, str]:
-    inherited = {name: os.environ[name] for name in INTERPRETER_ENV if name in os.environ}
-    return {"PATH": os.environ["PATH"], "HOME": str(root), **inherited, **env}
-
-
-def test_gate_env_keeps_what_the_interpreter_needs_to_start(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setenv("LD_LIBRARY_PATH", "/opt/python/lib")
-    assert _gate_env(tmp_path)["LD_LIBRARY_PATH"] == "/opt/python/lib"
-
-
-def test_gate_env_does_not_leak_the_ci_environment(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setenv("GITHUB_ACTIONS", "true")
-    monkeypatch.setenv("PR_AUTHOR", "somebody-else")
-    gate_env = _gate_env(tmp_path, PR_AUTHOR="alice")
-    assert "GITHUB_ACTIONS" not in gate_env
-    assert gate_env["PR_AUTHOR"] == "alice"
-
-
-def _run_pr_size(root: Path, **env: str) -> subprocess.CompletedProcess[str]:
-    gate_env = _gate_env(root, **env)
-    return subprocess.run(
-        [sys.executable, str(SCRIPTS / "check_pr_size.py"), "--base-ref", "main"],
-        cwd=root,
-        env=gate_env,
-        capture_output=True,
-        text=True,
-        check=False,
-        encoding="utf-8",
-    )
-
-
-def test_pr_size_passes_exactly_at_the_budget(tmp_path: Path) -> None:
-    _pr_repo(tmp_path, "app/service.py", added_lines=399)  # 399 added + 1 deleted = 400
-    assert _run_pr_size(tmp_path, PR_AUTHOR="alice").returncode == 0
-
-
-def test_pr_size_counts_lockfiles_and_generated_files(tmp_path: Path) -> None:
-    _pr_repo(tmp_path, "package-lock.json", added_lines=401)
-    result = _run_pr_size(tmp_path, PR_AUTHOR="alice")
-    assert result.returncode == 1, result.stdout
-    assert "401" in result.stdout
-
-
-def test_pr_size_body_reason_alone_does_not_override(tmp_path: Path) -> None:
-    _pr_repo(tmp_path, "app/service.py", added_lines=401)
-    result = _run_pr_size(
-        tmp_path,
-        PR_AUTHOR="alice",
-        PR_BODY="size-exception-reason: dejaría main roto si lo partimos",
-    )
-    assert result.returncode == 1, result.stdout
-
-
-def test_pr_size_label_by_separate_approver_overrides_without_body_reason(tmp_path: Path) -> None:
-    _pr_repo(tmp_path, "app/service.py", added_lines=401)
-    result = _run_pr_size(tmp_path, PR_AUTHOR="alice", SIZE_EXCEPTION_APPROVER="bob", PR_BODY="")
-    assert result.returncode == 0, result.stdout
-
-
-def test_pr_size_label_by_the_author_does_not_override(tmp_path: Path) -> None:
-    _pr_repo(tmp_path, "app/service.py", added_lines=401)
-    result = _run_pr_size(tmp_path, PR_AUTHOR="alice", SIZE_EXCEPTION_APPROVER="alice")
-    assert result.returncode == 1, result.stdout
-
-
-# Separation of the approver from the PR author (#430, alcance punto 1; HR-33). The CI passes
-# the GitHub login that applied the ``size:exception`` label; the gate fails closed when the
-# approver is the same identity as the author or when no approver is recorded.
-def test_pr_size_override_accepts_separate_approver() -> None:
-    module = _load("check_pr_size.py")
-    assert module.override_has_separate_approver("alice", "bob") is True
-    assert module.override_has_separate_approver("Alice", "bob") is True
-    assert module.override_has_separate_approver("  alice  ", "bob") is True
-
-
-@pytest.mark.parametrize(
-    "author, approver",
-    [
-        ("alice", "alice"),  # same login, exact
-        ("Alice", "alice"),  # case-insensitive
-        ("alice", "  alice  "),  # whitespace-trimmed
-        ("alice", ""),  # no approver recorded — fail closed
-        ("", "bob"),  # no author recorded — fail closed
-        ("", ""),  # neither recorded — fail closed
-    ],
-)
-def test_pr_size_override_rejects_self_or_missing_approver(author: str, approver: str) -> None:
-    module = _load("check_pr_size.py")
-    assert module.override_has_separate_approver(author, approver) is False
 
 
 # ---------------------------------------------------------------------------------------------
@@ -625,7 +474,9 @@ def test_mutation_baseline_migration_emits_stable_identities(tmp_path) -> None:
     assert errors == []
     survivors = module.measure_survivors(rows)
 
-    rendered = module.render_baseline(survivors, module.date(2026, 8, 12))
+    # The third argument is the live BASELINE, so an emission can keep the acquisition date
+    # of identities it already knew (#809 T2c).
+    rendered = module.render_baseline(survivors, module.date(2026, 8, 12), module.BASELINE)
 
     identity = next(iter(survivors))
     assert identity in rendered
@@ -763,25 +614,22 @@ def test_acquisition_marker_cannot_become_permanent() -> None:
         "check_crap.py",
         "check_dry.py",
         "check_mutation_sites.py",
-        "check_branch_name.py",
     ],
 )
 def test_every_gate_emits_a_well_formed_envelope(gate_script: str) -> None:
     root = FIXTURES / "crap_clean"
-    args = ["--branch", "main"] if gate_script == "check_branch_name.py" else ["--root", str(root)]
-    result = _run(gate_script, *args, "--json")
+    result = _run(gate_script, "--root", str(root), "--json")
     envelope = json.loads(result.stdout)
     assert envelope["gate"]
     assert envelope["status"] in {"pass", "fail", "error"}
     assert isinstance(envelope["indicators"], dict)
     assert isinstance(envelope["findings"], list)
-    if gate_script != "check_branch_name.py":
-        assert envelope["candidate"]["tree"]
-        assert envelope["scope_identity"].startswith("sha256:")
-        assert envelope["subject_manifest"]
-        assert envelope["owner"]
-        assert envelope["non_ownership"]
-        assert set(envelope["subjects"]) == {"checked", "skipped", "unclassified"}
+    assert envelope["candidate"]["tree"]
+    assert envelope["scope_identity"].startswith("sha256:")
+    assert envelope["subject_manifest"]
+    assert envelope["owner"]
+    assert envelope["non_ownership"]
+    assert set(envelope["subjects"]) == {"checked", "skipped", "unclassified"}
 
 
 def test_quality_report_aggregates_indicators(tmp_path) -> None:
@@ -816,3 +664,47 @@ def test_quality_report_is_byte_identical_for_the_same_commit(tmp_path) -> None:
     _run("quality_report.py", "--root", str(FIXTURES / "crap_clean"), "--out", str(first))
     _run("quality_report.py", "--root", str(FIXTURES / "crap_clean"), "--out", str(second))
     assert first.read_bytes() == second.read_bytes()
+
+
+# ---------------------------------------------------------------------------------------------
+# check_complexity — a BASELINE entry whose function no longer exists (#809 T2b)
+# ---------------------------------------------------------------------------------------------
+
+
+def test_complexity_fails_when_a_baseline_entry_has_no_such_function() -> None:
+    """A BASELINE entry that outlived its function is dead debt, not a clean tree.
+
+    ``observed`` only holds the functions above the ceiling, so before this rule the gate
+    could not tell "fell under the ceiling" from "was renamed, moved or deleted", and it
+    announced the latter as if it were the former.
+    """
+    module = _load("check_complexity.py")
+    module.BASELINE = {
+        "app/x.py::gone": module.BaselineEntry(complexity=16, target=15, target_date="2026-12-31")
+    }
+
+    exit_code, lines = module.evaluate([], module.date(2026, 8, 12))
+    report = "\n".join(lines)
+
+    assert exit_code == 1
+    assert "no such function" in report
+    assert "under the ceiling" not in report
+
+
+def test_complexity_notes_when_a_baseline_entry_only_fell_under_the_ceiling() -> None:
+    """The two cases stay distinguishable: an existing function below the ceiling is a note."""
+    module = _load("check_complexity.py")
+    key = "app/x.py::calmer"
+    below = module.Measurement(
+        key=key, name="calmer", file="app/x.py", line=1, complexity=module.MAX_COMPLEXITY - 1
+    )
+    module.BASELINE = {
+        key: module.BaselineEntry(complexity=16, target=15, target_date="2026-12-31")
+    }
+
+    exit_code, lines = module.evaluate([below], module.date(2026, 8, 12))
+    report = "\n".join(lines)
+
+    assert exit_code == 0
+    assert "under the ceiling" in report
+    assert "no such function" not in report

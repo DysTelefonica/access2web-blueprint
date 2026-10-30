@@ -28,7 +28,7 @@ testing:
     integration: pytest -m integration (gated on APAP_INTEGRATION_ENABLED, postgres real)
     e2e: pending UI
   coverage: "85% global, 100% CRITICAL_HELPERS"
-  linter: ruff==0.15.21 (select=E,F,W,I,UP,B)
+  linter: ruff==0.17.1 (select=E,F,W,I,UP,B)
   type_checker: mypy==1.13.0 (platform/src/ only, ignore-without-code enforced)
   formatter: ruff format
 

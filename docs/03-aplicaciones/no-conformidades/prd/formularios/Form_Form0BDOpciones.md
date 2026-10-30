@@ -66,7 +66,7 @@ Sin transacciones.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Este formulario no consulta datos; lo único sensible es `CorreoAlAdministrador`, que calcula el identificador con `SELECT Max(...)` y lo inserta a mano (`FG.bas:1291-1297`; `constructor.bas:1165`), incompatible con una secuencia de PostgreSQL sin adaptación.
+Pendiente de la coexistencia (documento aún no redactado). Este formulario no consulta datos; lo único sensible es `CorreoAlAdministrador`, que calcula el identificador con `SELECT Max(...)` y lo inserta a mano (`FG.bas:1291-1297`; `constructor.bas:1165`), incompatible con una secuencia de PostgreSQL sin adaptación.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

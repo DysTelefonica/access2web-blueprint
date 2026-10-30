@@ -134,6 +134,18 @@ Propuestos, no aprobados:
 6. Sin permiso de edición no se puede añadir, mover ni quitar (`:85-98, 403, 411, 425, 570`).
 7. El árbol de un alta queda guardado al registrar el expediente.
 
+## Procedimientos auxiliares
+
+Citas `Form_FormExpedienteSuministradores.cls:línea`.
+
+| Procedimiento | Qué hace | Evidencia |
+|---|---|---|
+| `ExtraerTag(tag, clave)` | Lee el valor de una clave en el `Tag` de un nodo con formato `CLAVE=valor;CLAVE2=valor2`; no distingue mayúsculas, recorta espacios y devuelve vacío si la clave falta. El formulario solo pide `RELID`, el identificador de la relación del nodo | `:695-707`; usos `:500, 512, 519, 555, 579` |
+| `MoverRelacionMemoria` | Solo en alta (modo memoria): reasigna el padre del elemento en `ColArbolSuministradores`; `ROOT_CONTR` lo deja como adjudicatario (`ContratistaPrincipal = "Sí"`, `SubContratista = "No"`) y `CHILD` como subcontratista (lo contrario). Si la relación no existe devuelve falso con «Elemento no encontrado en memoria.» | `:915-936` |
+| `ObtenerTextoSocios` | Con dos o más adjudicatarios, devuelve « (UTE con: <los demás>)» separando por coma y excluyendo al propio nodo | `:374-395` |
+| `ConfigurarListView`, `PrepararTreeView` | Configuración visual de los dos controles ActiveX: la lista, en modo informe, con una columna «Empresa / Suministrador» de ancho el del control menos 300 (2000 si queda por debajo de 1000) y arrastre OLE automático; el árbol, con sangría 300 y arrastre y soltado OLE. No tienen reglas de negocio | `:116-130`, `:202-213` |
+| `Form_Close` | Libera `m_Servicio` y nada más | `:108-115` |
+
 ## Pendientes
 
 - Si `Enabled = NotDefault` de `tvCadena` y `lvFuente` los deja deshabilitados en diseño (`.form.txt:649, 1358`) y si el código los habilita.

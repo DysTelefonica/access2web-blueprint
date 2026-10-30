@@ -69,7 +69,7 @@ quality:
 #
 # Deliberately NOT included, each for a reason that is pinned by
 # test_make_verify_excludes_what_a_workstation_cannot_run:
-#   - check_pr_size / check_branch_name  need CI's PR base/body and head-ref context
+#   - ci-pattern's pr-size / branch-name  need CI's PR payload and head-ref context
 #   - check_mutation + cosmic-ray        weekly schedule; far too slow per PR
 #   - pip-audit / gitleaks / trivy       Docker- and network-dependent scanners
 #

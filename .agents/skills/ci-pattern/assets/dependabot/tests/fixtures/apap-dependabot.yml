@@ -1,0 +1,77 @@
+# Issue #701 — Actualización automática de dependencias.
+#
+# Tres ecosistemas:
+# - pip: dependencias Python de pyproject.toml
+# - npm: tailwindcss en tailwindcss/package.json
+# - github-actions: SHA de las GitHub Actions en workflows y en
+#   .github/actions/* (acciones compuestas)
+#
+# Los PRs automáticos resultantes quedan verificados por el pipeline
+# lint / test / security y por los gates específicos de PR.
+
+version: 2
+updates:
+  # Python dependencies — check pyproject.toml
+  - package-ecosystem: "pip"
+    directory: "/"
+    target-branch: "main"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:30"
+      timezone: "UTC"
+    # Use repository labels that actually exist. Unknown labels are silently
+    # omitted by Dependabot and leave the PR outside the merge contract.
+    labels:
+      - "type:chore"
+    # Ruff defines the executable lint ratchet. Updating it requires an
+    # intentional baseline recalibration, never a grouped routine bump.
+    ignore:
+      - dependency-name: "ruff"
+      # Cosmic-ray is coupled to the mutation harness: 8.7.0 raises
+      # NonHttpUrlClientError on the unix-socket worker URLs used by the
+      # mutation job (see the pyproject.toml comment). Bumping it requires
+      # an intentional harness re-validation, never a routine bump.
+      - dependency-name: "cosmic-ray"
+    # Group minor/patch updates to reduce PR noise
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+
+  # npm dependencies — check tailwindcss/package.json
+  - package-ecosystem: "npm"
+    directory: "/tailwindcss"
+    target-branch: "main"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:30"
+      timezone: "UTC"
+    labels:
+      - "type:chore"
+    groups:
+      dev-dependencies:
+        dependency-type: "development"
+
+  # GitHub Actions — check .github/workflows/ and .github/actions/ (issue
+  # #1087: Dependabot only bumps what a declared directory covers, so the
+  # composite actions need their own glob entry).
+  - package-ecosystem: "github-actions"
+    directories:
+      - "/"
+      - "/.github/actions/*"
+    target-branch: "main"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:30"
+      timezone: "UTC"
+    labels:
+      - "type:chore"
+    # Group all action updates into one PR per week
+    groups:
+      all-actions:
+        patterns:
+          - "*"

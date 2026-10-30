@@ -1,0 +1,79 @@
+# Lanzadera MVP — dependency audit (per PR that touches the lockfile).
+#
+# Issue #1377 (auditoría de tests del 2026-10-23, §2.3 y §3 fila 9): `pip-audit`
+# audita el conjunto bloqueado por hashes contra la base de avisos de PyPI, y los
+# avisos dependen del TIEMPO, no del diff: un aviso publicado el martes rompe el
+# martes todos los PR abiertos con el mismo lock, tengan o no que ver con esa
+# dependencia. De los 14 SHA rojos de la ventana 22–24 oct, 6 fueron por un aviso
+# de `filelock` ajeno a la PR.
+#
+# Por eso el job es de PRIMER NIVEL en `ci.yml` (este workflow se llama desde
+# ahí) y no un job interno de `security.yml`: `needs:` no cruza ficheros de
+# workflow, así que el agregador `required` solo puede leer el resultado de un
+# job de primer nivel, y sin esa lectura su salto no se puede DECLARAR en la
+# política — un salto invisible es un rojo que se descubre en el merge.
+#
+# El marcador `lockfile_scope_changed` lo publica el `pr-gate`: el job corre en
+# PR cuando el diff toca el lockfile y en el nightly, que es donde un aviso por
+# tiempo tiene que salir. En `push` a `main` se salta: el PR que cambió el
+# lockfile ya lo auditó.
+name: pip-audit
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-scan:
+    # Instala un venv desechable en infraestructura aislada y hospedada.
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: gate-pip-audit-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Hard Rule 15: same SHA as ci.yml (issue #127 — old v5 SHA emits Node 20
+      # deprecation warning on GitHub-hosted runners). Bumping keeps the pin
+      # contract while clearing the warning.
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12.11"
+
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/pip-audit.txt \
+            --runner "${{ runner.name }}"
+
+      - name: dependency scan
+        # Audits `app/requirements-dev.lock` — the hash-locked set CI installs and the project ships —
+        # and not an install of the project: `pip install "app[dev]"` is a registry requirement named
+        # `app` to pip (the path form needs `./`), so it audited a homonym on PyPI. The lock holds
+        # exact versions, so --strict and --require-hashes judge what is really deployed; --disable-pip
+        # resolves nothing and installs nothing. The tool is pinned and lives in a throwaway venv so
+        # the runner's ambient site-packages stays out of it.
+        run: |
+          set -euo pipefail
+          python -m venv .venv-audit
+          .venv-audit/bin/python -m pip install --quiet --upgrade pip==26.2.1
+          .venv-audit/bin/python -m pip install --quiet pip-audit==2.9.0
+
+          # Liveness before reporting (Hard Rule 18): a lock with almost no entries is not a clean
+          # audit, it is an audit with nothing to audit.
+          entries=$(grep -c -- '--hash=' app/requirements-dev.lock)
+          if [ "$entries" -lt 15 ]; then
+            echo "::error::dependency scan aborted: only $entries hashed entries in app/requirements-dev.lock."
+            echo "That is not a clean audit, it is an audit with nothing to audit (Hard Rule 18)."
+            exit 1
+          fi
+          echo "dependency scan: auditing $entries locked packages"
+
+          .venv-audit/bin/pip-audit --strict --require-hashes --disable-pip -r app/requirements-dev.lock
