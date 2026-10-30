@@ -15,6 +15,8 @@ import contextlib
 import json
 import os
 import ssl
+import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -152,10 +154,84 @@ def call(method: str, path: str, body: dict | None = None) -> tuple[str, str]:
     return text, link
 
 
+# --- Reintento de las lecturas JSON (#1210, #1220) ------------------------
+# La regla completa, con sus cuatro casos, esta en
+# `assets/gh-api-retry/casos.tsv`. Las dos implementaciones de la regla —este
+# cliente y el helper bash `assets/gh-api-retry/gh-api-retry.sh`— recorren esa
+# misma tabla en sus tests, asi que no pueden divergir sin que salte un test.
+#
+# Se reintenta un fallo de llamada y un JSON malformado. Una respuesta
+# valida —incluida una lista vacia— NO se reintenta: no es un fallo, es la
+# respuesta. Agotados los intentos, el ultimo error se propaga y el gate
+# falla cerrado (HR-3).
+RETRY_INTENTOS_ENV = "GH_API_RETRY_INTENTOS"
+RETRY_ESPERA_ENV = "GH_API_RETRY_ESPERA_S"
+DEFAULT_RETRY_INTENTOS = 3
+DEFAULT_RETRY_ESPERA_S = 1.0
+
+
+class RetryIntentosInvalidError(GitHubApiError):
+    """La variable de intentos no es un entero >= 1; el mensaje lo compone la clase (TRY003)."""
+
+    def __init__(self, raw: str) -> None:
+        super().__init__(f"{RETRY_INTENTOS_ENV} debe ser un entero >= 1 (valor: {raw!r})")
+
+
+def _retry_settings() -> tuple[int, float]:
+    """Intentos y espera del reintento, leidos del entorno."""
+    raw = os.environ.get(RETRY_INTENTOS_ENV, str(DEFAULT_RETRY_INTENTOS))
+    try:
+        intentos = int(raw)
+    except ValueError:
+        intentos = 0
+    if intentos < 1:
+        raise RetryIntentosInvalidError(raw)
+    try:
+        espera = float(os.environ.get(RETRY_ESPERA_ENV, str(DEFAULT_RETRY_ESPERA_S)))
+    except ValueError:
+        espera = DEFAULT_RETRY_ESPERA_S
+    return intentos, espera
+
+
+def _con_reintento(operacion, descripcion: str):
+    """Ejecuta `operacion` reintentando un fallo de llamada o un JSON malformado.
+
+    Una respuesta valida no lanza, asi que sale en el primer intento: una
+    lista vacia nunca se reintenta. Agotados los intentos, el error se
+    propaga sin mas y el gate falla cerrado.
+    """
+    intentos, espera = _retry_settings()
+    for intento in range(1, intentos + 1):
+        try:
+            return operacion()
+        except GitHubApiError as exc:
+            if intento >= intentos:
+                # El mensaje se compone en `_fail` (el helper de la casa): un
+                # `raise GitHubApiError("...")` con el texto fuera de la clase
+                # rompe el ratchet de ruff extendido de los assets (TRY003).
+                _fail(f"{exc} (falló tras {intentos} intentos)", exc, exc.status)
+            print(
+                f"AVISO: {descripcion} fallo (intento {intento} de {intentos}); "
+                f"reintento en {espera}s: {exc}",
+                file=sys.stderr,
+            )
+            time.sleep(espera)
+    raise AssertionError("inalcanzable")
+
+
 def get_json(path: str) -> object:
-    """GET de un documento. Un listado se pagina siguiendo `Link` y se fusiona."""
+    """GET de un documento. Un listado se pagina siguiendo `Link` y se fusiona.
+
+    La lectura reintenta un fallo de llamada o un JSON malformado (#1220). Una
+    respuesta valida, incluida una lista vacia, sale en el primer intento.
+    """
+    return _con_reintento(lambda: _get_json(path), f"GET {path}")
+
+
+def _get_json(path: str) -> object:
+    """El GET sin reintento: lo envuelve `get_json`."""
     text, link = call("GET", path)
-    if not path.endswith("/pulls"):
+    if not urllib.parse.urlsplit(path).path.endswith("/pulls"):
         return _parse(text, path)
     merged: list = []
     target = path

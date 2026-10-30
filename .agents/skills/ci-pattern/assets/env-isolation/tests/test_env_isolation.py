@@ -481,6 +481,204 @@ class TestDotenvPrecision(unittest.TestCase):
         self.assertIn("HR-28", out)
 
 
+class TestOverAllowlist(unittest.TestCase):
+    """#1030: la dirección contraria —una entrada de ``env_vars`` que la suite ya
+    no lee. El gate ya la calculaba para ``dotenv_data_files`` (#635) y no para
+    ``env_vars``: una entrada de más pasaba en verde sin que nada lo advirtiese.
+
+    El control sale detrás de ``--strict-over-allowlist`` (radio de impacto: la
+    allowlist de cada consumer lleva meses escribiendo y ninguna poda sería
+    revisada el día que el control entre sin pedirlo)."""
+
+    OK_LINE = ("ENV-ISOLATION OK: {n} suite file(s) scanned — no .env reads, "
+               "no undeclared environment variables.")
+
+    # Lee las cuatro entradas de ALLOWLIST con clave literal: sin esta lectura
+    # literal, cada una sería además candidata a STALE y el caso no distinguiría
+    # la entrada sobrante de las que sí se leen.
+    READS_ALL = ('import os\n'
+                 'print(os.environ["TMPDIR"], os.environ["HOME"],\n'
+                 '      os.environ["PATH"], os.environ["CI"])\n')
+
+    def scan(self, files, allowlist=ALLOWLIST, strict=True):
+        extra = ("--strict-over-allowlist",) if strict else ()
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d, "testing")
+            build(root, files)
+            return run_gate(root, allowlist, extra)
+
+    def allow_with(self, *extra_vars):
+        return {**ALLOWLIST, "env_vars": ALLOWLIST["env_vars"] + list(extra_vars)}
+
+    def test_unused_entry_is_a_stale_finding_naming_the_variable(self):
+        code, out = self.scan({"suites/a.py": self.READS_ALL},
+                              self.allow_with("GITHUB_TOKEN"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-28 STALE", out)
+        self.assertIn("GITHUB_TOKEN", out)
+
+    def test_stale_reads_differently_from_an_undeclared_read(self):
+        """Un operador tiene que poder distinguir «sobra una entrada» de
+        «falta declararla»: son arreglos opuestos en el mismo fichero."""
+        _, stale = self.scan({"suites/a.py": self.READS_ALL},
+                             self.allow_with("GITHUB_TOKEN"))
+        _, undeclared = self.scan({"suites/a.py":
+                                   self.READS_ALL + 'print(os.environ["RUNNER_SECRET"])\n'})
+        self.assertIn("not declared in the versioned allowlist", undeclared)
+        stale_only = [ln for ln in stale.splitlines() if "STALE" in ln]
+        self.assertEqual(len(stale_only), 1, stale)
+        self.assertNotIn("not declared in the versioned allowlist", stale_only[0])
+
+    def test_unused_is_decided_after_the_whole_tree_is_scanned(self):
+        """La dirección contraria no puede decidirse con el estado parcial de un
+        fichero: una entrada leída sólo en el último fichero alfabético, y no en
+        el primero, no sale como STALE; otra que no se lee en ninguno, sí."""
+        code, out = self.scan({
+            "suites/a.py": 'import os\nprint(os.environ["TMPDIR"], os.environ["HOME"],\n'
+                           '      os.environ["PATH"])\n',
+            "suites/z.py": 'import os\nprint(os.environ["CI"], os.environ["LATE_READ"])\n'},
+            self.allow_with("LATE_READ", "GITHUB_TOKEN"))
+        self.assertEqual(code, 1, out)
+        self.assertEqual(out.count("HR-28 STALE"), 1, out)
+        self.assertIn("GITHUB_TOKEN", out)
+        self.assertNotIn("LATE_READ", out)
+
+    def test_entry_read_only_from_a_shell_file_is_not_a_finding(self):
+        """El barrido es mixto: SH_READ cubre la lectura de shell, así que una
+        entrada leída sólo desde un ``*.sh`` no es sobre-allowlisting."""
+        code, out = self.scan({"suites/a.sh": '#!/usr/bin/env bash\n'
+                                              'work="$FEATURE_WORK_DIR"\n'
+                                              'echo "$work" "$TMPDIR" "$HOME" "$PATH" "$CI"\n'},
+                              {**ALLOWLIST, "env_vars": ALLOWLIST["env_vars"]
+                               + ["FEATURE_WORK_DIR"]})
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("FEATURE_WORK_DIR", out)
+
+    def test_bulk_read_is_not_a_false_positive(self):
+        """``os.environ.copy()`` no se puede atribuir a un nombre: la entrada sin
+        lectura literal no se afirma sobrante, se informa como no probable y no
+        bloquea."""
+        code, out = self.scan({"suites/a.py": self.READS_ALL
+                               + 'import subprocess\n'
+                                 'env = os.environ.copy()\n'
+                                 'subprocess.run(["echo"], env=env)\n'},
+                              self.allow_with("GITHUB_TOKEN"))
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("HR-28 STALE", out)
+        self.assertIn("HR-28 BLOCK-READ", out)
+        self.assertIn("GITHUB_TOKEN", out)
+
+    def test_every_bulk_read_form_is_recognised(self):
+        forms = ("env = os.environ.copy()\n",
+                 "for k, v in os.environ.items():\n    print(k, v)\n",
+                 "print(sorted(os.environ.keys()))\n",
+                 "env = dict(os.environ)\n",
+                 "NAME = 'GITHUB_TOKEN'\nos.getenv(NAME)\n",
+                 "print(os.environ[NAME])\n")
+        for form in forms:
+            with self.subTest(form=form):
+                code, out = self.scan({"suites/a.py": "import os\n" + self.READS_ALL + form},
+                                      self.allow_with("GITHUB_TOKEN"))
+                self.assertEqual(code, 0, out)
+                self.assertIn("HR-28 BLOCK-READ", out)
+
+    def test_bulk_read_does_not_silence_an_undeclared_read(self):
+        """No-regresión: la lectura sin declarar sigue siendo hallazgo aunque el
+        árbol lea el entorno en bloque."""
+        code, out = self.scan({"suites/a.py": "import os\n" + self.READS_ALL
+                               + 'env = os.environ.copy()\n'
+                                 'print(os.environ["RUNNER_SECRET"])\n'},
+                              self.allow_with("GITHUB_TOKEN"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("RUNNER_SECRET", out)
+        self.assertIn("not declared in the versioned allowlist", out)
+
+    def test_a_write_to_the_environment_is_not_a_read(self):
+        """Escribir en el entorno no prueba que una entrada siga usándose: el
+        contrato de la allowlist es lo que las suites PUEDEN LEER."""
+        code, out = self.scan({"suites/a.py":
+                               'import os\n'
+                               'print(os.environ["TMPDIR"], os.environ["HOME"],\n'
+                               '      os.environ["PATH"])\n'
+                               'os.environ["FEATURE_FLAG"] = "1"\n'},
+                              {"env_vars": ["TMPDIR", "HOME", "PATH", "FEATURE_FLAG"]})
+        self.assertEqual(code, 1, out)
+        self.assertEqual(out.count("HR-28 STALE"), 1, out)
+        self.assertIn("'FEATURE_FLAG'", out)
+
+    def test_a_shell_local_is_not_a_read_of_the_environment(self):
+        """Un valor que el propio fichero asigna es local (la regla que el gate
+        ya aplica a la dirección de lectura-no-declarada, HR-1)."""
+        code, out = self.scan({"suites/a.sh": '#!/usr/bin/env bash\n'
+                                              'CI="1"\n'
+                                              'echo "$CI" "$TMPDIR" "$HOME" "$PATH"\n'})
+        self.assertEqual(code, 1, out)
+        self.assertEqual(out.count("HR-28 STALE"), 1, out)
+        self.assertIn("'CI'", out)
+
+    def test_the_flag_is_opt_in_so_the_day_it_lands_breaks_nobody(self):
+        """Sin la bandera, una entrada de más no falla: el control se calcula y
+        se nombra, y sale 1 sólo cuando se pide."""
+        code, out = self.scan({"suites/a.py": self.READS_ALL},
+                              self.allow_with("GITHUB_TOKEN"), strict=False)
+        self.assertEqual(code, 0, out)
+        self.assertIn(self.OK_LINE.format(n=1), out)
+        self.assertNotIn("HR-28", out)
+
+    def test_clean_allowlist_keeps_exit_zero_and_the_ok_message(self):
+        code, out = self.scan({"suites/a.py": self.READS_ALL}, ALLOWLIST)
+        self.assertEqual(code, 0, out)
+        self.assertIn(self.OK_LINE.format(n=1), out)
+
+    def test_the_issue_fixture_pins_both_directions_at_once(self):
+        """Los cuatro casos en un solo árbol, porque su interacción es lo que hay
+        que fijar: leída con clave literal, leída con clave no literal, declarada
+        y no leída, y leída desde shell."""
+        allow = {**ALLOWLIST, "env_vars": ALLOWLIST["env_vars"]
+                 + ["LITERAL_READ", "NON_LITERAL_READ", "DECLARED_NEVER_READ",
+                    "SHELL_ONLY_READ"]}
+        code, out = self.scan({
+            "suites/a.py": 'import os\n'
+                           'print(os.environ["TMPDIR"], os.environ["HOME"],\n'
+                           '      os.environ["PATH"], os.environ["CI"],\n'
+                           '      os.environ["LITERAL_READ"])\n'
+                           'NAME = "NON_LITERAL_READ"\n'
+                           'print(os.getenv(NAME))\n',
+            "suites/z.sh": '#!/usr/bin/env bash\necho "$SHELL_ONLY_READ"\n',
+        }, allow)
+        self.assertEqual(code, 0, out)
+        self.assertIn(self.OK_LINE.format(n=2), out)
+        self.assertIn("DECLARED_NEVER_READ", out)   # la entrada que sobra
+        self.assertIn("NON_LITERAL_READ", out)      # la limitación conocida
+        self.assertNotIn("LITERAL_READ'", out.split("BLOCK-READ")[1])
+        self.assertNotIn("SHELL_ONLY_READ'", out.split("BLOCK-READ")[1])
+
+    def test_invalid_input_stays_fail_closed_under_the_flag(self):
+        """HR-3 intacta: la bandera no abre una puerta trasera al exit 2."""
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d, "testing")
+            build(root, {"suites/a.sh": "echo hi\n"})
+            a = Path(root, "allowlist.json")
+            a.write_text("not json", encoding="utf-8")
+            out = subprocess.run([sys.executable, str(GATE), "--root", str(root),
+                                  "--allowlist", str(a), "--strict-over-allowlist"],
+                                 capture_output=True, text=True)
+            self.assertEqual(out.returncode, 2)
+        code, out = self.scan({"suites/a.py": self.READS_ALL}, ALLOWLIST)
+        self.assertEqual(code, 0, out)
+
+    def test_the_module_docstring_names_the_second_direction_and_its_exception(self):
+        """El docstring del módulo es la documentación que se propaga al consumer:
+        tiene que nombrar la dirección que este control vigila y su excepción."""
+        spec = importlib.util.spec_from_file_location("gate_doc", GATE)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        doc = module.__doc__
+        self.assertIn("no read", doc)
+        self.assertIn("--strict-over-allowlist", doc)
+        self.assertIn("os.environ.copy()", doc)
+
+
 class Dogfooding(unittest.TestCase):
     """Dogfooding (#195): en team-skills el escaneo real NO puede saltarse —
     la allowlist vive en .github/ y su ausencia es un fallo, no un skip."""

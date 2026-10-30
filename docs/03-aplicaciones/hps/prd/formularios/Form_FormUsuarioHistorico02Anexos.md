@@ -95,7 +95,7 @@ Sin escrituras, sin transacciones.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Lo concreto: `Application.Echo` y `DoCmd.Hourglass` son APIs de Access sin equivalente directo; la suspensión del repintado mientras el visor arranca (`:128, 145`) es un patrón legados que web ignora. `fso` (`FileSystemObject`) sigue siendo dependencia de VBA (`VariablesEntorno.bas:218`). El `PredeclaredId = True` y el `VB_Name` coinciden entre `.cls` y `.form.txt` (`:1`; `.form.txt:860`), pero el binario real del formulario podría diferir del snapshot (`vba-binary-drift` aplicaría si se recompila; el `5e64cf9` fija la lectura). La doble columna con ancho cero para el `IDAnexo` (`.form.txt:826, 836`) es el patrón equivalente a un `key` no visible en una tabla web; en la API debe enviarse el dato de algún modo sin mostrarlo.
+Pendiente de la coexistencia (documento aún no redactado). Lo concreto: `Application.Echo` y `DoCmd.Hourglass` son APIs de Access sin equivalente directo; la suspensión del repintado mientras el visor arranca (`:128, 145`) es un patrón legados que web ignora. `fso` (`FileSystemObject`) sigue siendo dependencia de VBA (`VariablesEntorno.bas:218`). El `PredeclaredId = True` y el `VB_Name` coinciden entre `.cls` y `.form.txt` (`:1`; `.form.txt:860`), pero el binario real del formulario podría diferir del snapshot (`vba-binary-drift` aplicaría si se recompila; el `5e64cf9` fija la lectura). La doble columna con ancho cero para el `IDAnexo` (`.form.txt:826, 836`) es el patrón equivalente a un `key` no visible en una tabla web; en la API debe enviarse el dato de algún modo sin mostrarlo.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

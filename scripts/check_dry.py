@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.6 — assets/scripts/check_dry.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/scripts/check_dry.py
+# Declared local deviation from the asset (team-skills#809 T6, BP issue #1327):
+#   - BASELINE: BP data (clone groups tolerated until their target date), not asset code.
+# No mechanism deviation: thresholds (MIN_STATEMENTS 5, MIN_OCCURRENCES 2), the scan, the
+# liveness guard, `--policy-date` and the bound envelope are the asset 2.2 unchanged.
 """DRY gate — type-1 and type-2 duplicate block detection over the AST.
 
 Text-based clone detection reports formatting as duplication and misses everything that was
@@ -33,6 +37,9 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
+from policy_time import add_policy_date_argument
+from quality_policy import bind_envelope, expected_subjects, load_policy, subject_paths
+
 # --------------------------------------------------------------------------------------------
 # CONFIGURATION
 # --------------------------------------------------------------------------------------------
@@ -47,16 +54,7 @@ MIN_STATEMENTS = 5
 #: refactoring heuristic, not a gate.
 MIN_OCCURRENCES = 2
 
-EXCLUDED_PARTS = frozenset(
-    {
-        "__pycache__",
-        ".venv",
-        "venv",
-        "build",
-        "dist",
-        "migrations",
-    }
-)
+EXCLUDED_PARTS = frozenset({"__pycache__", ".venv", "venv", "build", "dist", "migrations"})
 
 
 @dataclass(frozen=True)
@@ -323,7 +321,8 @@ BASELINE: dict[str, BaselineEntry] = {
     "dup:824ef3f3e298": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
 }
 
-# MECHANISM# MECHANISM
+# --------------------------------------------------------------------------------------------
+# MECHANISM
 # --------------------------------------------------------------------------------------------
 
 
@@ -385,37 +384,14 @@ def _statement_bodies(tree: ast.AST):
                     yield body
 
 
-def _iter_source_files(root: Path) -> list[Path]:
-    """Every file this gate would inspect.
-
-    Zero clone groups is a legitimate result on clean code, so the group count
-    cannot prove the gate ran. The file count can, and Hard Rule 18 wants the
-    liveness proof to be independent of the verdict (harness v1.6).
-    """
-    package_root = root / ROOT_PACKAGE
-    if not package_root.is_dir():
-        return []
-    return [
-        path
-        for path in sorted(package_root.rglob("*.py"))
-        if not EXCLUDED_PARTS.intersection(path.parts)
-    ]
-
-
 def collect_groups(root: Path) -> list[CloneGroup]:
-    package_root = root / ROOT_PACKAGE
-    if not package_root.is_dir():
-        return []
-
     buckets: dict[str, list[tuple[Occurrence, int]]] = {}
-    for path in sorted(package_root.rglob("*.py")):
-        if EXCLUDED_PARTS.intersection(path.parts):
-            continue
+    for path in subject_paths(root, load_policy()):
         display = str(path.relative_to(root)).replace("\\", "/")
         try:
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         except SyntaxError:
-            continue  # the docs-architecture job owns the unparseable-file failure
+            continue  # check_layers.py owns the unparseable-file failure
         for body in _statement_bodies(tree):
             for start in range(len(body) - MIN_STATEMENTS + 1):
                 window = body[start : start + MIN_STATEMENTS]
@@ -478,13 +454,8 @@ def _duplicated_statement_total(groups: list[CloneGroup]) -> int:
 
 
 def _total_statements(root: Path) -> int:
-    package_root = root / ROOT_PACKAGE
-    if not package_root.is_dir():
-        return 0
     total = 0
-    for path in sorted(package_root.rglob("*.py")):
-        if EXCLUDED_PARTS.intersection(path.parts):
-            continue
+    for path in subject_paths(root, load_policy()):
         try:
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         except SyntaxError:
@@ -538,16 +509,18 @@ def evaluate(groups: list[CloneGroup], today: date) -> tuple[int, list[str]]:
     return (1 if failed else 0), lines
 
 
-def build_report(root: Path, groups: list[CloneGroup], status: str) -> dict:
+def build_report(root: Path, groups: list[CloneGroup], status: str, policy_date: date) -> dict:
     duplicated = _duplicated_statement_total(groups)
     total = _total_statements(root)
-    return {
+    report = {
         "gate": "dry",
+        "policy_date": policy_date.isoformat(),
         "status": status,
         "indicators": {
             "duplicate_groups": len(groups),
             "duplicated_statements": duplicated,
             "duplicated_ratio_pct": round(100 * duplicated / total, 2) if total else 0.0,
+            "statements_measured": total,
         },
         "ceilings": {"duplicate_groups": 0},
         "findings": [
@@ -561,6 +534,14 @@ def build_report(root: Path, groups: list[CloneGroup], status: str) -> dict:
             for occurrence in group.occurrences
         ],
     }
+    unclassified: list[str] = []
+    for path in subject_paths(root, load_policy()):
+        try:
+            ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        except SyntaxError:
+            unclassified.append(path.relative_to(root).as_posix())
+    checked = [path for path in expected_subjects(root) if path not in unclassified]
+    return bind_envelope(report, root, "dry", checked=checked, unclassified=unclassified)
 
 
 def _pin_output_encoding() -> None:
@@ -580,6 +561,7 @@ def _pin_output_encoding() -> None:
 def main(argv: list[str] | None = None) -> int:
     _pin_output_encoding()
     parser = argparse.ArgumentParser(description=__doc__)
+    add_policy_date_argument(parser)
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="repository root")
     parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
     args = parser.parse_args(argv)
@@ -588,33 +570,30 @@ def main(argv: list[str] | None = None) -> int:
     if not (root / ROOT_PACKAGE).is_dir():
         message = f"root package '{ROOT_PACKAGE}' not found under {root}"
         if args.json:
-            print(json.dumps({"gate": "dry", "status": "error", "detail": message}))
-        else:
-            print(f"FAIL  {message}", file=sys.stderr)
-        return 1
-
-    files_seen = len(_iter_source_files(root))
-    if not files_seen:
-        # Hard Rule 18: a measurement that could not run must never score as a
-        # perfect one. The subject set is empty, so every ceiling below is
-        # trivially satisfied — the healthiest possible number for the least
-        # healthy possible state. Guard the subject set, not just the path: the
-        # missing-package case was already covered above; this is the one that
-        # looks like success (harness v1.6).
-        message = f"{ROOT_PACKAGE} under {root} yielded no source files to inspect"
-        if args.json:
-            print(json.dumps({"gate": "dry", "status": "error", "detail": message}))
+            report = build_report(root, [], "error", args.policy_date)
+            report["detail"] = message
+            print(json.dumps(report))
         else:
             print(f"FAIL  {message}", file=sys.stderr)
         return 1
 
     groups = collect_groups(root)
-    exit_code, lines = evaluate(groups, date.today())
+    if _total_statements(root) == 0:
+        message = f"no eligible statements found under {root / ROOT_PACKAGE}"
+        if args.json:
+            report = build_report(root, groups, "error", args.policy_date)
+            report["detail"] = message
+            print(json.dumps(report, indent=2))
+        else:
+            print(f"FAIL  {message}", file=sys.stderr)
+        return 1
+
+    exit_code, lines = evaluate(groups, args.policy_date)
 
     if args.json:
         print(
             json.dumps(
-                build_report(root, groups, "pass" if exit_code == 0 else "fail"),
+                build_report(root, groups, "pass" if exit_code == 0 else "fail", args.policy_date),
                 indent=2,
             )
         )

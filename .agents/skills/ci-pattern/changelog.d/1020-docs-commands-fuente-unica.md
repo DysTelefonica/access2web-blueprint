@@ -1,0 +1,3 @@
+type: minor
+
+HR-65 y HR-66 (#1020): el contrato de adopción pasa a ser la fuente única de `docs_commands` y `docs_links`. Los jobs `docs-commands` y `docs-links` leían un JSON suelto en la raíz del consumer mientras la fase 5 validaba el bloque homónimo del contrato; como nada leía ambos, las dos copias derivaban en silencio. Ambos jobs leen ahora su clave del contrato; `--config` sigue aceptando el fichero antiguo con aviso por stderr de que está obsoleto, y la fase 5 lo nombra mientras exista. `check_docs_commands.py` gana `CONFIG_KEYS`, que era el único gate de la familia sin él, así que la fase 5 ya rechaza la clave desconocida. No cambia qué se extrae, clasifica ni falla, ni quién ejecuta los comandos.

@@ -1,13 +1,27 @@
+import re
 from pathlib import Path
 
 import yaml
 
 WORKFLOW = Path(__file__).resolve().parent.parent / ".github" / "workflows" / "codeql.yml"
-CODEQL_ACTION_SHA = "24c54180a607b1449ed407dd24f251e4e9147c8d"
+DEPENDABOT = Path(__file__).resolve().parent.parent / ".github" / "dependabot.yml"
+FULL_SHA = re.compile(r"[0-9a-f]{40}")
 
 
 def _load_workflow() -> dict:
     return yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+
+
+def _pinned_sha(step: dict, action: str) -> str:
+    """The commit SHA a `github/codeql-action/<action>` step is pinned to.
+
+    The SHA is read from the workflow, never from a constant here: Dependabot bumps
+    `init` and `analyze` together in the workflow file, not in this test.
+    """
+    name, _, ref = step["uses"].partition("@")
+    assert name == f"github/codeql-action/{action}", step["uses"]
+    assert FULL_SHA.fullmatch(ref), f"{action} must pin a full 40-hex SHA: {step['uses']}"
+    return ref
 
 
 def _triggers(workflow: dict) -> dict:
@@ -43,6 +57,20 @@ def test_codeql_scans_python_via_reusable_workflow_call() -> None:
 
     init = next(step for step in job["steps"] if step.get("name") == "Initialize CodeQL")
     analyze = next(step for step in job["steps"] if step.get("name") == "Analyze Python")
-    assert init["uses"] == f"github/codeql-action/init@{CODEQL_ACTION_SHA}"
     assert init["with"] == {"languages": "python", "build-mode": "none"}
-    assert analyze["uses"] == f"github/codeql-action/analyze@{CODEQL_ACTION_SHA}"
+    # Issue #1389: init and analyze must always move to the same version.
+    assert _pinned_sha(init, "init") == _pinned_sha(analyze, "analyze")
+
+
+def test_dependabot_updates_codeql_action_as_one_group() -> None:
+    """Issue #1389: init and analyze must always move to the same version."""
+    dependabot = yaml.safe_load(DEPENDABOT.read_text(encoding="utf-8"))
+    update = next(
+        item
+        for item in dependabot["updates"]
+        if (item["package-ecosystem"], item["directory"]) == ("github-actions", "/")
+    )
+
+    assert update["groups"] == {
+        "codeql-action": {"patterns": ["github/codeql-action/*"]},
+    }

@@ -10,7 +10,7 @@ Selector del formato de salida del informe de una edición: Excel u HTML. Genera
 |---|---|---|
 | **Nadie en `src`** | Ningún `DoCmd.OpenForm` de `src` abre `FormInformeTipoSalida` | búsqueda por nombre en `src`, 0 resultados fuera de sus propios ficheros |
 
-El formulario espera un identificador de edición por `OpenArgs` (`:30`, `:70-71`), así que suене haber un llamador **en el binario que no está exportado** (macro o código de otro formulario). Queda pendiente de confirmar contra el binario; no se afirma aquí que esté huérfano.
+El formulario espera un identificador de edición por `OpenArgs` (`:30`, `:70-71`), así que suene haber un llamador **en el binario que no está exportado** (macro o código de otro formulario). Queda pendiente de confirmar contra el binario; no se afirma aquí que esté huérfano.
 
 | Hacia | Cómo | Evidencia |
 |---|---|---|
