@@ -69,12 +69,17 @@ from vendored_budget import (
     VENDORED_ROOTS as VENDORED_ROOTS,  # reexport: sigue siendo nombre público del gate
 )
 from vendored_budget import (
+    GeneratedPatterns,
     _strip_diff_prefix,
     counts_to_budget,
-    is_generated_lockfile,
+    generated_patterns,
+    is_generated,
     is_under_vendored,
     original_path,
     parse_numstat,
+)
+from vendored_budget import (
+    is_generated_lockfile as is_generated_lockfile,  # reexport: sigue siendo nombre público del gate
 )
 
 # --------------------------------------------------------------------------------------------
@@ -109,7 +114,20 @@ def _git(*args: str) -> str:
     return result.stdout
 
 
-def changed_lines(base_ref: str) -> tuple[int, int, int, list[tuple[str, int]]]:
+def base_gitattributes(base_ref: str) -> str:
+    """The base's ``.gitattributes`` (#1440), or ``""`` when the base has none.
+
+    Read from the BASE, never the working tree: a PR cannot take its own lines
+    out of the budget by marking them ``linguist-generated``.
+    """
+    try:
+        return _git("show", f"{base_ref}:.gitattributes")
+    except RuntimeError:
+        return ""
+
+
+def changed_lines(base_ref: str, generated_rules: GeneratedPatterns | None = None,
+                  ) -> tuple[int, int, int, list[tuple[str, int]]]:
     """Return ``(counted_total, vendored_excluded, generated_excluded, per_file)``.
 
     ``counted_total`` is the review-budget figure (vendored and generated
@@ -119,6 +137,8 @@ def changed_lines(base_ref: str) -> tuple[int, int, int, list[tuple[str, int]]]:
     (#1177); they are reported apart so the message says what it left out.
     ``per_file`` is the counted breakdown, largest first.
     """
+    if generated_rules is None:
+        generated_rules = generated_patterns(base_gitattributes(base_ref))
     raw = _git("diff", "--numstat", "--find-renames=50%", "--ignore-cr-at-eol",
                f"{base_ref}...HEAD")
     per_file: list[tuple[str, int]] = []
@@ -157,10 +177,10 @@ def changed_lines(base_ref: str) -> tuple[int, int, int, list[tuple[str, int]]]:
                 per_file.append((new_path, lines))
                 continue
         lines = int(added) + int(deleted)
-        if counts_to_budget(old_path, new_path):
+        if counts_to_budget(old_path, new_path, generated_rules):
             counted += lines
             per_file.append((new_path, lines))
-        elif is_generated_lockfile(new_path):
+        elif is_generated(new_path, generated_rules):
             generated += lines
         else:
             vendored += lines
@@ -253,6 +273,13 @@ class BreakdownMismatchError(MeasureError):
         super().__init__(f"the file breakdown ({got}) does not match the PR's changed_files ({want})")
 
 
+class GitattributesFileError(RuntimeError):
+    """``--gitattributes-file`` could not be read as UTF-8 text (#1440)."""
+
+    def __init__(self, path: str, cause: Exception) -> None:
+        super().__init__(f"--gitattributes-file unreadable: {path}: {cause}")
+
+
 class SupersededError(Exception):
     """The PR got a newer push after this event: its own event measures the new head (#1113).
 
@@ -325,7 +352,8 @@ def api_files(api_url: str, token: str, repo: str, number: int) -> list[dict]:
     return files
 
 
-def count_api_files(files: list[dict]) -> tuple[int, int, int, list[tuple[str, int]]]:
+def count_api_files(files: list[dict], generated_rules: GeneratedPatterns = (),
+                    ) -> tuple[int, int, int, list[tuple[str, int]]]:
     """Same figures as :func:`changed_lines`, from the API's per-file entries."""
     per_file: list[tuple[str, int]] = []
     counted = vendored = generated = 0
@@ -335,10 +363,10 @@ def count_api_files(files: list[dict]) -> tuple[int, int, int, list[tuple[str, i
         if not isinstance(name, str) or not is_int(added) or not is_int(deleted):
             raise MalformedFileError(item)
         lines = added + deleted
-        if counts_to_budget(previous, name):
+        if counts_to_budget(previous, name, generated_rules):
             counted += lines
             per_file.append((name, lines))
-        elif is_generated_lockfile(name):
+        elif is_generated(name, generated_rules):
             generated += lines
         else:
             vendored += lines
@@ -395,7 +423,8 @@ def api_pull(api_url: str, token: str, repo: str, number: int) -> tuple[str | No
     return (sha if isinstance(sha, str) else None), (changed if is_int(changed) else None)
 
 
-def api_changed_lines(event_path: str) -> tuple[int, int, int, list[tuple[str, int]], set[str]]:
+def api_changed_lines(event_path: str, generated_rules: GeneratedPatterns = (),
+                      ) -> tuple[int, int, int, list[tuple[str, int]], set[str]]:
     """``changed_lines`` for a pull_request event, plus the PR's labels read live (#1359).
 
     The PR's head and its breakdown are read around the file listing, so a push or a
@@ -419,7 +448,7 @@ def api_changed_lines(event_path: str) -> tuple[int, int, int, list[tuple[str, i
         if expected_head and head_after and head_after != expected_head:
             raise SupersededError(expected_head, head_after)
         if want is None or len(files) == want:
-            counted, vendored, generated, per_file = count_api_files(files)
+            counted, vendored, generated, per_file = count_api_files(files, generated_rules)
             return counted, vendored, generated, per_file, api_labels(api_url, token, repo, number)
         got = len(files)
     raise BreakdownMismatchError(got, want)
@@ -441,10 +470,17 @@ def _pin_output_encoding() -> None:
 
 def measure(args: argparse.Namespace) -> tuple[int, int, int, list[tuple[str, int]], set[str], str]:
     """``(counted, vendored, generated, per_file, labels, source)`` from the API (``--event``) or from git."""
+    rules = None
+    if args.gitattributes_file:
+        try:
+            text = Path(args.gitattributes_file).read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            raise GitattributesFileError(args.gitattributes_file, exc) from exc
+        rules = generated_patterns(text)
     if args.event:
-        return (*api_changed_lines(args.event), "the GitHub API")
+        return (*api_changed_lines(args.event, rules or ()), "the GitHub API")
     base_ref = args.base_ref or os.environ.get("BASE_REF") or pr_base_ref() or "origin/main"
-    counted, vendored, generated, per_file = changed_lines(base_ref)
+    counted, vendored, generated, per_file = changed_lines(base_ref, rules)
     return (counted, vendored, generated, per_file,
             split_labels(args.labels or os.environ.get("PR_LABELS", "")), base_ref)
 
@@ -497,6 +533,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--labels", default=None,
                         help="comma-separated PR labels (default: $PR_LABELS; --event reads the payload)")
     parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
+    parser.add_argument("--gitattributes-file", default=None,
+                        help="the base's .gitattributes (#1440): paths marked linguist-generated "
+                             "do not count (git mode reads the base's own by default)")
     args = parser.parse_args(argv)
 
     try:

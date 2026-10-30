@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Gate de contrato de PR y commits (#193): HR-6/7/8/14/31. Sin API ni procesos.
+"""Gate de contrato de PR y commits (#193): HR-6/7/8/14/31/84. Sin procesos.
+
+La API solo se consulta en modo vivo (#938): etiquetas, cuerpo y, para HR-84,
+la identidad de los autores de los commits (#1433).
 
 El gate no ejecuta `git`: el workflow genera los datos del rango y se los pasa
 por fichero (`--changed-files`, `--numstat-file`, `--commits-file`,
@@ -23,6 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "budget"))
 from vendored_budget import (  # noqa: E402
     VENDORED_ROOTS,
     budget_lines,
+    generated_patterns,
     parse_origins,
     vendored_lines,
 )
@@ -193,7 +197,8 @@ def read_data_file(path):
 
 
 CHECK_NAMES = ("closes", "chain_context", "issue_links", "closure_tests",
-               "docs_evidence", "budget", "commits", "ai_disclosure")
+               "docs_evidence", "budget", "commits", "ai_disclosure",
+               "commit_identity")
 
 # #1113: comprobaciones que #1093 (R1/R2) retiraron del gate. `labels` estuvo
 # en CHECK_NAMES hasta 938754363; `required_labels` era su campo de politica
@@ -230,7 +235,9 @@ def active_checks(policy):
     if bad:
         raise NonBooleanChecksError(bad)
     active = {name for name in CHECK_NAMES if config.get(name, True)}
-    if not active:
+    # HR-84 (#1433) no cuenta: sin la API viva no mide nada, y un gate que solo
+    # la tiene a ella daría OK sin comprobar nada en local (HR-3).
+    if not active - {"commit_identity"}:
         raise NoActiveChecksError
     return active
 
@@ -464,6 +471,94 @@ def check_commits(messages, policy, findings):
             if pat.search(msg):
                 findings.append(f"HR-14: atribución de IA detectada en commit '{subject[:80]}'.")
                 break
+
+
+# HR-84 (#1433): HR-14 mide el TEXTO del commit; un agente que firma con una
+# identidad propia (`pi-agent <pi-agent@local>`) lo pasaba entero y el commit
+# quedaba sin persona detrás en GitHub. La identidad se mide por la API de
+# commits de la PR: `author` es null cuando GitHub no vincula el autor a
+# ninguna cuenta. Avisa por defecto (`advise`); bloquea con `mode: enforce`,
+# que cada consumer declara cuando ya no le quedan PR abiertas con commits así
+# y tiene sus bots en `allowed_bots`. Los merges no se juzgan, como en HR-14.
+IDENTITY_MODES = ("advise", "enforce")
+IDENTITY_PAGE_SIZE = 100
+IDENTITY_MAX_PAGES = 3  # la API corta en 250 los commits de una PR
+IDENTITY_FIX = (
+    "Configure la identidad con `git config user.name` y `git config user.email` "
+    "(un correo verificado de la cuenta o su dirección noreply de GitHub) y revise "
+    "`GIT_AUTHOR_*`/`GIT_COMMITTER_*` en el entorno del agente. Un bot legítimo se "
+    "declara en `commit_identity.allowed_bots` de la política.")
+IDENTITY_ADVISE_NOTE = " Hoy avisa; bloqueará cuando la política declare `commit_identity.mode: enforce`."
+_COMMITS_NOT_LIST_MSG = "HR-84: el listado de commits de la PR no es una lista"
+_IDENTITY_NOT_OBJECT = "tiene que ser un objeto"
+_IDENTITY_BOTS_NOT_LIST = "`allowed_bots` tiene que ser una lista de nombres o correos"
+
+
+class CommitIdentityConfigError(ValueError):
+    """`commit_identity` de la política mal formado (HR-3, exit 2)."""
+
+    def __init__(self, detail):
+        super().__init__(f"política `commit_identity` inválida: {detail}")
+
+
+def identity_policy(policy):
+    """(modo, identidades permitidas en minúsculas) de `commit_identity`."""
+    config = policy.get("commit_identity", {})
+    if not isinstance(config, dict):
+        raise CommitIdentityConfigError(_IDENTITY_NOT_OBJECT)
+    mode = config.get("mode", "advise")
+    if mode not in IDENTITY_MODES:
+        detail = f"`mode` es {mode!r}; vale {' o '.join(IDENTITY_MODES)}"
+        raise CommitIdentityConfigError(detail)
+    bots = config.get("allowed_bots", [])
+    if not isinstance(bots, list) or not all(isinstance(b, str) and b.strip() for b in bots):
+        raise CommitIdentityConfigError(_IDENTITY_BOTS_NOT_LIST)
+    return mode, {b.strip().lower() for b in bots}
+
+
+def fetch_pr_commits(data, pr):
+    """Commits de la PR por API, página a página: `github_rest` solo pagina `/pulls`."""
+    repo_full_name = (data.get("repository") or {}).get("full_name")
+    number = pr.get("number")
+    if not isinstance(repo_full_name, str) or not repo_full_name or \
+            not isinstance(number, int):
+        raise _GITHUB_REST.GitHubApiError(_PAYLOAD_INCOMPLETE_MSG)
+    commits = []
+    for page in range(1, IDENTITY_MAX_PAGES + 1):
+        chunk = _GITHUB_REST.get_json(
+            f"/repos/{repo_full_name}/pulls/{number}/commits"
+            f"?per_page={IDENTITY_PAGE_SIZE}&page={page}")
+        if not isinstance(chunk, list):
+            raise _GITHUB_REST.GitHubApiError(_COMMITS_NOT_LIST_MSG)
+        commits += chunk
+        if len(chunk) < IDENTITY_PAGE_SIZE:
+            break
+    else:
+        print(f"PR-CONTRACT: HR-84 mide solo los primeros {len(commits)} commits: la "
+              "API no devuelve más de 250 por PR.", file=sys.stderr)
+    return commits
+
+
+def check_commit_identity(commits, identity, findings, advisories):
+    """HR-84: cada commit de trabajo tiene un autor vinculado a una cuenta."""
+    mode, allowed = identity
+    sink = findings if mode == "enforce" else advisories
+    note = "" if mode == "enforce" else IDENTITY_ADVISE_NOTE
+    for item in commits:
+        if not isinstance(item, dict):
+            continue
+        if len(item.get("parents") or []) >= MIN_MERGE_PARENTS:
+            continue
+        account = item.get("author")
+        if isinstance(account, dict) and account.get("login"):
+            continue
+        author = (item.get("commit") or {}).get("author") or {}
+        name, email = str(author.get("name", "")), str(author.get("email", ""))
+        if name.lower() in allowed or email.lower() in allowed:
+            continue
+        sha = str(item.get("sha", ""))[:8] or "?"
+        sink.append(f"HR-84: el commit {sha} tiene como autor «{name} <{email}>», "
+                    f"que GitHub no vincula a ninguna cuenta. {IDENTITY_FIX}{note}")
 
 # HR-7 (#1056): GitHub cierra una issue por el CUERPO del PR y también por los
 # MENSAJES de commit, y HR-7 solo miraba el cuerpo. Un PR con `chain:partial`
@@ -958,12 +1053,28 @@ def _load_range_data(args, active):
             texts[attr] = read_data_file(path)
         except OSError as exc:
             return None, f"{flag} ilegible: {exc}"
-    if "budget" in active and getattr(args, "origins_file", None):
-        try:
-            texts["origins_file"] = read_data_file(args.origins_file)
-        except OSError as exc:
-            return None, f"--origins-file ilegible: {exc}"
+    if "budget" in active:
+        error = _load_budget_extras(args, texts)
+        if error:
+            return None, error
     return texts, None
+
+
+#: Ficheros opcionales de A1: el mapa de orígenes (#931) y el `.gitattributes` de la base (#1440).
+BUDGET_EXTRAS = (("origins_file", "--origins-file"), ("gitattributes_file", "--gitattributes-file"))
+
+
+def _load_budget_extras(args, texts):
+    """Lee los ficheros opcionales de A1 que se pasaron; devuelve el error o ``None``."""
+    for attr, flag in BUDGET_EXTRAS:
+        path = getattr(args, attr, None)
+        if not path:
+            continue
+        try:
+            texts[attr] = read_data_file(path)
+        except (OSError, UnicodeDecodeError) as exc:
+            return f"{flag} ilegible: {exc}"
+    return None
 
 
 def _pr_level_checks(active, data, pr, ctx, verdict):
@@ -1016,7 +1127,8 @@ def _range_checks(active, pr, ctx, texts, verdict):
     if "budget" in active:
         origins = parse_origins(texts["origins_file"]) if "origins_file" in texts else None
         figure = BudgetFigure(
-            lines=budget_lines(texts["numstat_file"], origins),
+            lines=budget_lines(texts["numstat_file"], origins,
+                               generated_patterns(texts.get("gitattributes_file", ""))),
             vendored=vendored_lines(texts["numstat_file"]),
             origins_supplied=origins is not None,
         )
@@ -1042,6 +1154,8 @@ def main(argv=None):
     parser.add_argument("--tracked-files", help="`git ls-files`.")
     parser.add_argument("--origins-file",
                         help="Opcional (#931): origen de cada fichero vendorizado, que genera el runner local.")
+    parser.add_argument("--gitattributes-file",
+                        help="Opcional (#1440): `.gitattributes` de la BASE; lo marcado `linguist-generated` no cuenta para el presupuesto.")
     args = parser.parse_args(argv)
 
     data, pr, policy, error = _load_inputs(args)
@@ -1071,7 +1185,10 @@ def main(argv=None):
     else:
         pr_with_live = pr
 
-    texts, error = _load_range_data(args, active)
+    identity, pr_commits, error = _load_commit_identity(args, data, pr, policy, active)
+    texts = None
+    if not error:
+        texts, error = _load_range_data(args, active)
     if error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 2
@@ -1084,10 +1201,32 @@ def main(argv=None):
     except DocsEvidenceConfigError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
+    if pr_commits is not None:
+        check_commit_identity(pr_commits, identity, verdict.findings, verdict.advisories)
     # HR-31: el gate procesa el estado actual sin importar la acción
     # (opened, edited, labeled, unlabeled, synchronize).
     return _verdict(verdict.findings, pr, action_text=data.get("action", "opened"),
                     advisories=verdict.advisories)
+
+
+def _load_commit_identity(args, data, pr, policy, active):
+    """HR-84: (política, commits o None, error). Sin la API viva —modo local,
+    propagador, parity— la identidad no se mide y se dice; con ella, un fallo
+    de la API es error (fail-closed, HR-3) en los dos modos."""
+    identity = commits = error = None
+    if "commit_identity" in active:
+        try:
+            identity = identity_policy(policy)
+            if use_live_api(args.event_file, pr, os.environ):
+                commits = fetch_pr_commits(data, pr)
+            else:
+                print("PR-CONTRACT: HR-84 no se mide sin la API viva: la identidad de los "
+                      "autores solo la sabe GitHub.", file=sys.stderr)
+        except CommitIdentityConfigError as exc:
+            error = str(exc)
+        except _GITHUB_REST.GitHubApiError as exc:
+            error = f"HR-84: no se pudieron leer los commits de la PR: {exc}"
+    return identity, commits, error
 
 
 def _verdict(findings, pr, *, action_text, advisories=()):
