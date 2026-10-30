@@ -29,7 +29,7 @@ L2. Decisión de alcance (2026-10-30): el lote de merges de las PRs de documenta
 L3. Decisión de autoridad (2026-10-30): el índice y la matriz resumen y enlazan; la evidencia (ficha, commit fijado, cita `ruta:línea`) vive en el PRD de cada aplicación. Escribir en el índice lo que el PRD ya dice sería prosa paralela que duplica una autoridad existente.
 L4. Hueco conocido (2026-10-30): el ERD de origen de las ocho aplicaciones depende de la extracción `dysflow-erd` en el runner Windows del propietario. Ninguna unidad de esta cadena lo espera; los documentos lo declaran abierto.
 
-L5. Decisión de alcance (2026-10-30, tarde): T3 solo incorporará HPS Solicitudes y No Conformidades. HPS (#1076) no ha entregado su fase 5 ni hay PR abierta que la载; su fila no se inventa y el índice y la matriz lo declaran en curso.
+L5. Decisión de alcance (2026-10-30, tarde): T3 solo incorporará HPS Solicitudes y No Conformidades. HPS (#1076) no ha entregado su fase 5 ni hay PR abierta que la traiga; su fila no se inventa y el índice y la matriz lo declaran en curso.
 
 L6. Hallazgo de gobernanza (2026-10-30): el verificador de merge gobernado rechaza un check `pr-gate` en estado «skipped». Un comentario en el PR dispara el gate H1 (`pull_request_target: edited`) y, si esa corrida queda cancelada, su check run publica «skipped». Relanzar la corrida (`gh run rerun`) deja un veredicto «success» vigente y el merge pasa. Se relanza siempre después de registrar la orden.
 
