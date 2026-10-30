@@ -18,6 +18,12 @@ from pathlib import Path
 import pytest
 import yaml
 
+#: Gate scripts a consumer adopts only when it has what they measure. They are exempt from the
+#: "exists on disk, so it must run" walk below, because wiring them into every adopter would make
+#: the template fail closed where the subject does not exist (Hard Rule 18). A consumer that copies
+#: one MUST wire it in its own ci.yml.
+OPTIONAL_GATE_SCRIPTS = frozenset({"check_test_classification.py"})
+
 #: Every gate CI must execute, represented by a stable identity rather than text snippets.
 REQUIRED_GATE_IDENTITIES = (
     "branch_name",
@@ -254,6 +260,41 @@ def test_no_job_runs_on_a_floating_runner(workflow: dict) -> None:
     assert not floating, f"jobs on a floating runner label: {floating}"
 
 
+def _triggers(workflow: dict) -> dict:
+    # PyYAML reads the bare key `on` as the boolean True (YAML 1.1).
+    return workflow.get("on", workflow.get(True, {}))
+
+
+def test_dependency_scan_runs_only_on_its_nightly_cron(workflow: dict) -> None:
+    """D11 (#1093): the advisory database decides this verdict, not the diff.
+
+    Per pull request, a red that the PR cannot fix blocks merges. The scan runs on
+    its own daily cron and on manual dispatch only; no pull_request or push event
+    may reach it, and the weekly mutation session must not fire on the daily cron.
+    """
+    jobs = [
+        name for name, job in workflow["jobs"].items()
+        if "dependency_scan" in _workflow_gate_identities(job.get("steps", []))
+    ]
+    assert len(jobs) == 1, f"the dependency scan must live in one job, found {jobs}"
+    condition = workflow["jobs"][jobs[0]].get("if", "")
+    crons = [entry["cron"] for entry in _triggers(workflow)["schedule"]]
+    assert "github.event_name == 'schedule'" in condition, condition
+    assert any(f"github.event.schedule == '{cron}'" in condition for cron in crons), (
+        f"the scan's condition {condition!r} names none of the declared crons {crons}"
+    )
+    assert "pull_request" not in condition and "push" not in condition, condition
+
+    mutation = [
+        job for job in workflow["jobs"].values()
+        if "mutation" in _workflow_gate_identities(job.get("steps", []))
+    ]
+    assert mutation, "the mutation session disappeared"
+    assert all("github.event.schedule == '0 3 * * 1'" in job.get("if", "") for job in mutation), (
+        "the mutation session must stay on its weekly cron, not the daily one"
+    )
+
+
 # --- Set-level parity: scripts <-> ci.yml <-> make verify (Hard Rule 19) ---
 #
 # Every test above pins ONE gate to ONE step. That catches a deletion and
@@ -433,7 +474,9 @@ def test_every_gate_script_on_disk_is_wired_in_ci(steps: list[dict]) -> None:
         wired.update(script for _, script, _ in gates)
 
     unwired = sorted(
-        path.name for path in scripts_dir.glob("check_*.py") if path.name not in wired
+        path.name
+        for path in scripts_dir.glob("check_*.py")
+        if path.name not in wired and path.name not in OPTIONAL_GATE_SCRIPTS
     )
     assert not unwired, (
         f"these gate scripts exist but no CI step runs them: {unwired}. A gate that "

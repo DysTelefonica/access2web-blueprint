@@ -81,7 +81,7 @@ Sin transacciones: alta, plan, log e indicadores son pasos sucesivos (`NCaUDITOR
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. A adaptar: `ID` y `Numero` calculados en código y no por secuencia (`NCaUDITORIAOperaciones.cls:134-139`), `WHERE ID=` concatenado (`NCaUDITORIAOperaciones.cls:143`), `Edit/Update` de DAO sobre `SELECT *`, escritura de `Null` por DAO (`NCaUDITORIAOperaciones.cls:230-234`) y listas de valores fijas en el formulario (`Tipo`, `PuntoNorma`, `RESPONSABLEIMPLANTACION`; esta última sustituida en ejecución por el combo, `:239`).
+Pendiente de la coexistencia (documento aún no redactado). A adaptar: `ID` y `Numero` calculados en código y no por secuencia (`NCaUDITORIAOperaciones.cls:134-139`), `WHERE ID=` concatenado (`NCaUDITORIAOperaciones.cls:143`), `Edit/Update` de DAO sobre `SELECT *`, escritura de `Null` por DAO (`NCaUDITORIAOperaciones.cls:230-234`) y listas de valores fijas en el formulario (`Tipo`, `PuntoNorma`, `RESPONSABLEIMPLANTACION`; esta última sustituida en ejecución por el combo, `:239`).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

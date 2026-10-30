@@ -42,12 +42,17 @@ def _git(repo: Path, *args: str) -> str:
 
 
 class TestVendoredRoots(unittest.TestCase):
-    def test_the_roots_are_the_two_vendored_trees(self) -> None:
-        self.assertEqual(budget.VENDORED_ROOTS, (".agents/skills/", "skills/"))
+    def test_the_only_root_is_the_vendored_tree(self) -> None:
+        """#1088: solo queda fuera el árbol vendorizado de los consumers."""
+        self.assertEqual(budget.VENDORED_ROOTS, (".agents/skills/",))
 
     def test_a_path_under_a_root_is_vendored(self) -> None:
         self.assertTrue(budget.is_under_vendored(".agents/skills/foo/x.py"))
-        self.assertTrue(budget.is_under_vendored("skills/legacy/x.py"))
+
+    def test_the_catalog_is_not_vendored(self) -> None:
+        """#1088: ``skills/`` es el catálogo de autoría del canon."""
+        self.assertFalse(budget.is_under_vendored("skills/legacy/x.py"))
+        self.assertFalse(budget.is_under_vendored("skills/acme/SKILL.md"))
 
     def test_an_authored_path_is_not_vendored(self) -> None:
         self.assertFalse(budget.is_under_vendored("app/auth.py"))
@@ -60,7 +65,10 @@ class TestCountsToBudget(unittest.TestCase):
 
     def test_vendored_path_without_rename_does_not_count(self) -> None:
         self.assertFalse(budget.counts_to_budget(".agents/skills/foo/x.py", ".agents/skills/foo/x.py"))
-        self.assertFalse(budget.counts_to_budget("skills/legacy/x.py", "skills/legacy/x.py"))
+
+    def test_catalog_path_without_rename_counts(self) -> None:
+        """#1088: bajo ``skills/`` es autoría y cuenta para el presupuesto."""
+        self.assertTrue(budget.counts_to_budget("skills/legacy/x.py", "skills/legacy/x.py"))
 
     def test_rename_from_authored_into_vendored_counts(self) -> None:
         self.assertTrue(budget.counts_to_budget("app/auth.py", ".agents/skills/foo/auth.py"))
@@ -68,6 +76,57 @@ class TestCountsToBudget(unittest.TestCase):
 
     def test_rename_within_vendored_does_not_count(self) -> None:
         self.assertFalse(budget.counts_to_budget(".agents/skills/a.py", ".agents/skills/b.py"))
+
+
+class TestGeneratedLockfiles(unittest.TestCase):
+    """#1177: los lockfiles generados no son trabajo de revision."""
+
+    def test_the_patterns_are_the_documented_ones(self) -> None:
+        self.assertEqual(
+            budget.LOCKFILE_PATTERNS,
+            ("uv.lock", "package-lock.json", "pnpm-lock.yaml", "poetry.lock",
+             "requirements*.lock"),
+        )
+
+    def test_a_lockfile_is_recognised_by_name_in_any_directory(self) -> None:
+        for path in ("uv.lock", "app/uv.lock", "package-lock.json",
+                     "frontend/package-lock.json", "pnpm-lock.yaml", "poetry.lock",
+                     "requirements.lock", "requirements-dev.lock",
+                     "app/requirements-dev.lock"):
+            self.assertTrue(budget.is_generated_lockfile(path), path)
+
+    def test_requirements_without_the_lock_suffix_is_not_a_lockfile(self) -> None:
+        self.assertFalse(budget.is_generated_lockfile("requirements.txt"))
+        self.assertFalse(budget.is_generated_lockfile("app/requirements.in"))
+        self.assertFalse(budget.is_generated_lockfile("app/requirements"))
+
+    def test_a_file_that_only_mentions_a_lockfile_is_not_one(self) -> None:
+        self.assertFalse(budget.is_generated_lockfile("app/lockfiles.md"))
+        self.assertFalse(budget.is_generated_lockfile("docs/uv.lock.md"))
+
+    def test_the_match_is_case_sensitive(self) -> None:
+        """El gate no puede depender del sistema de ficheros: el nombre va exacto."""
+        self.assertFalse(budget.is_generated_lockfile("UV.LOCK"))
+
+
+class TestLockfilesDoNotCount(unittest.TestCase):
+    """#1177: el lockfile generado queda fuera del presupuesto."""
+
+    def test_a_modified_lockfile_does_not_count(self) -> None:
+        self.assertFalse(budget.counts_to_budget("uv.lock", "uv.lock"))
+        self.assertFalse(budget.counts_to_budget("app/requirements-dev.lock",
+                                                  "app/requirements-dev.lock"))
+
+    def test_a_rename_from_authored_into_a_lockfile_counts(self) -> None:
+        """El trabajo fue de autoria: renombrar a un lockfile no lo esconde."""
+        self.assertTrue(budget.counts_to_budget("app/auth.py", "uv.lock"))
+
+    def test_a_rename_between_lockfiles_does_not_count(self) -> None:
+        self.assertFalse(budget.counts_to_budget("uv.lock", "app/uv.lock"))
+
+    def test_budget_lines_leaves_the_lockfile_out(self) -> None:
+        numstat = "10\t2\tapp/a.py\n222\t222\tuv.lock\n"
+        self.assertEqual(budget.budget_lines(numstat), 12)
 
 
 class TestParseNumstat(unittest.TestCase):
@@ -119,6 +178,30 @@ class TestBudgetLines(unittest.TestCase):
     def test_rename_from_authored_stays_counted_with_origins(self) -> None:
         origins = {".agents/skills/new/x.py": None}
         self.assertEqual(budget.budget_lines(self.NUMSTAT, origins), 10 + 2 + 5 + 5 + 300)
+
+
+class TestVendoredLines(unittest.TestCase):
+    """#1133: la cifra del árbol vendorizado, para que el gate diga qué parte
+    de la cuenta no es trabajo de quien abre la PR."""
+
+    NUMSTAT = (
+        "10\t2\tapp/a.py\n"
+        "300\t0\t.agents/skills/prop.md\n"
+        "5\t5\tsrc/{old => .agents/skills/new}/x.py\n"
+        "-\t-\tlogo.png\n"
+    )
+
+    def test_it_sums_the_lines_whose_destination_is_vendored(self) -> None:
+        # El renombrado del fixture apunta a `src/.agents/skills/new/x.py`: no cae
+        # bajo la raíz vendorizada, así que no cuenta como vendorizado.
+        self.assertEqual(budget.vendored_lines(self.NUMSTAT), 300)
+
+    def test_a_numstat_without_vendored_paths_is_zero(self) -> None:
+        self.assertEqual(budget.vendored_lines("10\t2\tapp/a.py\n"), 0)
+
+    def test_the_authored_catalog_is_not_vendored(self) -> None:
+        """#1088: `skills/` es el catálogo de autoría del canon."""
+        self.assertEqual(budget.vendored_lines("7\t0\tskills/acme/SKILL.md\n"), 0)
 
 
 class TestParseOrigins(unittest.TestCase):

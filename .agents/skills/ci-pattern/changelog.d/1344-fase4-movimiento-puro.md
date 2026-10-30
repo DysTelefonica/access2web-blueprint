@@ -1,0 +1,3 @@
+type: patch
+
+La fase 4 de `--seal-baseline <dir>` cierra el hueco del movimiento con edición en las rutas que miden los gates (DysTelefonica/team-skills#1344). Antes, si la ruta que mide la base ya no estaba en el árbol medido, la base dejaba de exigirla y el PR podía mover el gate y editar el fichero movido en el mismo paso. Ahora la excepción de retirada es la misma que en las fases 0, 1, 2 y 5: solo se admite un movimiento puro, la cabeza mide una ruta nueva con el mismo contenido que la base, byte a byte. Un movimiento con edición en el mismo PR da hallazgo, y retirar la ruta sin medir otra con su contenido también. Sin la opción el gate se mide como siempre, y una base sin contrato legible sigue fallando cerrado con exit 2.

@@ -6,7 +6,18 @@ Las rutas de :data:`VENDORED_ROOTS` quedan fuera del presupuesto de revisión,
 pero un fichero renombrado desde una ruta de autoría hacia una vendorizada
 sigue contando, aunque el renombrado ocurra en otro commit del mismo PR.
 
-El módulo no ejecuta ``git`` ni importa ``subprocess``: el activo se copia
+Los lockfiles generados (los patrones de :data:`LOCKFILE_PATTERNS`) quedan
+fuera también: los escribe la herramienta, no quien abre la PR. Un fichero
+renombrado desde una ruta de autoría hacia un lockfile sí cuenta (#1177).
+
+Desde #1088 la lista tiene una sola entrada: ``.agents/skills/``, el árbol
+vendorizado que los consumers reciben del canon. ``skills/`` **no** se
+excluye: en el canon es el catálogo de autoría (64 skills escritas aquí) y en
+un consumer es su catálogo propio, así que sus líneas son trabajo que alguien
+tiene que revisar. Excluirlo hacía que el gate midiera ``changed_lines: 0``
+en PRs que reescribían una skill entera de 569 líneas.
+
+El módulo no ejecuta ``git`` ni lanza procesos: el activo se copia
 byte a byte en consumers con ratchet de ruff extendido (S603/S607) y quien
 llama ya tiene su runner, así que lo inyecta (#753). El contrato es
 ``run_git(*args) -> str``, ligado a su repositorio, que devuelve stdout y
@@ -23,12 +34,42 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable
+from fnmatch import fnmatchcase
 
 #: Runner de git inyectado: recibe los argumentos, devuelve stdout, lanza ``RuntimeError`` si falla.
 RunGit = Callable[..., str]
 
 #: Única definición de las rutas excluidas del presupuesto de revisión.
-VENDORED_ROOTS = (".agents/skills/", "skills/")
+#:
+#: Solo ``.agents/skills/``: el árbol vendorizado de los consumers, cuyo
+#: código no escribió quien abre la PR. ``skills/`` no está aquí (#1088):
+#: en el canon es el catálogo de autoría y en un consumer es su catálogo
+#: propio, y en los dos casos sus líneas cuentan para el presupuesto.
+VENDORED_ROOTS = (".agents/skills/",)
+
+#: Lockfiles generados: quedan fuera del presupuesto de revisión (#1177).
+#:
+#: El lockfile lo escribe el gestor de paquetes a partir del manifiesto, así que
+#: sus líneas no son trabajo de quien abre la PR: un bump que mueve el árbol de
+#: dependencias se comía el presupuesto entero sin que nadie pueda partirlo
+#: (``ardelperal/APAP_WEB#2424``: 444 de las 448 líneas del diff eran
+#: ``uv.lock``, y la PR solo pudo entrar con la etiqueta ``size:exception``).
+#:
+#: Se reconocen por el nombre del fichero, en cualquier directorio del repo. Un
+#: ``requirements.txt`` (sin la extensión ``.lock``) se mantiene dentro del
+#: presupuesto: ese se escribe a mano.
+LOCKFILE_PATTERNS = ("uv.lock", "package-lock.json", "pnpm-lock.yaml",
+                     "poetry.lock", "requirements*.lock")
+
+
+def is_generated_lockfile(path: str) -> bool:
+    """True cuando ``path`` es el nombre de un lockfile generado (#1177).
+
+    La comparación es exacta (``fnmatchcase``): el gate no puede depender de
+    cómo normaliza los nombres el sistema de ficheros donde corra.
+    """
+    name = path.rsplit("/", 1)[-1]
+    return any(fnmatchcase(name, pattern) for pattern in LOCKFILE_PATTERNS)
 
 #: Campos de una línea de ``--name-status``: estado y ruta; renombrado: estado, origen y destino.
 _ADDED_FIELDS = 2
@@ -46,10 +87,14 @@ def is_under_vendored(path: str) -> bool:
 def counts_to_budget(old_path: str, new_path: str) -> bool:
     """Decide si los cambios de un fichero cuentan para el presupuesto.
 
-    1. Destino fuera de las rutas vendorizadas: cuenta.
-    2. Destino vendorizado y sin renombrado desde autoría: no cuenta.
-    3. Renombrado desde una ruta de autoría hacia una vendorizada: cuenta.
+    1. Destino que es un lockfile generado: no cuenta, salvo que el fichero
+       venga de una ruta de autoría (el trabajo fue de autoría) (#1177).
+    2. Destino fuera de las rutas vendorizadas: cuenta.
+    3. Destino vendorizado y sin renombrado desde autoría: no cuenta.
+    4. Renombrado desde una ruta de autoría hacia una vendorizada: cuenta.
     """
+    if is_generated_lockfile(new_path):
+        return old_path != new_path and not is_generated_lockfile(old_path)
     if not is_under_vendored(new_path):
         return True
     return old_path != new_path and not is_under_vendored(old_path)
@@ -125,15 +170,12 @@ def parse_origins(text: str) -> dict[str, str | None]:
     return origins
 
 
-def budget_lines(numstat: str, origins: dict[str, str | None] | None = None) -> int:
-    """Líneas que cuentan para el presupuesto, desde un ``git diff --numstat``.
+def _iter_numstat(numstat: str):
+    """``(old_path, new_path, lines)`` de cada entrada del numstat contable.
 
-    Sin ``origins`` cuenta todo, como ``pr-contract`` antes de #931. Con
-    ``origins``, un fichero vendorizado solo cuenta si su origen es de
-    autoría o si es un renombrado desde una ruta de autoría. Un fichero
-    vendorizado sin entrada en ``origins`` cuenta (fallo hacia contar).
+    Una sola lectura del ``git diff --numstat`` para toda la regla: el
+    presupuesto y la cifra del árbol vendorizado salen de aquí.
     """
-    total = 0
     for line in numstat.splitlines():
         added, _, rest = line.partition("\t")
         deleted, _, path_field = rest.partition("\t")
@@ -143,7 +185,21 @@ def budget_lines(numstat: str, origins: dict[str, str | None] | None = None) -> 
         if parsed is None:
             continue
         old_path, new_path = (_strip_diff_prefix(p) for p in parsed)
-        lines = int(added) + int(deleted)
+        yield old_path, new_path, int(added) + int(deleted)
+
+
+def budget_lines(numstat: str, origins: dict[str, str | None] | None = None) -> int:
+    """Líneas que cuentan para el presupuesto, desde un ``git diff --numstat``.
+
+    Sin ``origins`` cuenta todo, como ``pr-contract`` antes de #931. Con
+    ``origins``, un fichero vendorizado solo cuenta si su origen es de
+    autoría o si es un renombrado desde una ruta de autoría. Un fichero
+    vendorizado sin entrada en ``origins`` cuenta (fallo hacia contar).
+    """
+    total = 0
+    for old_path, new_path, lines in _iter_numstat(numstat):
+        if is_generated_lockfile(new_path) and not counts_to_budget(old_path, new_path):
+            continue  # lockfile generado: no cuenta para el presupuesto (#1177)
         if not is_under_vendored(new_path) or origins is None or new_path not in origins:
             total += lines
             continue
@@ -151,3 +207,13 @@ def budget_lines(numstat: str, origins: dict[str, str | None] | None = None) -> 
         if (origin is not None and not is_under_vendored(origin)) or counts_to_budget(old_path, new_path):
             total += lines
     return total
+
+
+def vendored_lines(numstat: str) -> int:
+    """Líneas del numstat cuyo destino cae bajo una raíz vendorizada.
+
+    El gate la usa para nombrar la parte de la cifra que NO es trabajo de
+    quien abre la PR: sin mapa de orígenes esas líneas cuentan hacia dentro
+    del presupuesto (#931) y el hallazgo tiene que decirlo (#1133).
+    """
+    return sum(lines for _, new_path, lines in _iter_numstat(numstat) if is_under_vendored(new_path))

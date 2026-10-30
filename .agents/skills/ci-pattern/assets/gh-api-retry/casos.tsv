@@ -1,0 +1,21 @@
+# Tabla de casos del reintento de la API (#1210, #1220).
+#
+# Es el contrato ÚNICO de la regla: la recorren los tests de las dos
+# implementaciones (el helper bash y el cliente Python `github_rest.py`), así
+# que una divergencia entre ellas rompe el suite de la que se desvía.
+#
+# Columnas (TSV):
+#   caso        nombre del caso
+#   falla       qué falla en cada llamada: error | json_malformado | ninguna
+#   fallos      cuántas llamadas fallan antes de responder bien (99 = siempre)
+#   intentos    llamadas esperadas, contando la que responde
+#   respuesta   qué devuelve cuando ya no falla: ok | vacia
+#   resultado   ok | vacia | falla_cerrado
+#
+# Regla: se reintenta un fallo de llamada y un JSON malformado; una respuesta
+# válida vacía NO se reintenta; agotados los intentos, se falla cerrado.
+# caso	falla	fallos	intentos	respuesta	resultado
+fallo-de-llamada	error	1	2	ok	ok
+json-malformado	json_malformado	1	2	ok	ok
+respuesta-valida-vacia	ninguna	0	1	vacia	vacia
+intentos-agotados	error	99	3	ok	falla_cerrado

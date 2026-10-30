@@ -1,0 +1,142 @@
+# Workflow de deriva del documento operativo del consumer (canon #1062).
+#
+# Para adoptarlo: copie este fichero a
+# `.github/workflows/operating-doc-drift.yml` y cambie los valores del bloque
+# `env` de abajo. Nada más es parametrizable: el job no lleva ramas, runners
+# propios ni nombres de repositorio más allá de los del propio `env`.
+#
+# **Este workflow no lleva el commit del catálogo escrito a mano.** La fuente
+# única es el sello `# Auto-generado por propagate-team-skills.ps1 (catalog @
+# <sha40>).` de `.team-skills.yaml`, que el propagador reescribe en cada
+# corrida: aquí se resuelve en runtime y se exporta a `$GITHUB_OUTPUT`, y el
+# `ref:` del checkout lo toma de ahí. Un pin escrito se desincroniza en la
+# siguiente propagación (#1062) y produce un `diff` que nadie sabe leer.
+#
+# No publica check requerido (HR-30): se dispara en `schedule` y en
+# `workflow_dispatch`, donde no hay pull request que evaluar. Por eso este job
+# no va en el `needs:` de un agregador ni en `required_jobs`: su rojo se lee
+# en la pestaña Actions y se abre issue desde ahí, no bloquea un merge.
+
+name: Operating doc drift
+
+on:
+  schedule:
+    # Minuto fuera de la hora punta de las colas programadas de GitHub.
+    - cron: "23 6 * * 1"
+  workflow_dispatch:
+
+# Solo lectura: este workflow no escribe nada en el repositorio.
+permissions:
+  contents: read
+
+concurrency:
+  group: operating-doc-drift
+  # Una deriva en curso no se cancela: dos runs midiendo el mismo sello
+  # consumes dos runners para el mismo resultado.
+  cancel-in-progress: false
+
+env:
+  # 1. Repositorio del catálogo de skills: el checkout cuya CLI mide la deriva.
+  CATALOG_REPO: DysTelefonica/team-skills
+  # 2. Credencial de lectura de ese repositorio (puede ser el mismo token del
+  #    resto del CI). Cámbielo si su secreto se llama de otra forma.
+  CATALOG_TOKEN: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
+  # 3. Manifiesto que el propagador escribe en el consumer. De su primera
+  #    línea se lee el sello `catalog @ <sha40>`; no lo escriba aquí.
+  CATALOG_MANIFEST: .team-skills.yaml
+  # 4. CLI del catálogo, ya dentro del checkout del sello. El layout del
+  #    catálogo es `personal/<owner>/<skill>/`.
+  CATALOG_CLI: catalog/personal/ardelperal/ci-pattern/assets/bin/ci-pattern
+  # 5. Fichero de parámetros del patrón en el consumer.
+  CI_PATTERN_PARAMS: ci-pattern.yaml
+  # 6. API del catálogo: solo para expandir un sello abreviado (#1157).
+  CATALOG_API: https://api.github.com
+
+jobs:
+  drift:
+    name: deriva del documento operativo
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout del consumer
+        # actions/checkout v4.4.0
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: La credencial de lectura del catálogo está disponible
+        run: |
+          set -euo pipefail
+          if [ -z "${CATALOG_TOKEN:-}" ]; then
+            echo "el secreto de lectura del catálogo está vacío: revise el nombre en el bloque env de arriba y que exista en este repositorio." >&2
+            exit 1
+          fi
+
+      - name: Resolver el commit del catálogo desde su sello (#1062)
+        id: catalog-pin
+        run: |
+          set -euo pipefail
+          if [ ! -f "$CATALOG_MANIFEST" ]; then
+            echo "no existe $CATALOG_MANIFEST: sin ese manifiesto no hay forma de saber qué commit del catálogo se propagó a este repo (HR-3)." >&2
+            exit 1
+          fi
+          seal=$(head -n 1 "$CATALOG_MANIFEST")
+          case "$seal" in
+            *"catalog @ "*) ;;
+            *)
+              echo "la primera línea de $CATALOG_MANIFEST no trae el sello 'catalog @ <sha40>': no hay commit del catálogo que medir (HR-3)." >&2
+              exit 1
+              ;;
+          esac
+          commit=${seal#*catalog @ }
+          commit=${commit%%)*}
+          case "$commit" in
+            "" | *[!0-9a-f]*)
+              echo "el sello de $CATALOG_MANIFEST no trae un sha en hexadecimal: '$commit' (HR-3)." >&2
+              exit 1
+              ;;
+          esac
+          if [ "${#commit}" -lt 7 ] || [ "${#commit}" -gt 40 ]; then
+            echo "el sello de $CATALOG_MANIFEST trae un commit de ${#commit} caracteres, no entre 7 y 40: '$commit' (HR-3)." >&2
+            exit 1
+          fi
+          if [ "${#commit}" -lt 40 ]; then
+            # #1157: el sello que ya está en el campo es abreviado (`git rev-parse --short`).
+            # La API del catálogo resuelve el prefijo a su oid completo; sin ese oid el
+            # `ref:` del checkout no tiene nada que pedir.
+            full=$(curl -fsS -H "Authorization: Bearer ${CATALOG_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "${CATALOG_API}/repos/${CATALOG_REPO}/commits/${commit}" \
+              | python3 -c 'import json, sys; print(json.load(sys.stdin)["sha"])') || {
+              echo "no se pudo resolver el sello abreviado '$commit' contra ${CATALOG_REPO} (HR-3)." >&2
+              exit 1
+            }
+            if [ "${#full}" -ne 40 ] || [ "${full#"$commit"}" = "$full" ]; then
+              echo "la API devolvió '$full' para el sello '$commit': no es el commit completo de ese prefijo (HR-3)." >&2
+              exit 1
+            fi
+            commit=$full
+          fi
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+          echo "commit del catálogo leído del sello de $CATALOG_MANIFEST: $commit"
+
+      - name: Checkout del catálogo en el commit del sello
+        # actions/checkout v4.4.0
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: ${{ env.CATALOG_REPO }}
+          # Del output del paso anterior, nunca escrito a mano (#1062).
+          ref: ${{ steps.catalog-pin.outputs.commit }}
+          path: catalog
+          token: ${{ env.CATALOG_TOKEN }}
+          persist-credentials: false
+
+      # Los dos gates, cada uno como comando de primer nivel: la CLI nunca
+      # encadenada a otro gate (HR-46, el ciclo que tumbó el VPS en 2026-10-05).
+      - name: Los parámetros del patrón validan contra el esquema
+        run: python3 "$CATALOG_CLI" params validate "$CI_PATTERN_PARAMS"
+
+      - name: El documento operativo está al día con la fase 5
+        run: python3 "$CATALOG_CLI" adoption check --phase 5 .

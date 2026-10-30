@@ -1,0 +1,3 @@
+type: patch
+
+Nuevo asset `scripts/check_test_classification.py` (+ `tests/test_test_classification.py`), sin bump de versión (#809, decisión D2): la puerta genérica «todo `tests/integration/test_*.py` lleva el marker `integration`», que APAP y BP mantenían como copias divergentes sin canon. Sin baseline (un fichero sin marker es siempre un incumplimiento) y con fallo cerrado si el directorio falta o no contiene ficheros (HR-18). El contrato dominio↔integración de APAP (`IN_SCOPE_DOMAINS`, `REQUIRED_ATOMS`) es política del consumer y no se sube. Lleva `HARNESS-PROVENANCE: v2.2`, la versión vigente.

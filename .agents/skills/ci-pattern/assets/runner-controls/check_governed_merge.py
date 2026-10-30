@@ -4,8 +4,8 @@
 
 El workflow que corre en el runner propio invoca este asset con el numero
 de PR; verifica el contrato antes de fusionar: los ``required_checks`` del
-contrato en verde sobre la cabeza del PR, exactamente una etiqueta
-``type:*`` y ``Closes #N`` solo en el punta de cadena (un PR
+contrato en verde sobre la cabeza del PR y ``Closes #N`` solo en el punta de
+cadena (un PR
 ``chain:partial`` lo lleva en la violacion). Un check requerido que aun no
 existe o no ha terminado se espera hasta ``--wait-seconds`` (#787). El tamano
 no se repite aqui: lo mide ``pr-size`` (excluye lo vendorizado), y ``required``
@@ -15,9 +15,25 @@ devuelve 1 con el hallazgo; el entorno insalvable falla cerrado con 2
 ejecuta el workflow, cierra las issues enlazadas por palabras de cierre y devuelve 0.
 El merge con ``GITHUB_TOKEN`` no dispara el cierre implicito de GitHub (0 de 13, #800):
 el cierre es explicito, exige ``issues: write`` y, si falla con el merge ya hecho,
-devuelve 3 («fusionado, issue sin cerrar»), nunca el 2. Un PR atrasado respecto de su base se bloquea antes (1): el arbol a fusionar
-no seria el que reviso el CI (#787) y, si ambos lados cambiaron el mismo fichero
-de ``.github/workflows/``, ``GITHUB_TOKEN`` no tiene el permiso ``workflows`` (#783).
+devuelve 3 («fusionado, issue sin cerrar»), nunca el 2. Si ambos lados cambiaron
+el mismo fichero de ``.github/workflows/``, un PR atrasado se bloquea siempre (1):
+``GITHUB_TOKEN`` no tiene el permiso ``workflows`` (#783). Fuera de ese caso, el
+atraso respecto de la base solo bloquea con ``merge_freshness: "required"`` en el
+contrato (#787), o si el contrato no declara ``post_merge_dispatch``: el CI corre
+una vez, en la PR, y la red de seguridad es el CI post-merge (#1397).
+Tras el merge, el job mide el arbol integrado y publica el veredicto (#1265):
+compara el arbol del commit de merge con el del head verificado (leidos de
+``commit.tree.sha``, con el lector compartido del detective post-push) y lo
+escribe en stdout y en ``$GITHUB_STEP_SUMMARY``. Arboles iguales: 0. Arboles
+distintos: 5 con ``merge_freshness: "required"`` (el merge no se deshace; el rojo
+dice que el arbol integrado no es el que reviso el CI); sin ella, 0, y el
+veredicto dice que lo verifica el CI post-merge de la base (#1397). Si la medicion no se puede hacer, falla cerrado con 2
+nombrando la causa: un commit ilegible nunca se reporta como coincidencia.
+Esa medicion no interrumpe el trabajo posterior al merge (#1279): si falla, el
+resumen dice ``not measured: <causa>``, el cierre de las issues enlazadas y el
+dispatch post-merge se ejecutan igual, y el 2 sale al final con la causa.
+La operacion completa, con los codigos de salida y que hacer con el rojo, esta
+en ``references/integrated-tree-evidence.md`` (raiz del skill).
 Runner-enforced (HR-34); lo que no pase
 por aqui lo detecta el detective post-push (HR-49). Solo stdlib; cada
 llamada a ``gh api`` lleva timeout.
@@ -25,14 +41,18 @@ llamada a ``gh api`` lleva timeout.
 import argparse
 import base64
 import json
+import os
 import re
 import sys
 import time
+from pathlib import Path
+from typing import NamedTuple
 
 from check_push_compliance import (
     SHA_RE,
     FailClosedError,
     check_verdict,
+    commit_tree_sha,
     fail,
     gh_json,
     load_json,
@@ -48,6 +68,21 @@ RACE_CLOSED = 422  # PATCH devolvio 422 = carrera con el cierre auto por `Closes
 WAITABLE = (": missing", ": pending")  # el CI aun no publico o no termino; un fallo no se espera
 DEFAULT_WAIT, DEFAULT_POLL = 300.0, 10.0
 POST_DISPATCH_FAILED = 4  # merged, post-dispatch failed (no rollback, #817)
+# #1265: merged, the integrated tree is NOT the tree CI reviewed (no rollback).
+INTEGRATED_TREE_DRIFT = 5
+# #1265: el texto del veredicto. Va al resumen del job y al log; el drift se
+# dice con un NOT explicito para que nadie lo lea como un match.
+VERDICT_MATCH = "the integrated tree is the tree CI reviewed"
+VERDICT_DRIFT = "the integrated tree is NOT the tree CI reviewed"
+# #1397: con la frescura apagada el drift es la base que avanzo; no es rojo.
+VERDICT_BASE_MOVED = ("the integrated tree includes base commits the PR did not carry; "
+                      "the post-merge CI on '{base}' verifies it")
+# #1397: el CI corre una vez, en la PR; exigir la base al dia es opcion del consumer.
+FRESHNESS_KEY = "merge_freshness"
+FRESHNESS_OFF, FRESHNESS_REQUIRED = "off", "required"
+# #1279: como se dice que la medicion no se pudo hacer. Va al resumen del job
+# con la causa al lado: el resumen no afirma una coincidencia que no se midio.
+NOT_MEASURED = "not measured"
 WORKFLOWS_HINT = ("the token lacks the 'workflows' permission, which GITHUB_TOKEN cannot "
                   "have: GitHub refuses a merge that creates new workflow-file content; "
                   "update the PR branch onto its base or merge it as the maintainer")
@@ -208,17 +243,34 @@ def _issue_now_closed(repo: str, issue: int) -> bool:
 
 
 def _workflow_basename(path: str) -> str:
-    """Returns the workflow file name without extension (``deploy.yml`` -> ``deploy``).
+    """The contract key of a workflow: its file name without extension.
 
-    El endpoint de dispatch acepta el nombre con y sin extension; usamos
-    la forma corta para mantener la convencion del catalogo (``deploy``,
-    ``push-compliance``, ``runner-merge``) sin arrastrar ``.yml``.
+    ``post_merge_dispatch`` in the host-contract names workflows the way the
+    catalog does (``deploy``, ``push-compliance``, ``runner-merge``), so the
+    listing is normalised to that form to match a contract entry against a
+    workflow. This is NOT the identifier the dispatch endpoint accepts: that one
+    is the file name with its extension, or the numeric id (#1086).
     """
     base = path.rsplit("/", 1)[-1]
     for suffix in (".yml", ".yaml"):
         if base.endswith(suffix):
             return base[: -len(suffix)]
     return base
+
+
+def _workflow_dispatch_id(path: str) -> str:
+    """The identifier the dispatch endpoint accepts: the workflow FILE NAME (#1086).
+
+    ``POST /repos/{repo}/actions/workflows/{workflow_id}/dispatches`` resolves
+    ``workflow_id`` as the workflow file name (``ci.yml``), its path
+    (``.github/workflows/ci.yml``) or its numeric id. The basename without the
+    extension is not a workflow: the endpoint answers 404, the post-merge
+    detective never fires, and the merge stays unaudited (#1086).
+
+    The id is read from the workflows listing, so a ``.yaml`` workflow is
+    dispatched as ``deploy.yaml`` and not as a guessed ``.yml``.
+    """
+    return path.rsplit("/", 1)[-1]
 
 
 def declares_workflow_dispatch(yaml_text: str) -> bool:
@@ -385,13 +437,23 @@ def list_workflows(repo: str) -> list[object]:
     raise WorkflowsListingTooLongError(repo, MAX_PAGES, MAX_PAGES * WORKFLOWS_PER_PAGE)
 
 
-def validate_post_merge_dispatch(repo: str, names: list[str]) -> tuple[dict[str, bool], list[str]]:
+class DispatchTarget(NamedTuple):
+    """What to dispatch for one validated ``post_merge_dispatch`` entry (#1086)."""
+
+    #: The identifier the API accepts: the workflow file name (``ci.yml``).
+    dispatch_id: str
+    #: Whether the workflow declares the ``before``/``after`` range inputs (#933).
+    with_range: bool
+
+
+def validate_post_merge_dispatch(repo: str, names: list[str]) -> tuple[dict[str, DispatchTarget], list[str]]:
     """Each name in ``names`` must exist as a workflow in this repo and declare
     ``workflow_dispatch``. Returns ``(resolved, findings)``; non-empty
     ``findings`` blocks the merge (exit 1, no API call is fired).
 
-    ``resolved`` maps each file basename ready for the dispatch endpoint to whether it
-    takes the ``before``/``after`` range inputs (#933). Order matches
+    ``resolved`` maps each contract entry to the target to dispatch: the
+    identifier the API accepts (the workflow FILE NAME, ``ci.yml``; #1086) and
+    whether it takes the ``before``/``after`` range inputs (#933). Order matches
     ``sorted(set(names))`` so the listing is stable across rounds even when the user
     reorders the contract.
     """
@@ -412,13 +474,13 @@ def validate_post_merge_dispatch(repo: str, names: list[str]) -> tuple[dict[str,
         path = item.get("path")
         if isinstance(path, str):
             by_basename[_workflow_basename(path)] = path
-    resolved: dict[str, bool] = {}
+    resolved: dict[str, DispatchTarget] = {}
     for name in seen:
         finding, with_range = _validate_one_workflow(repo, name, by_basename)
         if finding is not None:
             findings.append(finding)
             continue
-        resolved[name] = with_range
+        resolved[name] = DispatchTarget(_workflow_dispatch_id(by_basename[name]), with_range)
     return resolved, findings
 
 
@@ -438,12 +500,15 @@ def base_tip(repo: str, branch: str) -> str:
     return sha
 
 
-def run_post_merge_dispatch(repo: str, items: dict[str, bool], branch: str,
+def run_post_merge_dispatch(repo: str, items: dict[str, DispatchTarget], branch: str,
                             after: str, before: str | None) -> None:
     """Fire ``gh workflow run`` for each validated workflow on the base branch.
 
-    Cada llamada es ``POST /repos/{repo}/actions/workflows/{name}/dispatches``
-    con cuerpo ``{"ref": branch}``: esa API solo acepta una rama o una etiqueta
+    Cada llamada es ``POST /repos/{repo}/actions/workflows/{workflow_id}/dispatches``
+    con ``workflow_id`` = el **nombre del fichero** del workflow (``ci.yml``): el
+    endpoint no reconoce el basename sin extension y responde 404, con lo que el
+    detective post-merge no dispara nunca (#1086). El cuerpo es ``{"ref": branch}``:
+    esa API solo acepta una rama o una etiqueta
     en ``ref`` y responde 422 a un SHA (#933), asi que el commit fusionado viaja
     solo en ``inputs.after`` para los workflows que declaran el rango. Un 2xx es
     exito (la API responde 204 sin
@@ -452,13 +517,13 @@ def run_post_merge_dispatch(repo: str, items: dict[str, bool], branch: str,
     a una. El merge NO se deshace en ninguno de esos fallos.
     """
     failures: list[str] = []
-    for name, with_range in items.items():
+    for name, target in items.items():
         body: dict = {"ref": branch}
-        if with_range:
+        if target.with_range:
             # #933: el detective audita `before...after`; el dispatch lo declara en `inputs`.
             body["inputs"] = {"before": before, "after": after}
         try:
-            call("POST", f"repos/{repo}/actions/workflows/{name}/dispatches", body)
+            call("POST", f"repos/{repo}/actions/workflows/{target.dispatch_id}/dispatches", body)
         except GitHubApiError as exc:
             failures.append(f"{name} ({exc})")
             continue
@@ -489,14 +554,37 @@ def paths_of(data: dict) -> set[str]:
             if isinstance(name, str)}
 
 
-def freshness_findings(args: argparse.Namespace, pull: dict) -> list[str]:
-    """La rama debe estar al dia con su base: el arbol a fusionar es el que reviso el CI.
+def merge_freshness(contract: dict) -> str:
+    """``merge_freshness`` del contrato: ausente = ``off`` (#1397); otro valor falla cerrado."""
+    value = contract.get(FRESHNESS_KEY, FRESHNESS_OFF)
+    if value not in (FRESHNESS_OFF, FRESHNESS_REQUIRED) or not isinstance(value, str):
+        fail(f"{FRESHNESS_KEY} must be '{FRESHNESS_OFF}' or '{FRESHNESS_REQUIRED}', "
+             f"got {value!r}")
+    return value
 
-    Con la base movida (`behind_by` > 0) el merge produce un arbol que ninguna
-    ejecucion de CI vio, y el deploy lo rechaza («main moved»): se bloquea antes,
-    con la accion a tomar (#787). Si ademas ambos lados cambiaron el mismo
-    workflow, el merge crearia contenido de workflow nuevo y GITHUB_TOKEN no
-    puede (sin permiso `workflows`, #783): GitHub respondería 403 al PUT.
+
+def freshness_reason(contract: dict, dispatch_names: list[str]) -> str | None:
+    """Por que un PR atrasado no se fusiona, o None si el atraso se acepta (#1397).
+
+    El CI corre una vez, en la PR: un PR atrasado se fusiona y el arbol
+    integrado lo verifica el CI post-merge despachado. El atraso bloquea si el
+    consumer lo pide (su deploy compara el arbol fusionado con el revisado,
+    #426) o si no hay CI post-merge que verifique el arbol fusionado.
+    """
+    if merge_freshness(contract) == FRESHNESS_REQUIRED:
+        return f"the contract sets {FRESHNESS_KEY} to '{FRESHNESS_REQUIRED}'"
+    if not dispatch_names:
+        return "the contract declares no post_merge_dispatch to verify it after the merge"
+    return None
+
+
+def freshness_findings(args: argparse.Namespace, pull: dict, reason: str | None) -> list[str]:
+    """Hallazgos de una rama atrasada respecto de su base.
+
+    Si ambos lados cambiaron el mismo workflow, el merge crearia contenido de
+    workflow nuevo y GITHUB_TOKEN no puede (sin permiso `workflows`, #783):
+    GitHub respondería 403 al PUT. Se bloquea siempre: es un limite de la
+    plataforma. El resto del atraso solo bloquea con `reason` (#787, #1397).
     """
     base, head = pull["base"]["ref"], pull["head"]["sha"]
     ahead = compare(args.repo, base, head)
@@ -512,8 +600,10 @@ def freshness_findings(args: argparse.Namespace, pull: dict) -> list[str]:
         return [f"PR #{args.pr} and '{base}' both changed {', '.join(shared)}: merging would create "
                 "new workflow content, which the workflow token cannot do (no 'workflows' permission); "
                 + action]
+    if reason is None:
+        return []
     return [f"PR #{args.pr} is behind '{base}' by {behind} commit(s): the merged tree would differ "
-            "from the tree CI reviewed and the deploy evidence refuses it; " + action]
+            f"from the tree CI reviewed and {reason}; " + action]
 
 
 def verdict_findings(args: argparse.Namespace, sha: str, required: list[str]) -> list[str]:
@@ -534,7 +624,7 @@ def verdict_findings(args: argparse.Namespace, sha: str, required: list[str]) ->
 
 
 def gate_findings(args: argparse.Namespace, pull: dict, contract: dict,
-                  required: list[str]) -> list[str]:
+                  required: list[str], stale_reason: str | None) -> list[str]:
     body = pull.get("body") if isinstance(pull.get("body"), str) else ""
     labels = {label.get("name") for label in pull["labels"]
               if isinstance(label, dict) and isinstance(label.get("name"), str)}
@@ -544,9 +634,6 @@ def gate_findings(args: argparse.Namespace, pull: dict, contract: dict,
     if pull.get("draft") is True:
         findings.append(f"PR #{args.pr} is a draft: the governed path merges ready PRs only")
     findings += verdict_findings(args, pull["head"]["sha"], required)
-    type_labels = sorted(name for name in labels if name.startswith("type:"))
-    if len(type_labels) != 1:
-        findings.append(f"expected exactly one type:* label, found {type_labels or 'none'}")
     if "chain:partial" in labels and CLOSING.search(body):
         findings.append("Closes in an intermediate PR: only the chain tip may carry closing words")
     base_ref = pull["base"]["ref"]
@@ -554,7 +641,7 @@ def gate_findings(args: argparse.Namespace, pull: dict, contract: dict,
         findings.append(f"PR #{args.pr} targets '{base_ref}': not a branch protected by the "
                         "contract and the PR is not a chain intermediate (chain:partial)")
     if not findings:
-        findings += freshness_findings(args, pull)
+        findings += freshness_findings(args, pull, stale_reason)
     return findings
 
 
@@ -609,17 +696,163 @@ def _resolve_post_merge_dispatch_names(contract: dict) -> list[str]:
 
 
 
+def read_commit_tree(repo: str, sha: str) -> str:
+    """Arbol de un commit por la API; falla cerrado si la forma no vale (#1265).
+
+    Lee ``commit.tree.sha`` (la forma real de la API, #928) con el lector
+    compartido de ``check_push_compliance``: una sola implementacion de «el
+    arbol de un commit». Si la API falla, ``gh_json`` ya falla cerrado; si la
+    forma no trae el arbol, tambien: un commit ilegible nunca se reporta como
+    coincidencia.
+    """
+    commit = gh_json(f"repos/{repo}/commits/{sha}")
+    tree = commit_tree_sha(commit)
+    if tree is None:
+        fail(f"the commit {sha} does not expose 'commit.tree.sha': the integrated tree "
+             "cannot be measured (fail closed)")
+    return tree
+
+
+def _verdict_text(drift: bool, base_ref: str | None) -> str:
+    """El veredicto: coincide, NO coincide (rojo) o la base avanzo (``base_ref``, #1397)."""
+    if not drift:
+        return VERDICT_MATCH
+    return VERDICT_DRIFT if base_ref is None else VERDICT_BASE_MOVED.format(base=base_ref)
+
+
+def _verdict_summary(merge_sha: str, merge_tree: str, head_sha: str, head_tree: str,
+                     verdict: str) -> str:
+    """El veredicto en markdown para el resumen del job (#1265)."""
+    return ("## Integrated tree evidence\n"
+            "\n"
+            f"- merge commit: `{merge_sha}`\n"
+            f"- merge tree: `{merge_tree}`\n"
+            f"- verified head: `{head_sha}`\n"
+            f"- head tree: `{head_tree}`\n"
+            f"- verdict: {verdict}\n")
+
+
+def _not_measured_summary(cause: str) -> str:
+    """El resumen del job cuando la medicion no se pudo hacer (#1279).
+
+    Publica la causa en vez de callarse: el resumen no afirma que el arbol
+    coincide —no se ha medido— pero dice por que no se pudo medir.
+    """
+    return ("## Integrated tree evidence\n"
+            "\n"
+            f"- verdict: {NOT_MEASURED}: {cause}\n")
+
+
+def _write_step_summary(text: str) -> None:
+    """Publica el veredicto en ``$GITHUB_STEP_SUMMARY`` (#1265).
+
+    Sin la variable (corridas locales, tests) el veredicto queda solo en
+    stdout: no es un fallo. Con la variable definida, si la escritura falla el
+    job falla cerrado (2): no se puede afirmar que se publico la evidencia.
+    """
+    path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not path:
+        return
+    try:
+        with Path(path).open("a", encoding="utf-8") as handle:
+            handle.write(text)
+    except OSError as exc:
+        fail(f"the integrated-tree verdict could not be written to GITHUB_STEP_SUMMARY: {exc}",
+             exc)
+
+
+def _publish_not_measured(cause: str) -> None:
+    """Publica la causa de una medicion fallida (#1279).
+
+    Si ni esta escritura puede, no hay mas que hacer: la causa queda en
+    stdout y el job sale en rojo al final. Esto nunca interrumpe el trabajo
+    post-merge.
+    """
+    try:
+        _write_step_summary(_not_measured_summary(cause))
+    except FailClosedError as exc:
+        print(f"INTEGRATED TREE: the cause could not be published to the job summary: {exc}",
+              file=sys.stderr)
+
+
+def integrated_tree_verdict(repo: str, merge_sha: str, head_sha: str,
+                            moved_base: str | None) -> tuple[bool, str | None]:
+    """Mide el arbol integrado y publica lo que pueda; devuelve (drift, causa).
+
+    Con ``moved_base`` (frescura apagada, #1397) un drift es la base que avanzo:
+    el veredicto lo dice, nombra la rama cuyo CI post-merge lo verifica, y el
+    drift devuelto es False (no pone el job en rojo).
+
+    La causa no es None cuando la medicion no se pudo hacer o su veredicto no
+    se pudo publicar. Esta funcion NO falla cerrado: el merge ya esta hecho
+    (#1265) y un fallo de medicion no puede impedir cerrar las issues ni
+    despachar los workflows post-merge (#1279). El job sale en rojo al final,
+    con 2, nombrando la causa.
+
+    Se mide INMEDIATAMENTE despues del merge: la evidencia se publica aunque
+    un paso posterior (cerrar la issue, despachar) falle. Compara ARBOLES y no
+    commits: con la base contenida en el head, merge, squash y rebase dan el
+    mismo arbol, asi que el control no depende del metodo de merge por defecto
+    del host.
+
+    El veredicto nombra los dos commits y los dos arboles: lo que se lee en el
+    log es la misma evidencia que queda en el resumen del job. No se crea ni
+    muta ningun check-run: nada en la cabeza del PR parece una segunda
+    evaluacion del mismo trabajo.
+    """
+    try:
+        merge_tree = read_commit_tree(repo, merge_sha)
+        head_tree = read_commit_tree(repo, head_sha)
+    except FailClosedError as exc:
+        cause = str(exc)
+        print(f"INTEGRATED TREE: {NOT_MEASURED}: {cause}")
+        _publish_not_measured(cause)
+        return False, cause
+    drift = merge_tree != head_tree
+    verdict = _verdict_text(drift, moved_base)
+    print(f"INTEGRATED TREE: merge commit {merge_sha} tree {merge_tree} | "
+          f"verified head {head_sha} tree {head_tree} | verdict: {verdict}")
+    red = drift and moved_base is None
+    try:
+        _write_step_summary(_verdict_summary(merge_sha, merge_tree, head_sha, head_tree, verdict))
+    except FailClosedError as exc:
+        return red, str(exc)
+    return red, None
+
+
+def _verdict_code(drift: bool, measure_error: str | None) -> int:
+    """El codigo final tras el cierre y el dispatch: 2, 5 o 0 (#1279).
+
+    La precedencia es 3 (cierre fallido) y 4 (dispatch fallido), que se
+    devuelven antes de llegar aqui; despues 2 por medicion no hecha y
+    despues 5 por drift. Un fallo de medicion no puede esconder un drift
+    que ya se midio: el veredicto queda en la linea de stdout.
+    """
+    if measure_error is not None:
+        print(f"MERGED but the integrated tree was not measured: {measure_error}", file=sys.stderr)
+        return 2
+    if drift:
+        print("MERGED but not the tested tree: the integrated tree is NOT the tree CI reviewed",
+              file=sys.stderr)
+        return INTEGRATED_TREE_DRIFT
+    return 0
+
+
 def _merge_close_and_dispatch(args: argparse.Namespace, pull: dict, contract: dict,
                               required: list[str], dispatch_names: list[str]) -> int:
-    """Gate -> merge -> close linked issues -> post-merge dispatch (#817).
+    """Gate -> merge -> evidencia del arbol -> close -> post-merge dispatch.
 
-    Devuelve el código de salida: 1 (gate bloquea), 2 (fail closed), 3
-    (close failed), 4 (dispatch failed) o 0 (success). El merge ya
-    hecho no se deshace en ninguno de los caminos 3 y 4 (idempotencia
-    hacia atrás, HR-34).
+    Devuelve el código de salida: 1 (gate bloquea), 2 (fail closed o
+    medición no hecha, #1279), 3
+    (close failed), 4 (dispatch failed), 5 (el arbol integrado no es el del
+    head verificado, #1265) o 0 (success). El merge ya
+    hecho no se deshace en ninguno de los caminos 2, 3, 4 y 5 (idempotencia
+    hacia atrás, HR-34). Un fallo de la medición del arbol no salta el cierre
+    ni el dispatch: la causa se guarda y se devuelve al final (#1279).
     """
-    findings = gate_findings(args, pull, contract, required)
-    resolved: dict[str, bool] = {}
+    stale_reason = freshness_reason(contract, dispatch_names)
+    findings = gate_findings(args, pull, contract, required, stale_reason)
+    resolved: dict[str, DispatchTarget] = {}
     if dispatch_names:
         resolved, dispatch_findings = validate_post_merge_dispatch(args.repo, dispatch_names)
         findings.extend(dispatch_findings)
@@ -628,10 +861,21 @@ def _merge_close_and_dispatch(args: argparse.Namespace, pull: dict, contract: di
             print(f"  BLOCKED  {finding}")
         print(f"VERDICT: PR #{args.pr} not merged: contract not satisfied")
         return 1
-    # #933: el `before` del rango es la punta de la base antes del merge.
-    before = base_tip(args.repo, pull["base"]["ref"]) if any(resolved.values()) else None
+    # #933: el `before` del rango es la punta de la base antes del merge. Solo
+    # se lee si algun workflow lo recibe: `DispatchTarget` es una tupla y
+    # `any(resolved.values())` seria siempre cierto (#1086).
+    before = (base_tip(args.repo, pull["base"]["ref"])
+              if any(target.with_range for target in resolved.values()) else None)
     sha = gh_merge(args.repo, args.pr, pull["head"]["sha"])
     print(f"MERGED: PR #{args.pr} merged by the governed path as {sha}")
+    # #1265: el veredicto del arbol integrado se mide y se publica INMEDIATAMENTE
+    # despues del merge, antes de cerrar y antes del dispatch: la evidencia sale
+    # aunque un paso posterior falle.
+    # #1279: un fallo de la medicion no interrumpe ese trabajo: la causa se
+    # guarda y se devuelve al final, con 2. El merge ya esta hecho.
+    # #1397: sin frescura exigida, la base que avanzo no es rojo; la verifica el CI post-merge.
+    moved_base = pull["base"]["ref"] if stale_reason is None else None
+    drift, measure_error = integrated_tree_verdict(args.repo, sha, pull["head"]["sha"], moved_base)
     try:
         close_linked_issues(args.repo, pull, args.pr, sha)
     except (MergedNotClosedError, FailClosedError) as exc:
@@ -646,7 +890,7 @@ def _merge_close_and_dispatch(args: argparse.Namespace, pull: dict, contract: di
         except PostDispatchFailedError as exc:
             print(f"MERGED but not dispatched: {exc}", file=sys.stderr)
             return POST_DISPATCH_FAILED
-    return 0
+    return _verdict_code(drift, measure_error)
 
 
 def run(args: argparse.Namespace) -> int:
@@ -662,6 +906,7 @@ def run(args: argparse.Namespace) -> int:
         fail("contract must be a JSON object")
     required = required_checks(contract)
     dispatch_names = _resolve_post_merge_dispatch_names(contract)
+    merge_freshness(contract)  # #1397: un valor desconocido falla cerrado antes de la API
     pull = gh_json(f"repos/{args.repo}/pulls/{args.pr}")
     if not is_pull_shape(pull):
         fail(f"PR #{args.pr} is not the API pull shape")

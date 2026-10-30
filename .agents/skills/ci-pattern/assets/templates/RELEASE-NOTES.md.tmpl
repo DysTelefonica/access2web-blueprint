@@ -1,0 +1,89 @@
+# Release vX.Y.Z — <título en una línea>
+
+<!-- Plantilla canónica de notas de release (HR-19 y HR-21; canon #1015; estructura
+     del informe de Cadete v1.0.1, #1148). Materialícela como `RELEASE-<TAG>.md` en
+     el commit que se va a etiquetar: el workflow de release la lee de ahí
+     (`--notes-file`) y no la genera. Las secciones van en este orden y con estos
+     nombres; el test de la plantilla falla si cambia alguno. -->
+
+## Resumen
+
+<qué cambia para quien usa la aplicación, en dos o tres frases. Si es un
+hotfix, empiece por «Hotfix: …» y diga qué se estaba rompiendo y por qué sale
+la versión ya.>
+
+## Procedencia
+
+| Concepto | Valor |
+|---|---|
+| Release anterior | vX.Y.(Z-1) → `<sha completo del commit etiquetado antes>` |
+| Objetivo | vX.Y.Z → `<sha completo del commit etiquetado ahora>` |
+| CI de `main` sobre ese SHA | <verde o rojo>: [run <id>](<enlace al run>) |
+| Gate `check_release_tag.py` | con el tag real: exit <código>, `<salida literal del gate>` |
+| PR incluidas | <#N, #M, …> |
+
+<!-- Diga en una frase en qué commit se etiqueta y el comando exacto del gate. Si el
+     CI de `main` sobre ese SHA no está en verde, la release no sale (runbook, punto 1). -->
+
+## Qué se corrige
+
+<!-- Una subsección por PR o issue, con las tres líneas fijas. En un hotfix (HR-21)
+     la línea «Qué fallaba» enlaza la causa: al post-mortem si hubo incidente, o al
+     aviso externo si el hotfix es preventivo. La causa raíz vive en su documento;
+     aquí solo el enlace. -->
+
+### #<PR> (issue #<N>): <título corto>
+
+- **Qué fallaba.** <causa observable en una frase, con el enlace que toque>
+- **Qué cambia.** <el cambio de comportamiento o de configuración, en una o dos frases>
+- **Qué lo prueba.** <el test con nombre o la verificación que demuestra el arreglo>
+
+## Cambios incompatibles
+
+<!-- «Ninguno» si no los hay. Si los hay: qué se rompe, desde qué versión y qué
+     tiene que hacer quien actualiza. No esconda aquí un cambio incompatible
+     detrás de «varias correcciones». -->
+
+Ninguno.
+
+## Cómo actualizar / desplegar
+
+<!-- El camino concreto para quien opera: comando o pasos, configuración y migración.
+     Incluya siempre el rollback: qué imagen o versión restaurar y si hay datos que
+     migrar. Si no hay nada que hacer, dígalo en una línea. -->
+
+1. <paso de despliegue, con la versión o la imagen que se publica>
+2. <verificación que confirma que el despliegue es correcto>
+3. Rollback: <cómo volver a la versión anterior y si la versión migra datos>
+
+## Cifras
+
+<!-- Antes y después, con la misma fuente de medida. -->
+
+- Tests: <antes> → <después> (<delta>).
+- Cobertura de líneas: <antes> → <después> (<delta>), con la herramienta y la fuente indicadas.
+- Duración del CI sobre el SHA etiquetado: <total> (<desglose por job>).
+
+## Registro de cierres
+
+<!-- Cada issue de la release cae en exactamente una de estas cinco categorías. -->
+
+### Cerradas con evidencia
+
+- #<N>. <test con nombre o run de CI que lo demuestra>
+
+### Corregidas, sin test que lo fije
+
+- #<N>. <qué se corrigió y por qué no hay test con nombre que lo fije>
+
+### No cerradas por esta versión
+
+- #<N>. <qué queda abierto y por qué no entra>
+
+### Diferido
+
+- #<N>. <qué se pospone y a qué versión o issue>
+
+### No abordado
+
+- #<N>. <qué no se aborda en esta versión>

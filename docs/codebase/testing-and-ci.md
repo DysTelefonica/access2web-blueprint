@@ -4,54 +4,88 @@
 
 > Esta página rastrea `main`, que puede contener cambios sin liberar. Para la última versión liberada, véase la etiqueta correspondiente.
 
-Este repo separa el veredicto en **cinco niveles de disparo** sobre dos workflows — PR, post-merge, nightly, manual y release — y cada nivel tiene un contrato propio. La superficie común está en `.github/workflows/ci.yml` (PR + post-merge + nightly + manual) y `.github/workflows/release.yml` (release); el contrato manual de los quality gates vive en `docs/gates.md`.
+Este repo separa el veredicto en **cinco niveles de disparo** sobre cuatro workflows — PR, post-merge, nightly, manual y release — y cada nivel tiene un contrato propio. La superficie común está en `.github/workflows/ci.yml` (PR pesada + post-merge + nightly + manual), `.github/workflows/pr-gate.yml` (contexto y carriles de la PR), `.github/workflows/pr-gates.yml` (gate H1 del pull request) y `.github/workflows/release.yml` (release); el contrato manual de los quality gates vive en `docs/gates.md`.
 
 ## Mapa de niveles
 
 | Nivel | Workflow | Disparador | Jobs | Veredicto |
 |---|---|---|---|---|
-| **PR** | `.github/workflows/ci.yml` | `pull_request` (cualquier rama) | `pr-gate`, `quality`, `integration`, `security`, `codeql`, `required` | Branch protection exige `required` verde. |
+| **PR (pesada)** | `.github/workflows/ci.yml` | `pull_request` con `types: [opened, synchronize, reopened]` (cualquier rama) | `pr-gate`, `quality`, `integration`, `security`, `codeql`, `e2e-smoke`, `required` | La protección exige `required` y `pr-gate` en verde. `e2e-smoke` solo corre aquí (issue #876). Los eventos que solo cambian el cuerpo o las etiquetas (`edited`, `labeled`, `unlabeled`) ya no llegan aquí (issue #1368). |
+| **PR (contexto)** | `.github/workflows/pr-gate.yml` | `pull_request` con los seis tipos | `pr-context` | Calcula el contexto y los carriles sin credenciales. `ci.yml` lo invoca (`workflow_call`), así que `required` sigue leyendo sus marcadores. |
+| **PR (H1)** | `.github/workflows/pr-gates.yml` | `pull_request_target` con los seis tipos | `canon`, `pr-gate` | El job `canon` publica el catálogo del sello de la base; el gate ejecuta sus scripts sin secretos y publica el veredicto como check run `pr-gate` en la cabeza del PR. |
 | **Post-merge** | `.github/workflows/ci.yml` | `push` a `branches: [main]` (red de seguridad tras el merge) | `quality`, `integration`, `security`, `codeql`, `required` | Misma matriz que la PR, sin `pr-gate` (su `if: github.event_name == 'pull_request'` lo excluye; el `if:` de los heavy jobs acepta `skipped` de `pr-gate`). Issue #857, PR-D. |
-| **Nightly** | `.github/workflows/ci.yml` | `schedule` (`cron: "0 3 * * *"`) | `quality`, `integration`, `security`, `codeql`, `required` | Sin rama; alimenta el snapshot del quality report. |
+| **Nightly** | `.github/workflows/ci.yml` | `schedule` (`cron: "0 3 * * *"`) | `quality`, `integration`, `security`, `codeql`, `e2e-smoke`, `pip-audit`, `required` | Sin rama; alimenta el snapshot del quality report. Ejecuta `e2e-smoke` y `codeql` siempre, sin mirar la superficie del diff (issue #1376). |
 | **Manual** | `.github/workflows/ci.yml` | `workflow_dispatch` | `quality`, `integration`, `security`, `codeql`, `required` | El mismo set de jobs que el push a `main`; útil para reproducir el veredicto sin abrir una PR. |
 | **Release** | `.github/workflows/release.yml` | `push tags: "v*"` | `preflight`, `mutation`, `e2e`, `publish`, `verify` | `verify` cierra la ratchet de provenance. |
 
 `schedule`, `push` a `main` y `workflow_dispatch` reusan los mismos jobs del PR (excepto `pr-gate`, que se salta por su `if: github.event_name == 'pull_request'`). El `if:` de cada heavy job lista explícitamente los cuatro eventos y acepta `needs.pr-gate.result == 'skipped'` para no abortar la red de seguridad cuando `pr-gate` no corre.
 
-## Nivel PR (`.github/workflows/ci.yml`)
+### El carril docs-only (issue #1368)
 
-Todos los jobs comparten `concurrency.group: ${{ github.workflow }}-${{ github.ref }}` con `cancel-in-progress: true` para no apilar corridas obsoletas. Los jobs no son independientes: `quality`, `integration`, `security` y `codeql` declaran `needs: pr-gate`, y el agregador `required` necesita los cuatro.
+Un pull request cuyo diff cae entero en `docs/` no necesita la suite pesada. El `pr-gate` publica el marcador `docs_changed` (`scripts/check_docs_only_lane.py`, fail-closed: un diff vacío o con un solo path fuera de `docs/` responde `false`), y los jobs pesados (`quality`, `integration`, `security`, `codeql`, `e2e-smoke`) se saltan cuando el marcador vale exactamente `'true'`. El agregador `required` acepta esos saltos por diseño: los declara el `docs_only_lane` de `.github/required-jobs-policy.json`. `docs-links` sigue corriendo en ese carril, porque es el gate que caza los enlaces rotos del PRD.
+
+### Los carriles de superficie (issue #1376)
+
+`e2e-smoke` y `codeql` solo miran el código que analizan: el primero construye la imagen de la app y corre las specs de `e2e/`; el segundo escanea el Python del repo. Una pull request que no toca esa superficie se pagaba el job entero sin motivo: de 153 ejecuciones medidas, 58 eran chores, 47 cambios de CI y 16 de documentación, frente a 23 fixes y 7 features. El `pr-gate` clasifica el diff con `scripts/check_change_scope.py` y publica un marcador por superficie (`e2e_scope_changed`: `app/` y `e2e/`; `codeql_scope_changed`: `app/` y `scripts/`; `lockfile_scope_changed`: `app/requirements-dev.lock` y `app/uv.lock`). El marcador es el **permiso para saltarse** el job: nace en `true` (correr el job) y solo baja a `false` con la lista completa de paths, así que un diff que no se puede calcular deja los jobs corriendo. `.github/required-jobs-policy.json` declara los tres carriles en `marker_lanes`: `required` acepta el salto de un job solo cuando su marcador vale exactamente `'false'`; sin marcador, el salto queda sin declarar y `required` sale en rojo. El nightly (`schedule`, `0 3 * * *`) vuelve a ejecutar los tres jobs: `release.yml` solo corre con tags y el repo no tiene ninguno, de modo que el nightly es la única red de las tres superficies.
+
+## Nivel PR (`.github/workflows/ci.yml`)
+Todos los jobs comparten `concurrency.group: ${{ github.workflow }}-${{ github.ref }}`, que solo cancela en `synchronize` (un commit nuevo deja obsoleto el run anterior; los eventos que mantienen el SHA no pueden cancelarlo, o quedarían un check cancelado que bloquea el merge). El `pr-gate` tiene además su propio grupo FIFO por PR (`gate-pr-gate-${{ github.workflow }}-…`, `cancel-in-progress: false`), porque su gate no puede saltarse a sí mismo: el job corre en dos instancias —su propio disparador `pull_request` y la llamada de `ci.yml`— y el grupo nombra la instancia (`github.workflow` vale el workflow *caller* dentro de un workflow reutilizable); si compartieran cola, la instancia pendiente se cancelaría y `required` leería la cancelación como fallo (#1372). Los jobs no son independientes: `quality`, `integration`, `security` y `codeql` declaran `needs: pr-gate`, y el agregador `required` necesita los cuatro.
 
 | Job | Runs-on | Steps principales | Comando / coste |
 |---|---|---|---|
-| `pr-gate` | `ubuntu-24.04` | `pr size`, `issue spec`, `walkthrough schema` | Llama al `check_pr_size.py` del canon (`.agents/skills/ci-pattern/assets/pr-size/`), el `check_issue_spec.py` del canon (`.agents/skills/ci-pattern/assets/issue-spec/`) y `scripts/check_walkthrough_schema.py`. Solo corre si `event == pull_request`. |
+| `pr-gate` | `ubuntu-24.04` | `walkthrough schema`, `classify the diff (docs-only and surface lanes)`, `pr size`, `issue spec`, `Publish the verdict as a check run on the pull request head` | Dos jobs publican el check `pr-gate`. El de `ci.yml` llama a `.github/workflows/pr-gate.yml` con `uses:` (contexto y carriles, issue #1368). El H1 es el de `.github/workflows/pr-gates.yml` (tamaño e issue-spec); `canon` resuelve el catálogo en el sello de la base y lo publica como artefacto. |
 | `quality` | `ubuntu-24.04` | `install`, `format scripts`, `format`, `lint`, `typecheck`, `workflow gate`, `suites populated`, `tests`, `quality gates and indicators` | la suite sin el marker `integration` (comando 1 de «Comandos de referencia»); al final, `scripts/quality_report.py`. |
 | `integration` | `ubuntu-24.04` (Postgres como service) | `install`, `Resolve the DSN from the assigned host port`, `Apply migrations`, `Run integration tests` | la suite con el marker `integration` (comando 2 de «Comandos de referencia»). El DSN no viene de un plugin: lo construye el step `Resolve the DSN from the assigned host port`, que lee `POSTGRES_HOST_PORT=${{ job.services.postgres.ports['5432'] }}` y exporta `INTEGRATION_DSN` y `APAP_INTEGRATION_URL` (`postgresql+asyncpg` sobre `127.0.0.1` y el puerto asignado) a `$GITHUB_ENV`. `app/migrations/env.py` lee `DATABASE_URL`, que el step `Apply migrations` iguala a `APAP_INTEGRATION_URL` antes de `alembic upgrade head`. |
+| `e2e-smoke` | `ubuntu-24.04` (Postgres como service) | `Build the PR image`, `Resolve the DSN from the assigned host port`, `Install the runtime lock and apply the real migrations`, `Start the app and wait for the health check`, `Run the E2E smoke specs` | En `pull_request` solo cuando el diff toca su superficie (`app/`, `e2e/`; issue #1376), y en el nightly `schedule`. Construye la imagen de la PR, que instala `app/requirements.lock` (el export runtime de `app/uv.lock`) en vez de resolver los rangos de `app/pyproject.toml`, y el job instala ese mismo lock antes de las migraciones: el esquema y la app comparten un único conjunto de versiones (#1456). Espera a `/health` hasta 60 s y solo cuenta un HTTP 200 de la app; si el contenedor deja de correr, corta la espera sin gastar los 60 s, y si la app no responde imprime el estado de los contenedores y los logs del contenedor antes de salir en rojo (#1459). Ejecuta `smoke.spec.ts` y `auth.spec.ts` de Playwright; tope de 5 min. En push y workflow_dispatch se salta y `.github/required-jobs-policy.json` acepta ese salto; en `pull_request` un salto sin marcador deja `required` en rojo. La suite completa sigue en `release.yml` (job `e2e`). |
 | `security` | — (workflow reutilizado, jobs `gitleaks`, `trivy-config`, `pip-audit`) | Escaneo estático y de dependencias | `gitleaks`, `trivy config`, `pip-audit`. |
-| `codeql` | `ubuntu-24.04` | Análisis estático de GitHub | Lenguajes: python, javascript. |
-| `required` | `ubuntu-24.04` | `Enforce the required-job policy` | Ejecuta el `check_required_jobs.py` del canon (`.agents/skills/ci-pattern/assets/required-jobs/`) contra `.github/required-jobs-policy.json` — es el agregador que la branch protection exige. |
+| `codeql` | `ubuntu-24.04` | Análisis estático de GitHub | Lenguajes: python, javascript. En `pull_request` solo cuando el diff toca su superficie (`app/`, `scripts/`; issue #1376); en `push`, `schedule` y `workflow_dispatch` se ejecuta siempre. |
+| `pip-audit` | — (workflow reutilizado `pip-audit.yml`) | Escaneo de dependencias Python | Job de `.github/workflows/pip-audit.yml`, invocado con `uses:` desde `ci.yml`. |
+| `pip-audit-alert` | `ubuntu-24.04` | Solo si falla la ejecución programada | Avisa del fallo de `pip-audit` (`if: failure()` y evento `schedule`). |
+| `docs-architecture` | `ubuntu-24.04` | `tooling-preflight`, `import-linter` 2.15, `check_docs_architecture.py` | Dirección de dependencias entre capas, según `.importlinter` y el bloque `architecture` de `docs/architecture.md`. |
+| `docs-codeguide` | `ubuntu-24.04` | `tooling-preflight`, `check_docs_codeguide.py`, `check_where_to_work.py` | Mapa del código de `docs/codebase/` y la página «dónde trabajar». |
+| `docs-links` | `ubuntu-24.04` | `tooling-preflight`, `run_docs_links.py` | Enlaces locales de la documentación y navegación entre el hub y los spokes. |
+| `docs-commands` | `ubuntu-24.04` | `setup-python` 3.12.11, `tooling-preflight`, `run_docs_commands.py` | Ejecuta los comandos que la documentación manda ejecutar (HR-65). |
+| `docs-decisions` | `ubuntu-24.04` | `tooling-preflight`, `check_docs_decisions.py` | Registro de decisiones de `docs/decisions` (HR-67). |
+| `governance-seals` | `ubuntu-24.04` | `tooling-preflight`, `ci-pattern adoption check --phase 3` | Identidad de gobierno: fase 3 de la adopción (HR-46, HR-72). |
+| `ci-images` | `ubuntu-24.04` | `tooling-preflight`, `check_ci_images_pinned.py` | Imágenes que el CI descarga, fijadas por digest (HR-78). |
+| `required` | `ubuntu-24.04` | `Enforce the required-job policy` | Ejecuta el `check_required_jobs.py` del canon (`.agents/skills/ci-pattern/assets/required-jobs/`) contra `.github/required-jobs-policy.json`. Agrega la suite pesada; el gate H1 publica su veredicto aparte como `pr-gate`. |
 
-### `pr-gate` (rápido, primer filtro)
+### `pr-gate` (contexto y carriles)
 
-Sólo corre en `pull_request`. Los tres gates son baratos y rechazan PRs que no deberían gastar minutos de runner:
+Vive en `.github/workflows/pr-gate.yml` (issue #1368) y `ci.yml` lo invoca con el `uses:` de `./.github/workflows/pr-gate.yml`, de modo que el agregador `required` sigue leyendo sus marcadores: `needs:` no cruza ficheros de workflow. Sólo corre en `pull_request` y no recibe token. Mantiene dos comprobaciones:
 
-- `pr size`: rechaza PRs de más de 400 líneas (`additions + deletions` = `MAX_CHANGED_LINES` en `.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py`, el gate del canon). La única exención es la etiqueta `size:exception` aplicada por el mantenedor (`OVERRIDE_LABEL`); el cuerpo del PR no se lee. En local, sin evento, el gate mide con `git diff` contra la base y la etiqueta se pasa con `--labels` o `$PR_LABELS`.
-- `issue spec`: verifica que el cuerpo del PR cita una issue (Refs/Closes) y, si es una epic de walkthrough, que el bloque de spec está bien formado.
 - `walkthrough schema`: valida que cada `docs/03-aplicaciones/<app>/walkthrough-G*.json` cumple el esquema vigente.
+- `classify the diff (docs-only lane)`: calcula el diff contra el merge-base con la rama base y publica el marcador `docs_changed` (`true` solo si todo el diff cae bajo `docs/`). Es un clasificador, no un gate: no falla nunca; su salida decide qué jobs pesados corren.
+
+### Gate H1 del pull request
+
+`.github/workflows/pr-gates.yml` corre en `pull_request_target`, por lo que ejecuta el workflow de la base. El job `canon` hace checkout de la base sin credenciales persistidas, usa `TEAM_SKILLS_READ_TOKEN` en un único paso para resolver el catálogo en el sello y publica la skill `ci-pattern` como artefacto. El job `pr-gate` no contiene secretos: consume ese artefacto, lee el PR por la API (sin checkout de su árbol) y ejecuta desde `.canon/` los gates `pr size` (presupuesto de 400 líneas) e `issue spec` (enlace a una issue del repositorio) con el token de solo lectura. El veredicto se publica como check run de `pr-gate` sobre la cabeza del PR, con la API de check runs de GitHub (un `POST` sobre el recurso de check runs del repo); la protección de rama exige tanto ese contexto como `required` (#1461).
+
+### Bootstrap del gate H1 (rojo y verde)
+
+El workflow H1 corre en `pull_request_target`, es decir, ejecuta el workflow de la **base**: el pull request que introduce el modelo no puede validarse a sí mismo, porque en ese pull request el veredicto todavía no existe. En `#1468` se ve: su cabeza no tiene ningún check run `pr-gate`. Por eso la adopción se midió en tres pasos, el mismo bootstrap de `cadete#712`:
+
+1. **Guard** — `#1468` introduce `pr-gates.yml` con el job `canon`, retira `pr size` e `issue spec` del workflow de `pull_request` y amplía `required_checks` del contrato del host con `pr-gate` (el snapshot de la protección de rama, `docs/adoption/branch-protection.json`, lo refleja). La regla que lo hace cumplir es del canon (`workflow-policy`, `team-skills#1270`): un job alcanzable desde `pull_request` no puede referenciar `secrets.TEAM_SKILLS_READ_TOKEN`. El job `quality` de `ci.yml` la corre sobre todos los workflows del repositorio.
+2. **Rojo a propósito** — un verde no distingue «funciona» de «no mide nada», así que el rojo se provoca a propósito y se comprueba en cada corrida de la suite (`tests/test_pr_gate_h1.py`): el gate del canon sale con código 1 y nombra el token y la regla cuando un job de `pull_request` lo referencia, y la acción `pattern-at-pin` falla cerrada (código distinto de 0 y mensaje que nombra el sello) cuando el sello no trae un commit del catálogo. Una propagación rota se ve en rojo en lugar de medir en silencio.
+3. **Verde real** — con el modelo ya en la base, el veredicto llega al pull request como check run sobre su cabeza: en `#1469` el check run `pr-gate` es `success` ([121395665064](https://github.com/DysTelefonica/access2web-blueprint/runs/121395665064)) y en `#1476` también ([121731599982](https://github.com/DysTelefonica/access2web-blueprint/runs/121731599982)).
+
+El sello que el job `canon` resuelve sale de la base: es la primera línea de `.team-skills.yaml`, con su comentario, y de ahí se extrae el marcador `catalog @ <sha>`. Un pull request no puede cambiarlo ni apuntarlo a un commit más antiguo del catálogo, así que el residuo del «sello antiguo» no existe en este modelo.
 
 ### `quality` (suite principal)
 
-Orden interno de los steps (ver `ci.yml` línea 188 a línea 360):
+Orden interno de los steps (job `quality` de `ci.yml`: `install` en la línea 164 y `quality gates and indicators` en la 340):
 
 1. `install` — instalación con hashes exigidos desde `app/requirements-dev.lock`. Hard Rule 2: pins exactos en `app/pyproject.toml` y `app/requirements-dev.lock`.
 2. `format scripts` — `ruff format` sobre `scripts/` (no sobre `app/`).
 3. `format` — `ruff format --check` sobre `app/src`, `tests/`, `openspec/`. Si falla, el runner reporta el diff.
-5. `lint` — `ruff check` con la `select` de `app/pyproject.toml`.
-6. `typecheck` — `mypy --explicit-package-bases` con la config en `app/pyproject.toml` (Hard Rule 15: pins de mypy==1.13.0).
-7. `workflow gate` — ejecuta `scripts/check_workflows.py`; la matriz `required` la comprueba el job `required` con el gate del canon.
+4. `lint` — `ruff check` con la `select` de `app/pyproject.toml`.
+5. `typecheck` — `mypy --explicit-package-bases` con la config en `app/pyproject.toml` (Hard Rule 15: pins de mypy==1.13.0).
+6. `workflow gate` — ejecuta `scripts/check_workflows.py`; la matriz `required` la comprueba el job `required` con el gate del canon.
+7. `workflow policy` — ejecuta el gate del canon (`check_workflow_policy.py`) sobre todos los workflows: claves duplicadas, `timeout-minutes`, puertos fijos, pines por SHA y grupo de `concurrency` (BP #1040, #1464).
 8. `suites populated` — ejecuta `scripts/check_suites_populated.py`. Issue #882: una suite obligatoria vacía es una garantía falsa; cada suite (`unit`, `integration`, `e2e_smoke`) debe recoger al menos un test bajo `--collect-only -m <expr>`.
 9. `tests` — la suite sin el marker `integration` (comando 1 de «Comandos de referencia»). El flag `--rootdir=app` es load-bearing: sin él, `pytest` no encuentra la configuración y cada test falla con `import error`.
-10. `quality gates and indicators` — ejecuta `scripts/quality_report.py`. Renderiza el quality report en el step summary del job.
+10. `record policy time` — fija `POLICY_DATE` (fecha UTC) en el entorno del job, para que los gates con `BASELINE` juzguen contra una fecha explícita y no contra el reloj (BP #1324).
+11. `quality gates and indicators` — ejecuta `scripts/quality_report.py`. Renderiza el quality report en el step summary del job.
 
 Cobertura: el plugin `coverage` se retiró en #877; el `pytest-cov` ya no está en `app/pyproject.toml` y los flags `--cov` no existen. La ratchet shrink-only actual es la de mutación (release), no de cobertura.
 
@@ -59,9 +93,17 @@ Cobertura: el plugin `coverage` se retiró en #877; el `pytest-cov` ya no está 
 
 El job arranca Postgres como service y aplica el esquema con `alembic upgrade head` antes de correr los tests. La fixture de tests/migrations (`tests/lanzadera/migrations/test_seed_migrations.py`) verifica el seed. El comando es la suite con el marker `integration` (comando 2 de «Comandos de referencia»). El driver es `asyncpg` (no `psycopg2`) y no se usa `pytest-postgresql`: el DSN lo calcula y exporta el step `Resolve the DSN from the assigned host port` como se describe arriba.
 
+El job instala `app/requirements-dev.lock`, donde vive `pytest`, y migra con ese entorno; no construye la imagen de la PR. Un test de contrato exige que los pines runtime de `app/requirements.lock` coincidan con los del lock de dev, para que los dos conjuntos no diverjan en silencio (#1459).
+
+### Credenciales en los jobs de `pull_request`
+
+Los checkouts de los jobs que corren en `pull_request` llevan `persist-credentials: false`: la acción de checkout deja el `GITHUB_TOKEN` en la configuración local de git durante todo el job, y cualquier paso que ejecute código de la PR podría leerlo (#1462). Un test de contrato lo exige en los 16 checkouts alcanzables desde `pull_request`, directamente o a través de un `workflow_call`. Los checkouts de los workflows que no corren en PR (`operating-doc-drift`, `security-deep`, `release`) conservan la credencial: no son vector de PR.
+
+El repositorio es público y los tokens son de solo lectura, así que el riesgo era bajo; la forma era la que la auditoría H1 señalaba en otros repositorios. El token del catálogo (`TEAM_SKILLS_READ_TOKEN`) no lo usa ningún job alcanzable desde `pull_request`: el workflow H1 lo reserva para su job `canon` en `pull_request_target`, y `operating-doc-drift` lo usa únicamente en `schedule` y `workflow_dispatch` (#1461).
+
 ## Level nightly
 
-El trigger `schedule` en `ci.yml` corre los mismos jobs `quality`, `integration`, `security`, `codeql` y `required`. La diferencia operacional es:
+El trigger `schedule` en `ci.yml` corre los mismos jobs `quality`, `integration`, `security`, `codeql`, `e2e-smoke`, `pip-audit` y `required`; `e2e-smoke` y `codeql` corren aquí siempre, aunque la PR no toque su superficie (issue #1376). La diferencia operacional es:
 
 - Sin `pr-gate` (su `if: github.event_name == 'pull_request'` lo excluye): las verificaciones baratas se duplican en `quality`/`workflow gate` así que no hay regresión de cobertura.
 - Snapshots de `scripts/quality_report.py` se acumulan para auditoría de tendencia (no se exponen en este repo; ver `docs/gates.md` §3).
@@ -102,9 +144,11 @@ Los quality gates son scripts `scripts/check_*.py` que el runner invoca como ste
 
 | Gate | Job que lo invoca | Protege |
 |---|---|---|
-| `.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py` | `pr-gate` | PR ≤ 400 líneas. |
-| `.agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py` (canon) | `pr-gate` | Cuerpo de issue conforme. |
+| `.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py` | `pr-gates.yml::pr-gate` | PR ≤ 400 líneas. |
+| `.agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py` (canon) | `pr-gates.yml::pr-gate` | Cuerpo de issue conforme. |
 | `scripts/check_walkthrough_schema.py` | `pr-gate` | `walkthrough-*.json` válidos. |
+| `scripts/check_change_scope.py` | `pr-gate` | Superficie del diff por job pesado: `e2e`, `codeql` y `lockfile` (issue #1376). |
+| `scripts/check_docs_only_lane.py` | `pr-gate` | Clasificador fail-closed del carril docs-only (issue #1368). |
 | `scripts/check_workflows.py` | `quality` (`workflow gate`) | `.github/workflows/*.yml` bien formado. |
 | `.agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py` (canon) | `required` (enforce) | Matriz `required` completa. |
 | `.importlinter` | `docs-architecture` (job requerido) | DA-1 hexagonalidad: derivado del bloque `architecture` de `docs/architecture.md`. |
@@ -112,10 +156,10 @@ Los quality gates son scripts `scripts/check_*.py` que el runner invoca como ste
 | `scripts/check_mutation_sites.py` | `quality` | DA-13 pin AST. |
 | `scripts/check_complexity.py` | `quality` | Complejidad. |
 | `scripts/check_dry.py` | `quality` | DRY. |
-| `scripts/check_deadcode.py` | `quality` | Código muerto. |
-| `scripts/check_decision_guards.py` | `quality` | Decisiones D-<n> con guardia. |
+| `scripts/check_deadcode.py` | — (no cableado; `KNOWN_PENDING_GATES`) | Código muerto (`vulture` frente a `.deadcode-baseline.txt`). |
+| `scripts/check_decision_guards.py` | — (no cableado; `KNOWN_PENDING_GATES`) | Decisiones D-<n> con guardia. |
 | `scripts/check_suites_populated.py` | `quality` | Suites obligatorias no vacías (#882). |
-| `scripts/check_test_classification.py` | `quality` | Tests bien clasificados. |
+| `scripts/check_test_classification.py` | — (no cableado; `KNOWN_PENDING_GATES`) | Tests bien clasificados. |
 | `scripts/check_legacy_retirement.py` | `quality` | Retirada de paths legacy. |
 | `scripts/check_mutation.py` | `release.yml::mutation` | Ratchet shrink-only de mutación. |
 
@@ -158,12 +202,41 @@ Antes de empujar una PR:
 ./scripts/local-preflight.sh
 ```
 
-El script es la versión resumida de los steps baratos de `ci.yml::pr-gate` + `ci.yml::quality` (lint, typecheck, suites populated, unit). Si pasa, la PR no debería gastar minutos de runner en el primer filtro.
+El script es la versión resumida de los steps baratos de `ci.yml::pr-gate` + `ci.yml::quality` (lint, typecheck, suites populated, unit). Incluye el **preflight de tooling** del `pr-gate` (que `git` y `sh` estén presentes, con el contrato declarado en `.github/tooling/pr-gate.txt`): es el primer paso ejecutable de ese job en CI, y en local se invoca con la forma heredada, sin `--runner` (la identidad del runner solo existe en CI; la diferencia queda escrita en `.github/local-ci-parity-policy.json`). Si pasa, la PR no debería gastar minutos de runner en el primer filtro.
+
+## Pines de imágenes y herramientas
+
+CI solo descarga lo que tiene una identidad fija:
+
+- **Imágenes de contenedor** (`services.image`, `driver-opts: image=…` de buildx, `docker run|pull|build`): por digest `@sha256:…`. La etiqueta va en un comentario junto al digest, para que un humano sepa a qué versión corresponde. Una referencia con etiqueta plantillada (`${imagen}:${TAG}`) tampoco vale: es mutable por construcción.
+- **La imagen propia de release**: el job `stage` la empuja sin la etiqueta de release y resuelve su digest; el smoke `e2e` y la promoción `publish` la consumen por `nombre@sha256`, y la etiqueta de release es un alias del digest (#1441).
+- **Herramientas**: la versión exacta en un lock (`app/requirements-dev.lock` con hashes para Python, `e2e/package-lock.json` para Playwright). `npx playwright` se ejecuta siempre dentro de `e2e/`, donde el lock manda; desde la raíz `npx` descarga la última release.
+- **Actions**: SHA completo con el tag como comentario (`# v7.1.0`).
+
+Dependabot cubre las Actions (`github-actions`), los manifiestos Python de `/app` y el lock de `/e2e` (`npm`). **No cubre los digests de imágenes en los workflows**: esos bumps son manuales, igual que en cadete.
+
+Para refrescar un digest:
+
+```bash
+# Digest del índice multiplataforma que sirve hoy una etiqueta
+docker buildx imagetools inspect moby/buildkit:v0.18.0 --format '{{json .Manifest.Digest}}'
+```
+
+Sustituye el digest en el workflow, deja la etiqueta en el comentario y corre el test de pines. Para Playwright, actualiza el lock de `e2e/` y commitea `e2e/package-lock.json`:
+
+```bash
+# Test de pines de CI (imágenes por digest)
+pytest tests/test_workflow_pins.py
+# Actualización del lock de Playwright
+cd e2e && npm install -D @playwright/test@<versión>
+```
+
+`tests/test_workflow_pins.py` impide que vuelva a entrar un tag sin digest o un `npx` fuera de `e2e/`. No impide que un digest quede viejo: eso es decisión de mantenimiento.
 
 ## Fronteras explícitas
 
 - **No añada un job nuevo a `ci.yml` sin pasar por `scripts/check_workflows.py` y por la política `.github/required-jobs-policy.json`.** Ambos gates validan la matriz y rompen la ratchet si se omite una actualización.
-- **No mueva un step entre jobs sin revisar `tests/test_ci_workflow.py`.** El wiring está pinado por tests (`test_pull_request_types_cover_edit_and_label_events` y similares).
+- **No mueva un step entre jobs sin revisar `tests/test_ci_workflow.py`.** El wiring está pinado por tests (`test_pr_gate_listens_to_edit_and_label_events` y similares). Desde #1375 los pins de la FORMA de `ci.yml` —su lista de eventos, los `if:` exactos de los jobs pesados, sus `needs:`— no viven en ese fichero: los verifica en cada run el gate estructural del canon (`check_workflow_policy.py`, `check_parity.py`) junto con la política `.github/required-jobs-policy.json`. Lo que queda en los tests es lo que ningún otro gate cubre: qué ejecuta cada gate, cómo se blinda y que existe y corre.
 - **No cambie los markers sin actualizar `docs/gates.md` §2 y `scripts/check_suites_populated.py`.** Con `--strict-markers` activo, un marker nuevo no declarado falla la recolección.
 - **No cubra un test que requiere servidor con la suite `unit`.** Use `e2e_smoke` (subproceso real) o `e2e` (release).
 

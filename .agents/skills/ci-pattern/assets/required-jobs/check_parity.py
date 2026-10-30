@@ -238,14 +238,19 @@ def parse_needs(body: list[Line], aggregator: str) -> list[str]:
     return needs
 
 
-def read_workflow(path: str, aggregator: str) -> tuple[list[str], list[str]]:
-    """Return the workflow's job ids and the aggregator's needs."""
+def read_text(path: str) -> str:
+    """The workflow file's text, or a GateError that names why it cannot be read."""
     try:
-        text = Path(path).read_bytes().decode("utf-8-sig")
+        return Path(path).read_bytes().decode("utf-8-sig")
     except OSError as exc:
         raise GateError(f"unreadable workflow file: {exc}") from exc
     except UnicodeDecodeError as exc:
         raise GateError(f"workflow file is not valid UTF-8: {exc}") from exc
+
+
+def read_workflow(path: str, aggregator: str) -> tuple[list[str], list[str]]:
+    """Return the workflow's job ids and the aggregator's needs."""
+    text = read_text(path)
     try:
         jobs = split_jobs(read_lines(text))
         if aggregator not in jobs:
@@ -255,9 +260,41 @@ def read_workflow(path: str, aggregator: str) -> tuple[list[str], list[str]]:
         raise GateError(f"{path}: {exc}") from exc
 
 
+def read_job_ids(path: str) -> list[str]:
+    """The job ids a workflow file defines, read with the same subset as read_workflow."""
+    return list(split_jobs(read_lines(read_text(path))))
+
+
+def external_definition_problems(external: dict, wf_dir: Path) -> list[str]:
+    """Each external job must be defined in the workflow file its policy entry names.
+
+    The file sits next to the aggregator's workflow (DysTelefonica/team-skills#1313).
+    """
+    problems: list[str] = []
+    for job, name in sorted(external.items()):
+        path = wf_dir / name
+        if not path.is_file():
+            problems.append(f"external job '{job}': workflow '{name}' is not next to the aggregator's workflow")
+            continue
+        try:
+            defined = read_job_ids(str(path))
+        except GateError as exc:
+            problems.append(f"external job '{job}': {name}: {exc}")
+            continue
+        if job not in defined:
+            problems.append(f"external job '{job}' is not defined in '{name}'")
+    return problems
+
+
 def parity_mismatches(jobs: list[str], needs: list[str], policy_jobs: list[str],
-                      aggregator: str) -> list[str]:
-    """Compare jobs − {aggregator}, the aggregator's needs and the policy set."""
+                      aggregator: str, external: dict | None = None) -> list[str]:
+    """Compare jobs − {aggregator}, the aggregator's needs and the policy set.
+
+    ``external`` (external_jobs) names the required jobs wired in another workflow:
+    they stay in the policy, but neither this workflow nor the aggregator's needs
+    may name them (DysTelefonica/team-skills#1313).
+    """
+    external = external or {}
     workflow_jobs = set(jobs) - {aggregator}
     deps = set(needs)
     known = set(policy_jobs)
@@ -265,7 +302,12 @@ def parity_mismatches(jobs: list[str], needs: list[str], policy_jobs: list[str],
     if aggregator in known:
         problems.append(f"policy lists the aggregator '{aggregator}' itself as a required job")
         known = known - {aggregator}
-    for job in sorted(workflow_jobs - known):
+    for job in sorted(set(external) & workflow_jobs):
+        problems.append(f"external job '{job}' is defined in the aggregator's workflow; wire it through needs")
+    for job in sorted(set(external) & deps):
+        problems.append(f"external job '{job}' is in the aggregator needs; '{external[job]}' owns it")
+    known = known - set(external)
+    for job in sorted(workflow_jobs - known - set(external)):
         problems.append(f"workflow job '{job}' is not in the policy")
     for job in sorted(known - workflow_jobs):
         problems.append(f"policy job '{job}' is not defined in the workflow")
@@ -298,7 +340,9 @@ def main(argv: list[str] | None = None) -> int:
     except GateError as exc:
         print(f"FAIL fail-closed: {exc}", file=sys.stderr)
         return 1
-    problems = parity_mismatches(jobs, needs, policy["required_jobs"], args.aggregator)
+    external = policy.get("external_jobs") or {}
+    problems = parity_mismatches(jobs, needs, policy["required_jobs"], args.aggregator, external)
+    problems += external_definition_problems(external, Path(args.workflow).parent)
     if problems:
         print(f"PARITY: FAIL (aggregator: {args.aggregator})")
         print("\n".join(f"  {item}" for item in problems))

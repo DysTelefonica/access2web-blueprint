@@ -148,7 +148,8 @@ def base_state() -> dict:
 
 
 def run_gate(root: Path, state: dict, pr_num: int = 7,
-             required_check: list | None = None, check_only: bool = False) -> subprocess.CompletedProcess:
+             required_check: list | None = None, check_only: bool = False,
+             extra: tuple[str, ...] = ()) -> subprocess.CompletedProcess:
     """Escribe el shim y el estado; corre el gate."""
     shim = root / "bin" / "gh"
     shim.parent.mkdir(exist_ok=True)
@@ -164,6 +165,7 @@ def run_gate(root: Path, state: dict, pr_num: int = 7,
             cmd += ["--required-check", rc]
     if check_only:
         cmd.append("--check-only")
+    cmd += list(extra)
     env = {**os.environ, "PATH": f"{root / 'bin'}{os.pathsep}{os.environ.get('PATH', '')}"}
     return subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=60)
 
