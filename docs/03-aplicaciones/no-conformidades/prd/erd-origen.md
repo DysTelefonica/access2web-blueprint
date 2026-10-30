@@ -12,7 +12,7 @@
 
 ## Tablas con evidencia
 
-Las 42 tablas del DDL, sus 428 columnas, su uso en `main` y las claves y relaciones inferidas por código están en la [matriz campo a campo](matriz-campos.md) y sus seis partes. Resumen: 181 filas con destino propuesto, 247 pendientes (sobre todo por tablas sin uso en `main`) y 3 columnas ausentes del DDL.
+Las 42 tablas del DDL, sus 428 columnas, su uso en `main` y las claves y relaciones inferidas por código están en la matriz campo a campo (el fichero `matriz-campos.md` y sus seis partes, que llegan en la quinta tanda de la matriz del PRD) y, en su día, en la [matriz campo a campo](matriz-campos.md). Resumen: 181 filas con destino propuesto, 247 pendientes (sobre todo por tablas sin uso en `main`) y 3 columnas ausentes del DDL.
 
 ## Relaciones
 
