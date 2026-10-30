@@ -16,9 +16,9 @@ S7. «La entrega se encadena en unidades de revisión de hasta 400 líneas; los 
 
 ## Tasks
 
-- T1 (S1, S2, S3, S6) docs(capacidades): reescribir el índice maestro con la regla de tier y las capacidades de las aplicaciones con fase 5 en `main` (Expedientes, Lanzadera, Condor, Brass, Gestión de Riesgos). PR-1 de la cadena. Commit: pending.
-- T2 (S4, S5) docs(migracion): redactar la matriz legacy→web con una fila por capacidad consolidada. PR-2 de la cadena. Commit: pending.
-- T3 (S1, S3, S6) docs(capacidades): incorporar HPS, HPS Solicitudes y No Conformidades cuando su fase 5 aterrice (#1076, #1077, #1080). PR-3 de la cadena. Commit: pending.
+- T1 (S1, S2, S3, S6) docs(capacidades): reescribir el índice maestro con la regla de tier y las capacidades de las aplicaciones con fase 5 en `main` (Expedientes, Lanzadera, Condor, Brass, Gestión de Riesgos). PR-1 de la cadena (#1510). Commit: `e94d3a8a` (277 líneas).
+- T2 (S4, S5) docs(migracion): redactar la matriz legacy→web con una fila por capacidad consolidada. PR-2 de la cadena (#1511, base `#1510`). Commit: pendiente de hash (283 líneas sobre la base).
+- T3 (S1, S3, S6) docs(capacidades): incorporar HPS, HPS Solicitudes y No Conformidades cuando su fase 5 aterrice (#1076, #1077, #1080). PR-3 de la cadena. Estado: HPS Solicitudes (#1077) y No Conformidades (#1080) tienen ya su clasificación de capacidades en su rama (#1313 y #1271); HPS (#1076) no ha entregado su fase 5 y sigue declarado en curso en el índice y en la matriz. Commit: pending.
 
 Ruta: la unidad de trabajo es la documentación del índice y de la matriz; no hay código de aplicación. La aprobación del merge es del mantenedor; el camino gobernado es `governed-merge.yml`.
 
@@ -28,3 +28,13 @@ L1. Petición original (verbatim): «dale sigue, qiero trabajar igual que como h
 L2. Decisión de alcance (2026-10-30): el lote de merges de las PRs de documentación (#1077, #1080) se ejecuta por el camino gobernado en paralelo a esta cadena; la consolidación no espera a ese lote porque no toca los mismos ficheros.
 L3. Decisión de autoridad (2026-10-30): el índice y la matriz resumen y enlazan; la evidencia (ficha, commit fijado, cita `ruta:línea`) vive en el PRD de cada aplicación. Escribir en el índice lo que el PRD ya dice sería prosa paralela que duplica una autoridad existente.
 L4. Hueco conocido (2026-10-30): el ERD de origen de las ocho aplicaciones depende de la extracción `dysflow-erd` en el runner Windows del propietario. Ninguna unidad de esta cadena lo espera; los documentos lo declaran abierto.
+
+L5. Decisión de alcance (2026-10-30, tarde): T3 solo incorporará HPS Solicitudes y No Conformidades. HPS (#1076) no ha entregado su fase 5 ni hay PR abierta que la载; su fila no se inventa y el índice y la matriz lo declaran en curso.
+
+L6. Hallazgo de gobernanza (2026-10-30): el verificador de merge gobernado rechaza un check `pr-gate` en estado «skipped». Un comentario en el PR dispara el gate H1 (`pull_request_target: edited`) y, si esa corrida queda cancelada, su check run publica «skipped». Relanzar la corrida (`gh run rerun`) deja un veredicto «success» vigente y el merge pasa. Se relanza siempre después de registrar la orden.
+
+L7. Hallazgo de gobernanza (2026-10-30): `gh pr edit` falla en este repositorio (campo `projectCards` de Projects classic deprecado); el cuerpo de un PR se edita por la API REST (`gh api --method PATCH repos/{owner}/{repo}/pulls/{n}`).
+
+L8. Hallazgo de documentación (2026-10-30): las fichas de cada PRD citan documentos que llegan en otro eslabón de la cadena (`coexistencia.md`, `erd-origen.md`). Adelantarlos en PR propios es lo que permite que las fichas entren dentro de las 400 líneas; sin eso el gate de enlaces mantiene la cadena parada.
+
+L9. Decisión de método (2026-10-30): al fusionar `origin/main` en una rama de la cadena, los README de los PRD acumulan tablas de hallazgos por tanda. Los conflictos se resuelven **conservando los dos lados**, nunca eligiendo uno: perder un bloque de hallazgos es perder evidencia del estudio.
