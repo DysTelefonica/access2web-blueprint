@@ -59,7 +59,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormResponsablesGestion | src/forms/Form_FormResponsablesGestion.cls | 392 | 28 | 13 | igual | pendiente | — |
 | Form_FormSolicitudAlta | src/forms/Form_FormSolicitudAlta.cls | 130 | 24 | 4 | igual | pendiente | — |
 | Form_FormSolicitudAltaTraspaso | src/forms/Form_FormSolicitudAltaTraspaso.cls | 142 | 25 | 5 | igual | pendiente | — |
-| Form_FormSolicitudRenovacion | src/forms/Form_FormSolicitudRenovacion.cls | 151 | 25 | 5 | igual | pendiente | — |
+| Form_FormSolicitudRenovacion | src/forms/Form_FormSolicitudRenovacion.cls | 151 | 25 | 5 | igual | analizado | [formularios/Form_FormSolicitudRenovacion.md](formularios/Form_FormSolicitudRenovacion.md) |
 | Form_FormSolicitudRenovacionDatos | src/forms/Form_FormSolicitudRenovacionDatos.cls | 957 | 64 | 19 | igual | pendiente | — |
 | Form_FormSolicitudRenovacionFechas | src/forms/Form_FormSolicitudRenovacionFechas.cls | 1652 | 82 | 40 | igual | pendiente | — |
 | Form_FormSolicitudesAltaFechas | src/forms/Form_FormSolicitudesAltaFechas.cls | 1661 | 82 | 40 | igual | pendiente | — |
@@ -68,7 +68,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormSolicitudesGestion | src/forms/Form_FormSolicitudesGestion.cls | 912 | 48 | 23 | igual | analizado | [formularios/Form_FormSolicitudesGestion.md](formularios/Form_FormSolicitudesGestion.md) |
 | Form_FormSolicitudesTraspasoFechas | src/forms/Form_FormSolicitudesTraspasoFechas.cls | 1166 | 56 | 29 | igual | pendiente | — |
 | Form_FormTareasTramitadorPendientes | src/forms/Form_FormTareasTramitadorPendientes.cls | 652 | 29 | 14 | igual | pendiente | — |
-| Form_FormUsuariosHPSBusqueda | src/forms/Form_FormUsuariosHPSBusqueda.cls | 295 | 26 | 9 | igual | pendiente | — |
+| Form_FormUsuariosHPSBusqueda | src/forms/Form_FormUsuariosHPSBusqueda.cls | 295 | 26 | 9 | igual | analizado | [formularios/Form_FormUsuariosHPSBusqueda.md](formularios/Form_FormUsuariosHPSBusqueda.md) |
 | Form_FormWeb | src/forms/Form_FormWeb.cls | 56 | 16 | 2 | igual | analizado | [formularios/Form_FormWeb.md](formularios/Form_FormWeb.md) |
 | Form_frmBuscarJustificacion | src/forms/Form_frmBuscarJustificacion.cls | 333 | 29 | 17 | igual | analizado | [formularios/Form_frmBuscarJustificacion.md](formularios/Form_frmBuscarJustificacion.md) |
 | Form_frmJustificacion | src/forms/Form_frmJustificacion.cls | 139 | 28 | 6 | igual | analizado | [formularios/Form_frmJustificacion.md](formularios/Form_frmJustificacion.md) |
@@ -124,7 +124,8 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | UsuarioEntidad | src/classes/UsuarioEntidad.cls | 1099 | — | 3 | igual | pendiente | — |
 | UsuarioHPS | src/classes/UsuarioHPS.cls | 409 | — | 7 | igual | pendiente | — |
 
-Totales: 17 analizados · 0 no aplicables · 57 pendientes.
+Totales: 19 analizados · 0 no aplicables · 55 pendientes.
+
 
 ### Hallazgos del legado (fase 1)
 
@@ -172,6 +173,19 @@ Comportamientos sospechosos detectados al analizar los formularios. No se corrig
 | H-HPS-S-28 | `MotivoHPS.EditarMotivo` ejecuta `UPDATE` en cuatro tablas sin transacción. Hallazgo sensible fuera del lote. | `MotivoHPS.cls:41-44, 180-182, 208-213` | [Form_FormMotivoHPS](formularios/Form_FormMotivoHPS.md) |
 | H-HPS-S-29 | `Form_FormMotivosHPS` queda compilado pero sin cablear: ningún lanzador en `src/`. | (no en `src/`) | [Form_FormMotivosHPS](formularios/Form_FormMotivosHPS.md) |
 | H-HPS-S-30 | `EstablecerLista` activa `ComandoEditar` y `ComandoEliminar` al pintar; un doble clic aborta con «Seleccione una elemento de la lista» (typo). | `Form_FormMotivosHPS.cls:22-23, 91, 124` | [Form_FormMotivosHPS](formularios/Form_FormMotivosHPS.md) |
+
+### Hallazgos del legado — contenedores de renovación y búsqueda de usuarios (H-HPS-S-42 a H-HPS-S-49)
+
+| Id | Hallazgo | Evidencia | Ficha |
+|---|---|---|---|
+| H-HPS-S-42 | `Err.Numbr` deja el mensaje de error de `ComandoAyuda_Click` sin código, aunque los otros dos manejadores del mismo `.cls` usan `Err.Number`. | `Form_FormSolicitudRenovacion.cls:19` | [Form_FormSolicitudRenovacion](formularios/Form_FormSolicitudRenovacion.md) |
+| H-HPS-S-43 | Las dos decisiones de la rama de alta se sobrescriben después: el rótulo «ALTA DE SOLICITUD DE HPS» y el ocultado de `lblModificacion`. | `Form_FormSolicitudRenovacion.cls:108-109, 125, 137` | [Form_FormSolicitudRenovacion](formularios/Form_FormSolicitudRenovacion.md) |
+| H-HPS-S-44 | `ComandoVerLogs` sigue habilitado en alta y llama a `InformeDelRegistro` con el `IDSolicitud` vacío: genera el informe de una solicitud inexistente. | `Form_FormSolicitudRenovacion.cls:35, 130-132` | [Form_FormSolicitudRenovacion](formularios/Form_FormSolicitudRenovacion.md) |
+| H-HPS-S-45 | `EstablecerDatos` es `Public` sólo para que el subformulario de datos lo invoque sobre el padre por `Me.Parent`: el hijo prepinta al contenedor. | `Form_FormSolicitudesAltaTraspasoDatos.cls:820-821` | [Form_FormSolicitudRenovacion](formularios/Form_FormSolicitudRenovacion.md) |
+| H-HPS-S-46 | Al seleccionar un solicitante se cierra `FormSolicitudRenovacion` con `acSaveNo` y se borra la solicitud en curso, sin aviso; el doble clic de la lista dispara el mismo camino. | `Form_FormUsuariosHPSBusqueda.cls:150-156, 170-178` | [Form_FormUsuariosHPSBusqueda](formularios/Form_FormUsuariosHPSBusqueda.md) |
+| H-HPS-S-47 | Filas de la lista concatenadas con `;` incluyendo el DNI: un `;` en un campo desplaza las columnas que se leen por posición. | `Form_FormUsuariosHPSBusqueda.cls:43, 64` | [Form_FormUsuariosHPSBusqueda](formularios/Form_FormUsuariosHPSBusqueda.md) |
+| H-HPS-S-48 | `cmdSalir_Click` y `ListaFiltrados_DblClick` arrancan con `On Error Resume Next`: tragan cualquier fallo sin aviso ni correo. | `Form_FormUsuariosHPSBusqueda.cls:14, 171` | [Form_FormUsuariosHPSBusqueda](formularios/Form_FormUsuariosHPSBusqueda.md) |
+| H-HPS-S-49 | `ComandoAyuda` y `ComandoActualizar` comparten el rótulo de diseño `Comando46`: ninguno tiene texto visible. | `Form_FormUsuariosHPSBusqueda.form.txt:811, 904` | [Form_FormUsuariosHPSBusqueda](formularios/Form_FormUsuariosHPSBusqueda.md) |
 
 ### Hallazgos del legado — visor HTML y justificaciones (H-HPS-S-31 a H-HPS-S-41)
 
