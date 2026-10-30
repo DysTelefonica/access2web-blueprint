@@ -51,6 +51,38 @@
       "additionalProperties": false,
       "description": "Declaracion explicita (HR-67, #713): sin ella adoption check avisa por stderr y sale 0; con ella la fase 5 exige el formato de cada decision, la sustitucion enlazada, las citas que existen y el indice alineado."
     },
+    "docs_where_to_work": {
+      "type": "object",
+      "required": ["mode"],
+      "additionalProperties": false,
+      "$comment": "HR-77 (#1201): modo de la pagina «donde trabajar». 'exigido' hace que la fase 5 falle si la pagina no cuadra; 'aviso' solo avisa. La clave es opcional: sin ella el gate no se mide y el consumer no cambia de modo por propagar.",
+      "properties": {
+        "mode": {"type": "string", "enum": ["exigido", "aviso"], "description": "Si la pagina «donde trabajar» se exige o solo avisa."}
+      }
+    },
+    "checks_tables": {
+      "type": "object",
+      "required": ["tables"],
+      "additionalProperties": false,
+      "$comment": "HR-82 (#1382): las tablas de checks escritas a mano se miden contra los jobs reales de los workflows. La clave es opcional: sin ella el gate no se mide y ningun consumer cambia de veredicto por propagar.",
+      "properties": {
+        "tables": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["path", "workflow"],
+            "additionalProperties": false,
+            "properties": {
+              "path": {"type": "string", "minLength": 1, "description": "Ruta repo-relativa del documento con la tabla de checks, p. ej. docs/codebase/testing-and-ci.md."},
+              "workflow": {"type": "string", "minLength": 1, "description": "Workflow que define los jobs de la tabla (fichero de .github/workflows)."},
+              "section": {"type": "string", "description": "Titulo de la seccion donde esta la tabla; sin ella, el documento entero."}
+            }
+          }
+        }
+      },
+      "description": "Declaracion explicita (HR-82): sin ella adoption check avisa por stderr y sale 0; con ella la fase 5 mide cada tabla declarada contra los jobs reales de los workflows (el nombre del check y el workflow que lo define): ni jobs inventados, ni jobs que se movieron de workflow, ni jobs requeridos ausentes."
+    },
     "docs_commands": {
       "type": "object",
       "required": ["cli_name", "cli_command", "job"],
@@ -62,6 +94,11 @@
         "rejection_exit_codes": {"type": "array", "description": "Codigos de salida que significan rechazo del parser (default [2])."},
         "roots": {"type": "array", "description": "Ficheros o directorios a recorrer (default README.md, AGENTS.md, docs)."},
         "exclude": {"type": "array", "description": "Comandos ilustrativos exentos; solo puede encoger (una entrada obsoleta es STALE)."},
+        "existence": {"type": "object", "additionalProperties": false,
+          "properties": {
+            "makefile": {"type": "string", "description": "Makefile que se consulta para los targets que la documentacion cita (default Makefile)."},
+            "path_executables": {"type": "array", "items": {"type": "string"}, "description": "Ejecutables del PATH que la documentacion puede citar y que tienen que resolverse en el runner."}},
+          "description": "Capa de existencia (#1374): comprueba que lo que el comando documentado invoca existe (el script local que cita, el target de make que cita y el ejecutable del PATH que la politica permite). Sin esta capa el gate solo valida la forma del comando."},
         "job": {"type": "string", "description": "Job de CI requerido que ejecuta docs-commands."}
       },
       "additionalProperties": false,
@@ -75,10 +112,23 @@
         "spokes": {"type": "string", "description": "Directorio de los spokes, p. ej. docs/codebase."},
         "retired": {"type": "object", "description": "Ficheros (files) y frases (phrases: path, phrase) retirados que no pueden reaparecer."},
         "baseline": {"type": "array", "description": "Enlaces rotos heredados {file, target}; solo puede encogerse (una entrada obsoleta es STALE)."},
-        "job": {"type": "string", "description": "Job de CI requerido que ejecuta docs-links."}
+        "job": {"type": "string", "description": "Job de CI requerido que ejecuta docs-links."},
+        "reachable": {
+          "type": "object",
+          "description": "Alcanzabilidad de la documentacion (HR-80, #1379): todo .md del alcance tiene que ser alcanzable desde los puntos de entrada siguiendo enlaces markdown.",
+          "properties": {
+            "from": {"type": "array", "minItems": 1, "items": {"type": "string"},
+              "description": "Puntos de entrada del grafo de enlaces, p. ej. README.md y docs/CODEBASE-GUIDE.md. Obligatoria."},
+            "scope": {"type": "array", "minItems": 1, "items": {"type": "string"},
+              "description": "Rutas (fichero o directorio) donde se exige la completitud; por defecto docs."},
+            "exceptions": {"type": "array", "items": {"type": "string"},
+              "description": "Rutas o globs exentos de la exigencia, p. ej. docs/releases/ (historico)."}
+          },
+          "additionalProperties": false
+        }
       },
       "additionalProperties": false,
-      "description": "Declaracion explicita (HR-66, #712): sin ella adoption check avisa por stderr y sale 0; con ella la fase 5 exige enlaces locales que resuelven, navegacion hub<->spokes y retirados al margen."
+      "description": "Declaracion explicita (HR-66, #712): sin ella adoption check avisa por stderr y sale 0; con ella la fase 5 exige enlaces locales que resuelven, navegacion hub<->spokes y retirados al margen. La clave `reachable` (HR-80) activa ademas la regla de alcanzabilidad de la documentacion."
     },
     "architecture": {
       "type": "object",
@@ -95,6 +145,41 @@
         "job": {"type": "string", "description": "Nombre del job de CI que ejecuta docs-architecture."}
       },
       "description": "Declaracion explicita (HR-68, #714): sin ella adoption check avisa por stderr y sale 0; con ella la fase 5 exige el documento, su arbol de modulos cuadrando con el codigo en los dos sentidos, el bloque de capas coherente y el job requerido."
+    },
+    "governance_seals": {
+      "type": "object",
+      "properties": {
+        "job": {
+          "type": "string",
+          "description": "Job de CI requerido que ejecuta `adoption check --phase 3`: los sellos de `.governance-manifest.json` y el cableado de `P23_required_jobs`, medidos en un pull request."
+        }
+      },
+      "required": ["job"],
+      "additionalProperties": false,
+      "description": "Declaracion explicita (HR-72, #1027): sin ella adoption check avisa por stderr y sale 0; con ella la fase 3 exige que el job exista en un workflow y figure en `required_jobs` de `.github/required-jobs-policy.json`, que es la via de enforcement en repos privados con plan Free (sin proteccion de rama ni required checks del host). El job invoca la CLI como comando de primer nivel, nunca encadenada a otro gate (HR-46)."
+    },
+    "dependabot": {
+      "type": "object",
+      "properties": {
+        "ecosystems": {
+          "type": "object",
+          "description": "Ecosistema -> directorio del manifiesto (p. ej. {\"pip\": \"app\"}).",
+          "additionalProperties": {"oneOf": [
+            {"type": "string", "minLength": 1},
+            {"type": "object", "additionalProperties": false,
+             "properties": {
+               "directory": {"type": "string", "minLength": 1},
+               "directories": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+               "target-branch": {"type": "string", "minLength": 1},
+               "ignore": {"type": "array", "items": {"type": "object", "required": ["dependency-name"], "additionalProperties": false, "properties": {"dependency-name": {"type": "string", "minLength": 1}}}},
+               "groups": {"type": "object", "additionalProperties": {"type": "object"}}
+             }}
+          ]}
+        }
+      },
+      "required": ["ecosystems"],
+      "additionalProperties": false,
+      "description": "Direccion de Dependabot (HR-75, #1182): un ecosystem por manifiesto; el `directory` de cada ecosystem es el directorio donde vive su manifiesto. El canon genera el `.github/dependabot.yml` del consumer desde esta declaracion (`ci-pattern dependabot render <repo>`) y la fase 5 lo compara con el fichero real. Sin ella adoption check avisa y sale 0."
     },
     "docs_map": {
       "type": "object",

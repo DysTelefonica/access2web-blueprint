@@ -218,3 +218,29 @@ class TestRealRepoBaseline:
             pytest.skip("tests/lanzadera/ not present in this checkout")
         rc, _, err = _run(repo_root, "--strict")
         assert rc == 0, f"tests/lanzadera/ must remain clean; stderr:\n{err}"
+
+
+# --------------------------------------------------------------------------------------------
+# Declaration — this gate is BP policy, not a copy of the canon's asset
+# --------------------------------------------------------------------------------------------
+
+
+class TestProvenanceDeclaration:
+    """The header must not claim a canon version it does not carry.
+
+    The gate used to declare ``deterministic-quality-harness v1.4``, which reads as "copy of the
+    canon". It is not: the canon's ``check_test_classification`` (team-skills#985, decision D2)
+    measures a different rule — every ``tests/integration/test_*.py`` carries the ``integration``
+    marker — over a directory BP does not have. Claiming the version would hide exactly the
+    difference a reader has to know about (team-skills#809 T6, BP #1316).
+    """
+
+    def test_the_header_declares_local_policy_and_names_the_canon_asset(self) -> None:
+        header = (SCRIPTS_DIR / "check_test_classification.py").read_text(encoding="utf-8")[:2000]
+        assert "HARNESS-PROVENANCE" in header
+        assert "deterministic-quality-harness v" not in header, (
+            "BP's gate is not a copy of the canon's asset; it must not declare a canon version"
+        )
+        assert "team-skills#985" in header, (
+            "the header must name the canon asset it deliberately does not adopt"
+        )

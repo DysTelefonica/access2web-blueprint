@@ -147,10 +147,19 @@ def offenders_of(measurements: list[Measurement]) -> list[Measurement]:
     return [item for item in measurements if item.complexity > MAX_COMPLEXITY]
 
 
-def evaluate(offenders: list[Measurement], today: date) -> tuple[int, list[str]]:
+def evaluate(measurements: list[Measurement], today: date) -> tuple[int, list[str]]:
+    """Judge the tree and report every line.
+
+    Takes the whole measurement set, not only the offenders: a BASELINE entry whose function
+    fell under the ceiling is a note, while one whose function is gone (renamed, moved or
+    deleted) is a failure. Filtering before this function would collapse both cases into one
+    and announce a missing function as if it had merely improved.
+    """
     lines: list[str] = []
     failed = False
+    offenders = offenders_of(measurements)
     observed = {offender.key: offender for offender in offenders}
+    measured = {item.key for item in measurements}
 
     for key in sorted(observed):
         offender = observed[key]
@@ -181,8 +190,16 @@ def evaluate(offenders: list[Measurement], today: date) -> tuple[int, list[str]]
             )
 
     for key in sorted(BASELINE):
-        if key not in observed:
+        if key in observed:
+            continue
+        if key in measured:
             lines.append(f"NOTE  {key}: now under the ceiling; remove it from BASELINE")
+        else:
+            failed = True
+            lines.append(
+                f"FAIL  {key}: no such function was found; the BASELINE entry outlived it "
+                f"— remove the entry or fix the path"
+            )
 
     if not failed:
         lines.append(f"OK    every function at or below complexity {MAX_COMPLEXITY}")
@@ -261,7 +278,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"FAIL  {message}", file=sys.stderr)
         return 1
 
-    exit_code, lines = evaluate(offenders_of(measurements), args.policy_date)
+    exit_code, lines = evaluate(measurements, args.policy_date)
 
     if args.json:
         print(json.dumps(build_report(root, measurements, "pass" if exit_code == 0 else "fail", args.policy_date), indent=2))

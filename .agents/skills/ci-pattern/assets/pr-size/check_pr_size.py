@@ -4,26 +4,43 @@
 
 Counts semantic changed lines between the merge base and ``HEAD``. Paths
 under :data:`VENDORED_ROOTS` are excluded from the budget because they
-hold propagated skill content that no human reads line by line. A
-rename FROM a non-vendored (authored) path INTO a vendored path still
+hold propagated skill content that no human reads line by line. That is
+``.agents/skills/`` only: the vendored tree a consumer receives from the
+canon. ``skills/`` counts, because it is the authoring catalog of the
+repo (#1088): in the canon it holds the 64 skills written here, and in a
+consumer it holds that consumer's own catalog. A rename FROM a
+non-vendored (authored) path INTO a vendored path still
 counts: the work was authored outside the vendored subtree and the
 budget has to cover it. A rename within the vendored subtree, or a
 new file under it, is excluded.
 
 Line-ending churn is not a change a reviewer has to read, so
-``--ignore-cr-at-eol`` is enabled by default. Nothing else is excluded:
-lockfiles and generated files count (the budget is additions + deletions).
+``--ignore-cr-at-eol`` is enabled by default. The generated lockfiles
+(``uv.lock``, ``package-lock.json``, ``pnpm-lock.yaml``, ``poetry.lock`` and
+``requirements*.lock``) are excluded too: the package manager writes them,
+not the author (#1177). Nothing else is: any other generated file counts (the
+budget is additions + deletions).
 
 Two ways to measure. Locally and in a full checkout the diff against the
 base comes from ``git``. With ``--event <pull_request event json>`` the
 per-file counts come from the GitHub API (``GITHUB_TOKEN``, optional
 ``GITHUB_API_URL``: https, or http on loopback only), so the runner needs no
-history; any API failure, or a breakdown that does not match the PR's
-``changed_files``, fails closed.
+history; any API failure, or a breakdown that still does not match the PR's
+``changed_files`` after one re-read, fails closed. If the PR's head moved after
+the event (a newer push), the event is superseded: it exits 0, because the newer
+event measures the new head (#1113).
+
+Not a CI gate (#1396). In CI the budget is enforced once, by rule A1 of
+``assets/pr-contract/check_pr_contract.py``, with one count: running both gave
+two red checks with two different numbers on the same PR. This script stays as
+a local measurement and as the size diagnostic of ``pr preflight --draft``.
 
 The only override is the ``size:exception`` label, applied by the
-maintainer (never by the author, never read from the PR body). It comes from
-the event payload, from ``--labels`` or from ``$PR_LABELS`` (comma separated).
+maintainer (never by the author, never read from the PR body). With
+``--event`` it is read live from the API (``GET issues/N/labels``), because the
+event payload is a snapshot from the moment the event fired: a label added right
+after the ``opened`` event (cadete#715) would otherwise be missed (#1359). Local
+runs take it from ``--labels`` or from ``$PR_LABELS`` (comma separated).
 
 Exit codes:
     0  within budget, or overridden by the ``size:exception`` label
@@ -46,11 +63,15 @@ from pathlib import Path
 # Fuente única del presupuesto (#931): la regla la comparte con pr-contract.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "budget"))
 from vendored_budget import (  # noqa: E402
+    LOCKFILE_PATTERNS as LOCKFILE_PATTERNS,  # reexport: sigue siendo nombre público del gate
+)
+from vendored_budget import (
     VENDORED_ROOTS as VENDORED_ROOTS,  # reexport: sigue siendo nombre público del gate
 )
-from vendored_budget import (  # noqa: E402
+from vendored_budget import (
     _strip_diff_prefix,
     counts_to_budget,
+    is_generated_lockfile,
     is_under_vendored,
     original_path,
     parse_numstat,
@@ -68,6 +89,10 @@ OVERRIDE_LABEL = "size:exception"
 FILES_PER_PAGE = 100
 #: GitHub lists at most 3000 files of a PR.
 MAX_FILE_PAGES = 30
+#: Labels are read page by page too (#1359); a PR carries a handful, so one page is the norm.
+MAX_LABEL_PAGES = 10
+#: Reads of the PR's breakdown before the gate gives up (#1113: one retry).
+MEASURE_ATTEMPTS = 2
 DEFAULT_API_URL = "https://api.github.com"
 
 # --------------------------------------------------------------------------------------------
@@ -84,19 +109,22 @@ def _git(*args: str) -> str:
     return result.stdout
 
 
-def changed_lines(base_ref: str) -> tuple[int, int, list[tuple[str, int]]]:
-    """Return ``(counted_total, vendored_excluded, per_file)``.
+def changed_lines(base_ref: str) -> tuple[int, int, int, list[tuple[str, int]]]:
+    """Return ``(counted_total, vendored_excluded, generated_excluded, per_file)``.
 
-    ``counted_total`` is the review-budget figure (vendored excluded).
-    ``vendored_excluded`` is the number of lines a naive gate would have
-    counted but the vendored rule dropped. ``per_file`` is the counted
-    breakdown, largest first.
+    ``counted_total`` is the review-budget figure (vendored and generated
+    lockfiles excluded). ``vendored_excluded`` is the number of lines a naive
+    gate would have counted but the vendored rule dropped, and
+    ``generated_excluded`` the ones the generated-lockfile rule dropped
+    (#1177); they are reported apart so the message says what it left out.
+    ``per_file`` is the counted breakdown, largest first.
     """
     raw = _git("diff", "--numstat", "--find-renames=50%", "--ignore-cr-at-eol",
                f"{base_ref}...HEAD")
     per_file: list[tuple[str, int]] = []
     counted = 0
     vendored = 0
+    generated = 0
     for line in raw.splitlines():
         parts = line.split("\t")
         if len(parts) != 3:
@@ -132,10 +160,12 @@ def changed_lines(base_ref: str) -> tuple[int, int, list[tuple[str, int]]]:
         if counts_to_budget(old_path, new_path):
             counted += lines
             per_file.append((new_path, lines))
+        elif is_generated_lockfile(new_path):
+            generated += lines
         else:
             vendored += lines
     per_file.sort(key=lambda item: item[1], reverse=True)
-    return counted, vendored, per_file
+    return counted, vendored, generated, per_file
 
 
 def pr_base_ref() -> str | None:
@@ -223,6 +253,17 @@ class BreakdownMismatchError(MeasureError):
         super().__init__(f"the file breakdown ({got}) does not match the PR's changed_files ({want})")
 
 
+class SupersededError(Exception):
+    """The PR got a newer push after this event: its own event measures the new head (#1113).
+
+    Not a MeasureError: it is not a failure of the gate, so it exits 0.
+    """
+
+    def __init__(self, event_head: str, head: str) -> None:
+        super().__init__(f"superado por un push más reciente (head del evento {event_head[:12]}, "
+                         f"head actual {head[:12]})")
+
+
 def is_int(value: object) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)
 
@@ -284,10 +325,10 @@ def api_files(api_url: str, token: str, repo: str, number: int) -> list[dict]:
     return files
 
 
-def count_api_files(files: list[dict]) -> tuple[int, int, list[tuple[str, int]]]:
+def count_api_files(files: list[dict]) -> tuple[int, int, int, list[tuple[str, int]]]:
     """Same figures as :func:`changed_lines`, from the API's per-file entries."""
     per_file: list[tuple[str, int]] = []
-    counted = vendored = 0
+    counted = vendored = generated = 0
     for item in files:
         name, previous = item.get("filename"), item.get("previous_filename") or item.get("filename")
         added, deleted = item.get("additions"), item.get("deletions")
@@ -297,23 +338,91 @@ def count_api_files(files: list[dict]) -> tuple[int, int, list[tuple[str, int]]]
         if counts_to_budget(previous, name):
             counted += lines
             per_file.append((name, lines))
+        elif is_generated_lockfile(name):
+            generated += lines
         else:
             vendored += lines
     per_file.sort(key=lambda entry: entry[1], reverse=True)
-    return counted, vendored, per_file
+    return counted, vendored, generated, per_file
 
 
-def api_changed_lines(event_path: str) -> tuple[int, int, list[tuple[str, int]], set[str]]:
-    """``changed_lines`` for a pull_request event, plus the PR's labels."""
-    repo, number, labels, declared = read_event(event_path)
+def event_head(event_path: str) -> str | None:
+    """``pull_request.head.sha`` from the event payload, when the payload carries it."""
+    try:
+        payload = json.loads(Path(event_path).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    pull = payload.get("pull_request") if isinstance(payload, dict) else None
+    head = pull.get("head") if isinstance(pull, dict) else None
+    sha = head.get("sha") if isinstance(head, dict) else None
+    return sha if isinstance(sha, str) and sha else None
+
+
+def api_labels(api_url: str, token: str, repo: str, number: int) -> set[str]:
+    """The PR's labels right now, page by page (``GET issues/N/labels``) (#1359).
+
+    Not the event payload: that is a snapshot of the moment the event fired.
+    """
+    names: set[str] = set()
+    for page in range(1, MAX_LABEL_PAGES + 1):
+        path = f"/repos/{repo}/issues/{number}/labels?per_page={FILES_PER_PAGE}&page={page}"
+        try:
+            with _open(api_url, path, token) as response:
+                chunk = json.loads(response.read().decode("utf-8"))
+        except (OSError, ValueError) as exc:
+            raise ApiFailedError(path, exc) from exc
+        if not is_file_list(chunk):
+            raise ApiShapeError(path)
+        names.update(item["name"] for item in chunk if isinstance(item.get("name"), str))
+        if len(chunk) < FILES_PER_PAGE:
+            break
+    return names
+
+
+def api_pull(api_url: str, token: str, repo: str, number: int) -> tuple[str | None, int | None]:
+    """``(head sha, changed_files)`` of the PR right now (``GET pulls/N``)."""
+    path = f"/repos/{repo}/pulls/{number}"
+    try:
+        with _open(api_url, path, token) as response:
+            body = json.loads(response.read().decode("utf-8"))
+    except (OSError, ValueError) as exc:
+        raise ApiFailedError(path, exc) from exc
+    if not isinstance(body, dict):
+        raise ApiShapeError(path)
+    head = body.get("head")
+    sha = head.get("sha") if isinstance(head, dict) else None
+    changed = body.get("changed_files")
+    return (sha if isinstance(sha, str) else None), (changed if is_int(changed) else None)
+
+
+def api_changed_lines(event_path: str) -> tuple[int, int, int, list[tuple[str, int]], set[str]]:
+    """``changed_lines`` for a pull_request event, plus the PR's labels read live (#1359).
+
+    The PR's head and its breakdown are read around the file listing, so a push or a
+    moved base between the reads shows up as a mismatch instead of a false failure
+    (#1113): a moved head means a newer event measures it (superseded, exit 0); a
+    mismatch with the head unchanged is retried once, then fails closed.
+    """
+    repo, number, _payload_labels, _declared = read_event(event_path)
     token = os.environ.get("GITHUB_TOKEN", "")
     if not token:
         raise MissingCredentialError
-    files = api_files(os.environ.get("GITHUB_API_URL") or DEFAULT_API_URL, token, repo, number)
-    if declared is not None and len(files) != declared:
-        raise BreakdownMismatchError(len(files), declared)
-    counted, vendored, per_file = count_api_files(files)
-    return counted, vendored, per_file, labels
+    api_url = os.environ.get("GITHUB_API_URL") or DEFAULT_API_URL
+    expected_head = event_head(event_path)
+    got = want = None
+    for _ in range(MEASURE_ATTEMPTS):
+        head, want = api_pull(api_url, token, repo, number)
+        if expected_head and head and head != expected_head:
+            raise SupersededError(expected_head, head)
+        files = api_files(api_url, token, repo, number)
+        head_after, want = api_pull(api_url, token, repo, number)
+        if expected_head and head_after and head_after != expected_head:
+            raise SupersededError(expected_head, head_after)
+        if want is None or len(files) == want:
+            counted, vendored, generated, per_file = count_api_files(files)
+            return counted, vendored, generated, per_file, api_labels(api_url, token, repo, number)
+        got = len(files)
+    raise BreakdownMismatchError(got, want)
 
 
 def _pin_output_encoding() -> None:
@@ -330,17 +439,18 @@ def _pin_output_encoding() -> None:
         sys.stderr.reconfigure(encoding="utf-8")
 
 
-def measure(args: argparse.Namespace) -> tuple[int, int, list[tuple[str, int]], set[str], str]:
-    """``(counted, vendored, per_file, labels, source)`` from the API (``--event``) or from git."""
+def measure(args: argparse.Namespace) -> tuple[int, int, int, list[tuple[str, int]], set[str], str]:
+    """``(counted, vendored, generated, per_file, labels, source)`` from the API (``--event``) or from git."""
     if args.event:
         return (*api_changed_lines(args.event), "the GitHub API")
     base_ref = args.base_ref or os.environ.get("BASE_REF") or pr_base_ref() or "origin/main"
-    counted, vendored, per_file = changed_lines(base_ref)
-    return (counted, vendored, per_file,
+    counted, vendored, generated, per_file = changed_lines(base_ref)
+    return (counted, vendored, generated, per_file,
             split_labels(args.labels or os.environ.get("PR_LABELS", "")), base_ref)
 
 
-def envelope_for(counted: int, vendored: int, per_file: list, overridden: bool) -> dict:
+def envelope_for(counted: int, vendored: int, generated: int, per_file: list,
+                 overridden: bool) -> dict:
     passed = counted <= MAX_CHANGED_LINES or overridden
     return {
         "gate": "pr_size",
@@ -348,6 +458,7 @@ def envelope_for(counted: int, vendored: int, per_file: list, overridden: bool) 
         "indicators": {
             "changed_lines": counted,
             "vendored_lines": vendored,
+            "generated_lines": generated,
             "files_changed": len(per_file),
             "overridden": overridden,
         },
@@ -357,6 +468,20 @@ def envelope_for(counted: int, vendored: int, per_file: list, overridden: bool) 
             for path, count in per_file[:10]
         ] if not passed else [],
     }
+
+
+def excluded_suffix(vendored: int, generated: int) -> str:
+    """El sufijo del mensaje: lo que la regla dejó fuera, nombrado aparte.
+
+    El árbol vendorizado y los lockfiles generados son cosas distintas (HR-13):
+    el mensaje no los mezcla ni los llama «vendored» a los segundos (#1177).
+    """
+    parts = []
+    if vendored:
+        parts.append(f"{vendored} vendored line(s) excluded")
+    if generated:
+        parts.append(f"{generated} generated line(s) excluded")
+    return f", {', '.join(parts)}" if parts else ""
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -375,7 +500,13 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
-        counted, vendored, per_file, labels, source = measure(args)
+        counted, vendored, generated, per_file, labels, source = measure(args)
+    except SupersededError as exc:
+        if args.json:
+            print(json.dumps({"gate": "pr_size", "status": "superseded", "detail": str(exc)}))
+        else:
+            print(f"OK    PR {exc}; mide el evento más reciente, no este")
+        return 0
     except RuntimeError as exc:
         if args.json:
             print(json.dumps({"gate": "pr_size", "status": "error", "detail": str(exc)}))
@@ -385,10 +516,10 @@ def main(argv: list[str] | None = None) -> int:
 
     overridden = has_override(labels)
     if args.json:
-        print(json.dumps(envelope_for(counted, vendored, per_file, overridden), indent=2))
+        print(json.dumps(envelope_for(counted, vendored, generated, per_file, overridden), indent=2))
         return 0 if counted <= MAX_CHANGED_LINES or overridden else 1
 
-    suffix = f", {vendored} vendored line(s) excluded" if vendored else ""
+    suffix = excluded_suffix(vendored, generated)
     if counted <= MAX_CHANGED_LINES:
         print(f"OK    {counted} changed line(s) vs {source}, budget is {MAX_CHANGED_LINES}{suffix}")
         return 0

@@ -45,7 +45,7 @@ the canonical policy date.
 | `mutation.mutation_score_pct` | — | higher | Mutants killed. |
 | `mutation.survivors_total` | — | lower | Mutants not detected by tests. |
 | `mutation.incompetent_ratio_pct` | 20 | lower | Mutants that could not execute. |
-| `pr_size.changed_lines` | 400 | lower | Change review surface. |
+| `pr_size.changed_lines` | 400 | lower | Change review surface. Emitido por el canon `ci-pattern` (`pr-size/`), no por DQH (#1011, D1 de #809). |
 
 Mutation runs on a schedule rather than per pull request. Its indicators therefore arrive on a
 different cadence; a PR report must not claim mutation evidence it did not run.

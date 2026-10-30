@@ -41,6 +41,13 @@ PR dejaba fuera del gate al job `mutation`, pineado a
 registrados**—, que llevaba cuatro semanas en rojo mientras el agregador
 `required` publicaba verde (#785).
 
+Única excepción (#1074): el runner Windows del propietario, etiqueta
+`dysflow-erd`, para extraer ERD de solo lectura de los `.accdb`. Solo se admite
+en un workflow cuyo único disparador sea `workflow_dispatch`
+(`.github/workflows/dysflow-erd.yml`); cualquier otro disparador en ese workflow
+hace fallar el gate. El runner está en línea solo cuando el propietario lo
+arranca: un job en cola no es un fallo.
+
 Un job propio dentro de un workflow de PR debe excluir ese evento mediante una
 condición estática sobre `github.event_name`.
 
@@ -62,10 +69,15 @@ consultar GitHub y el runbook de infraestructura autorizado.
 
 | Workflow | Jobs | Etiqueta |
 |---|---|---|
-| `ci.yml` | `review-budget`, `quality`, `required` | `ubuntu-24.04` |
-| `ci.yml` | `mutation` | `ubuntu-24.04-arm` |
-| `security.yml` | `gitleaks`, `trivy-config`, `pip-audit` | `ubuntu-24.04` |
+| `ci.yml` | `pr-gate`, `quality`, `integration`, `e2e-smoke`, `pip-audit-alert`, `docs-architecture`, `docs-codeguide`, `docs-links`, `docs-commands`, `docs-decisions`, `governance-seals`, `ci-images`, `required` | `ubuntu-24.04` |
+| `pr-gate.yml` | `pr-gate` | `ubuntu-24.04` |
+| `pr-gates.yml` | `canon`, `pr-gate` | `ubuntu-24.04` |
+| `operating-doc-drift.yml` | `operating-doc-drift` | `ubuntu-24.04` |
+| `security.yml` | `gitleaks`, `trivy-config` | `ubuntu-24.04` |
+| `pip-audit.yml` | `dependency-scan` | `ubuntu-24.04` |
 | `security-deep.yml` | `gitleaks-history`, `trivy-image` | `ubuntu-24.04-arm` |
 | `codeql.yml` | `codeql` | `ubuntu-24.04` |
 | `release.yml` | `preflight`, `verify` | `ubuntu-24.04` |
-| `release.yml` | `e2e`, `publish` | `ubuntu-24.04-arm` |
+| `release.yml` | `mutation`, `stage`, `e2e`, `publish` | `ubuntu-24.04-arm` |
+
+Cada fila sale de la clave `runs-on:` del job citado: `ci.yml` (jobs en líneas 86 a 1080, `runs-on` por job), `pr-gate.yml:75`, `pr-gates.yml:30` y `:70`, `operating-doc-drift.yml:41`, `security.yml:38` y `:123`, `pip-audit.yml:31`, `security-deep.yml:29` y `:91`, `codeql.yml:20`, `release.yml:20`, `:90`, `:185`, `:249`, `:354` y `:455`. Si un job cambia de runner, cambie la fila y la cita en el mismo PR.

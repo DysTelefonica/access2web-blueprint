@@ -11,7 +11,8 @@ from collections.abc import Iterable
 from pathlib import Path
 
 DEFAULT_POLICY_PATH = Path(__file__).resolve().parent.parent / "quality-policy.json"
-REQUIRED_GATES = frozenset({"layers", "complexity", "crap", "dry", "mutation_sites", "mutation"})
+#: Gate names the policy may govern. A consumer declares any non-empty subset of them.
+KNOWN_GATES = frozenset({"layers", "complexity", "crap", "dry", "mutation_sites", "mutation"})
 
 
 class PolicyError(RuntimeError):
@@ -41,10 +42,12 @@ def load_policy(path: Path = DEFAULT_POLICY_PATH) -> dict:
         value = subjects.get(field)
         if not isinstance(value, list) or not value or not all(isinstance(item, str) and item for item in value):
             raise PolicyError(f"quality policy subjects.{field} must be a non-empty string list")
-    missing = REQUIRED_GATES - set(gates)
-    if missing:
-        raise PolicyError(f"quality policy is missing gates: {', '.join(sorted(missing))}")
-    for gate in sorted(REQUIRED_GATES):
+    if not gates:
+        raise PolicyError("quality policy must declare at least one gate")
+    unknown = set(gates) - KNOWN_GATES
+    if unknown:
+        raise PolicyError(f"quality policy declares unknown gates: {', '.join(sorted(unknown))}")
+    for gate in sorted(gates):
         config = gates[gate]
         if not isinstance(config, dict):
             raise PolicyError(f"quality policy gate '{gate}' must be an object")
@@ -104,7 +107,7 @@ def _git_identity(root: Path) -> dict[str, str]:
 def build_evidence(
     root: Path, policy: dict, gate: str, *, allow_empty: bool = False
 ) -> dict:
-    if gate not in REQUIRED_GATES:
+    if gate not in policy["gates"]:
         raise PolicyError(f"gate '{gate}' is not governed by the quality policy")
     manifest = subject_manifest(root, policy, allow_empty=allow_empty)
     serializable_policy = {key: value for key, value in policy.items() if not key.startswith("_")}
@@ -144,6 +147,8 @@ def bind_envelope(
     policy: dict | None = None,
 ) -> dict:
     resolved_policy = policy or load_policy()
+    if gate not in resolved_policy["gates"]:
+        raise PolicyError(f"gate '{gate}' is not governed by the quality policy")
     expected_ceilings = resolved_policy["gates"][gate]["ceilings"]
     if envelope.get("ceilings") != expected_ceilings:
         raise PolicyError(f"gate '{gate}' ceilings drifted from quality policy")

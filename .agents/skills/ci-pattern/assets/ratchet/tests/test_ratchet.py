@@ -281,5 +281,86 @@ class TestBaseComparison(GateCase):
         self.assertIn("NOT performed", out)
 
 
+class TestBaseFindingsComparison(GateCase):
+    """#1172: el ratchet compara contra la base del PR (lo que el PR AÑADE),
+    no contra el total. Un PR que no añade violaciones no puede quedar rojo
+    por un ratchet."""
+
+    def run_with_base(self, findings_doc, baseline_doc, base_doc):
+        with tempfile.TemporaryDirectory() as d:
+            f = write_tmp(d, "findings.json", findings_doc)
+            b = write_tmp(d, "baseline.json", baseline_doc)
+            bf = write_tmp(d, "base-findings.json", base_doc)
+            out = subprocess.run(
+                [sys.executable, str(GATE), "--findings", str(f),
+                 "--baseline", str(b), "--base-findings", str(bf), "--today", TODAY],
+                capture_output=True, text=True)
+        return out.returncode, out.stdout + out.stderr
+
+    def test_a_finding_the_base_already_had_is_an_advisory_not_a_block(self):
+        code, out = self.run_with_base(
+            findings([ident()]), baseline([]), findings([ident()]))
+        self.assertEqual(code, 0, out)
+        self.assertIn("AVISO", out)
+        self.assertIn("ya estaba en la base del PR", out)
+
+    def test_a_finding_the_pr_adds_still_blocks(self):
+        code, out = self.run_with_base(
+            findings([ident()]), baseline([]), findings([]))
+        self.assertEqual(code, 1, out)
+        self.assertIn("new finding identity not in baseline", out)
+
+    def test_without_base_findings_the_behaviour_is_unchanged(self):
+        # Sin la base, el gate no sabe qué es de este PR: el hallazgo nuevo
+        # bloquea, como siempre.
+        code, out = self.run_gate(findings([ident()]), baseline([]))
+        self.assertEqual(code, 1, out)
+        self.assertIn("NOT performed", out)
+
+    def test_the_comparison_is_declared_performed_when_the_base_is_given(self):
+        code, out = self.run_with_base(
+            findings([ident()]), baseline([]), findings([ident()]))
+        self.assertEqual(code, 0, out)
+        self.assertIn("base findings comparison: performed", out)
+
+    def test_a_baseline_identity_the_pr_eliminated_still_blocks(self):
+        # El PR quitó el hallazgo: la baseline se tiene que encoger para
+        # fijar la mejora (HR-15 lock-in).
+        code, out = self.run_with_base(
+            findings([]), baseline([entry()]), findings([ident()]))
+        self.assertEqual(code, 1, out)
+        self.assertIn("shrink the baseline to lock it in", out)
+
+    def test_a_stale_baseline_entry_is_an_advisory_not_a_block(self):
+        # La entrada no la tiene ni la base ni el PR: es vieja, y no la quita
+        # este PR (la relajación de una baseline la mide otro guard).
+        code, out = self.run_with_base(
+            findings([]), baseline([entry()]), findings([]))
+        self.assertEqual(code, 0, out)
+        self.assertIn("AVISO", out)
+        self.assertIn("entrada vieja", out)
+
+    def test_an_expired_exemption_still_blocks(self):
+        # La caducidad de una exención no depende de quién añadió el
+        # hallazgo: ese control no se relaja (#1172 no lo toca).
+        code, out = self.run_with_base(
+            findings([ident()]),
+            baseline([entry(target_date="2026-10-01")]),
+            findings([ident()]))
+        self.assertEqual(code, 1, out)
+        self.assertIn("expired", out)
+
+    def test_an_unreadable_base_findings_file_exits_two(self):
+        with tempfile.TemporaryDirectory() as d:
+            f = write_tmp(d, "findings.json", findings([ident()]))
+            b = write_tmp(d, "baseline.json", baseline([]))
+            bf = write_tmp(d, "base-findings.json", "not json")
+            out = subprocess.run(
+                [sys.executable, str(GATE), "--findings", str(f), "--baseline", str(b),
+                 "--base-findings", str(bf), "--today", TODAY],
+                capture_output=True, text=True)
+        self.assertEqual(out.returncode, 2, out.stdout + out.stderr)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

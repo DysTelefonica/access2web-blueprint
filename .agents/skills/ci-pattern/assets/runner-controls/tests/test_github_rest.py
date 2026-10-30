@@ -145,7 +145,9 @@ class RestTests(unittest.TestCase):
         self.server.routes["/repos/o/r"] = (502, "<html>bad gateway</html>")
         with self.assertRaises(GitHubApiError) as ctx:
             github_rest.get_json("repos/o/r")
-        self.assertEqual(str(ctx.exception), "HTTP 502 on GET repos/o/r")
+        message = str(ctx.exception)
+        self.assertTrue(message.startswith("HTTP 502 on GET repos/o/r"), message)
+        self.assertTrue(message.endswith("(falló tras 3 intentos)"), message)
 
     def test_unreachable_api_fails_closed(self) -> None:
         with socket.socket() as probe:
@@ -176,6 +178,16 @@ class RestTests(unittest.TestCase):
             lambda path: (200, [{"number": 1}], link) if "page=2" not in path
             else (200, [{"number": 2}]))
         data = github_rest.get_json("repos/o/r/commits/abc/pulls")
+        self.assertEqual(data, [{"number": 1}, {"number": 2}])
+        self.assertIn("page=2", self.server.seen[-1]["path"])
+
+    def test_pulls_listing_with_query_follows_link_next(self) -> None:
+        next_url = f"{self.base}/repos/o/r/pulls?state=closed&page=2"
+        link = {"Link": f'<{next_url}>; rel="next"'}
+        self.server.routes["/repos/o/r/pulls"] = (
+            lambda path: (200, [{"number": 1}], link) if "page=2" not in path
+            else (200, [{"number": 2}]))
+        data = github_rest.get_json("repos/o/r/pulls?state=closed&base=main")
         self.assertEqual(data, [{"number": 1}, {"number": 2}])
         self.assertIn("page=2", self.server.seen[-1]["path"])
 

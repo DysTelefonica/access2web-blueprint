@@ -29,6 +29,16 @@ Cada PR queda en ≤400 líneas (adiciones+eliminaciones); no se autoriza `size:
 - AGEDYS: ownership, errores, reintentos e idempotencia.
 - Batch E2E: atomicidad, ciclo, reanudación y semántica de fallo.
 
+## Decisión de ruta canónica (documentación)
+
+Decidida por el propietario el 2026-10-22 y aplicada en la issue #807.
+
+La ficha de capacidad vive en `docs/03-aplicaciones/expedientes/capabilities/CAP-00X-slug.md`, una por capacidad `EXP-CAP-001..063`, con la convención `CAP-00X-slug.md` que ya usaban las 26 fichas anteriores. Es la ruta que las 63 fichas de `main` ocupan hoy. La ruta que prescribía este plan para las fichas individuales quedó vacía y ya no se usa.
+
+Los cuatro hubs transversales (D51–D54) conservan su ruta y sus ficheros en `docs/05-capacidades/expedientes/`: `access-control.md`, `runtime.md`, `integrations.md` y `uat-cutover-legacy-retirement.md`. Las capacidades que cubren también tienen ficha individual en la ruta canónica.
+
+Detalle por unidad en el índice: `docs/03-aplicaciones/expedientes/capabilities/index.md`, que separa la numeración `EXP-CAP-NNN` de la numeración legacy de `data/staging/`.
+
 ## Diagrama de carriles
 
 ```text
@@ -47,7 +57,7 @@ Todas las unidades siguientes son tickets independientes o encadenados solo por 
 
 | ID | Outcome / rutas / caps-spec / deps / estimación | Issue / ruta | Acceptance / rollback |
 |---|---|---|---|
-| D01 | Capability doc EXP-001 en `docs/05-capacidades/expedientes/EXP-CAP-001.md`; lifecycle; +70/-10; D0 ledger | [#172](https://github.com/DysTelefonica/access2web-blueprint/issues/172) · docs(exp): document CAP-001 / independent / documentation | §2/3/6/8 + UAT; revertir archivo. |
+| D01 | Capability doc EXP-001 en `docs/03-aplicaciones/expedientes/capabilities/CAP-001-alta-transaccional.md`; lifecycle; +70/-10; D0 ledger | [#172](https://github.com/DysTelefonica/access2web-blueprint/issues/172) · docs(exp): document CAP-001 / independent / documentation | §2/3/6/8 + UAT; revertir archivo. |
 | D02 | EXP-002; +70/-10; D0 | [#173](https://github.com/DysTelefonica/access2web-blueprint/issues/173) · docs(exp): document CAP-002 / independent / documentation | invariantes/concurrencia trazables; revertir archivo. |
 | D03 | EXP-003; +70/-10; D0 | [#174](https://github.com/DysTelefonica/access2web-blueprint/issues/174) · docs(exp): document CAP-003 / independent / documentation | baja/relacionados/rollback; revertir archivo. |
 | D04 | EXP-004; +70/-10; D0 | [#175](https://github.com/DysTelefonica/access2web-blueprint/issues/175) · docs(exp): document CAP-004 / independent / documentation | elegibilidad y efectos; revertir archivo. |
@@ -85,11 +95,11 @@ Todas las unidades siguientes son tickets independientes o encadenados solo por 
 | D36 | EXP-036; +70/-10; D0 | [#207](https://github.com/DysTelefonica/access2web-blueprint/issues/207) · docs(exp): document CAP-036 / independent / documentation | hash/FNV gate; revertir archivo. |
 | D37 | EXP-037; +70/-10; D0 | [#208](https://github.com/DysTelefonica/access2web-blueprint/issues/208) · docs(exp): document CAP-037 / independent / documentation | paquete; revertir archivo. |
 | D38 | EXP-038; +70/-10; D0 | [#209](https://github.com/DysTelefonica/access2web-blueprint/issues/209) · docs(exp): document CAP-038 / independent / documentation | trazabilidad; revertir archivo. |
-| D39 | EXP-039..042 en `docs/05-capacidades/expedientes/e2e-export.md`; +110/-15; D0 | [#210](https://github.com/DysTelefonica/access2web-blueprint/issues/210) · docs(exp): document E2E export capabilities / independent / documentation | selección, destino, sesión y ordinal E2E; revertir archivo. |
-| D51 | EXP-043..046 en `docs/05-capacidades/expedientes/access-control.md`; +110/-15; D0 | [#267](https://github.com/DysTelefonica/access2web-blueprint/issues/267) · docs(exp): document access-control capabilities / independent / documentation | deny-by-default, principal, sesión y auditoría; revertir archivo. |
-| D52 | EXP-047..050 en `docs/05-capacidades/expedientes/runtime.md`; +110/-15; D0 | [#268](https://github.com/DysTelefonica/access2web-blueprint/issues/268) · docs(exp): document runtime capabilities / independent / documentation | readiness, configuración, caché y binding; revertir archivo. |
-| D53 | EXP-051..056 en `docs/05-capacidades/expedientes/integrations.md`; +110/-15; D0 | [#269](https://github.com/DysTelefonica/access2web-blueprint/issues/269) · docs(exp): document integration capabilities / independent / documentation | HPS, AGEDYS, Riesgos, NC, correo y documentos; revertir archivo. |
-| D54 | EXP-057..063 en `docs/05-capacidades/expedientes/legacy-retirement.md`; +110/-15; D0 | [#270](https://github.com/DysTelefonica/access2web-blueprint/issues/270) · docs(exp): document legacy-retirement capabilities / independent / documentation | sustituciones y puertas de retirada; revertir archivo. |
+| D39 | EXP-039..042 en `docs/03-aplicaciones/expedientes/capabilities/` (CAP-039..CAP-042, una ficha por capacidad); +110/-15; D0 | [#210](https://github.com/DysTelefonica/access2web-blueprint/issues/210) · docs(exp): document E2E export capabilities / independent / documentation | selección, destino, sesión y ordinal E2E; revertir archivo. |
+| D51 | EXP-043..046 en `docs/05-capacidades/expedientes/access-control.md` (hub) y ficha individual en `docs/03-aplicaciones/expedientes/capabilities/`; +110/-15; D0 | [#267](https://github.com/DysTelefonica/access2web-blueprint/issues/267) · docs(exp): document access-control capabilities / independent / documentation | deny-by-default, principal, sesión y auditoría; revertir archivo. |
+| D52 | EXP-047..050 en `docs/05-capacidades/expedientes/runtime.md` (hub) y ficha individual en `docs/03-aplicaciones/expedientes/capabilities/`; +110/-15; D0 | [#268](https://github.com/DysTelefonica/access2web-blueprint/issues/268) · docs(exp): document runtime capabilities / independent / documentation | readiness, configuración, caché y binding; revertir archivo. |
+| D53 | EXP-051..056 en `docs/05-capacidades/expedientes/integrations.md` (hub) y ficha individual en `docs/03-aplicaciones/expedientes/capabilities/`; +110/-15; D0 | [#269](https://github.com/DysTelefonica/access2web-blueprint/issues/269) · docs(exp): document integration capabilities / independent / documentation | HPS, AGEDYS, Riesgos, NC, correo y documentos; revertir archivo. |
+| D54 | EXP-057..063 en `docs/05-capacidades/expedientes/uat-cutover-legacy-retirement.md` (hub; el plan lo llamaba `legacy-retirement.md`) y ficha individual en `docs/03-aplicaciones/expedientes/capabilities/`; +110/-15; D0 | [#270](https://github.com/DysTelefonica/access2web-blueprint/issues/270) · docs(exp): document legacy-retirement capabilities / independent / documentation | sustituciones y puertas de retirada; revertir archivo. |
 | D40 | Diccionario tablas 01–10 `migration/source-dictionary-01.md`; EXP-047..050; +120/-15; #44,#45 | [#211](https://github.com/DysTelefonica/access2web-blueprint/issues/211) · docs(exp): dictionary tranche 01 / independent / documentation | tablas/campos/ownership/volumen; revertir archivo. |
 | D41 | Diccionario 11–20; +120/-15; D40 | [#212](https://github.com/DysTelefonica/access2web-blueprint/issues/212) · docs(exp): dictionary tranche 02 / stacked / documentation | evidencia runtime; revertir archivo. |
 | D42 | Diccionario 21–30; +120/-15; D41 | [#213](https://github.com/DysTelefonica/access2web-blueprint/issues/213) · docs(exp): dictionary tranche 03 / stacked / documentation | evidencia runtime; revertir archivo. |
