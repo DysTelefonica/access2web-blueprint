@@ -99,7 +99,7 @@ Propuestos, no aprobados:
 
 ## Pendientes
 
-- Si `TbAplicaciones.IDAplicacion` es autonumérico (el ERD no lo indica, `../../ERD/schema.sql:11`).
+- Si `TbAplicaciones.IDAplicacion` es autonumérico (el ERD no lo indica, `../../ERD/schema.sql`, línea 11).
 - Si existe alguna vía real de alta en el legacy, dado el defecto descrito.
 - Uso previsto de los `Tag` «PROTEGIDO» y «DATO».
-- Campos de `TbAplicaciones` que este formulario no gestiona (`NombreFuncionPublicacion`, `TituloAplicacion`, `URLDIrectorioIconoAplicacion`, `Comando`; `../../ERD/schema.sql:18-32`).
+- Campos de `TbAplicaciones` que este formulario no gestiona (`NombreFuncionPublicacion`, `TituloAplicacion`, `URLDIrectorioIconoAplicacion`, `Comando`; `../../ERD/schema.sql`, líneas 18-32).

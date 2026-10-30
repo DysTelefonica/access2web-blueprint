@@ -1,0 +1,3 @@
+type: patch
+
+El documento operativo generado explica la evidencia del árbol integrado del merge gobernado (#1303): cuando el consumer declara el merge gobernado, la sección «Merge» describe qué compara el veredicto (el árbol del commit de merge contra el árbol del head verificado), dónde se escribe (el resumen del job, con los cuatro SHA y el veredicto), los códigos de salida 0–5 y qué hacer con el 5 (el merge no se deshace; comparar, corregir y volver a fusionar). Los códigos se copian de `references/integrated-tree-evidence.md` y un test impide que se desvíen. Sin merge gobernado declarado, la sección no cambia.

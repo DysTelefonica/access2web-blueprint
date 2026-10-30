@@ -1,0 +1,7 @@
+type: patch
+
+El detective post-push ya no abre incidente por un check requerido que la API todavía no ha publicado. El push llega segundos después del merge y el check requerido suele ser el rollup final de un DAG de diez jobs, así que `missing` y `pending` describían el CI en marcha y el incidente salía siempre: falso positivo determinista, no una carrera. Medido en `ardelperal/APAP_WEB#2280`, donde el rollup quedó verde 13 minutos después del merge; el gate pre-merge ya lo tenía resuelto con `WAITABLE` (#791), esta es la extensión de esa decisión al camino que faltaba.
+
+`check_push_compliance.py` acepta `--wait-seconds` (por defecto 900) y `--poll-seconds` (por defecto 30) y espera mientras todos los hallazgos sean esperables. Una conclusión terminal no se espera, y ahora la incidencia cita el run del check. Agotado el techo sin veredicto, el estado es indeterminado: falla cerrado con exit 2 y **no** abre incidente, porque acusar repetiría el defecto que corrige.
+
+**Adopción:** el workflow del consumer debe declarar `timeout-minutes` mayor que `--wait-seconds`. Con el valor por defecto de 900 s, un workflow con `timeout-minutes: 10` mataría el job antes de que el gate pueda concluir; hoy APAP_WEB usa 10. Subirlo es un cambio de una línea por consumer.

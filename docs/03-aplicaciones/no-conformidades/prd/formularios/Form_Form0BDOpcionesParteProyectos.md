@@ -81,7 +81,7 @@ Sin transacciones.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Ya se ve: `Date()` de Jet (`constructor.bas:3412, 4024`); booleano `Borrado=False` (`constructor.bas:3756`); concatenación de texto con `&` en el `SELECT` base (`VG.bas:448`); identificador de correo `Max + 1` (`constructor.bas:1165`).
+Pendiente de la coexistencia (documento aún no redactado). Ya se ve: `Date()` de Jet (`constructor.bas:3412, 4024`); booleano `Borrado=False` (`constructor.bas:3756`); concatenación de texto con `&` en el `SELECT` base (`VG.bas:448`); identificador de correo `Max + 1` (`constructor.bas:1165`).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

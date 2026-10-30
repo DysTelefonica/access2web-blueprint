@@ -151,59 +151,38 @@ def test_operating_doc_drift_keeps_schedule_and_workflow_dispatch() -> None:
 # ---------------------------------------------------------------------------
 
 
-def _catalog_pin_from_yaml() -> str:
-    """Extract the 40-hex SHA that ci-pattern.yaml names in its header comment."""
-    text = CI_PATTERN_YAML.read_text(encoding="utf-8")
-    # The header is a YAML comment block: lines starting with `#`. The pin
-    # always appears in a single line as a bare 40-hex SHA.
-    candidates = re.findall(r"^#.*?\b([0-9a-f]{40})\b", text, flags=re.MULTILINE)
-    assert candidates, (
-        "ci-pattern.yaml header must name the catalog pin as a 40-hex SHA in a comment line"
-    )
-    return candidates[0]
-
-
-def _catalog_pin_from_workflow() -> str:
-    """Extract the `ref:` of the `actions/checkout` that pulls DysTelefonica/team-skills."""
+def _catalog_ref_from_workflow() -> object:
+    """The `ref:` of the actions/checkout that pulls DysTelefonica/team-skills."""
     doc = yaml.safe_load(OPERATING_DOC_DRIFT_YML.read_text(encoding="utf-8"))
-    jobs = doc.get("jobs") or {}
-    for job in jobs.values():
+    for job in (doc.get("jobs") or {}).values():
         if not isinstance(job, dict):
             continue
         for step in job.get("steps") or []:
             if not isinstance(step, dict):
                 continue
-            uses = str(step.get("uses") or "")
             with_block = step.get("with") or {}
-            if uses.startswith("actions/checkout@") and with_block.get("repository") == (
-                "DysTelefonica/team-skills"
+            if str(step.get("uses") or "").startswith("actions/checkout@") and (
+                with_block.get("repository") == "DysTelefonica/team-skills"
             ):
-                ref = with_block.get("ref")
-                assert isinstance(ref, str) and re.fullmatch(r"[0-9a-f]{40}", ref), (
-                    "operating-doc-drift.yml must check out the catalog "
-                    f"pin as a 40-hex SHA, got ref={ref!r}"
-                )
-                return ref
+                return with_block.get("ref")
     raise AssertionError(
-        "operating-doc-drift.yml must check out DysTelefonica/team-skills "
-        "with a 40-hex SHA on a step that uses actions/checkout"
+        "operating-doc-drift.yml must check out DysTelefonica/team-skills on a step "
+        "that uses actions/checkout"
     )
 
 
-def test_ci_pattern_yaml_pin_comment_matches_operating_doc_drift_ref() -> None:
-    """The catalog pin in the yaml comment and the checkout ref in the
-    workflow must agree.
+def test_catalog_pin_is_read_from_the_seal_not_written_by_hand() -> None:
+    """The catalog commit comes from the `catalog @` seal of .team-skills.yaml (team-skills#1157).
 
-    The yaml's header comment names the pin for human readers; the
-    workflow's `actions/checkout` uses it for the drift measurement. If
-    they drift, the comment lies and the next operator will regenerate
-    the doc against a pin the drift gate does not actually use.
+    No SHA may be written in ci-pattern.yaml's header, and the checkout's ref must be
+    the output of the step that reads the seal, so the comment cannot lie about the
+    pin the drift gate measures against.
     """
-    yaml_pin = _catalog_pin_from_yaml()
-    workflow_pin = _catalog_pin_from_workflow()
-    assert yaml_pin == workflow_pin, (
-        f"ci-pattern.yaml names pin {yaml_pin} but "
-        f"operating-doc-drift.yml checks out {workflow_pin}; the two "
-        f"must agree so the comment and the gate measure against the "
-        f"same catalog commit."
+    text = CI_PATTERN_YAML.read_text(encoding="utf-8")
+    assert not re.search(r"^#.*\b[0-9a-f]{40}\b", text, flags=re.MULTILINE), (
+        "ci-pattern.yaml must not write the catalog SHA in a comment; the seal is the source"
+    )
+    ref = _catalog_ref_from_workflow()
+    assert ref == "${{ steps.catalog-pin.outputs.commit }}", (
+        f"operating-doc-drift.yml must take the catalog ref from the seal step, got {ref!r}"
     )
