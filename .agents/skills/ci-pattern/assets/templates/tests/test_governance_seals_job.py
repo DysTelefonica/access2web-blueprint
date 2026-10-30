@@ -107,6 +107,35 @@ def consumer_workflow() -> str:
     return canonical_job()
 
 
+PR_CONTRACT_TEMPLATE = SKILL_ROOT / "assets" / "templates" / ".github" / "workflows" / "pr-contract.yml.tmpl"
+TRIGGER_TYPES = re.compile(r"^\s*types:\s*\[(.*?)\]", re.M)
+CONCURRENCY_GROUP = re.compile(r"^\s*group:\s*(\S+)", re.M)
+
+
+def trigger_types(workflow: str) -> list[str]:
+    """Los `types` del disparador de PR de un workflow."""
+    match = TRIGGER_TYPES.search(workflow)
+    assert match, "el workflow no declara `types` en su disparador"
+    return [t.strip() for t in match.group(1).split(",")]
+
+
+def concurrency_group(workflow: str) -> str:
+    match = CONCURRENCY_GROUP.search(workflow)
+    assert match, "el workflow no declara grupo de `concurrency`"
+    return match.group(1)
+
+
+class TreeOnlyTriggerTests(unittest.TestCase):
+    """#1440 (C2): un job que solo mide el arbol no corre al editar el cuerpo o las etiquetas."""
+
+    def test_the_fragment_runs_only_when_the_tree_can_change(self):
+        self.assertEqual(trigger_types(consumer_workflow()), ["opened", "synchronize", "reopened"])
+
+    def test_the_fragment_does_not_share_the_pr_contract_queue(self):
+        template = PR_CONTRACT_TEMPLATE.read_text(encoding="utf-8")
+        self.assertNotEqual(concurrency_group(consumer_workflow()), concurrency_group(template))
+
+
 class CanonicalJobTests(unittest.TestCase):
     def test_fragment_passes_the_workflow_policy_gate(self):
         """La forma publicada pasa el gate de política."""

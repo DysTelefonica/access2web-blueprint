@@ -53,6 +53,15 @@ class KnownDerivesFromSchemaTests(unittest.TestCase):
                 + str(exc)
             )
 
+    def test_post_merge_verify_is_a_known_top_level_key(self):
+        """#1440: the integrated-tree verification list is part of the canon."""
+        contract = _minimal_contract(post_merge_verify=["ci"])
+        try:
+            validate_contract(contract)
+        except ContractError as exc:
+            self.fail("validate_contract rejected the schema-known key "
+                      "post_merge_verify (#1440): " + str(exc))
+
     def test_truly_unknown_keys_still_fail(self):
         """Fixity: a key neither in the schema nor in the legacy literal
         keeps failing with 'contract has unknown keys' and rc=2. This
