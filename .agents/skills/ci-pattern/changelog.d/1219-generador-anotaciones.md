@@ -1,0 +1,3 @@
+type: patch
+
+El asset `personal/ardelperal/ci-pattern/assets/required-jobs/` gana `build_annotations.py`, el generador del fichero de anotaciones que el gate lee con `--annotations` (#1219). Lee los check runs del SHA de la PR por la API (`GET repos/{repo}/commits/{sha}/check-runs` y, para cada check rojo, `GET repos/{repo}/check-runs/{id}/annotations`) y escribe la primera anotación de error de cada uno, por el cliente REST compartido `runner-controls/github_rest.py`. Su salida es informativa: si la API no se puede leer o no hay token, avisa por stderr y no escribe el fichero, y el gate degrada a `no annotation` sin cambiar el veredicto.

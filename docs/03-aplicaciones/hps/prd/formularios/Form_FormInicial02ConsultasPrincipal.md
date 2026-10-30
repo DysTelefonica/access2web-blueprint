@@ -108,7 +108,7 @@ Sin `RecordSource` ni `INSERT`/`UPDATE`/`DELETE` directos: este formulario no to
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Cosas que ya se ven: el formulario reutiliza el patrón «cambiar `SourceObject` por valor» que también preside `EstablecerFiltroUsuarios` (`Filtro.bas:5-111`) y `EstablecerFuenteDatosIndicadores` (`FG.bas:3056-3146`): en web se traducirá a enrutado dinámico (`/consultas/:id` o `/consultas/:id/parametros`) con un componente único para la rejilla; el botón `Comando5`/`Comando6` del `.form.txt` (`:899, 945`) es código muerto que el runtime nunca invoca — pendiente de borrado en la migración; la pareja `m_ObjUsuarioActivo` ↔ `m_ObjUsuarioActivo = Nothing` se reescribe tres veces en `:234, 247, 148` y debe consolidarse en web con una sola fuente (parámetro de ruta o store).
+Pendiente de la coexistencia (documento aún no redactado). Cosas que ya se ven: el formulario reutiliza el patrón «cambiar `SourceObject` por valor» que también preside `EstablecerFiltroUsuarios` (`Filtro.bas:5-111`) y `EstablecerFuenteDatosIndicadores` (`FG.bas:3056-3146`): en web se traducirá a enrutado dinámico (`/consultas/:id` o `/consultas/:id/parametros`) con un componente único para la rejilla; el botón `Comando5`/`Comando6` del `.form.txt` (`:899, 945`) es código muerto que el runtime nunca invoca — pendiente de borrado en la migración; la pareja `m_ObjUsuarioActivo` ↔ `m_ObjUsuarioActivo = Nothing` se reescribe tres veces en `:234, 247, 148` y debe consolidarse en web con una sola fuente (parámetro de ruta o store).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

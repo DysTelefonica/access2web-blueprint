@@ -1,11 +1,4 @@
 {
-  "required_labels": [
-    "type:bug",
-    "type:feature",
-    "type:docs",
-    "type:chore",
-    "type:refactor"
-  ],
   "chain_tip_requires_closes": true,
   "closes_pattern": "Closes|Fixes|Resolves",
   "review_budget_lines": 400,
@@ -18,7 +11,6 @@
   ],
   "chain_partial_label": "chain:partial",
   "checks": {
-    "labels": true,
     "closes": true,
     "chain_context": true,
     "issue_links": true,

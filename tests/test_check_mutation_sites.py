@@ -20,10 +20,26 @@ a BASELINE entry down. These tests pin the contract:
 Each case is a pair: ``with_docstring`` and ``without_docstring`` parse
 the same AST except for the docstring. With the fix, the counter must
 return the same number for both.
+
+BP's copy of the canon is measured at an explicit policy date and its report is
+bound to ``quality-policy.json``. The docstring exclusion above is not a local
+deviation: the canon carries it since team-skills#1008, so BP declares as local
+only its ``BASELINE``, which is data.
+
+  1. ``--policy-date`` is mandatory: the ratchet never reads the wall clock.
+  2. The envelope carries the policy date, the policy's ceilings, the subjects
+     it measured and the policy identity.
+  3. The header declares the canon version AND the deviation it keeps, so a
+     later edit that drops the declaration is caught here.
+
+Each case runs the gate as a subprocess, because the wiring under test is the
+command line the CI job and ``quality_report.py`` use.
 """
 
 from __future__ import annotations
 
+import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -31,6 +47,30 @@ SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "scripts"
 sys.path.insert(0, str(SCRIPTS_DIR))
 
 import check_mutation_sites as gate  # noqa: E402  — sys.path tweak above
+
+#: DQH 2.2: the date is explicit, never the wall clock. Same value the other
+#: dated gates use in tests/test_gate_smoke.py and tests/test_gate_liveness.py.
+POLICY_DATE = "2026-10-21"
+
+
+def _write_surface(root: Path, sites: int = 1) -> None:
+    package = root / "app" / "pkg"
+    package.mkdir(parents=True)
+    body = "\n".join(f"    x = x + {n}" for n in range(sites))
+    (package / "surface.py").write_text(
+        f"def f(x: int) -> int:\n{body}\n    return x\n", encoding="utf-8"
+    )
+
+
+def _run(root: Path, *extra: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(SCRIPTS_DIR / "check_mutation_sites.py"), "--root", str(root), *extra],
+        capture_output=True,
+        text=True,
+        check=False,
+        encoding="utf-8",
+    )
+
 
 # ---------------------------------------------------------------------------
 # Pairs — with_docstring and without_docstring are the same code except
@@ -156,4 +196,44 @@ def test_baseline_main_py_lands_at_pre_941_floor() -> None:
         f"(the five docstrings should no longer count). If this "
         f"test fails after a legitimate refactor, regenerate the BASELINE "
         f"with --emit-baseline and update the test together."
+    )
+
+
+# ---------------------------------------------------------------------------
+# DQH 2.2 policy binding (team-skills#809 T6)
+# ---------------------------------------------------------------------------
+
+
+def test_the_policy_date_is_required(tmp_path: Path) -> None:
+    _write_surface(tmp_path)
+    result = _run(tmp_path)
+    assert result.returncode == 2, result.stdout + result.stderr
+    assert "--policy-date" in result.stderr
+
+
+def test_envelope_is_bound_to_the_policy_and_its_date(tmp_path: Path) -> None:
+    _write_surface(tmp_path)
+    result = _run(tmp_path, "--policy-date", POLICY_DATE, "--json")
+    envelope = json.loads(result.stdout)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert envelope["policy_date"] == POLICY_DATE
+    assert envelope["ceilings"] == {"max_mutation_sites": 100, "files_over_ceiling": 0}
+    assert envelope["subjects"]["checked"] == ["app/pkg/surface.py"]
+    assert envelope["policy_identity"].startswith("sha256:")
+    assert envelope["indicators"]["files_measured"] == 1
+
+
+def test_the_header_declares_the_canon_and_only_its_data_as_deviation() -> None:
+    """The canon carries the docstring exclusion since team-skills#1008, so this copy does not.
+
+    A header that names a deviation which no longer exists is the silent drift this gate's
+    provenance line exists to prevent: the next reader would look for a difference that is not
+    there. Sliced to the header block, which ends well before the first function.
+    """
+    header = (SCRIPTS_DIR / "check_mutation_sites.py").read_text(encoding="utf-8")[:1200]
+    assert "HARNESS-PROVENANCE: deterministic-quality-harness v2.2" in header
+    assert "BASELINE" in header, "the tolerated site counts are BP data and stay declared as such"
+    assert "_docstring_node_ids" not in header, (
+        "the canon publishes the docstring exclusion (team-skills#1008); declaring it here as a "
+        "local deviation would claim a difference that no longer exists"
     )

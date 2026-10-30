@@ -1,0 +1,3 @@
+type: patch
+
+El aviso del rojo nocturno ya puede leer los jobs del run: el job `full` de `.github/workflows/tests.yml` declara `actions: read` en su bloque `permissions`, el permiso mínimo que necesita `scripts/report-nightly-failure.sh` para consultar `repos/$REPO/actions/runs/$RUN_ID/jobs`. Sin él la API respondía 403 y el rojo se archivaba como «sin resumen» y «sin clasificar», que no dicen nada del fallo que hay que arreglar. El permiso se queda en el job `full` —el único que avisa— y no sube al nivel de workflow, para que el job `unit`, que corre código de cada PR, no herede la lectura de los runs. Lo fija `testing/suites/ci-workflow-pins/test-ci-workflow-pins.sh` (#1342).

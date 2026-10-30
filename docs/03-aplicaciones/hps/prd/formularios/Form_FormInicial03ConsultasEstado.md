@@ -67,7 +67,7 @@ Sin escrituras, sin transacciones.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. El `WHERE` se compone concatenando literales, así que la traducción es tolerable, pero el identificador `HPS_*` está replicado en diez ramas `If` (`Filtro.bas:185-204`) y un estado nuevo obliga a tocar esa función, no una tabla. Los errores llegan al usuario como `MsgBox` y el cierre es un `DoCmd.Close` (`:55`), sin equivalente web directo.
+Pendiente de la coexistencia (documento aún no redactado). El `WHERE` se compone concatenando literales, así que la traducción es tolerable, pero el identificador `HPS_*` está replicado en diez ramas `If` (`Filtro.bas:185-204`) y un estado nuevo obliga a tocar esa función, no una tabla. Los errores llegan al usuario como `MsgBox` y el cierre es un `DoCmd.Close` (`:55`), sin equivalente web directo.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

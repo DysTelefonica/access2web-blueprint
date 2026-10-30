@@ -146,6 +146,15 @@ class ConsolidateTests(unittest.TestCase):
         self.assertEqual(code, 2, out)
         self.assertIn("metadata.version not found", out)
 
+    def test_repository_fragments_follow_the_consolidator_contract(self):
+        repository_skill = ASSET.parents[1]
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT), "--skill-dir", str(repository_skill),
+             "--changelog", str(self.changelog)],
+            capture_output=True, text=True)
+        output = result.stdout + result.stderr
+        self.assertNotEqual(result.returncode, 2, output)
+
 
 if __name__ == "__main__":
     unittest.main()

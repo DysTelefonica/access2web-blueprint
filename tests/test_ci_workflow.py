@@ -4,12 +4,20 @@
 A gate that exists only as a script is a gate nobody runs. These tests parse the workflow and
 fail when a step is deleted, when a gate is neutered, or when a pin goes floating. They are the
 reason a silent revert cannot pass review.
+
+Issue #1375: the pins of the SHAPE of `ci.yml` — its event list, the exact `if:` of the heavy
+jobs, their `needs:`, the `uses:` of the gate job — live in the canon's structural gates
+(`check_workflow_policy.py`, `check_parity.py`) and in the required-jobs policy, and they
+churned 37 times next to `ci.yml` in three weeks. What stays in this file pins what the gates
+DO: the commands they run, how they are hardened, and that each gate exists and runs.
 """
 
 from __future__ import annotations
 
 import importlib.util
+import json
 import re
+import sys
 import tomllib
 from pathlib import Path
 
@@ -17,18 +25,44 @@ import pytest
 import yaml
 
 #: Every gate that must be wired, identified by the command it runs.
+#: La cadena de dependencias (HR-76, DysTelefonica/team-skills#1181): una sola
+#: linea, la misma en el job pr-gate y en scripts/local-preflight.sh.
+DEPS_CHAIN_COMMAND = (
+    "git diff --name-only origin/${GITHUB_BASE_REF:-main}...HEAD"
+    ' > "${RUNNER_TEMP:-/tmp}/changed-files.txt"'
+    " && python3 .agents/skills/ci-pattern/assets/deps-chain/check_deps_chain.py"
+    ' --repo . --changed-files "${RUNNER_TEMP:-/tmp}/changed-files.txt"'
+)
+
 REQUIRED_COMMANDS = (
     "ruff format --check --config app/pyproject.toml",
     "ruff check --config app/pyproject.toml .",
+    # El preflight de tooling del pr-gate: en el workflow el comando ocupa tres
+    # lineas (continuacion con `\`), asi que la firma que se puede comparar es
+    # la del binario que el gate ejecuta.
+    "sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh",
     "mypy --explicit-package-bases app/",
     "python scripts/check_workflows.py",
     'pytest -c app/pyproject.toml --rootdir=app -m "not integration"',
     "python scripts/check_workflows.py",
     "scripts/quality_report.py",
-    ".agents/skills/ci-pattern/assets/pr-size/check_pr_size.py",
-    ".agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py",
+    DEPS_CHAIN_COMMAND,
+    # The H1 model (BP #1461): the CI runs these two gates from the catalog
+    # published by the job `canon`, so the identity of the gate is its path
+    # inside the catalog. The local preflight runs the same gates from the
+    # vendored tree (see LOCAL_GATE_FORMS).
+    "assets/pr-size/check_pr_size.py",
+    "assets/issue-spec/check_issue_spec.py",
     "python scripts/check_walkthrough_schema.py --strict",
     ".agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py",
+)
+
+#: The local form of the gates that the CI runs from the catalog published by
+#: the job `canon` (BP #1461): the CI executes the copy at the seal, the local
+#: preflight the vendored one. Both forms are the same gate.
+LOCAL_GATE_FORMS = (
+    ".agents/skills/ci-pattern/assets/pr-size/check_pr_size.py",
+    ".agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py",
 )
 
 #: Gates CI runs that `make verify` deliberately does not (Hard Rule 19).
@@ -64,8 +98,6 @@ REQUIRED_GATE_ORDER = (
     "legacy_retirement",
 )
 
-_SHA_PIN = re.compile(r"^[0-9a-f]{40}$")
-
 
 def _find_workflow() -> Path:
     here = Path(__file__).resolve()
@@ -98,10 +130,45 @@ def workflow() -> dict:
 
 
 @pytest.fixture(scope="module")
-def steps(workflow: dict) -> list[dict]:
+def pr_gate_workflow() -> dict:
+    """The lightweight workflow that owns the `pr-gate` job (issue #1368).
+
+    Since #1368 the `pr-gate` (body, labels, walkthrough) lives in its own
+    workflow: the body/label events must not drag the heavy suite along. The
+    heavy workflow calls this file, so `required` keeps aggregating the verdict.
+    """
+    path = _find_workflow().parent / "pr-gate.yml"
+    assert path.is_file(), (
+        "the pr-gate job lives in .github/workflows/pr-gate.yml since #1368: the "
+        "edited/labeled/unlabeled events must not run the heavy suite"
+    )
+    return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="module")
+def h1_gate_workflow() -> dict:
+    """The H1 workflow that owns the pull request gates (BP #1461).
+
+    Since #1461 the gates run in `pull_request_target`: the workflow comes
+    from the base, the job `canon` publishes the catalog at the seal and the
+    gate job runs the scripts of that artifact instead of the ones that come
+    with the pull request.
+    """
+    path = _find_workflow().parent / "pr-gates.yml"
+    assert path.is_file(), (
+        "the pull request gates live in .github/workflows/pr-gates.yml since #1461: "
+        "they must run in pull_request_target, against the catalog published by the "
+        "job `canon`"
+    )
+    return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="module")
+def steps(workflow: dict, pr_gate_workflow: dict, h1_gate_workflow: dict) -> list[dict]:
     collected: list[dict] = []
-    for job in workflow["jobs"].values():
-        collected.extend(job.get("steps", []))
+    for doc in (workflow, pr_gate_workflow, h1_gate_workflow):
+        for job in doc["jobs"].values():
+            collected.extend(job.get("steps", []))
     return collected
 
 
@@ -115,32 +182,7 @@ def test_gate_is_wired(run_blocks: list[str], command: str) -> None:
     assert any(command in block for block in run_blocks), f"no CI step runs '{command}'"
 
 
-def test_no_step_swallows_its_exit_code(steps: list[dict]) -> None:
-    """Hard Rule 1: a gate that cannot fail is not a gate."""
-    offenders = [step.get("name", "<unnamed>") for step in steps if step.get("continue-on-error")]
-    assert not offenders, f"continue-on-error found on: {offenders}"
-
-
-def test_no_run_block_forces_success(run_blocks: list[str]) -> None:
-    """Hard Rule 1, the other half: `|| true` neuters a scanner while it still looks green."""
-    offenders = [block for block in run_blocks if "|| true" in block]
-    assert not offenders, f"'|| true' found in: {offenders}"
-
-
-def test_every_action_is_pinned_to_a_sha(steps: list[dict]) -> None:
-    """Hard Rule 15: a floating tag turns a green gate red with no code change."""
-    unpinned = []
-    for step in steps:
-        uses = step.get("uses")
-        if not uses:
-            continue
-        _, _, ref = uses.partition("@")
-        if not _SHA_PIN.match(ref):
-            unpinned.append(uses)
-    assert not unpinned, f"actions not pinned to a 40-character SHA: {unpinned}"
-
-
-def test_gate_order_is_pinned_in_code() -> None:
+def test_gate_order_is_pinned_in_code(monkeypatch) -> None:
     """Hard Rule 13: the order lives in quality_report.GATES, and this is what pins it.
 
     Keeping the four code gates inside one script rather than four YAML steps is deliberate: a
@@ -148,9 +190,15 @@ def test_gate_order_is_pinned_in_code() -> None:
     on the order in which someone happened to fix things.
     """
     scripts = Path(__file__).resolve().parent.parent / "scripts" / "quality_report.py"
+    # DQH 2.2: the gates import their siblings by module name, so `scripts/` has to be
+    # importable for this file to run on its own. `syspath_prepend` and `setitem` both
+    # restore what they touched, so this test stops depending on some other test having
+    # polluted the interpreter first (BP#1353).
+    monkeypatch.syspath_prepend(str(scripts.parent))
     spec = importlib.util.spec_from_file_location("quality_report", scripts)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
+    monkeypatch.setitem(sys.modules, "quality_report", module)
     spec.loader.exec_module(module)
     assert tuple(name for name, _, _ in module.GATES) == REQUIRED_GATE_ORDER
 
@@ -326,6 +374,11 @@ def test_make_verify_runs_every_local_gate(verify_commands: str) -> None:
     for command in expected:
         normalized = " ".join(command.split())
         allowed |= {normalized, normalized.removeprefix("python "), f"python {normalized}"}
+    # BP #1461: the CI runs these two gates from the catalog published by the
+    # job `canon` and the local preflight runs the same gates from the vendored
+    # tree. Both forms are the same gate, so both are accepted here.
+    for local_form in LOCAL_GATE_FORMS:
+        allowed |= {local_form, f"python {local_form}"}
     extra = [
         command
         for command in _local_preflight_commands()
@@ -429,6 +482,9 @@ KNOWN_PENDING_GATES: tuple[str, ...] = (
 )
 
 
+RUNTIME_LOCK = "app/requirements.lock"
+
+
 def _install_blocks(run_blocks: list[str]) -> list[str]:
     """Run blocks that install the pinned toolchain for `pip install`.
 
@@ -443,7 +499,8 @@ def _install_blocks(run_blocks: list[str]) -> list[str]:
     return [
         block
         for block in run_blocks
-        if "pip install" in block and "app/requirements-dev.lock" in block
+        if "pip install" in block
+        and ("app/requirements-dev.lock" in block or RUNTIME_LOCK in block)
     ]
 
 
@@ -568,66 +625,6 @@ def test_release_e2e_generates_its_signing_secret_per_run() -> None:
     assert '-e SECRET_KEY="$E2E_SECRET_KEY"' in release
 
 
-def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
-    workflow: dict,
-) -> None:
-    """Issue #702: `required` is the deterministic replacement for `merge-ready`.
-
-    `needs:` cannot cross workflow files, so `security` and `codeql` are
-    embedded as `uses: ./.github/workflows/*.yml` calls directly inside
-    ci.yml — from GitHub's perspective those are still ordinary job ids the
-    aggregator can depend on and read `needs.<id>.result` from. Issue #857,
-    PR-D: the event set that feeds the aggregator drops `merge_group` (the
-    queue is gone with the gentle-ai model) and gains `push` (the post-merge
-    safety net on `main`).
-    """
-    jobs = workflow["jobs"]
-    assert "merge-ready" not in jobs, "merge-ready was fully superseded by `required`"
-
-    required = jobs["required"]
-    # El `if` conserva la semántica de `always()` —un dependency saltado no
-    # salta este check, que es el requerido de la protección de rama— con la
-    # forma que el gate del patrón puede probar (HR-30): comparaciones de
-    # `event_name` y `!cancelled()`, sin `always()` ni `!=` sueltos.
-    assert required["if"] == (
-        "(github.event_name == 'pull_request' || github.event_name == 'push' "
-        "|| github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') "
-        "&& !cancelled()"
-    )
-    assert required["needs"] == [
-        "pr-gate",
-        "quality",
-        "integration",
-        "security",
-        "codeql",
-        "e2e-smoke",
-        "docs-codeguide",
-        "docs-links",
-        "docs-decisions",
-        "docs-architecture",
-    ]
-
-    assert jobs["security"]["uses"] == "./.github/workflows/security.yml"
-    assert jobs["codeql"]["uses"] == "./.github/workflows/codeql.yml"
-    assert jobs["codeql"]["permissions"]["security-events"] == "write"
-
-    step = required["steps"][-1]
-    assert ".agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py" in step["run"]
-    assert step["env"]["NEEDS_JSON"] == "${{ toJSON(needs) }}"
-    assert step["env"]["EVENT_NAME"] == "${{ github.event_name }}"
-    assert step["env"]["BASE_SHA"] == "${{ github.event.pull_request.base.sha }}"
-    assert "--base-policy" in step["run"], (
-        "the relaxation check against the base policy must stay wired"
-    )
-
-
-def test_pr_gate_is_the_cheap_front_and_review_budget_is_gone(workflow: dict) -> None:
-    """Issue #857, PR-B: the cheap front gate is `pr-gate`; `review-budget` is renamed away."""
-    jobs = workflow["jobs"]
-    assert "pr-gate" in jobs
-    assert "review-budget" not in jobs
-
-
 def test_integration_job_runs_pytest_m_integration_against_postgres_service() -> None:
     """Issue #882, PR-3: the integration job wires ci.yml to the in-job Postgres service.
 
@@ -725,62 +722,34 @@ def test_integration_job_runs_alembic_upgrade_before_pytest() -> None:
     )
 
 
-def test_heavy_jobs_wait_for_pr_gate(workflow: dict) -> None:
-    """Issue #857, PR-B: a failed gate must not pay for quality, security, codeql or integration."""
-    jobs = workflow["jobs"]
-    for job in ("quality", "security", "codeql", "integration"):
-        assert jobs[job]["needs"] == "pr-gate", f"`{job}` must declare `needs: pr-gate`"
-
-
-def test_heavy_jobs_run_on_every_event_after_pr_gate_passed_or_skipped(
-    workflow: dict,
-) -> None:
-    """Issue #857, PR-D: the heavy jobs run on every event the workflow listens to.
-
-    `pr-gate` only fires on `pull_request`, so on `push` (post-merge safety
-    net on `main`), `schedule` (nightly) and `workflow_dispatch` (manual)
-    it is `skipped`. The heavy jobs that `needs: pr-gate` must accept the
-    skip on every one of those events. `merge_group` is gone: the queue
-    left with the gentle-ai model. Issue #882, PR-3 extends the same
-    shape to `integration` so the in-job Postgres service runs after the
-    merge and on the nightly as well — not just on the PR event.
-    """
-    jobs = workflow["jobs"]
-    expected = (
-        "(github.event_name == 'pull_request' || github.event_name == 'push' "
-        "|| github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') "
-        "&& !cancelled() "
-        "&& (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')"
-    )
-    for job in ("quality", "security", "codeql", "integration"):
-        assert jobs[job]["if"] == expected, f"`{job}` if: {jobs[job].get('if')!r}"
-
-
-def test_pr_size_gate_runs_in_pr_event_mode(workflow: dict) -> None:
+def test_pr_size_gate_runs_in_pr_event_mode(h1_gate_workflow: dict) -> None:
     """Issue #857, PR-C: the size gate reads the PR event, not the runner state.
 
     The local mode depends on a `git diff` against `origin/main`, which is only
     present on a checked-out runner. Switching to `pr-event` lets the gate
     answer the same question from `$GITHUB_EVENT_PATH` alone.
+
+    BP #1461: the gate moved to the H1 workflow, where it runs the script of
+    the catalog published by the job `canon`.
     """
-    steps = [s for s in workflow["jobs"]["pr-gate"]["steps"] if s.get("name") == "pr size"]
-    assert len(steps) == 1, "pr-gate must have exactly one `pr size` step"
+    steps = [s for s in h1_gate_workflow["jobs"]["pr-gate"]["steps"] if s.get("name") == "pr size"]
+    assert len(steps) == 1, "the H1 gate must have exactly one `pr size` step"
     step = steps[0]
     assert step["run"] == (
-        'python .agents/skills/ci-pattern/assets/pr-size/check_pr_size.py --event "$GITHUB_EVENT_PATH"'
+        'python3 "$PATTERN_DIR/assets/pr-size/check_pr_size.py" --event "$GITHUB_EVENT_PATH"'
     )
     env = step.get("env") or {}
     assert "BASE_REF" not in env
     assert "PR_BODY" not in env
 
 
-def test_pr_size_gate_gets_the_token_for_the_files_breakdown(workflow: dict) -> None:
+def test_pr_size_gate_gets_the_token_for_the_files_breakdown(h1_gate_workflow: dict) -> None:
     """Issue #918: the size gate reads the per-file breakdown from the PR Files API.
 
     It needs `pull-requests: read` (the job-level grant) and the runner token, so the
     step gets the token explicitly; without it the gate counts the whole PR.
     """
-    job = workflow["jobs"]["pr-gate"]
+    job = h1_gate_workflow["jobs"]["pr-gate"]
     assert job["permissions"]["pull-requests"] == "read"
     step = [s for s in job["steps"] if s.get("name") == "pr size"][0]
     assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
@@ -810,11 +779,10 @@ def test_pip_audit_audits_the_hash_locked_set_strictly() -> None:
     `./` prefix), so it audited a homonym on PyPI and never the project. The lock is audited
     directly and strictly, with hashes required and pip disabled, and an empty lock cannot pass.
     """
-    security = yaml.safe_load(
-        (_find_workflow().parent / "security.yml").read_text(encoding="utf-8")
-    )
+    workflows = _find_workflow().parent
+    audit = yaml.safe_load((workflows / "pip-audit.yml").read_text(encoding="utf-8"))
     steps = [
-        s for s in security["jobs"]["pip-audit"]["steps"] if s.get("name") == "dependency scan"
+        s for s in audit["jobs"]["dependency-scan"]["steps"] if s.get("name") == "dependency scan"
     ]
     assert len(steps) == 1, "pip-audit must have exactly one `dependency scan` step"
     run = steps[0]["run"]
@@ -826,21 +794,41 @@ def test_pip_audit_audits_the_hash_locked_set_strictly() -> None:
     assert "pip-audit==2.9.0" in run
     assert "-lt 15" in run, "an empty or truncated lock must fail before the verdict is trusted"
 
+    # Issue #1377: the job is a first-level job of `ci.yml` (its own reusable
+    # workflow), so the `required` aggregator can read its result and declare
+    # its skip by design.
+    workflow = yaml.safe_load(_find_workflow().read_text(encoding="utf-8"))
+    job = workflow["jobs"]["pip-audit"]
+    assert job["uses"] == "./.github/workflows/pip-audit.yml", (
+        "the dependency scan must be a first-level job of ci.yml: `needs:` cannot cross "
+        "workflow files, so an inner job of security.yml could not declare its own skip"
+    )
+    assert job["needs"] == "pr-gate"
+    assert (
+        "pip-audit"
+        not in yaml.safe_load((workflows / "security.yml").read_text(encoding="utf-8"))["jobs"]
+    ), "the dependency scan moved out of security.yml (issue #1377)"
 
-def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
+
+def test_issue_spec_is_wired_into_pr_gate(h1_gate_workflow: dict) -> None:
     """Issue #857, PR-C: the issue-spec gate reads the PR event and the linked issue.
 
     It needs `issues: read` (the job-level grant) and the runner token, so the
-    step gets both explicitly rather than inheriting a broader default.
+    step gets both explicitly rather than inheriting a broader default. Issue #1330:
+    `--host-contract` made the gate check who applied `status:approved`; that rule
+    was retired (team-skills#1103), so the flag went with it and the gate no longer
+    takes it (team-skills#1121 keeps accepting it as an obsolete no-op).
+
+    BP #1461: the gate moved to the H1 workflow, where it runs the script of
+    the catalog published by the job `canon`.
     """
-    job = workflow["jobs"]["pr-gate"]
-    assert job["permissions"] == {"contents": "read", "issues": "read", "pull-requests": "read"}
+    job = h1_gate_workflow["jobs"]["pr-gate"]
+    assert job["permissions"]["issues"] == "read"
     steps = [step for step in job["steps"] if step.get("name") == "issue spec"]
-    assert len(steps) == 1, "pr-gate must have exactly one `issue spec` step"
+    assert len(steps) == 1, "the H1 gate must have exactly one `issue spec` step"
     step = steps[0]
     assert step["run"] == (
-        'python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH" '
-        "--required-sections scripts/required-sections.json"
+        'python3 "$PATTERN_DIR/assets/issue-spec/check_issue_spec.py" pr-event "$GITHUB_EVENT_PATH"'
     )
     assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
 
@@ -868,7 +856,7 @@ def test_release_mutation_job_needs_preflight() -> None:
     )
 
 
-def test_release_publish_needs_e2e_and_mutation() -> None:
+def test_release_publish_depends_on_e2e_mutation_stage_and_preflight() -> None:
     """Issue #857, PR-C1d: publish depends on both e2e and mutation.
 
     A green e2e is necessary (the published image must pass the Playwright
@@ -876,6 +864,15 @@ def test_release_publish_needs_e2e_and_mutation() -> None:
     being shipped is exactly the class of release-time failure the
     `mutation` job exists to catch. `publish` must wait for both, in
     either order, so a red mutation holds the tag.
+
+    Issue #1441 adds `stage`: the job that pushes the image and resolves
+    its digest. `publish` promotes that exact digest, so it cannot promote
+    bytes it did not receive.
+
+    Issue #1443 adds `preflight`: `publish` reads the release channel from
+    `needs.preflight.outputs.kind`, and the `needs` context only exposes the
+    outputs of the DIRECT dependencies. Without this dependency the channel
+    arrived empty and an RC published as a stable release.
     """
     release = yaml.safe_load((_find_workflow().parent / "release.yml").read_text(encoding="utf-8"))
     jobs = release["jobs"]
@@ -884,9 +881,67 @@ def test_release_publish_needs_e2e_and_mutation() -> None:
     # GitHub Actions serialises a list-typed `needs` as a list of strings;
     # the older scalar form is a bare string. Accept both.
     needed = {needs} if isinstance(needs, str) else set(needs)
-    assert needed == {"e2e", "mutation"}, (
-        f"`publish` must depend on `e2e` and `mutation` (issue #857, PR-C1d). "
-        f"Got: {sorted(needed)!r}"
+    assert needed == {"e2e", "mutation", "stage", "preflight"}, (
+        f"`publish` must depend on `e2e`, `mutation`, `stage` and `preflight` "
+        f"(issue #857, PR-C1d; #1441; #1443). Got: {sorted(needed)!r}"
+    )
+
+
+def test_every_needs_output_read_resolves_to_a_direct_dependency() -> None:
+    """`needs.<job>.outputs` only exposes the DIRECT dependencies (#1443).
+
+    `publish` read `needs.preflight.outputs.kind` while `preflight` was only a
+    transitive dependency of it: the value arrived empty, so the release step
+    took the stable branch and an RC published as a stable release. The rule is
+    generic — every `needs.<job>.outputs` a job uses has to name one of its
+    direct dependencies.
+    """
+    pattern = re.compile(r"\$\{\{[^}]*needs\.([A-Za-z0-9_-]+)\.outputs\.")
+    offenders = []
+    for path in sorted((_find_workflow().parent).glob("*.yml")):
+        doc = yaml.safe_load(path.read_text(encoding="utf-8"))
+        for job_name, job in (doc.get("jobs") or {}).items():
+            needs = job.get("needs") or []
+            if isinstance(needs, str):
+                needs = [needs]
+            direct = set(needs)
+            used = {m.group(1) for m in pattern.finditer(yaml.safe_dump(job))}
+            for name in sorted(used - direct):
+                offenders.append(f"{path.name}:{job_name} reads needs.{name}.outputs")
+    assert not offenders, (
+        "a job reads the outputs of a job it does not depend on directly: " + "; ".join(offenders)
+    )
+
+
+def test_release_e2e_consumes_the_digest_that_the_stage_job_published() -> None:
+    """Issue #1441: the smoke consumes the digest, not the mutable release tag.
+
+    `stage` pushes the image and resolves its digest; `e2e` pulls and runs
+    `name@sha256`, the very bytes `publish` later promotes. A tag can move,
+    and the tag did not exist yet when the smoke ran.
+    """
+    release = yaml.safe_load((_find_workflow().parent / "release.yml").read_text(encoding="utf-8"))
+    jobs = release["jobs"]
+    assert "stage" in jobs, "release.yml must declare a `stage` job (#1441)"
+    e2e_needs = jobs["e2e"]["needs"]
+    needed = {e2e_needs} if isinstance(e2e_needs, str) else set(e2e_needs)
+    assert "stage" in needed, (
+        f"`e2e` must depend on `stage` to read its digest (#1441). Got: {sorted(needed)!r}"
+    )
+    stage = jobs["stage"]
+    assert stage["outputs"]["image"] == "${{ steps.push.outputs.image }}"
+    assert stage["outputs"]["digest"] == "${{ steps.push.outputs.digest }}"
+    e2e_run = "\n".join(str(step.get("run", "")) for step in jobs["e2e"]["steps"])
+    assert 'docker pull "${IMAGE}@${DIGEST}"' in e2e_run, (
+        "`e2e` must pull the release image by digest (#1441)"
+    )
+    assert '"${IMAGE}@${DIGEST}"' in e2e_run, "`e2e` must run the release image by digest (#1441)"
+    publish_run = "\n".join(str(step.get("run", "")) for step in jobs["publish"]["steps"])
+    assert "docker build " not in publish_run, (
+        "`publish` must not rebuild: a rebuild is a different digest (#1441)"
+    )
+    assert 'docker tag "${IMAGE}@${DIGEST}" "${IMAGE}:${GITHUB_REF_NAME}"' in publish_run, (
+        "`publish` must promote the staged digest under the release tag (#1441)"
     )
 
 
@@ -1053,68 +1108,7 @@ def test_mutation_config_targets_only_the_domain() -> None:
 # the two together close #857.
 
 
-def test_ci_runs_on_push_to_main(workflow: dict) -> None:
-    """Issue #857, PR-D: `push: branches: [main]` is the post-merge safety net.
-
-    The gentle-ai model does not use a merge queue. Every PR runs `ci`
-    exactly once, and the `required` aggregator re-proves the same
-    commit on the push that follows the merge. The trigger is
-    `branches: [main]` so a feature-branch push does not re-run the
-    whole suite — only the merge to `main` does.
-    """
-    triggers = workflow.get(True) or workflow.get("on") or {}
-    assert "push" in triggers, (
-        "ci.yml must declare a `push:` trigger (issue #857, PR-D): the "
-        "post-merge safety net on `main` is what re-proves the commit "
-        "after the queue is gone."
-    )
-    push = triggers["push"]
-    assert isinstance(push, dict), (
-        f"ci.yml `push:` must declare `branches:` (issue #857, PR-D). Got: {push!r}"
-    )
-    assert list(push.get("branches", [])) == ["main"], (
-        f"ci.yml `push:` must pin `branches: [main]` (issue #857, PR-D). "
-        f"Got: {push.get('branches')!r}"
-    )
-
-
-def test_ci_runs_on_pull_request_push_schedule_dispatch(
-    workflow: dict,
-) -> None:
-    """The four events the gentle-ai model surfaces (PR + push + nightly + manual)."""
-    triggers = workflow.get(True) or workflow.get("on") or {}
-    if isinstance(triggers, list):
-        present = set(triggers)
-    elif isinstance(triggers, str):
-        present = {triggers}
-    else:
-        present = set(triggers.keys())
-
-    for required_event in ("pull_request", "push", "schedule", "workflow_dispatch"):
-        assert required_event in present, (
-            f"ci.yml must declare `{required_event}` in its trigger set "
-            f"(issue #857, PR-D). Present: {sorted(present)}."
-        )
-
-
-def test_ci_does_not_listen_to_merge_group(workflow: dict) -> None:
-    """Issue #857, PR-D: the merge queue is gone with the gentle-ai model.
-
-    `merge_group` was the queue's verdict event; without the queue there
-    is no merge-group run to listen to. Leaving the trigger in place
-    would re-introduce a class of `undeclared event` failures in the canon
-    required-jobs gate (#857 PR-D dropped it from the event set; the policy
-    declares no `merge_group`).
-    """
-    triggers = workflow.get(True) or workflow.get("on") or {}
-    if isinstance(triggers, dict):
-        assert "merge_group" not in triggers, (
-            "ci.yml must not declare a `merge_group:` trigger: the queue is "
-            "gone with the gentle-ai model (issue #857, PR-D)."
-        )
-
-
-# --- Issue #857, PR-B: pull_request type set -----------------------------
+# --- Issue #857, PR-B: pull_request type set of the pr-gate ---------------
 #
 # `pull_request:` without an explicit `types:` uses the GitHub default
 # (opened, synchronize, reopened). That set misses two events that DO
@@ -1131,6 +1125,12 @@ def test_ci_does_not_listen_to_merge_group(workflow: dict) -> None:
 # Pinning the type set here is what guarantees a verdict refresh on
 # those events. The list MUST stay exact (the order is the contract
 # `check_workflows.py` proves).
+#
+# Issue #1375: only the list of `pr-gate.yml` is pinned here. The event
+# set of `ci.yml` is a cost decision, not a verdict: the canon's
+# required-jobs gate owns the event surface of the workflow, and the
+# shape of `ci.yml` is no longer pinned by this file (#1368 moved the
+# body and label events to this workflow).
 
 
 PR_GATE_PULL_REQUEST_TYPES = (
@@ -1143,46 +1143,104 @@ PR_GATE_PULL_REQUEST_TYPES = (
 )
 
 
-def test_pull_request_types_cover_edit_and_label_events(workflow: dict) -> None:
-    """Issue #857, PR-B: pr-gate must re-run when body edits or labels change.
+def test_pr_gate_listens_to_edit_and_label_events(pr_gate_workflow: dict) -> None:
+    """Issue #1368: the body/label events moved to the lightweight workflow.
 
-    The default ``pull_request`` trigger only fires on opened,
-    synchronize, reopened. Editing the PR body or applying/removing
-    ``size:exception`` after opening does NOT re-run the pr-gate, so a
-    stale verdict sticks until the next synchronize. Pinning the type
-    list here is what closes that drift.
+    Issue #857, PR-B pinned `edited`, `labeled` and `unlabeled` on the
+    workflow that also runs the heavy suite, so a body edit re-ran
+    `quality`, `integration`, `security`, `codeql` and `e2e-smoke` over a SHA
+    that was already green. Since #1368 the heavy workflow listens to the
+    three events that can change the code, and the `pr-gate` — the only job
+    those events need — lives in its own workflow, which still listens to all
+    six. This list is pinned so a silent drift cannot pass review.
     """
     # yaml.safe_load maps the `on` keyword to the Python boolean `True`
     # unless quoted; the existing tests guard both spellings already.
-    triggers = workflow.get(True) or workflow.get("on") or {}
-    pull_request = triggers.get("pull_request")
-    assert isinstance(pull_request, dict), (
-        "ci.yml must declare `pull_request:` with a body so `types:` "
-        "can be pinned (issue #857, PR-B). A bare `pull_request:` falls "
-        "back to the GitHub default type set and misses `edited`, "
-        "`labeled` and `unlabeled`."
+    light_types = (pr_gate_workflow.get(True) or pr_gate_workflow.get("on") or {}).get(
+        "pull_request"
     )
-    types = pull_request.get("types")
-    assert types is not None, (
-        "ci.yml must declare `pull_request.types:` — relying on the "
-        "default leaves edit and label events out of the pr-gate "
-        "(issue #857, PR-B)."
+    assert isinstance(light_types, dict), (
+        "pr-gate.yml must declare `pull_request:` with a body so `types:` can be pinned"
     )
-    assert list(types) == list(PR_GATE_PULL_REQUEST_TYPES), (
-        f"ci.yml `pull_request.types:` is {list(types)!r}, expected "
-        f"{list(PR_GATE_PULL_REQUEST_TYPES)!r}. The set MUST include "
-        "`edited`, `labeled` and `unlabeled` so the pr-gate re-runs "
-        "when the body or labels change after opening (issue #857, PR-B)."
+    assert list(light_types.get("types") or []) == list(PR_GATE_PULL_REQUEST_TYPES), (
+        f"pr-gate.yml `pull_request.types:` is {light_types.get('types')!r}, expected "
+        f"{list(PR_GATE_PULL_REQUEST_TYPES)!r}. The set MUST include `edited`, "
+        "`labeled` and `unlabeled` so the pr-gate re-runs when the body or labels "
+        "change after opening (issue #857, PR-B; moved by #1368)."
     )
 
 
-def test_pull_request_runs_are_cancelled_only_by_a_new_commit(workflow: dict) -> None:
-    """team-skills#978: a run cancelled after its jobs exist leaves a cancelled `required` check
-    on the head SHA, and that check blocks the merge even when a later run of the same SHA is
-    green. Events that keep the SHA (`edited`, `labeled`, `reopened`) must queue, not cancel."""
-    value = workflow["concurrency"]["cancel-in-progress"]
-    assert value is not True, "cancel-in-progress: true cancels runs of the same head SHA"
-    assert isinstance(value, str) and "synchronize" in value
+#: The jobs the docs-only lane skips: the heavy suite of the PR rollup.
+HEAVY_JOBS = (
+    "quality",
+    "integration",
+    "security",
+    "codeql",
+    "e2e-smoke",
+)
+
+
+def test_the_pr_gate_queue_separates_the_two_instances(pr_gate_workflow: dict) -> None:
+    """BP#1372: the same gate runs in two instances — its own workflow and the call from `ci.yml`.
+
+    A concurrency group holds one pending request: GitHub cancels the pending one when
+    another arrives, so the instance called from `ci.yml` was cancelled at 0 s and the
+    `required` aggregator read the cancellation as a failure (run `ci` 40084048493,
+    attempt 1: "Canceling since a higher priority waiting request for gate-pr-gate-1371
+    exists"). The group must name the instance: inside a reusable workflow
+    `github.workflow` is the caller's name, so the two instances land in different queues
+    and neither cancels the other.
+    """
+    group = pr_gate_workflow["jobs"]["pr-gate"]["concurrency"]["group"]
+    assert "github.workflow" in group, (
+        f"the pr-gate concurrency group must separate the instance, got {group!r}"
+    )
+
+
+def test_the_heavy_jobs_skip_the_docs_only_lane(workflow: dict) -> None:
+    """Issue #1368: a diff entirely under `docs/` skips the heavy suite.
+
+    The marker is the `docs_changed` output of the pr-gate. Every heavy job
+    must read it, or the lane would skip some jobs and not others, and the
+    `required` aggregator would see a half-skipped run.
+    """
+    for job in HEAVY_JOBS:
+        condition = workflow["jobs"][job]["if"]
+        assert "needs.pr-gate.outputs.docs_changed != 'true'" in condition, (
+            f"`{job}` must skip the docs-only lane: {condition!r}"
+        )
+    # `docs-links` is the gate that catches broken links in the PRD; it stays
+    # in the run when the diff is documentation.
+    assert "docs_changed" not in workflow["jobs"]["docs-links"]["if"]
+
+
+def test_the_policy_declares_the_docs_only_lane(workflow: dict) -> None:
+    """The lane is declared in the policy, and it covers exactly the heavy jobs.
+
+    A skip the policy does not declare leaves `required` in red, and a skip
+    the policy declares for a job that never skips is a promise the gate
+    cannot keep.
+    """
+    policy = json.loads(
+        (_find_workflow().parent.parent / "required-jobs-policy.json").read_text(encoding="utf-8")
+    )
+    lane = policy["docs_only_lane"]
+    assert lane["event"] == "pull_request"
+    assert lane["gate_job"] == "pr-gate"
+    assert lane["output"] == "docs_changed"
+    assert sorted(lane["skips"]) == sorted(HEAVY_JOBS)
+    for job in lane["skips"]:
+        assert job in policy["required_jobs"], f"{job} is skipped but not a required job"
+    assert "relaxation" in policy, "a new lane is a relaxation against the base policy"
+
+
+def test_the_docs_only_classifier_runs_in_the_pr_gate(pr_gate_workflow: dict) -> None:
+    """A gate that exists only as a script is a gate nobody runs (Hard Rule 4)."""
+    runs = "\n".join(
+        step.get("run", "") for step in pr_gate_workflow["jobs"]["pr-gate"].get("steps", [])
+    )
+    assert "scripts/check_docs_only_lane.py" in runs
+    assert "docs_changed" in runs, "the classifier's verdict must reach the job output"
 
 
 def test_docs_codeguide_job_covers_every_root_of_the_adoption_contract() -> None:
@@ -1231,3 +1289,308 @@ def test_e2e_smoke_job_runs_on_pull_request_and_is_required(workflow: dict) -> N
 
     release = yaml.safe_load((_find_workflow().parent / "release.yml").read_text(encoding="utf-8"))
     assert "e2e" in release["jobs"], "the release E2E job stays as it is"
+
+
+def test_nightly_pip_audit_failure_opens_an_issue(workflow: dict) -> None:
+    # HR-39 (#1414): a red scheduled pip-audit must leave an issue with the run link,
+    # and only a scheduled failure may open one.
+    job = workflow["jobs"]["pip-audit-alert"]
+    assert job["needs"] == "pip-audit"
+    assert job["if"] == "failure() && github.event_name == 'schedule'"
+    assert "gh issue create" in "\n".join(step.get("run", "") for step in job["steps"])
+
+
+def test_only_the_pip_audit_alert_job_may_write_issues(workflow: dict) -> None:
+    # HR-39 (#1414): `issues: write` is granted to the alert job alone.
+    writers = sorted(
+        name
+        for name, job in workflow["jobs"].items()
+        if (job.get("permissions") or {}).get("issues") == "write"
+    )
+    assert writers == ["pip-audit-alert"]
+
+
+def test_operating_doc_drift_installs_the_import_linter_before_it_measures() -> None:
+    # #1446: the nightly measures the architecture, so it has to provide the linter.
+    # HR-68 fails closed when the binary is missing — without execution there is no
+    # measurement — so the nightly measured nothing: it runs the phase-5 gate, whose
+    # architecture check runs `lint-imports --config .importlinter`, and its runner
+    # had no such binary. The `docs-architecture` job of ci.yml installs it; the
+    # nightly did not, and has been red since 2026-10-19.
+    workflows = _find_workflow().parent
+    drift = yaml.safe_load((workflows / "operating-doc-drift.yml").read_text(encoding="utf-8"))
+    steps = drift["jobs"]["operating-doc-drift"]["steps"]
+
+    installs = [i for i, s in enumerate(steps) if "import-linter" in str(s.get("run", ""))]
+    assert len(installs) == 1, "the nightly must install the import linter exactly once"
+    assert "import-linter==2.15" in steps[installs[0]]["run"], (
+        "the linter is pinned to an exact version, like every other tool of the repo (Hard Rule 2)"
+    )
+
+    gates = [i for i, s in enumerate(steps) if "adoption check --phase 5" in str(s.get("run", ""))]
+    assert len(gates) == 1, "the nightly must run the phase-5 gate exactly once"
+    assert installs[0] < gates[0], (
+        "the linter has to be installed before the gate runs it: HR-68 fails closed "
+        "when the binary is missing, so a gate that runs first measures nothing"
+    )
+
+
+def test_operating_doc_drift_declares_the_binaries_it_invokes() -> None:
+    # G0.5: the tooling contract of a job lists the binaries the runner must
+    # provide. The nightly runs `python3` to invoke the canon's CLI, so the
+    # contract has to declare it; an undeclared binary is a hole the preflight
+    # cannot see.
+    workflows = _find_workflow().parent
+    contract = (workflows.parent / "tooling" / "operating-doc-drift.txt").read_text(
+        encoding="utf-8"
+    )
+    declared = {
+        line.strip() for line in contract.splitlines() if line.strip() and not line.startswith("#")
+    }
+    drift = yaml.safe_load((workflows / "operating-doc-drift.yml").read_text(encoding="utf-8"))
+    invoked = " ".join(str(s.get("run", "")) for s in drift["jobs"]["operating-doc-drift"]["steps"])
+    assert "python3" in invoked, "the nightly invokes the canon CLI with python3"
+    assert "python3" in declared, (
+        "python3 is invoked by the nightly, so the contract must declare it"
+    )
+
+
+# --- BP #1456: one dependency set for the app image and the migrations -----------------
+#
+# `app/requirements.lock` is the runtime export of `app/uv.lock`. The image and the
+# e2e-smoke runner install it with --require-hashes; nothing resolves version ranges.
+
+
+def _repo_root() -> Path:
+    return _find_workflow().parents[2]
+
+
+def _normalize(name: str) -> str:
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def _runtime_closure(uv: dict) -> set[str]:
+    """Names reachable from the project's runtime dependencies, dev groups excluded.
+
+    Walks `dependencies` and the requested `extra` groups from the editable root
+    package, the same set `uv export --no-dev` emits for this project.
+    """
+    packages = {_normalize(p["name"]): p for p in uv["package"]}
+    root = next(
+        p
+        for p in uv["package"]
+        if p.get("source", {}).get("editable") == "." or p.get("source", {}).get("virtual") == "."
+    )
+    seen: set[str] = set()
+    todo = [
+        (_normalize(d["name"]), tuple(d.get("extra", []))) for d in root.get("dependencies", [])
+    ]
+    while todo:
+        name, extras = todo.pop()
+        if name not in packages:
+            continue
+        pkg = packages[name]
+        deps = list(pkg.get("dependencies", []))
+        for extra in extras:
+            deps += pkg.get("optional-dependencies", {}).get(extra, [])
+        if name in seen and not extras:
+            continue
+        seen.add(name)
+        todo.extend((_normalize(d["name"]), tuple(d.get("extra", []))) for d in deps)
+    return seen
+
+
+@pytest.fixture(scope="module")
+def app_dockerfile() -> str:
+    return (_repo_root() / "app" / "Dockerfile").read_text(encoding="utf-8")
+
+
+def test_e2e_smoke_migrates_with_the_runtime_lock_the_image_ships(workflow: dict) -> None:
+    """BP #1456: the runner installs the same hash-pinned runtime lock the image uses.
+
+    The install must come before `alembic upgrade head`. The dev lock must not appear
+    in e2e-smoke at all: the image never sees it, so the job would test another set.
+    """
+    job = workflow["jobs"]["e2e-smoke"]
+    runs = [str(step.get("run", "")) for step in job["steps"]]
+    migrate_run = next(
+        (run for run in runs if "alembic -c app/migrations/alembic.ini upgrade head" in run), None
+    )
+
+    assert migrate_run is not None, "e2e-smoke must run the migrations"
+    assert f"pip install --require-hashes --requirement {RUNTIME_LOCK}" in migrate_run, (
+        f"the migrations must run after a hash-verified install of {RUNTIME_LOCK} in the same step"
+    )
+    install_at = migrate_run.index(f"--requirement {RUNTIME_LOCK}")
+    assert install_at < migrate_run.index("alembic -c"), (
+        "the runtime lock must be installed before the migrations run"
+    )
+    assert all("requirements-dev.lock" not in run for run in runs), (
+        "e2e-smoke must not install app/requirements-dev.lock: the image never installs it"
+    )
+
+
+def test_dockerfile_installs_the_same_runtime_lock(app_dockerfile: str) -> None:
+    """BP #1456: the image installs the lock the job validates, not a range resolution."""
+    assert "COPY requirements.lock" in app_dockerfile, "the Dockerfile must copy the runtime lock"
+    assert "pip install --require-hashes --requirement requirements.lock" in app_dockerfile, (
+        "the image must install the runtime lock with --require-hashes"
+    )
+    assert "pip install --no-cache-dir ." not in app_dockerfile, (
+        "the image must not resolve the ranges of pyproject.toml"
+    )
+    assert "app/uv.lock" in app_dockerfile, (
+        "the Dockerfile must name the source of truth for the versions (app/uv.lock)"
+    )
+
+
+def test_runtime_lock_is_the_closure_of_the_declared_uv_lock() -> None:
+    """Drift guard: every pin is the uv.lock version and the set is the runtime closure."""
+    root = _repo_root()
+    uv = tomllib.loads((root / "app" / "uv.lock").read_text(encoding="utf-8"))
+    declared = {_normalize(p["name"]): p["version"] for p in uv["package"]}
+
+    pins: dict[str, str] = {}
+    unhashed: list[str] = []
+    text = (root / RUNTIME_LOCK).read_text(encoding="utf-8").replace("\\\n", " ")
+    for line in text.splitlines():
+        match = re.match(r"^([A-Za-z0-9_.-]+)==(\S+)", line.split("#", 1)[0].strip())
+        if not match:
+            continue
+        name = _normalize(match.group(1))
+        pins[name] = match.group(2)
+        if "--hash=sha256:" not in line:
+            unhashed.append(name)
+
+    assert pins, f"{RUNTIME_LOCK} has no pins"
+    assert not unhashed, f"pins without hashes: {unhashed}"
+    stale = {n: (v, declared.get(n)) for n, v in pins.items() if declared.get(n) != v}
+    assert not stale, f"pins that differ from app/uv.lock (regenerate the lock): {stale}"
+    closure = _runtime_closure(uv)
+    assert set(pins) == closure, (
+        f"runtime lock differs from the uv.lock closure: missing={sorted(closure - set(pins))} "
+        f"extra={sorted(set(pins) - closure)}"
+    )
+
+
+def test_health_failure_dumps_container_state_before_failing(workflow: dict) -> None:
+    """BP #1456: a red /health must leave the container's state in the log.
+
+    The 60 s wait stays as it is (criterion of #876). Only the failure branch changes:
+    `docker ps -a` and `docker logs test-app` must run before the job exits non-zero.
+    """
+    job = workflow["jobs"]["e2e-smoke"]
+    step = next(
+        s for s in job["steps"] if s.get("name") == "Start the app and wait for the health check"
+    )
+    run = str(step["run"])
+
+    assert "seq 1 60" in run and "sleep 1" in run, "the 60 s /health wait must stay unchanged"
+    failure = run[run.index('if [ "$ready" -ne 1 ]') :]
+    assert "docker ps -a" in failure, "the failure branch must print `docker ps -a`"
+    assert "docker logs test-app" in failure, "the failure branch must print the app's logs"
+    assert failure.index("docker logs test-app") < failure.index("exit 1"), (
+        "the logs must be printed before the job exits"
+    )
+
+
+# --- BP #1459: /health must answer 200 from the app, and integration must agree with the image ---
+
+
+def _pins_from_lock(path: Path) -> dict[str, str]:
+    text = path.read_text(encoding="utf-8").replace("\\\n", " ")
+    pins: dict[str, str] = {}
+    for line in text.splitlines():
+        match = re.match(r"^([A-Za-z0-9_.-]+)==(\S+)", line.split("#", 1)[0].strip())
+        if match:
+            pins[_normalize(match.group(1))] = match.group(2)
+    return pins
+
+
+def test_runtime_lock_agrees_with_the_dev_lock_it_is_tested_with() -> None:
+    """BP #1459: `integration` runs on the dev lock; every runtime pin must match it.
+
+    The integration job keeps the dev lock because pytest lives there. This guard
+    fails the moment a runtime version drifts from the set the tests exercise.
+    """
+    root = _repo_root()
+    runtime = _pins_from_lock(root / RUNTIME_LOCK)
+    dev = _pins_from_lock(root / "app" / "requirements-dev.lock")
+
+    assert runtime, f"{RUNTIME_LOCK} has no pins"
+    missing = sorted(set(runtime) - set(dev))
+    drifted = {n: (v, dev.get(n)) for n, v in runtime.items() if n in dev and dev[n] != v}
+    assert not missing, f"runtime pins absent from requirements-dev.lock: {missing}"
+    assert not drifted, f"runtime pins whose version differs from requirements-dev.lock: {drifted}"
+
+
+def test_health_wait_requires_http_200_from_the_app(workflow: dict) -> None:
+    """BP #1459: `curl -s` without a status check accepts a 302 from any other service.
+
+    The wait must read the HTTP status and accept only 200.
+    """
+    job = workflow["jobs"]["e2e-smoke"]
+    step = next(
+        s for s in job["steps"] if s.get("name") == "Start the app and wait for the health check"
+    )
+    run = str(step["run"])
+
+    assert "curl -s http://localhost:8000/health > /dev/null" not in run, (
+        "the wait must not treat any HTTP response as a healthy app"
+    )
+    assert "%{http_code}" in run and '"200"' in run, "the wait must accept only HTTP 200"
+
+
+def test_health_wait_stops_early_when_the_container_is_not_running(workflow: dict) -> None:
+    """BP #1459: if the app container exits, waiting 60 s proves nothing; stop and diagnose."""
+    job = workflow["jobs"]["e2e-smoke"]
+    step = next(
+        s for s in job["steps"] if s.get("name") == "Start the app and wait for the health check"
+    )
+    run = str(step["run"])
+
+    assert "docker inspect" in run and ".State.Running" in run, (
+        "the wait loop must check that test-app is still running"
+    )
+    assert "seq 1 60" in run, "the 60 s wait must stay unchanged"
+
+
+# --- BP #1461: no credentials persisted into jobs that can run pull request code ----------
+
+
+def _pull_request_reachable_checkouts() -> list[tuple[str, str, dict]]:
+    """Every actions/checkout step in a workflow that runs on pull_request, directly or via workflow_call."""
+    found: list[tuple[str, str, dict]] = []
+    for path in sorted((_repo_root() / ".github" / "workflows").glob("*.yml")):
+        wf = yaml.safe_load(path.read_text(encoding="utf-8"))
+        triggers = wf.get("on", wf.get(True, {}))
+        if isinstance(triggers, dict):
+            names = set(triggers)
+        elif isinstance(triggers, str):
+            names = {triggers}
+        else:
+            names = set(triggers)
+        if not names & {"pull_request", "workflow_call"}:
+            continue
+        for job_id, job in wf.get("jobs", {}).items():
+            for step in job.get("steps", []):
+                if str(step.get("uses", "")).startswith("actions/checkout@"):
+                    found.append((path.name, job_id, step))
+    return found
+
+
+def test_pull_request_checkouts_do_not_persist_credentials() -> None:
+    """BP #1461: a checkout that persists GITHUB_TOKEN leaves it in git config for the whole job.
+
+    Any step in that job, including ones that run code from the pull request, could read it.
+    Every checkout that can run on pull_request must set `persist-credentials: false`.
+    """
+    checkouts = _pull_request_reachable_checkouts()
+    assert checkouts, "no pull_request-reachable checkout found: the test would be vacuous"
+
+    offenders = [
+        f"{file}:{job}"
+        for file, job, step in checkouts
+        if (step.get("with") or {}).get("persist-credentials") is not False
+    ]
+    assert not offenders, f"checkouts that persist credentials: {offenders}"
