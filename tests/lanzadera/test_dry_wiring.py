@@ -16,6 +16,9 @@ from pathlib import Path
 
 import pytest
 
+#: DQH 2.2 (BP #1327): the DRY gate evaluates its BASELINE at an explicit date, never the clock.
+POLICY_DATE = "2026-10-21"
+
 
 def _find_script() -> Path:
     here = Path(__file__).resolve()
@@ -46,6 +49,10 @@ def script() -> Path:
 
 
 def test_dry_min_statements_is_five(script: Path) -> None:
+    # DQH 2.2: the gate imports `policy_time` and `quality_policy` by module name, so
+    # `scripts/` has to be importable before the file is executed (BP #1327).
+    if str(script.parent) not in sys.path:
+        sys.path.insert(0, str(script.parent))
     spec = importlib.util.spec_from_file_location("check_dry", script)
     module = importlib.util.module_from_spec(spec)
     sys.modules["check_dry"] = module
@@ -56,7 +63,7 @@ def test_dry_min_statements_is_five(script: Path) -> None:
 
 def test_dry_gate_runs_clean_on_empty_package(root: Path, script: Path) -> None:
     result = subprocess.run(
-        [sys.executable, str(script), "--root", str(root)],
+        [sys.executable, str(script), "--root", str(root), "--policy-date", POLICY_DATE],
         capture_output=True,
         text=True,
         check=False,
@@ -70,7 +77,7 @@ def test_dry_gate_runs_clean_on_empty_package(root: Path, script: Path) -> None:
 
 def test_dry_gate_emits_valid_envelope(root: Path, script: Path) -> None:
     result = subprocess.run(
-        [sys.executable, str(script), "--root", str(root), "--json"],
+        [sys.executable, str(script), "--root", str(root), "--policy-date", POLICY_DATE, "--json"],
         capture_output=True,
         text=True,
         check=False,

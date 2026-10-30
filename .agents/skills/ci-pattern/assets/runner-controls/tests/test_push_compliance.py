@@ -26,6 +26,14 @@ WEB_MESSAGE = ("Merge pull request #373 from DysTelefonica/chore/366-adopt-issue
                "ci(issue-spec): require canonical sections and document chain context "
                "(Closes #366, chain 4/4)")
 
+# #1124: los tres commits reales de cadete#599 -> cadete#629. Los shas completos
+# no hacen falta para el contrato; el prefijo publicado permite trazar el caso.
+CHAIN_FIRST_SHA = "4fbba72e" + "0" * 32
+CHAIN_SECOND_SHA = "f99ca724" + "0" * 32
+CHAIN_HEAD_SHA = "55a4cb40" + "0" * 32
+CHAIN_MERGE_SHA = "66a4cb40" + "0" * 32
+DIRECT_SHA = "77a4cb40" + "0" * 32
+
 def write_fixture(root: Path, event: dict, contract: dict) -> None:
     (root / "event.json").write_text(json.dumps(event), encoding="utf-8")
     (root / "contract.json").write_text(json.dumps(contract), encoding="utf-8")
@@ -87,12 +95,81 @@ def merge_state(*, author: str, merged_by: str, message: str) -> dict:
     return state
 
 
-def run_gate(root: Path, event: dict, contract_data: dict, state: dict) -> subprocess.CompletedProcess:
+def run_gate(root: Path, event: dict, contract_data: dict, state: dict,
+             *extra: str) -> subprocess.CompletedProcess:
     write_fixture(root, event, contract_data)
     with github_stub(root / "state.json", state) as base:
         return subprocess.run([sys.executable, str(ASSET), "--event", str(root / "event.json"),
-                               "--contract", str(root / "contract.json")],
+                               "--contract", str(root / "contract.json"), *extra],
                               capture_output=True, text=True, env=stub_env(base), timeout=60)
+
+
+def settle(*extra: str) -> tuple:
+    """Flags de la ventana de settle, en segundos de test (los reales son minutos).
+
+    El poll va siempre: en tests reales es de minutos y sin el se bloquearia.
+    """
+    flags = list(extra) or ["--wait-seconds", "0.3"]
+    if "--poll-seconds" not in flags:
+        flags += ["--poll-seconds", "0.05"]
+    return tuple(flags)
+
+
+class MeasuredRaceTests(unittest.TestCase):
+    """#1019: los cinco pushes que produjeron incidente medidos en APAP_WEB.
+
+    Datos grabados de ardelperal/APAP_WEB (incidentes #2243, #2247, #2249,
+    #2251 y #2280; 2026-10-21/22). Se fijan aqui como datos: ningun test lee
+    historia de git ni consulta la API. Cuatro de los cinco mergearon segundos
+    despues del push del head y el rollup quedo verde minutos mas tarde; el
+    quinto lo mergearon con el rollup ya cancelado, que es un hecho consumado.
+    """
+
+    # (incidente, PR, head, conclusion del rollup despues del merge, veredicto esperado)
+    CASES = [
+        (2243, 2224, "619a8d57606e53ff796f45259c999a9246fc1955", "success", 0),
+        (2247, 2234, "529968ba9f8870a4d1a247f2918e356cca241ca5", "success", 0),
+        (2251, 2248, "9bd7091d64a0a0c4de25f4fed85dc89cd7e5204d", "success", 0),
+        (2280, 2264, "9e05bd7065ca63b4d29e63d717e1b7de7583eb05", "success", 0),
+        (2249, 2246, "06daebd01a0a25324b8e66c3bc565d7b53e07d9f", "cancelled", 1),
+    ]
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def test_measured_pushes_keep_their_measured_verdict(self) -> None:
+        for incident, pr, head, conclusion, expected in self.CASES:
+            with self.subTest(incident=f"#{incident} PR#{pr}"):
+                state = base_state()
+                sha = head
+                state["pulls"][sha] = [{"number": pr, "merged": True,
+                                        "merged_at": "2026-10-22T14:52:01Z",
+                                        "user": {"login": "ardelperal"}, "base": {"ref": "main"}}]
+                state["pr_details"][str(pr)] = {"number": pr, "merged": True,
+                                                "user": {"login": "ardelperal"},
+                                                "merged_by": {"login": "ardelperal"},
+                                                "head": {"sha": sha}, "merge_commit_sha": sha}
+                run = {"id": 7, "name": CHECK, "conclusion": conclusion, "status": "completed",
+                       "html_url": f"https://github.com/{REPO}/actions/runs/{incident}"}
+                published = [] if conclusion == "success" else [run]
+                state["commits"][sha] = commit_obj(sha, TREE_PR)
+                state["check_runs_script"] = {sha: [published, published, [run]]}
+                state["compare"] = {"total_commits": 1,
+                                    "commits": [{"sha": sha, "commit": {"author": {"name": "ardelperal"}}}]}
+                event = push_event()
+                event["before"], event["after"] = BASE, sha
+                proc = run_gate(self.root, event, contract(), state, *settle("--wait-seconds", "30"))
+                self.assertEqual(proc.returncode, expected, proc.stdout + proc.stderr)
+                issues = json.loads((self.root / "state.json").read_text(
+                    encoding="utf-8"))["created_issues"]
+                if expected == 0:
+                    self.assertEqual(issues, [], f"#{incident} no debe abrir incidente")
+                else:
+                    self.assertEqual(len(issues), 1)
+                    self.assertIn(conclusion, issues[0]["body"])
+                    self.assertIn(f"runs/{incident}", issues[0]["body"])
 
 
 class DetectiveTests(unittest.TestCase):
@@ -170,17 +247,27 @@ class DetectiveTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
         self.assertIn("not auditable", proc.stdout + proc.stderr)
 
-    def test_commit_without_merged_pr_opens_incident(self) -> None:
+    def test_commit_pushed_directly_to_main_still_opens_incident(self) -> None:
         state = base_state()
-        state["pulls"][SHA] = [{"number": 7, "merged": False, "merged_at": None,
-                                "user": {"login": "ardelperal"}}]
-        proc = run_gate(self.root, push_event(), contract(), state)
+        state["pulls"][DIRECT_SHA] = []
+        state["compare"] = {"total_commits": 1,
+                            "commits": [{"sha": DIRECT_SHA,
+                                         "commit": {"author": {"name": "Dev A"}}}]}
+        event = push_event(commits=[{"id": DIRECT_SHA, "message": "feat: direct push",
+                                     "author": {"name": "Dev A"}, "distinct": True}])
+        event["after"] = DIRECT_SHA
+        event["head_commit"] = event["commits"][-1]
+        proc = run_gate(self.root, event, contract(), state)
         self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(proc.stdout, (
+            f"  VIOLATION  commit {DIRECT_SHA} — author: Dev A\n"
+            "INCIDENT ISSUE: https://github.com/DysTelefonica/team-skills/issues/42\n"))
+        self.assertEqual(proc.stderr, "")
         issue = self.created_issue()
-        self.assertIn(SHA, issue["body"])
+        self.assertIn(DIRECT_SHA, issue["body"])
         self.assertIn("Dev A", issue["body"])
+        self.assertIn("no merged PR associated", issue["body"])
         self.assertIn("PR", issue["title"] + issue["body"])
-        self.assertIn("INCIDENT ISSUE", proc.stdout + proc.stderr)
 
     def test_merged_pr_with_red_check_opens_incident(self) -> None:
         state = base_state()
@@ -192,14 +279,49 @@ class DetectiveTests(unittest.TestCase):
         self.assertIn("failure", issue["body"])
         self.assertIn(SHA, issue["body"])
 
-    def test_merged_pr_missing_required_check_is_a_violation(self) -> None:
+    def test_required_check_that_appears_later_is_waited_for(self) -> None:
+        # #1019: el merge se lanzo antes de que el CI publicara el check; esperar, no acusar.
+        state = base_state()
+        green = [{"id": 7, "name": CHECK, "conclusion": "success", "status": "completed"}]
+        pending = [{"id": 7, "name": CHECK, "conclusion": None, "status": "in_progress"}]
+        state["check_runs_script"] = {SHA: [[], pending, green]}
+        proc = run_gate(self.root, push_event(), contract(), state, *settle("--wait-seconds", "30"))
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        self.assertEqual(state["created_issues"], [])
+        self.assertGreater(sum("/check-runs" in call for call in state["calls"]), 1)
+
+    def test_required_check_never_published_fails_closed_without_accusing(self) -> None:
+        # #1019: el techo agotado con el check sin publicar es duda (HR-3), no una
+        # infraccion: exit 2, sin issue de incidente y sin acusar a nadie.
         state = base_state()
         state["check_runs"][SHA] = []
-        proc = run_gate(self.root, push_event(), contract(), state)
+        proc = run_gate(self.root, push_event(), contract(), state, *settle())
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("fail-closed", proc.stderr)
+        self.assertIn(CHECK, proc.stderr)
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        self.assertEqual(state["created_issues"], [])
+
+    def test_red_check_does_not_wait_and_is_reported_with_its_run(self) -> None:
+        # #1019: una conclusion terminal se juzga de una vez y con su evidencia.
+        state = base_state()
+        state["check_runs"][SHA] = [{"id": 7, "name": CHECK, "conclusion": "failure",
+                                     "status": "completed",
+                                     "html_url": "https://github.com/DysTelefonica/team-skills/runs/42"}]
+        proc = run_gate(self.root, push_event(), contract(), state, *settle("--wait-seconds", "30"))
         self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
         issue = self.created_issue()
-        self.assertIn(CHECK, issue["body"])
-        self.assertIn("missing", issue["body"])
+        self.assertIn("failure", issue["body"])
+        self.assertIn("runs/42", issue["body"])
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        self.assertEqual(sum("/check-runs" in call for call in state["calls"]), 1)
+
+    def test_negative_wait_is_rejected(self) -> None:
+        proc = run_gate(self.root, push_event(), contract(), base_state(),
+                        "--wait-seconds", "-1", "--poll-seconds", "0.05")
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("fail-closed", proc.stderr)
 
     def test_pr_merged_into_another_branch_is_a_violation(self) -> None:
         # #326 bypass: un PR mergeado en OTRA rama no protege un push directo.
@@ -316,6 +438,115 @@ class DetectiveTests(unittest.TestCase):
         proc = run_gate(self.root, push_event(), contract(), state)
         self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
         self.assertIn("fail", (proc.stdout + proc.stderr).lower())
+
+
+class MergedChainCoverageTests(unittest.TestCase):
+    """#1124: una cadena fusionada en orden cubre todos sus commits en main."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def chain_state(self) -> dict:
+        first_pull = {
+            "number": 599, "merged": True, "merged_at": "2026-10-23T18:00:00Z",
+            "user": {"login": "dys-agentes"},
+            "head": {"ref": "skill-fleet/cadete-vendored", "sha": CHAIN_HEAD_SHA},
+            "base": {"ref": "skill-fleet/cadete", "sha": CHAIN_FIRST_SHA},
+            "merge_commit_sha": CHAIN_SECOND_SHA,
+        }
+        final_pull = {
+            "number": 629, "merged": True, "merged_at": "2026-10-23T19:00:00Z",
+            "user": {"login": "dys-agentes"},
+            "head": {"ref": "skill-fleet/cadete", "sha": CHAIN_HEAD_SHA},
+            "base": {"ref": "main", "sha": BASE},
+            "merge_commit_sha": CHAIN_MERGE_SHA,
+        }
+        state = base_state()
+        state["pulls"] = {
+            CHAIN_FIRST_SHA: [first_pull],
+            CHAIN_SECOND_SHA: [first_pull],
+            CHAIN_HEAD_SHA: [first_pull],
+            CHAIN_MERGE_SHA: [final_pull],
+        }
+        state["pr_details"] = {
+            "599": first_pull,
+            "629": final_pull,
+        }
+        state["check_runs"] = {
+            CHAIN_HEAD_SHA: [{"id": 1, "name": CHECK,
+                               "conclusion": "success", "status": "completed"}],
+        }
+        state["commits"] = {
+            CHAIN_FIRST_SHA: commit_obj(CHAIN_FIRST_SHA, TREE_PR),
+            CHAIN_SECOND_SHA: commit_obj(CHAIN_SECOND_SHA, TREE_PR),
+            CHAIN_HEAD_SHA: commit_obj(CHAIN_HEAD_SHA, TREE_PR),
+            CHAIN_MERGE_SHA: {
+                "sha": CHAIN_MERGE_SHA,
+                "parents": [{"sha": BASE}, {"sha": CHAIN_HEAD_SHA}],
+                "commit": {"tree": {"sha": TREE_PR},
+                           "message": "Merge pull request #629 from skill-fleet/cadete"},
+            },
+        }
+        compare = {
+            "total_commits": 4,
+            "commits": [{"sha": sha, "commit": {"author": {"name": "Dev A"}}}
+                        for sha in (CHAIN_FIRST_SHA, CHAIN_SECOND_SHA,
+                                    CHAIN_HEAD_SHA, CHAIN_MERGE_SHA)],
+        }
+        head_compare = {
+            "status": "ahead", "behind_by": 0, "total_commits": 3,
+            "commits": [{"sha": sha, "commit": {"author": {"name": "Dev A"}}}
+                        for sha in (CHAIN_FIRST_SHA, CHAIN_SECOND_SHA, CHAIN_HEAD_SHA)],
+        }
+        state["compare"] = compare
+        state["compares"] = {
+            f"{BASE}...{CHAIN_HEAD_SHA}": head_compare,
+            f"{BASE}...{CHAIN_MERGE_SHA}": compare,
+        }
+        return state
+
+    def chain_event(self) -> dict:
+        shas = (CHAIN_FIRST_SHA, CHAIN_SECOND_SHA, CHAIN_HEAD_SHA, CHAIN_MERGE_SHA)
+        commits = [{"id": sha, "message": "feat: chain commit",
+                    "author": {"name": "Dev A"}, "distinct": True} for sha in shas]
+        event = push_event(commits=commits)
+        event["after"] = CHAIN_MERGE_SHA
+        event["head_commit"] = commits[-1]
+        return event
+
+    def test_two_segment_chain_merged_in_order_does_not_open_incident(self) -> None:
+        proc = run_gate(self.root, self.chain_event(), contract(), self.chain_state())
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(proc.stdout,
+                         "OK: 4 pushed commit(s) on 'main' carry a merged PR and green checks\n")
+        self.assertEqual(proc.stderr, "")
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        self.assertEqual(state["created_issues"], [])
+        self.assertEqual(state["merges"], [])
+
+    def test_merged_pr_head_covers_its_chain_range(self) -> None:
+        state = self.chain_state()
+        state["compare"] = {
+            "total_commits": 3,
+            "commits": [{"sha": sha, "commit": {"author": {"name": "Dev A"}}}
+                        for sha in (CHAIN_FIRST_SHA, CHAIN_SECOND_SHA, CHAIN_HEAD_SHA)],
+        }
+        state["merged_pulls"] = [state["pr_details"]["629"]]
+        shas = (CHAIN_FIRST_SHA, CHAIN_SECOND_SHA, CHAIN_HEAD_SHA)
+        commits = [{"id": sha, "message": "feat: chain commit",
+                    "author": {"name": "Dev A"}, "distinct": True} for sha in shas]
+        event = push_event(commits=commits)
+        event["after"] = CHAIN_HEAD_SHA
+        event["head_commit"] = commits[-1]
+        proc = run_gate(self.root, event, contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(proc.stdout,
+                         "OK: 3 pushed commit(s) on 'main' carry a merged PR and green checks\n")
+        self.assertEqual(proc.stderr, "")
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        self.assertEqual(state["created_issues"], [])
 
 
 # #928 Fase 2: invariante de integridad de arbol. Solo el commit de merge

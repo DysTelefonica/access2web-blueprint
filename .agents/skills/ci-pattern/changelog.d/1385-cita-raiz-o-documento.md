@@ -1,0 +1,3 @@
+type: patch
+
+La capa de existencia de `docs-commands` (`HR-65`) acepta ahora una cita `./` o `../` si el fichero existe resuelto contra el DOCUMENTO que la escribe o contra la RAÍZ del repositorio (Refs DysTelefonica/team-skills#1385). La versión anterior (#1386) solo miraba el documento, y rechazaba `docs/guia.md` que dice «ejecute `./scripts/check.sh`» aunque el script estuviera en `scripts/check.sh`: un comando entre comillas invertidas se ejecuta desde la raíz del repo, no desde la carpeta del documento. Una cita que no existe por ninguna vía es roja y nombra las rutas que el gate ha mirado; una cita que sale del repositorio por las dos vías sigue en rojo con su motivo propio.

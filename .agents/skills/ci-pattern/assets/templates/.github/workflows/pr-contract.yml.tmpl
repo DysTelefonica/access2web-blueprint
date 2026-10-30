@@ -1,0 +1,126 @@
+# Plantilla canonica del workflow de contrato de PR de un consumer (#1133, #1270, #1396).
+#
+# El paso de pr-contract necesita los datos del rango y el MAPA DE ORIGENES:
+# sin el, el gate cuenta el arbol vendorizado (`.agents/skills/`) para el
+# presupuesto de revision y la PR de propagacion del canon necesita
+# `size:exception` a mano (#931, #1088). Con el, el arbol vendorizado no cuenta
+# y un renombrado desde una ruta de autoria sigue contando.
+#
+# Un solo job, en `pull_request_target` (#1270, #1396). En `pull_request` el
+# workflow que corre es el de la cabeza del PR; aqui corre el de la base. El
+# patron es la copia vendorizada en el checkout de la BASE
+# (`base/.agents/skills/ci-pattern`), como en los jobs del `ci.yml` del
+# consumer: el PR no elige el codigo que lo mide, no hace falta el token del
+# catalogo y ningun artefacto se interpone, asi que una cuota de facturacion de
+# artefactos no puede saltar el check requerido (DysTelefonica/cadete#752). La
+# cabeza del PR se lee como datos.
+#
+# Por que el gate sale dos veces en los checks del PR (#1396, S9): un run de
+# `pull_request_target` adjunta su check run NATIVO (`pr-contract`) al commit
+# de la BASE (`GITHUB_SHA`, el ultimo commit de la rama base), no a la cabeza
+# del PR. El merge gobernado lee los check runs de la CABEZA
+# (`repos/{repo}/commits/{head_sha}/check-runs`, `check_push_compliance`), asi
+# que el unico que satisface el check requerido es el ESPEJO que el ultimo paso
+# publica sobre la cabeza con `CONTEXT` "<workflow> / <job>"; el nativo es
+# informativo. El espejo usa solo `GITHUB_TOKEN`, nunca el secreto del catalogo.
+#
+# La plantilla deriva de las del patron (`assets/templates/README.md`); el
+# consumer cambia la politica de contrato de PR (`.github/pr-contract.policy.json`).
+
+name: pr-contract
+
+on:
+  pull_request_target:
+    types: [opened, edited, labeled, unlabeled, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: write
+
+concurrency:
+  group: pr-gates-${{ github.event.pull_request.number }}
+  # Solo un commit nuevo cancela una corrida (#978): `labeled` y `edited` disparan
+  # sobre la misma cabeza y dejarian un check cancelado que bloquea el merge.
+  cancel-in-progress: ${{ github.event.action == 'synchronize' }}
+
+jobs:
+  pr-contract:
+    name: pr-contract
+    runs-on: [self-hosted, Linux, consumer]
+    timeout-minutes: 5
+    env:
+      # El patron vendorizado en la BASE: ni token ni artefacto (#1396).
+      PATTERN_DIR: base/.agents/skills/ci-pattern
+    steps:
+      # La cabeza del PR entra como DATOS: el gate la lee, no la ejecuta.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: pr-head
+          fetch-depth: 0
+          persist-credentials: false
+
+      # La CONFIGURACION que gobierna el gate y el PATRON que lo ejecuta salen
+      # de la BASE (#1270, #1396): sin esto un PR podria reescribir su propia
+      # politica o el gate que la aplica. Checkout sin credenciales: la base no
+      # necesita ninguna.
+      - name: Check out the base (trusted configuration)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
+          persist-credentials: false
+
+      # Los datos del rango (merge-base: BASE...HEAD) y el mapa de origenes.
+      # El mapa lo produce `vendored_budget.origins_for`; el gate no ejecuta
+      # git (HR-3), asi que lo genera el workflow (#1133).
+      - name: Compute diff artifacts and the origins file
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git -C pr-head diff --name-only "${BASE_SHA}...${HEAD_SHA}" > .ci-pr-changed
+          git -C pr-head diff --numstat  "${BASE_SHA}...${HEAD_SHA}" > .ci-pr-numstat
+          git -C pr-head log --format='%P%n%B%n---COMMIT-END---' "${BASE_SHA}..${HEAD_SHA}" > .ci-pr-commits
+          git -C pr-head ls-files > .ci-pr-tracked
+          git -C pr-head diff --name-only --find-renames=50% "${BASE_SHA}...${HEAD_SHA}" > .ci-pr-names
+          git -C pr-head log --name-status --pretty=format: "${BASE_SHA}..${HEAD_SHA}" > .ci-pr-log
+          python3 "$PATTERN_DIR/assets/bin/origins_file.py" \
+            --base "${BASE_SHA}" \
+            --head "${HEAD_SHA}" \
+            --names-file .ci-pr-names \
+            --log-file .ci-pr-log \
+            --output .ci-pr-origins
+
+      - name: PR contract gate
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 -I "$PATTERN_DIR/assets/pr-contract/check_pr_contract.py" \
+            --event-file     "$GITHUB_EVENT_PATH" \
+            --policy-file    base/.github/pr-contract.policy.json \
+            --repo           pr-head \
+            --changed-files  .ci-pr-changed \
+            --numstat-file   .ci-pr-numstat \
+            --commits-file   .ci-pr-commits \
+            --tracked-files  .ci-pr-tracked \
+            --origins-file   .ci-pr-origins
+
+      # El espejo del veredicto sobre la CABEZA del PR: el check run nativo de
+      # este job queda en la base y el merge gobernado no lo ve (ver cabecera).
+      # El NOMBRE es el que exige el contrato del consumer
+      # (`pr-contract / pr-contract`, P28).
+      - name: Publish the verdict as a check run on the PR head
+        if: always()
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          GH_TOKEN: ${{ github.token }}
+          CONTEXT: "pr-contract / pr-contract"
+        run: |
+          set -euo pipefail
+          if [ "${{ job.status }}" = "success" ]; then conclusion=success; else conclusion=failure; fi
+          printf '{"head_sha": "%s", "name": "%s", "status": "completed", "conclusion": "%s"}' \
+            "$HEAD_SHA" "$CONTEXT" "$conclusion" > "$RUNNER_TEMP/check-run.json"
+          gh api --method POST "repos/$GITHUB_REPOSITORY/check-runs" --input "$RUNNER_TEMP/check-run.json"

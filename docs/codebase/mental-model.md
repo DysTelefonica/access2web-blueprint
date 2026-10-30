@@ -14,7 +14,7 @@ Este repo es el **monorepo de la plataforma + blueprint del refactor** de las 8 
 | Plataforma web hexagonal (FastAPI + HTMX + Alembic). | `app/src/main.py` (composition root) + `app/src/modules/<app>/{domain,ports,application,adapters,di,delivery}/`. |
 | Catálogo de decisiones arquitectónicas (D1-D178, DA-1..DA-13). | `docs/decisions/README.md` (D-<n>) y `docs/architecture.md` §Decisiones de diseño del MVP (DA-<n>). |
 | Suite de quality gates deterministas. | `scripts/check_*.py` + `docs/gates.md` (manual de uso de cada gate). |
-| Pipeline de CI por nivel (PR / nightly / release) y agregador de branch protection. | `.github/workflows/ci.yml` (jobs `pr-gate`, `quality`, `integration`, `security`, `codeql`, `required`). |
+| Pipeline de CI por nivel (PR / nightly / release) y agregador de branch protection. | `.github/workflows/ci.yml` (jobs `pr-gate`, `quality`, `integration`, `security`, `codeql`, `required`) y `.github/workflows/pr-gate.yml` (el `pr-gate` en solitario, que escucha los seis eventos de `pull_request`). |
 | Suite de tests: unit, integration, e2e, gate-smoke. | `tests/lanzadera/`, `tests/expedientes/`, `e2e/*.spec.ts`, marker `@pytest.mark.e2e_smoke` (gate-smoke subprocess tests). |
 
 ## Qué no es este proyecto
@@ -50,8 +50,7 @@ Este repo es el **monorepo de la plataforma + blueprint del refactor** de las 8 
 │  │                       di,delivery}                              │
 │  ├── src/shared/                  ← cross-cutting (cache, audit)  │
 │  ├── migrations/versions/         ← Alembic 0001..0006 (D82)       │
-│  ├── tests/                       ← unit + integration            │
-│  └── pytest_plugin/               ← coverage_gate, etc.           │
+│  └── tests/                       ← unit + integration            │
 │                                                                   │
 │  openspec/changes/<change>/{proposal,design,specs/<capability>/spec,tasks}.md    │
 │  scripts/check_*.py               ← quality gates (ver docs/gates.md)│

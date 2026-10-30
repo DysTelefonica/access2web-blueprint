@@ -1,0 +1,3 @@
+type: patch
+
+El gate `workflow-policy` reconoce los checks que un job publica por la API de check runs (DysTelefonica/team-skills#1313). Un step que llama a `check-runs` publica su check con el valor literal de su variable `CONTEXT`, como hace la plantilla canónica de `pr-contract`. Con `--host-contract`, ese nombre ya cuenta como publicado: antes el gate reportaba `pr-contract / pr-contract` y `pr-size / pr-size` como «no los publica ningún job analizado» aunque sí lo hacían. Un `CONTEXT` con `${{ }}` no se puede probar y no declara ningún nombre (fail closed). Sin `--host-contract` el comportamiento no cambia.

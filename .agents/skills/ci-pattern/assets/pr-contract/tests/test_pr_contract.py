@@ -17,7 +17,6 @@ POLICY = Path(__file__).resolve().parents[1] / "pr-contract.policy.example.json"
 AI_OK = "## Asistencia de IA\n\nninguna\n"
 
 POLICY_DATA = json.loads(POLICY.read_text(encoding="utf-8")) if POLICY.is_file() else {
-    "required_labels": ["type:bug", "type:feature", "type:docs", "type:chore", "type:refactor"],
     "chain_tip_requires_closes": True,
     "closes_pattern": "Closes|Fixes|Resolves",
     "review_budget_lines": 400,
@@ -89,9 +88,11 @@ def write_range_data(event_file, repo, dest):
     base = pr.get("base", {}).get("sha", "")
     head = pr.get("head", {}).get("sha", "")
     rng = f"{base}..{head}" if base and head and base != head else "HEAD..HEAD"
+    # Diff de la PR: merge-base (...), no el árbol de base.sha, que se mueve al reapuntar la PR (#1013).
+    diff_rng = rng.replace("..", "...")
     files = {
-        "changed.txt": git_text(repo, "diff", "--name-only", rng),
-        "numstat.txt": git_text(repo, "diff", "--numstat", rng),
+        "changed.txt": git_text(repo, "diff", "--name-only", diff_rng),
+        "numstat.txt": git_text(repo, "diff", "--numstat", diff_rng),
         "commits.txt": git_text(repo, "log", "--format=%P%n%B%n---COMMIT-END---", rng),
         "tracked.txt": git_text(repo, "ls-files"),
     }
@@ -138,26 +139,35 @@ class PrContractGateTests(unittest.TestCase):
                             labels=["type:feature"])
             self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
 
-    def test_hr6_labels_missing_and_degenerate(self):
-        with tempfile.TemporaryDirectory() as tmp1, tempfile.TemporaryDirectory() as tmp2:
-            p = self._run(tmp1, labels=[])
-            self.assertEqual(p.returncode, 1)
-            self.assertIn("etiqueta", p.stdout)
-            p = self._run(tmp2, labels=None)
-            self.assertEqual(p.returncode, 1)
+    def test_hr6_labels_do_not_block(self):
+        # R1 (DysTelefonica/team-skills#1093): la etiqueta `type:*` del PR ya no
+        # es un gate; el veredicto no depende de las etiquetas. #1172: HR-7
+        # avisa y no bloquea, así que el PR sale en verde con o sin etiqueta.
+        with tempfile.TemporaryDirectory() as tmp_with, \
+                tempfile.TemporaryDirectory() as tmp_without:
+            with_labels = self._run(tmp_with, labels=["type:feature"], body="Closes #42\n")
+            without_labels = self._run(tmp_without, labels=[], body="Closes #42\n")
+            self.assertEqual(with_labels.returncode, without_labels.returncode)
+            self.assertNotIn("HR-6", with_labels.stdout)
 
-    def test_hr7_tip_without_closes_fails(self):
+    def test_hr7_tip_without_closes_is_an_advisory(self):
+        # #1172 (decision del dueno, 2026-10-24; auditoria #1093): HR-7 avisa
+        # y no bloquea. El PR punta sin `Closes` sale en verde con el aviso.
         with tempfile.TemporaryDirectory() as tmp:
             p = self._run(tmp, labels=["type:feature"], body="sin closes\n",
                           policy_overrides={"chain_tip_requires_closes": True})
-            self.assertEqual(p.returncode, 1)
+            self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+            self.assertIn("AVISO", p.stdout)
             self.assertIn("HR-7", p.stdout)
 
-    def test_hr7_closes_on_non_tip_fails(self):
+    def test_hr7_closes_on_non_tip_is_an_advisory(self):
+        # #1172: el PR intermedio con `Closes` avisa; el enlace a la issue lo
+        # sigue exigiendo `issue-spec` (regla del dueno), no este gate.
         with tempfile.TemporaryDirectory() as tmp:
             p = self._run(tmp, labels=["type:feature"], base="feature/base",
                           body="Closes #42\n")
-            self.assertEqual(p.returncode, 1)
+            self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+            self.assertIn("AVISO", p.stdout)
             self.assertIn("HR-7", p.stdout)
 
     def test_a1_budget_exceeded_without_label_fails(self):
@@ -293,26 +303,32 @@ class PrContractGateTests(unittest.TestCase):
             self.assertIn("atribución de IA", p.stdout)
 
     def test_chain_partial_scenarios(self):
-        """chain:partial: Refs obligatorio, Closes prohibido, ausencia de ambos falla."""
-        for body, rc, needle in [
-            ("Refs #161\n\n" + AI_OK, 0, None),
-            ("Closes #161\n", 1, "Closes"),
-            ("descripción sin refs\n", 1, "Refs"),
+        """chain:partial: Refs obligatorio, Closes prohibido, ausencia de ambos avisa.
+
+        #1172: los tres casos son AVISOS (no bloquean); el aviso nombra la
+        palabra que falta o la que sobra."""
+        for body, needle in [
+            ("Refs #161\n\n" + AI_OK, None),
+            ("Closes #161\n", "Closes"),
+            ("descripción sin refs\n", "Refs"),
         ]:
             with self.subTest(body=body):
                 with tempfile.TemporaryDirectory() as tmp:
                     p = self._run(tmp, labels=["type:feature", "chain:partial"],
                                   body=body + chain_block("main"),
                                   policy_overrides={"chain_partial_label": "chain:partial"})
-                    self.assertEqual(p.returncode, rc, p.stdout + p.stderr)
+                    self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
                     if needle:
                         self.assertIn(needle, p.stdout)
 
     def test_hr31_edited_action_still_validates(self):
+        # HR-31: el gate juzga el estado actual sea cual sea la accion. Con
+        # HR-7 en aviso (#1172) el bloqueo lo trae HR-14, que sigue bloqueando.
         with tempfile.TemporaryDirectory() as tmp:
-            p = self._run(tmp, labels=[], action="edited")
-            self.assertEqual(p.returncode, 1)
-            self.assertIn("etiqueta", p.stdout)
+            p = self._run(tmp, labels=[], action="edited",
+                          commits=("arreglo sin conventional",))
+            self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+            self.assertIn("HR-14", p.stdout)
 
     def test_empty_event_and_missing_file_exit_2(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -374,7 +390,9 @@ def _commit_all(repo, message):
 class ClosureTestsGateTests(unittest.TestCase):
     """#334 (HR-53): un PR que cierra una issue nombra el test que la prueba,
     en formato ESTRUCTURADO (`ruta` o `ruta::caso`), versionado en git y con
-    el caso definido en su fichero. La prosa no cierra nada."""
+    el caso definido en su fichero. La prosa no cierra nada.
+    #1093 R1 (decisión del dueño, 2026-10-23): HR-53 es AVISO — el gate lo
+    imprime y sale 0; el PR no se bloquea por no declarar los tests de cierre."""
 
     def run_case(self, body, labels=("type:chore",), base="main", extra_file=None):
         tmp = tempfile.mkdtemp()
@@ -397,22 +415,26 @@ class ClosureTestsGateTests(unittest.TestCase):
     def test_section_body_absent_is_empty(self):
         self.assertEqual(section_body("## Solo esto\n\ntexto\n", CLOSURE_HEADING), "")
 
-    def test_tip_without_the_closure_section_fails(self):
+    def test_tip_without_the_closure_section_is_an_advisory(self):
+        # #1093 R1: HR-53 avisa y no bloquea.
         proc = self.run_case("Closes #12\n")
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("HR-53", proc.stdout + proc.stderr)
 
-    def test_closure_section_without_an_entry_fails(self):
+    def test_closure_section_without_an_entry_is_an_advisory(self):
         proc = self.run_case(f"Closes #12\n\n## {CLOSURE_HEADING}\n\ndebería estar arreglado\n")
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("formato", proc.stdout)
 
-    def test_prose_that_looks_like_a_test_does_not_pass(self):
+    def test_prose_that_looks_like_a_test_is_an_advisory(self):
         # «test assert» produce el token `assert`, presente en cualquier
         # fichero de test: con el formato libre, esto pasaba en verde.
         proc = self.run_case(f"Closes #12\n\n## {CLOSURE_HEADING}\n\n"
                              "test assert cubre el caso\n")
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("HR-53", proc.stdout)
 
     def test_closure_naming_an_existing_file_passes(self):
@@ -424,23 +446,44 @@ class ClosureTestsGateTests(unittest.TestCase):
                              "- `tests/test_x.py::test_algo`\n\n" + AI_OK)
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
-    def test_closure_case_not_defined_in_the_file_fails(self):
+    def test_closure_naming_a_test_under_a_dot_directory_passes(self):
+        tmp = tempfile.mkdtemp()
+        repo, base_sha, _head_sha = make_closure_repo(tmp)
+        rel = ".agents/skills/ejemplo/tests/test_x.py"
+        path = repo / rel
+        path.parent.mkdir(parents=True)
+        path.write_text("def test_algo():\n    assert True\n", encoding="utf-8")
+        _commit_all(repo, "test: añade test propagado")
+        head_sha = subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD"],
+                                  check=True, capture_output=True, text=True).stdout.strip()
+        event = make_event(tmp, body=f"Closes #12\n\n## {CLOSURE_HEADING}\n\n"
+                           f"- `{rel}`\n\n" + AI_OK + chain_block("main"),
+                           labels=["type:chore"], base="main",
+                           base_sha=base_sha, head_sha=head_sha)
+        proc = run_gate(event, make_policy(tmp), repo=repo)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertNotIn("HR-53", proc.stdout + proc.stderr)
+
+    def test_closure_case_not_defined_in_the_file_is_an_advisory(self):
         proc = self.run_case(f"Closes #12\n\n## {CLOSURE_HEADING}\n\n"
                              "- `tests/test_x.py::test_que_no_esta`\n")
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("no está definido", proc.stdout)
 
-    def test_closure_path_not_tracked_in_git_fails(self):
+    def test_closure_path_not_tracked_in_git_is_an_advisory(self):
         proc = self.run_case(f"Closes #12\n\n## {CLOSURE_HEADING}\n\n"
                              "- `tests/test_sin_versionar.py`\n",
                              extra_file="tests/test_sin_versionar.py")
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("no está versionada", proc.stdout)
 
-    def test_closure_naming_a_path_that_does_not_exist_fails(self):
+    def test_closure_naming_a_path_that_does_not_exist_is_an_advisory(self):
         proc = self.run_case(f"Closes #12\n\n## {CLOSURE_HEADING}\n\n"
                              "- `tests/test_que_no_existe.py`\n")
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("test_que_no_existe.py", proc.stdout)
 
     def test_pr_that_does_not_close_is_not_asked_for_a_test(self):
@@ -455,7 +498,8 @@ class ClosureNotApplicableGateTests(unittest.TestCase):
     en git. La evidencia no tiene que ser un fichero de test. Sin exención por
     etiqueta: `type:docs` no exonera nada.
     #918: «No aplica» solo vale si TODOS los ficheros cambiados son no
-    ejecutables (documentación por defecto); un .py o un workflow exige test."""
+    ejecutables (documentación por defecto); un .py o un workflow exige test.
+    #1093 R1: HR-53 avisa y no bloquea."""
 
     MARKER = "No aplica"
 
@@ -498,35 +542,39 @@ class ClosureNotApplicableGateTests(unittest.TestCase):
             evidence="docs/decisions/cierre.md")
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
-    def test_not_applicable_without_evidence_fails(self):
+    def test_not_applicable_without_evidence_is_an_advisory(self):
         proc = self.run_case(
             f"Closes #12\n\n## {CLOSURE_HEADING}\n\n### {self.MARKER}\n\n"
             "el cierre lo cubre la documentación del repo\n")
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("evidencia del cierre", proc.stdout)
 
-    def test_not_applicable_with_unversioned_evidence_fails(self):
+    def test_not_applicable_with_unversioned_evidence_is_an_advisory(self):
         proc = self.run_case(
             f"Closes #12\n\n## {CLOSURE_HEADING}\n\n### {self.MARKER}\n\n"
             "- `docs/decisions/cierre.md`\n",
             evidence="docs/decisions/cierre.md", commit_evidence=False)
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("no está versionada", proc.stdout)
 
-    def test_not_applicable_with_an_undefined_case_fails(self):
+    def test_not_applicable_with_an_undefined_case_is_an_advisory(self):
         proc = self.run_case(
             f"Closes #12\n\n## {CLOSURE_HEADING}\n\n### {self.MARKER}\n\n"
             "- `docs/decisions/cierre.md::test_que_no_esta`\n",
             evidence="docs/decisions/cierre.md")
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("no está definido", proc.stdout)
 
-    def test_the_marker_outside_the_section_fails_naming_the_section(self):
+    def test_the_marker_outside_the_section_is_an_advisory_naming_the_section(self):
         proc = self.run_case(
             f"Closes #12\n\n## {self.MARKER}\n\n- `docs/decisions/cierre.md`\n\n"
             f"## {CLOSURE_HEADING}\n\nsin nada\n",
             evidence="docs/decisions/cierre.md")
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("debe ir dentro", proc.stdout)
 
     def test_the_type_docs_label_does_not_exempt_the_section(self):
@@ -536,13 +584,16 @@ class ClosureNotApplicableGateTests(unittest.TestCase):
                 "sin evidencia\n")
         docs = self.run_case(body, labels=("type:docs",))
         other = self.run_case(body, labels=("type:chore",))
-        self.assertEqual(docs.returncode, 1)
-        self.assertEqual(other.returncode, 1)
+        self.assertEqual(docs.returncode, 0)
+        self.assertEqual(other.returncode, 0)
+        self.assertIn("AVISO", docs.stdout)
+        self.assertIn("AVISO", other.stdout)
 
     def test_a_section_without_the_marker_still_demands_a_test(self):
         proc = self.run_case(f"Closes #12\n\n## {CLOSURE_HEADING}\n\n"
                              "debería estar arreglado\n")
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("formato", proc.stdout)
 
     def not_applicable_body(self):
@@ -554,32 +605,38 @@ class ClosureNotApplicableGateTests(unittest.TestCase):
                              evidence="docs/decisions/cierre.md")
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
-    def test_a_python_file_with_not_applicable_fails_naming_it(self):
+    def test_a_python_file_with_not_applicable_is_an_advisory_naming_it(self):
         proc = self.run_case(self.not_applicable_body(), changes=("app/codigo.py",),
                              evidence="docs/decisions/cierre.md")
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("app/codigo.py", proc.stdout)
         self.assertIn("test", proc.stdout)
 
-    def test_a_workflow_with_not_applicable_fails_naming_it(self):
+    def test_a_workflow_with_not_applicable_is_an_advisory_naming_it(self):
         proc = self.run_case(self.not_applicable_body(),
                              changes=(".github/workflows/ci.yml",),
                              evidence="docs/decisions/cierre.md")
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn(".github/workflows/ci.yml", proc.stdout)
 
     def test_a_mixed_change_with_not_applicable_names_only_the_executable_file(self):
         proc = self.run_case(self.not_applicable_body(),
                              changes=("README.md", "app/codigo.py"),
                              evidence="docs/decisions/cierre.md")
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
         self.assertIn("app/codigo.py", proc.stdout)
         self.assertNotIn("README.md", proc.stdout)
 
-    def test_not_applicable_without_changed_files_fails_closed(self):
+    def test_not_applicable_without_changed_files_is_an_advisory(self):
+        # Sin la lista de cambios no se puede comprobar el alcance: el aviso lo
+        # dice. El exit 2 de HR-3 es lo otro: comprobación activa y su fichero
+        # de datos ausente.
         proc = self.run_case(self.not_applicable_body(), changes=("README.md",),
                              evidence="docs/decisions/cierre.md", no_changed=True)
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("--changed-files", proc.stdout)
 
     def test_the_policy_can_declare_its_own_non_executable_paths(self):
@@ -612,14 +669,17 @@ class ChainContextGateTests(unittest.TestCase):
         proc = self.run_case("Refs #333\n\n" + chain_ok() + "\n" + AI_OK)
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
-    def test_missing_chain_context_fails_naming_the_section(self):
+    def test_missing_chain_context_is_advisory_not_red(self):
+        # #1093 R3: Chain Context como dato deja de bloquear; el gate avisa y pasa.
         proc = self.run_case("Refs #333\n")
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("Chain Context", proc.stdout)
 
-    def test_missing_field_fails_naming_it(self):
+    def test_missing_field_is_advisory_not_red(self):
         proc = self.run_case("Refs #333\n\n" + chain_ok().replace("- follow-up: —\n", ""))
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("follow-up", proc.stdout)
 
     def test_standalone_pr_declares_chain_context_1_1(self):
@@ -636,39 +696,153 @@ class ChainContextGateTests(unittest.TestCase):
             labels=("type:chore",), base="main")
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
-    def test_standalone_pr_without_chain_context_fails(self):
+    def test_standalone_pr_without_chain_context_is_advisory_not_red(self):
         proc = self.run_case("Closes #333\n\n## " + CLOSURE_HEADING
                              + "\n\n- `tests/test_gate.py`\n",
                              labels=("type:chore",), base="main")
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("Chain Context", proc.stdout)
 
-    def test_base_mismatch_fails_naming_the_field(self):
+    def test_base_mismatch_is_advisory_not_red(self):
         proc = self.run_case("Refs #333\n\n" + chain_ok("otra-rama"))
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("base", proc.stdout)
 
-    def test_no_marker_fails(self):
+    def test_no_marker_is_advisory_not_red(self):
         proc = self.run_case("Refs #333\n\n"
                              + chain_ok().replace("📍 este PR (1/1)", "el PR actual (1/1)"))
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("📍", proc.stdout)
 
-    def test_two_markers_fail(self):
+    def test_two_markers_are_advisory_not_red(self):
         proc = self.run_case("Refs #333\n\n" + chain_ok() + "\n📍 y otro 📍\n")
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("📍", proc.stdout)
 
-    def test_malformed_position_and_budget_fail(self):
+    def test_malformed_position_and_budget_are_advisory_not_red(self):
         proc = self.run_case("Refs #333\n\n" + chain_ok().replace("position: 1/1", "position: uno")
                              .replace("review-budget: 280/400", "review-budget: mucho"))
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("position", proc.stdout)
         self.assertIn("review-budget", proc.stdout)
 
 
+class ClosingKeywordInCommitsTests(unittest.TestCase):
+    """#1056 (HR-7): GitHub cierra la issue por el CUERPO del PR y también por
+    los MENSAJES de commit, y HR-7 solo miraba el cuerpo.
+
+    Un PR con `chain:partial` cuyo commit dice `(Closes #N)` cierra su issue al
+    mergearse aunque el cuerpo diga `Refs #N`: así se cerraron la issue 1035 (PR
+    1050, commit `27d6817d`, cerrado a los cinco segundos del merge y reabierto
+    por el mantenedor) y la 1033 (PR 1037). El dato es el `--commits-file` que
+    el workflow ya genera para HR-14 con merge-base (#1013): el gate no llama a
+    la API ni ejecuta git para esto.
+    """
+
+    KEYWORDS = ("close", "closes", "closed", "fix", "fixes", "fixed",
+                "resolve", "resolves", "resolved")
+
+    def run_case(self, commits, *, body=None,
+                 labels=("type:bug", "chain:partial"), base="feature/x"):
+        tmp = tempfile.mkdtemp()
+        repo, base_sha, head_sha = make_repo(tmp, commits=commits)
+        event = make_event(
+            tmp, body=body if body is not None else "Refs #1035\n\n" + chain_ok(base) + "\n" + AI_OK,
+            labels=list(labels), base=base, base_sha=base_sha, head_sha=head_sha)
+        return run_gate(event, make_policy(tmp), repo=repo)
+
+    def test_chain_partial_con_closes_en_el_commit_avisa(self):
+        """Caso real (PR 1050): el cuerpo cumple HR-7 y el commit cierra la issue.
+
+        #1172: avisa y no bloquea; el aviso nombra el commit, la palabra que
+        lleva y la que deberia llevar."""
+        proc = self.run_case(
+            ["fix(propagate): el banner del ensayo calcula la longitud (Closes #1035)"])
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
+        self.assertIn("HR-7", proc.stdout)
+        self.assertIn("Closes #1035", proc.stdout)
+        self.assertIn("Refs #1035", proc.stdout)
+
+    def test_tip_sin_chain_partial_puede_llevar_closes_en_su_commit(self):
+        proc = self.run_case(
+            ["feat(x): el cierre de la cadena (Closes #1035)"],
+            body="Closes #1035\n\n## " + CLOSURE_HEADING + "\n\n- `tests/test_gate.py`\n"
+                 + chain_block("main") + "\n" + AI_OK,
+            labels=("type:bug",), base="main")
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_las_nueve_palabras_clave_sin_distinguir_mayusculas(self):
+        for keyword in self.KEYWORDS:
+            for forma in (keyword, keyword.capitalize(), keyword.upper()):
+                with self.subTest(palabra=forma):
+                    proc = self.run_case([f"feat(x): algo ({forma} #1035)"])
+                    self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+                    self.assertIn("HR-7", proc.stdout)
+
+    def test_palabra_clave_sin_numero_no_cierra_nada(self):
+        proc = self.run_case(["fix(x): el close del banner, sin referencia (#7 cerrado a mano)"])
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_palabra_clave_en_el_cuerpo_del_commit_tambien_avisa(self):
+        proc = self.run_case(["feat(x): algo\n\nCloses #1035"])
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("HR-7", proc.stdout)
+class ClosingTargetsInBodyTests(unittest.TestCase):
+    """#1059 (HR-7): el gate decía «tiene o no tiene una palabra de cierre», no
+    «cuáles». Un PR punta que declara `Closes #1056` y que además nombra
+    `Closes #1035` al citar un ejemplo pasaba igual, y GitHub cerraba las dos:
+    pasó con la PR 1058 de este repo, que habría cerrado la issue 1035 —la
+    que tiene trabajo pendiente— al mergearse.
+
+    Aqui el veredicto NO cambia (cerrar varias issues en un PR punta es
+    legitimo): lo que se agrega es la visibilidad de la lista, por `stderr`.
+    Con `chain:partial` el hallazgo de HR-7 no se toca: ahi la palabra de cierre
+    ya es el fallo.
+    """
+
+    def run_case(self, body, labels=("type:bug",), base="main"):
+        tmp = tempfile.mkdtemp()
+        repo, base_sha, head_sha = make_repo(tmp)
+        event = make_event(tmp, body=body, labels=list(labels), base=base,
+                           base_sha=base_sha, head_sha=head_sha)
+        return run_gate(event, make_policy(tmp), repo=repo)
+
+    def test_el_cuerpo_que_cierra_dos_issues_reporta_las_dos(self):
+        proc = self.run_case(
+            "Closes #1056\n\nEl commit decia (Closes #1035) y por eso lo arreglo.\n\n"
+            "## " + CLOSURE_HEADING + "\n\n- `tests/test_gate.py`\n"
+            + chain_block("main") + "\n" + AI_OK)
+        # El veredicto no cambia: cerrar varias issues en el punta es legítimo.
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("#1035", proc.stderr)
+        self.assertIn("#1056", proc.stderr)
+
+    def test_una_sola_issue_se_comporta_igual_que_hoy(self):
+        proc = self.run_case(
+            "Closes #1056\n\n## " + CLOSURE_HEADING + "\n\n- `tests/test_gate.py`\n"
+            + chain_block("main") + "\n" + AI_OK)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertNotIn("#1056", proc.stderr)
+
+    def test_la_misma_issue_dos_veces_no_es_una_lista(self):
+        proc = self.run_case(
+            "Closes #1056\n\nCorrijo lo que decia Fixes #1056.\n\n"
+            "## " + CLOSURE_HEADING + "\n\n- `tests/test_gate.py`\n"
+            + chain_block("main") + "\n" + AI_OK)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertNotIn("#1056", proc.stderr)
+
+
 class IssueLinkGateTests(unittest.TestCase):
-    """#333: el enlace de la issue no admite referencias a otro repo (la mezcla Closes/Refs es aviso, #787)."""
+    """#333: el enlace de la issue no admite referencias a otro repo. La mezcla
+    Closes/Refs no produce ni fallo ni aviso: #787 añadió el aviso y 47f74411
+    lo retiró (Refs #840)."""
 
     def run_case(self, body, labels=("type:chore",)):
         tmp = tempfile.mkdtemp()
@@ -678,7 +852,7 @@ class IssueLinkGateTests(unittest.TestCase):
         return run_gate(event, make_policy(tmp), repo=repo)
 
     def test_closes_and_refs_for_the_same_issue_passes(self):
-        # #787: Closes y Refs de la misma issue no es un fallo, ni aviso en issue-spec.
+        # Closes y Refs de la misma issue no es un fallo ni un aviso en issue-spec (#840).
         proc = self.run_case("Closes #333\n\n## " + CLOSURE_HEADING
                              + "\n\n- `tests/test_gate.py`\n" + chain_ok("main") + "\nRefs #333\n\n" + AI_OK)
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
@@ -702,7 +876,7 @@ class IssueLinkGateTests(unittest.TestCase):
                              + "\n\n- `tests/test_gate.py`\n" + chain_ok("main") + "\n" + AI_OK)
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
-ALL_CHECKS = ("labels", "closes", "chain_context", "issue_links", "closure_tests",
+ALL_CHECKS = ("closes", "chain_context", "issue_links", "closure_tests",
               "docs_evidence", "budget", "commits", "ai_disclosure")
 ONLY_DOCS = {name: False for name in ALL_CHECKS if name != "docs_evidence"}
 DOCS_EVIDENCE = {"pages": [{"page": "docs/p.md", "covers": ["f.txt"]}], "checklists": {}}
@@ -723,19 +897,22 @@ class ChecksSwitchTests(unittest.TestCase):
 
     def test_without_checks_every_check_stays_active(self):
         proc = self.run_case(None)
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
-        for rule in ("HR-6", "HR-7", "HR-54", "HR-64"):
+        # #1172: HR-7 avisa y no bloquea, así que el veredicto es 0; lo que
+        # prueba que la comprobación esta activa es que AVISE.
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        for rule in ("HR-7", "HR-54", "HR-64"):
             self.assertIn(rule, proc.stdout)
 
     def test_only_docs_evidence_ignores_the_rest_of_the_contract(self):
         proc = self.run_case(ONLY_DOCS, body="## Documentación\n\nNo cambia el contrato de f.txt.\n")
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
-    def test_only_docs_evidence_still_fails_hr64_and_nothing_else(self):
+    def test_only_docs_evidence_still_warns_hr64_and_nothing_else(self):
         proc = self.run_case(ONLY_DOCS)
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
         self.assertIn("HR-64", proc.stdout)
-        for rule in ("HR-6:", "HR-7:", "HR-53", "HR-54"):
+        self.assertIn("AVISO", proc.stdout)
+        for rule in ("HR-7:", "HR-53", "HR-54"):
             self.assertNotIn(rule, proc.stdout)
 
     def test_disabled_checks_are_listed_on_stderr(self):
@@ -746,8 +923,8 @@ class ChecksSwitchTests(unittest.TestCase):
 
     def test_docs_evidence_switched_off_is_not_enforced_even_if_declared(self):
         checks = {name: False for name in ALL_CHECKS}
-        checks["labels"] = True
-        proc = self.run_case(checks, labels=("type:feature",))
+        checks["closes"] = True
+        proc = self.run_case(checks, body="Closes #42\n", labels=("type:feature",))
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
     def test_unknown_check_name_exits_2(self):
@@ -768,6 +945,34 @@ class ChecksSwitchTests(unittest.TestCase):
         proc = self.run_case({name: False for name in ALL_CHECKS})
         self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
         self.assertIn("ninguna", proc.stderr)
+
+    # #1113: #1093 (R1/R2) retirio la comprobacion `labels` del gate. Las
+    # politicas de consumer que la siguen declarando (APAP_WEB, cadete) no
+    # pueden romper el gate: se ignora como no-op y avisa.
+
+    def test_retired_check_gives_the_same_verdict_and_warns(self):
+        body = "## Documentación\n\nmotivo\n"
+        without = self.run_case(ONLY_DOCS, body=body)
+        with_retired = self.run_case({**ONLY_DOCS, "labels": True}, body=body)
+        self.assertEqual(without.returncode, 0, without.stdout + without.stderr)
+        self.assertEqual(with_retired.returncode, without.returncode)
+        self.assertEqual(with_retired.stdout, without.stdout)
+        self.assertIn("comprobación retirada, se ignora; quítala de la política",
+                      with_retired.stderr)
+
+    def test_retired_checks_warn_on_a_single_line(self):
+        proc = self.run_case({**ONLY_DOCS, "labels": True, "required_labels": True})
+        self.assertNotEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        avisos = [line for line in proc.stderr.splitlines()
+                  if "comprobación retirada" in line]
+        self.assertEqual(len(avisos), 1, proc.stderr)
+        self.assertIn("labels", avisos[0])
+        self.assertIn("required_labels", avisos[0])
+
+    def test_retired_check_ignores_its_value(self):
+        proc = self.run_case({**ONLY_DOCS, "labels": "yes"})
+        self.assertNotEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("comprobación retirada", proc.stderr)
 
 class RangeDataFilesTests(unittest.TestCase):
     """#753: el gate no ejecuta git; el workflow le pasa los datos del rango por fichero."""
@@ -801,8 +1006,8 @@ class RangeDataFilesTests(unittest.TestCase):
 
     def test_a_check_that_is_off_does_not_need_its_file(self):
         with tempfile.TemporaryDirectory() as tmp:
-            checks = {name: name == "labels" for name in ALL_CHECKS}
-            event = make_event(tmp, body="x\n", labels=["type:chore"])
+            checks = {name: name == "closes" for name in ALL_CHECKS}
+            event = make_event(tmp, body="Closes #42\n", labels=["type:chore"])
             proc = run_gate(event, make_policy(tmp, checks=checks), data_flags=[])
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
@@ -816,6 +1021,52 @@ class RangeDataFilesTests(unittest.TestCase):
             numstat.write_text("300\t100\ta.py\n-\t-\timg.png\n", encoding="utf-8")
             proc = self._only("budget", tmp, ["--numstat-file", str(numstat)])
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+
+class MovedBaseRangeTests(unittest.TestCase):
+    """HR-64 tras reapuntar una PR apilada: el rango de los ficheros es el de la PR, no el de main."""
+
+    COVERED = {"checks": {name: name == "docs_evidence" for name in ALL_CHECKS},
+               "docs_evidence": {"pages": [{"page": "docs/codebase/scripts.md",
+                                           "covers": ["scripts/check_*.py"]}],
+                                 "checklists": {}}}
+
+    def _git(self, repo, *args):
+        subprocess.run(["git", "-C", str(repo), "-c", "user.name=t", "-c", "user.email=t@e.invalid",
+                        "-c", "commit.gpgsign=false", *args], check=True, capture_output=True)
+
+    def _commit(self, repo, msg, files):
+        for rel, text in files.items():
+            (repo / rel).parent.mkdir(parents=True, exist_ok=True)
+            (repo / rel).write_text(text, encoding="utf-8")
+        self._git(repo, "add", "-A")
+        self._git(repo, "commit", "-q", "-m", msg)
+        return git_text(repo, "rev-parse", "HEAD").strip()
+
+    def _stacked_pr_after_main_moved(self, tmp):
+        """PR de una rama sobre B0 que solo toca tests/. Después main mergea otra PR
+        (M1, toca scripts/) y la PR se reapunta a main: base.sha = M1, head = F1."""
+        repo = Path(tmp) / "repo"
+        repo.mkdir()
+        self._git(repo, "init", "-q", "-b", "main")
+        self._commit(repo, "base", {"docs/codebase/scripts.md": "scripts\n"})
+        self._git(repo, "checkout", "-q", "-b", "feature/x")
+        head = self._commit(repo, "feat: la PR", {"tests/test_own.py": "x = 1\n"})
+        self._git(repo, "checkout", "-q", "main")
+        base = self._commit(repo, "merge de otra PR", {"scripts/check_crap.py": "y = 1\n"})
+        return repo, base, head
+
+    def test_pr_que_solo_toca_tests_no_hereda_lo_que_main_mergeo(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, base, head = self._stacked_pr_after_main_moved(tmp)
+            event = make_event(tmp, body="x\n", labels=["type:chore"], base_sha=base, head_sha=head)
+            proc = run_gate(event, make_policy(tmp, **self.COVERED), repo=repo)
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_el_rango_documentado_del_gate_es_el_de_tres_puntos(self):
+        done = subprocess.run([sys.executable, str(GATE), "--help"], capture_output=True,
+                              text=True, check=True)
+        self.assertIn("git diff --name-only BASE...HEAD", " ".join(done.stdout.split()))
 
 
 def ai_section(text):
@@ -834,31 +1085,37 @@ class AiDisclosureGateTests(unittest.TestCase):
                            base_sha=base_sha, head_sha=head_sha)
         return run_gate(event, make_policy(tmp), repo=repo)
 
-    def test_missing_section_fails_naming_it(self):
+    # #1093 R9: la asistencia de IA deja de bloquear; sin ella el gate avisa y pasa.
+    def test_missing_section_is_advisory_not_red(self):
         proc = self.run_case("Refs #876\n")
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("Asistencia de IA", proc.stdout)
 
-    def test_missing_body_fails_naming_it(self):
+    def test_missing_body_is_advisory_not_red(self):
         proc = self.run_case(None)
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("Asistencia de IA", proc.stdout)
 
-    def test_empty_section_fails(self):
+    def test_empty_section_is_advisory_not_red(self):
         proc = self.run_case("Refs #876\n\n## Asistencia de IA\n\n")
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("Asistencia de IA", proc.stdout)
 
-    def test_section_with_only_template_comment_fails(self):
+    def test_section_with_only_template_comment_is_advisory_not_red(self):
         body = ("Refs #876\n\n## Asistencia de IA\n\n"
                 "<!-- Escriba «ninguna» o la herramienta y la parte ayudada. -->\n")
         proc = self.run_case(body)
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("Asistencia de IA", proc.stdout)
 
-    def test_declaration_as_prose_without_heading_fails(self):
+    def test_declaration_as_prose_without_heading_is_advisory_not_red(self):
         proc = self.run_case("Refs #876\n\nAsistencia de IA: ninguna.\n")
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("Asistencia de IA", proc.stdout)
 
     def test_ninguna_passes(self):
@@ -884,8 +1141,9 @@ LIVE_PR = 7
 
 
 class _MockApiServer:
-    """HTTP server local (stdlib) sirviendo los dos endpoints del API que
-    consume el gate (`/repos/{r}/issues/{n}/labels` y `/repos/{r}/pulls/{n}`)."""
+    """HTTP server local (stdlib) sirviendo los endpoints del API que consume el
+    gate (`/repos/{r}/issues/{n}/labels`, `/repos/{r}/pulls/{n}` y, #1190, el listado
+    `/repos/{r}/pulls` de la cadena, vacío aquí: estos casos no tienen eslabones)."""
 
     def __init__(self, pull_body, labels):
         import threading
@@ -895,6 +1153,7 @@ class _MockApiServer:
         routes = {
             f"/repos/{LIVE_REPO}/issues/{LIVE_PR}/labels": state["labels"],
             f"/repos/{LIVE_REPO}/pulls/{LIVE_PR}": state["pull"],
+            f"/repos/{LIVE_REPO}/pulls": [],
         }
 
         class _Handler(BaseHTTPRequestHandler):
@@ -927,11 +1186,15 @@ def _good_api_body():
 
 
 class LiveApiTests(unittest.TestCase):
-    """#938 — etiquetas y cuerpo por API; fail-closed sin token o con API caída."""
+    """#938 — cuerpo y etiquetas por API; fail-closed sin token o con API caída.
+
+    R1 (DysTelefonica/team-skills#1093): la etiqueta `type:*` del PR ya no es un
+    gate, así que la comprobación viva que se juzga aquí es la del cuerpo (HR-7).
+    """
 
     LIVE_POLICY = {**POLICY_DATA,
-                   "checks": {n: (n == "labels") for n in
-                              ("labels", "closes", "chain_context", "issue_links",
+                   "checks": {n: (n == "closes") for n in
+                              ("closes", "chain_context", "issue_links",
                                "closure_tests", "docs_evidence", "budget",
                                "commits", "ai_disclosure")}}
 
@@ -964,30 +1227,35 @@ class LiveApiTests(unittest.TestCase):
                  "--policy-file", str(policy)],
                 capture_output=True, text=True, check=False, env=env, timeout=60)
 
-    def test_payload_labels_missing_but_api_labels_present_passes(self):
-        """Snapshot sin etiquetas, API con `type:chore`+`chain:partial` → 0."""
+    def test_payload_body_stale_but_api_body_valid_passes(self):
+        """Snapshot con el cuerpo viejo, API con el cuerpo que cierra → 0."""
         env = {k: v for k, v in os.environ.items() if k != "GITHUB_TOKEN"}
         env["GITHUB_TOKEN"] = "test-token"
-        server = _MockApiServer(pull_body=_good_api_body(),
-                                labels=[{"name": "type:chore"}, {"name": "chain:partial"}])
+        server = _MockApiServer(pull_body=_good_api_body(), labels=[])
         try:
             env["GITHUB_API_URL"] = server.base_url
-            proc = self._run(env, payload_labels=[], payload_body="cuerpo obsoleto")
+            proc = self._run(env, payload_body="cuerpo obsoleto")
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            # El cuerpo vivo cierra: HR-7 no tiene nada que avisar (#1172).
+            self.assertNotIn("HR-7", proc.stdout)
         finally:
             server.close()
 
-    def test_payload_labels_present_but_api_labels_absent_fails(self):
-        """Snapshot con `type:chore`, API sin etiquetas → 1 con `HR-6`."""
+    def test_payload_body_valid_but_api_body_stale_warns_hr7(self):
+        """Snapshot con el cuerpo que cierra, API con el cuerpo viejo → aviso.
+
+        #1172: HR-7 avisa y no bloquea, así que el veredicto ya no distingue
+        los dos cuerpos. Lo que lo distingue es el AVISO: si el gate hubiera
+        usado el payload (que cierra), no habria avisado de HR-7."""
         env = {k: v for k, v in os.environ.items() if k != "GITHUB_TOKEN"}
         env["GITHUB_TOKEN"] = "test-token"
         body = _good_api_body()["body"]
-        server = _MockApiServer(pull_body={"body": body}, labels=[])
+        server = _MockApiServer(pull_body={"body": "cuerpo obsoleto"}, labels=[])
         try:
             env["GITHUB_API_URL"] = server.base_url
-            proc = self._run(env, payload_labels=["type:chore"], payload_body=body)
-            self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
-            self.assertIn("HR-6", proc.stdout)
+            proc = self._run(env, payload_body=body)
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            self.assertIn("HR-7", proc.stdout)
         finally:
             server.close()
 
@@ -1027,7 +1295,6 @@ class LiveApiTests(unittest.TestCase):
             # El payload del evento tiene labels y body explícitos; el
             # gate los debe respetar tal cual.
             event = self._event(tmp,
-                                payload_labels=["type:bug"],
                                 payload_body="Closes #42\n\n## Tests\n\n- `t.py`\n")
             policy = Path(tmp) / "policy.json"
             policy.write_text(json.dumps(self.LIVE_POLICY), encoding="utf-8")
@@ -1043,6 +1310,320 @@ class LiveApiTests(unittest.TestCase):
             # Sin opt-in ni token, el gate es verde porque las labels y el
             # body del payload cumplen el contrato (HR-6 y la política).
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+
+    # --- #996: el modo vivo es el defecto cuando se juzga el evento real de Actions ---
+
+    def _run_actions(self, env, *, payload_labels=None, payload_body="", event_path_is_actions=True):
+        """Como en CI: sin `PR_CONTRACT_USE_LIVE_API` y con `GITHUB_EVENT_PATH` apuntando al
+        evento que se juzga (o a otro fichero, si `event_path_is_actions` es falso)."""
+        env = dict(env)
+        env.pop("PR_CONTRACT_USE_LIVE_API", None)
+        with tempfile.TemporaryDirectory() as tmp:
+            event = self._event(tmp, payload_labels=payload_labels, payload_body=payload_body)
+            env["GITHUB_EVENT_PATH"] = str(event if event_path_is_actions else Path(tmp) / "otro.json")
+            policy = Path(tmp) / "policy.json"
+            policy.write_text(json.dumps(self.LIVE_POLICY), encoding="utf-8")
+            return subprocess.run(
+                [sys.executable, str(GATE), "--event-file", str(event),
+                 "--policy-file", str(policy)],
+                capture_output=True, text=True, check=False, env=env, timeout=60)
+
+    def _token_env(self, server):
+        env = {k: v for k, v in os.environ.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN")}
+        env["GITHUB_TOKEN"] = "test-token"
+        env["GITHUB_API_URL"] = server.base_url
+        return env
+
+    def test_996_actions_event_with_token_reads_live_body_by_default(self):
+        """Payload congelado con el cuerpo viejo, API con el cuerpo que cierra: el PR
+        editado despues de abrirse pasa HR-7 sin cerrar ni reabrir ni activar nada."""
+        server = _MockApiServer(pull_body=_good_api_body(), labels=[])
+        try:
+            proc = self._run_actions(self._token_env(server),
+                                     payload_body="cuerpo obsoleto")
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            # El cuerpo vivo cierra: HR-7 no avisa (#1172). Si el gate hubiera
+            # leido el payload, el aviso habria estado.
+            self.assertNotIn("HR-7", proc.stdout)
+        finally:
+            server.close()
+
+    def test_996_live_mode_does_not_relax_the_contract(self):
+        """El cuerpo de la API manda aunque el payload trajera uno que cierra.
+
+        #1172: HR-7 avisa y no bloquea, así que lo que prueba el caso es el
+        aviso (el payload que cierra no habría avisado de nada)."""
+        body = _good_api_body()["body"]
+        server = _MockApiServer(pull_body={"body": "cuerpo obsoleto"}, labels=[])
+        try:
+            proc = self._run_actions(self._token_env(server), payload_body=body)
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            self.assertIn("HR-7", proc.stdout)
+        finally:
+            server.close()
+
+    def test_996_explicit_opt_out_keeps_reading_the_payload(self):
+        """`PR_CONTRACT_USE_LIVE_API=0` vuelve al payload: sin `Closes` en el, HR-7 avisa."""
+        server = _MockApiServer(pull_body=_good_api_body(), labels=[])
+        try:
+            env = self._token_env(server)
+            with tempfile.TemporaryDirectory() as tmp:
+                event = self._event(tmp, payload_body="cuerpo obsoleto")
+                env.update(GITHUB_EVENT_PATH=str(event), PR_CONTRACT_USE_LIVE_API="0")
+                policy = Path(tmp) / "policy.json"
+                policy.write_text(json.dumps(self.LIVE_POLICY), encoding="utf-8")
+                proc = subprocess.run(
+                    [sys.executable, str(GATE), "--event-file", str(event),
+                     "--policy-file", str(policy)],
+                    capture_output=True, text=True, check=False, env=env, timeout=60)
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            self.assertIn("HR-7", proc.stdout)
+        finally:
+            server.close()
+
+    def test_996_default_live_mode_fails_closed_when_the_api_is_down(self):
+        env = {k: v for k, v in os.environ.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN")}
+        env["GITHUB_TOKEN"] = "test-token"
+        env["GITHUB_API_URL"] = "http://127.0.0.1:9"  # puerto cerrado
+        proc = self._run_actions(env, payload_labels=["type:chore"],
+                                 payload_body="Closes #42 - cuerpo unico")
+        self.assertEqual(proc.returncode, 2, proc.stderr)
+        self.assertIn("transport error", proc.stderr)
+        self.assertNotIn("cuerpo unico", proc.stderr)
+
+    def test_996_actions_event_without_token_keeps_reading_the_payload(self):
+        """Sin token no hay API que consultar: el gate sigue en modo payload, como en local."""
+        env = {k: v for k, v in os.environ.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN")}
+        proc = self._run_actions(env, payload_labels=["type:bug"],
+                                 payload_body="Closes #42\n\n## Tests\n\n- `t.py`\n")
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_996_an_event_file_that_is_not_the_actions_event_stays_in_payload_mode(self):
+        """Los scripts locales, el propagador y la parity pasan su propio evento: no cambian."""
+        server = _MockApiServer(pull_body=_good_api_body(), labels=[])
+        try:
+            proc = self._run_actions(self._token_env(server),
+                                     payload_body="cuerpo obsoleto",
+                                     event_path_is_actions=False)
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            self.assertIn("HR-7", proc.stdout)
+        finally:
+            server.close()
+
+
+class Hr7AdvisoryTests(unittest.TestCase):
+    """#1172 (decisión del dueño, 2026-10-24; auditoría #1093): HR-7 pasa a AVISO.
+
+    HR-7 es la palabra de cierre: la punta de cadena lleva `Closes #<issue>` y
+    los intermedios `Refs #<issue>`. Con HR-7 en aviso el gate la imprime y NO
+    cambia el exit code. Lo que sigue bloqueando: HR-14 (commit convencional) y
+    el enlace a la issue (`issue-spec`, gate aparte, regla del dueño).
+    """
+
+    def _run(self, tmp, *, body, labels=("type:feature",), base="main",
+             commits=("feat: x",), policy=None):
+        repo, base_sha, head_sha = make_repo(tmp, commits=list(commits))
+        ev = make_event(tmp, body=body, labels=list(labels), base=base,
+                        base_sha=base_sha, head_sha=head_sha)
+        pol = make_policy(tmp, **(policy or {}))
+        return run_gate(ev, pol, repo)
+
+    def test_the_tip_without_closes_is_an_advisory_not_a_block(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp, body="sin palabra de cierre\n" + chain_block("main") + "\n" + AI_OK)
+            self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+            self.assertIn("AVISO", p.stdout)
+            self.assertIn("HR-7", p.stdout)
+            self.assertIn("PR-CONTRACT OK", p.stdout)
+            self.assertNotIn("✗", p.stdout)
+
+    def test_the_intermediate_with_closes_is_an_advisory_not_a_block(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp, base="feature/base",
+                          body="Closes #42\n" + chain_ok("feature/base") + "\n" + AI_OK)
+            self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+            self.assertIn("AVISO", p.stdout)
+            self.assertIn("HR-7", p.stdout)
+
+    def test_the_chain_partial_without_refs_is_an_advisory_not_a_block(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp, labels=("type:feature", "chain:partial"),
+                          body="descripcion\n" + chain_block("main") + "\n" + AI_OK)
+            self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+            self.assertIn("AVISO", p.stdout)
+            self.assertIn("HR-7", p.stdout)
+            self.assertIn("Refs", p.stdout)
+
+    def test_the_advisory_does_not_hide_the_blocks_that_remain(self):
+        # El aviso de HR-7 no relaja el resto: HR-14 sigue bloqueando en el
+        # mismo PR que avisa de HR-7.
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp, body="sin palabra de cierre\n" + chain_block("main") + "\n" + AI_OK,
+                          commits=["arreglo sin conventional"])
+            self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+            self.assertIn("AVISO", p.stdout)
+            self.assertIn("HR-7", p.stdout)
+            self.assertIn("HR-14", p.stdout)
+
+    def test_the_issue_link_to_another_repository_still_blocks(self):
+        # El enlace a la issue del propio repo lo sigue exigiendo `issue-spec`
+        # (gate aparte); este gate solo avisa de la palabra de cierre y
+        # bloquea el enlace a OTRO repositorio (HR-54).
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp, body="sin palabra de cierre\n\nRefs otro-org/otro-repo#12\n"
+                          + chain_block("main") + "\n" + AI_OK)
+            self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+            self.assertIn("otro-org/otro-repo#12", p.stdout)
+
+    def test_the_hr53_closure_section_is_still_an_advisory(self):
+        # HR-53 ya avisaba desde #1113: este PR no lo cambia, lo fija.
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp, body="Closes #42\n" + chain_block("main") + "\n" + AI_OK)
+            self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+            self.assertIn("AVISO", p.stdout)
+            self.assertIn("HR-53", p.stdout)
+
+
+class Hr53Hr64AdvisoryTests(unittest.TestCase):
+    """Decisión del dueño (2026-10-23, #1093): HR-53 (tests de cierre) y HR-64
+    (documentación) pasan a AVISO — el gate los imprime y NO cambia el exit code.
+    Los commits convencionales (HR-14) siguen bloqueando."""
+
+    DOCS_EVIDENCE = {"pages": [{"page": "docs/p.md", "covers": ["f.txt"]}],
+                     "checklists": {}}
+
+    def _run(self, tmp, *, body, labels=("type:feature",), commits=("feat: x",),
+             policy=None):
+        repo, base_sha, head_sha = make_repo(tmp, commits=list(commits))
+        ev = make_event(tmp, body=body, labels=list(labels), base="main",
+                        base_sha=base_sha, head_sha=head_sha)
+        pol = make_policy(tmp, **(policy or {}))
+        return run_gate(ev, pol, repo)
+
+    def test_hr53_without_the_closure_section_is_an_advisory_not_a_block(self):
+        # Cierra una issue y no declara los tests de cierre: aviso y exit 0.
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp, body="Closes #42\n" + chain_block("main") + "\n" + AI_OK)
+            self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+            self.assertIn("AVISO", p.stdout)
+            self.assertIn("HR-53", p.stdout)
+            self.assertNotIn("FAIL", p.stdout)
+            self.assertNotIn("✗", p.stdout)
+
+    def test_hr64_without_the_documentation_section_is_an_advisory_not_a_block(self):
+        # Toca código cubierto por una página del mapa y no lleva la sección
+        # «Documentación»: aviso y exit 0.
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp,
+                          body="Closes #42\n\n## Tests que prueban el cierre\n\n"
+                               "- `tests/test_gate.py`\n" + chain_block("main") + "\n" + AI_OK,
+                          policy={"docs_evidence": self.DOCS_EVIDENCE})
+            self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+            self.assertIn("AVISO", p.stdout)
+            self.assertIn("HR-64", p.stdout)
+            self.assertNotIn("FAIL", p.stdout)
+            self.assertNotIn("✗", p.stdout)
+
+    def test_hr53_and_hr64_aviso_do_not_hide_the_blocks_that_remain(self):
+        # El aviso no relaja el resto: un commit no convencional sigue bloqueando
+        # aunque HR-53 y HR-64 avisen en el mismo PR.
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp, body="Closes #42\n" + chain_block("main") + "\n" + AI_OK,
+                          commits=["arreglo sin conventional"],
+                          policy={"docs_evidence": self.DOCS_EVIDENCE})
+            self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+            self.assertIn("HR-14", p.stdout)
+            self.assertIn("convencional", p.stdout)
+
+    def test_a_non_conventional_commit_still_blocks(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp, body="Closes #42\n" + chain_block("main") + "\n" + AI_OK,
+                          commits=["arreglo sin conventional"])
+            self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+            self.assertIn("HR-14", p.stdout)
+            self.assertIn("convencional", p.stdout)
+
+    def test_the_advisory_is_not_a_finding(self):
+        # El veredicto sigue siendo «PR-CONTRACT OK»: el aviso no es un hallazgo.
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp, body="Closes #42\n" + chain_block("main") + "\n" + AI_OK)
+            self.assertIn("PR-CONTRACT OK", p.stdout)
+
+
+class A1VendoredOriginsTests(unittest.TestCase):
+    """A1 (#931, #1133): el mapa de origenes es lo que separa el arbol
+    vendorizado (`.agents/skills/`) del trabajo de autoria.
+
+    Sin el mapa, el gate cuenta TODO: una PR de propagacion del catalogo que
+    solo trae `.agents/skills/` falla con «A1: el diff supera el presupuesto»
+    sin decir que esas lineas no son trabajo de quien abre la PR. El hallazgo
+    tiene que nombrar el arbol vendorizado y el remedio.
+    """
+
+    BODY = ("Closes #42\n\n## Tests que prueban el cierre\n\n"
+            "- `tests/test_gate.py` (positivo del gate)\n" + chain_block("main") + "\n" + AI_OK)
+
+    def _run(self, tmp, *, origins=None, budget=3):
+        repo = Path(tmp) / "repo"
+        repo.mkdir()
+        env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+
+        def run(*args):
+            return subprocess.run(args, cwd=repo, capture_output=True, text=True, check=True,
+                                  env={**env, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+                                       "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"})
+
+        run("git", "init", "-q", "-b", "main")
+        (repo / "tests").mkdir()
+        (repo / "tests" / "test_gate.py").write_text("def test_gate() -> None:\n    pass\n",
+                                                     encoding="utf-8")
+        run("git", "add", "-A")
+        run("git", "commit", "-qm", "chore: base")
+        base_sha = run("git", "rev-parse", "HEAD").stdout.strip()
+        run("git", "checkout", "-q", "-b", "feature/x")
+        vendored = repo / ".agents" / "skills" / "prop.md"
+        vendored.parent.mkdir(parents=True)
+        vendored.write_text("\n".join(f"linea {i}" for i in range(10)) + "\n", encoding="utf-8")
+        run("git", "add", "-A")
+        run("git", "commit", "-qm", "chore: propaga el catalogo")
+        head_sha = run("git", "rev-parse", "HEAD").stdout.strip()
+        ev = make_event(tmp, body=self.BODY, labels=["type:feature"], base="main",
+                        base_sha=base_sha, head_sha=head_sha)
+        pol = make_policy(tmp, review_budget_lines=budget)
+        with tempfile.TemporaryDirectory() as dest:
+            flags = write_range_data(ev, repo, dest)
+            if origins is not None:
+                origins_path = Path(dest) / "origins.txt"
+                origins_path.write_text(origins, encoding="utf-8")
+                flags += ["--origins-file", str(origins_path)]
+            return run_gate(ev, pol, repo, data_flags=flags)
+
+    def test_without_the_origins_map_the_finding_names_the_vendored_tree(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp)
+            self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+            self.assertIn("A1", p.stdout)
+            self.assertIn(".agents/skills/", p.stdout)
+            self.assertIn("--origins-file", p.stdout)
+
+    def test_with_the_origins_map_the_propagation_only_pr_passes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp, origins=".agents/skills/prop.md\t-\n")
+            self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+
+    def test_the_finding_does_not_blame_the_vendored_tree_when_it_is_not_there(self):
+        """Un PR sin arbol vendorizado no recibe el aviso: el dato manda."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, base_sha, head_sha = make_repo(tmp, commits=["feat: x"])
+            ev = make_event(tmp, body=self.BODY, labels=["type:feature"], base="main",
+                            base_sha=base_sha, head_sha=head_sha)
+            pol = make_policy(tmp, review_budget_lines=0)
+            with tempfile.TemporaryDirectory() as dest:
+                flags = write_range_data(ev, repo, dest)
+                p = run_gate(ev, pol, repo, data_flags=flags)
+            self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+            self.assertNotIn("--origins-file", p.stdout)
 
 
 if __name__ == "__main__":
