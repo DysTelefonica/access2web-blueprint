@@ -25,9 +25,11 @@ agrupada y accionable.
 | `ci-pattern verify <repo>` | **Entregado** | Comprobación de cumplimiento dirigida por el manifiesto (§4). |
 | `ci-pattern status <repo>` | **Entregado** | Resumen de una línea por clase: manifiesto presente, ficheros OK/modificados/ausentes, gates cableados, bloques de slice. Exit: 0 sólo si está limpio, 1 con hallazgos, 3 sin manifiesto (§2). |
 | `ci-pattern manifest show <repo>` | **Entregado** | Imprime el manifiesto leído (lectura; la escritura vive en la librería y la ejercitan los tests). |
-| `ci-pattern adoption check (--phase N \| --all) <repo>` | **Entregado** | Gate por fase de la adopción (#276): valida el contrato `.github/ci-pattern-adoption.json` del consumer y verifica cada fase del porting-guide contra el árbol real. Fase 0 inventario exhaustivo (adopted/retired sin tercera opción; los targets `adopted` pertenecen al catálogo canónico declarado en `assets/adoption/pattern-catalog.json`, sin exigir existencia —#306/#311—; cobertura ejecutada sobre las rutas gobernadas del catálogo, los scripts descubiertos por REFERENCIA o declarados en `declared_governed_paths` —#311— y las etiquetas del host vía `host_labels` —#312—; `removal_confirmed`); fase 1 evidencia de propagación; fase 2 aislamiento (EJECUTA el gate HR-28); fase 3 sustitución de gobierno e identidad del manifiesto (#277) —las instantáneas del host aceptan el **403 de plan** («Upgrade to GitHub Pro…») como evidencia de capacidad no disponible solo si el contrato declara esa área `unavailable` en `host_capabilities`; con `available` es drift (exit 1) y sin declaración —o con un valor fuera del vocabulario `available`/`unavailable`— es duda (exit 2), #330— y HR-48 sobre `AGENTS.md` (ninguna instrucción manda la documentación fuera del repo); fase 4 los cinco gates del patrón en verde; fase 5 documento operativo con gate de deriva (#279) que incluye la sección «Dónde vive la documentación» y HR-48 sobre `AGENTS.md`, el documento y los ficheros que estos enlazan o citan (#319); EJECUTA además el gate de HR-21 sobre los post-mortems (parámetro 9) y el registro operativo (`P49_incident_log_dir`, por defecto `docs/incidents/`): bloquea secretos, datos personales y evidencia sin `sha256` ni ubicación, y permite IPs, hostnames y comandos internos: el sujeto son los ficheros de TEXTO del registro (`.md`, `.log`, `.txt`, `.json`, `.yaml`, saltando binarios) y superar el límite de escaneo no da verde parcial —sale exit 2 nombrando el recuento y el límite (#322); fase 6 cadena de aceptación (número, SHA de 40 hex, `conclusion: success`). Ninguna fase pasa si la anterior no pasa. Exit: 0 cumple · 1 hallazgos nombrando cada artefacto o condición que falta · 2 contrato ilegible, esquema inválido o sujeto vacío. |
+| `ci-pattern manifest seal <repo> [--out <ruta>] [--reeseal <ruta>...] [--schema-version N]` | **Entregado** (#1172) | Re-sella el manifiesto de gobierno: recalcula el sha256 de cada fichero declarado en `files` y de cada bloque de slice declarado en `slice_blocks`. Sin `--out` escribe el manifiesto en el repo; con `--out` escribe la copia re-sellada en esa ruta y NO toca el árbol (es lo que usa el job `governance-seals` para publicar el manifiesto como artefacto, sin push). NO es un auto-firmado: solo cambia el hash de lo que YA está declarado; un fichero declarado que no existe en el árbol no se re-sella y sale 1 nombrándolo. `--reeseal <ruta>` declara que esta operación cambia ese fichero: al migrar de formato de sello (#1199) su hash viejo no se verifica, porque de eso responde quien lo declara. `--schema-version N` sella en el formato N (2 o 3), con el algoritmo de N: lo usa la ronda de propagación para sellar en el formato que mide la BASE del consumer (#1371). Exit: 0 sellado · 1 algo declarado no existe en el árbol, o una migración con deriva sin declarar · 2 uso inválido · 3 manifiesto ausente. |
+| `ci-pattern adoption check (--phase N \| --only-phase N \| --all) <repo> [--seal-baseline <dir>]` | **Entregado** | Gate por fase de la adopción (#276): valida el contrato `.github/ci-pattern-adoption.json` del consumer y verifica cada fase del porting-guide contra el árbol real. Fase 0 inventario exhaustivo (adopted/retired sin tercera opción; los targets `adopted` pertenecen al catálogo canónico declarado en `assets/adoption/pattern-catalog.json`, sin exigir existencia —#306/#311—; cobertura ejecutada sobre las rutas gobernadas del catálogo, los scripts descubiertos por REFERENCIA o declarados en `declared_governed_paths` —#311— y las etiquetas del host vía `host_labels` —#312—; `removal_confirmed`); fase 1 evidencia de propagación; fase 2 aislamiento (EJECUTA el gate HR-28); fase 3 sustitución de gobierno e identidad del manifiesto (#277) —con la declaración `governance_seals`, además exige el job de PR que la mide y su entrada en `required_jobs` (HR-72)— —las instantáneas del host aceptan el **403 de plan** («Upgrade to GitHub Pro…») como evidencia de capacidad no disponible solo si el contrato declara esa área `unavailable` en `host_capabilities`; con `available` es drift (exit 1) y sin declaración —o con un valor fuera del vocabulario `available`/`unavailable`— es duda (exit 2), #330— y HR-48 sobre `AGENTS.md` (ninguna instrucción manda la documentación fuera del repo); fase 4 los cinco gates del patrón en verde y el mapa de orígenes de A1 cableado cuando el consumer mide el presupuesto con el gate de contrato de PR: con la comprobación `budget` activa en la política que el gate recibe con `--policy-file`, el workflow que lo invoca `MUST` pasar `--origins-file` y generar ese mapa (#1159, HR-74); fase 5 documento operativo con gate de deriva (#279) que incluye la sección «Dónde vive la documentación» y HR-48 sobre `AGENTS.md`, el documento y los ficheros que estos enlazan o citan (#319); EJECUTA además el gate de HR-21 sobre los post-mortems (parámetro 9) y el registro operativo (`P49_incident_log_dir`, por defecto `docs/incidents/`): bloquea secretos, datos personales y evidencia sin `sha256` ni ubicación, y permite IPs, hostnames y comandos internos: el sujeto son los ficheros de TEXTO del registro (`.md`, `.log`, `.txt`, `.json`, `.yaml`, saltando binarios) y superar el límite de escaneo no da verde parcial —sale exit 2 nombrando el recuento y el límite (#322); fase 6 cadena de aceptación (número, SHA de 40 hex, `conclusion: success`). Ninguna fase pasa si la anterior no pasa: `--phase N` mide las fases 0..N en orden y se detiene en la primera que falla. `--only-phase N` mide la fase N y ninguna otra (#1396): es la forma de un job de CI cuando cada fase previa tiene su propio job (`docs-gates` con `--only-phase 5` junto a `governance-seals` con `--phase 3` y `env-isolation`), de modo que una causa da un solo rojo; la estructura de `AGENTS.md` (HR-55) la mide solo la fase 3. La medición completa (nightly, cierre de adopción) sigue con `--phase N` o `--all`. Con `--seal-baseline <dir>` el gate mide además contra la BASE del PR (un checkout de `<dir>` con su contrato de adopción), con un operador por fase: en la fase 3, el conjunto que hay que sellar es la UNIÓN de los `pattern_paths` de la base y los de la cabeza, de modo que lo que la base sellaba no puede reducir un PR mientras el fichero siga en el árbol y lo nuevo de la cabeza también se sella (retirar un workflow sí se permite: si el fichero ya no existe, no hay nada que sellar); en las fases 0 y 2, IDENTIDAD: la instantánea de etiquetas del host (`host_labels`, fase 0) y el allowlist y el árbol que escanea el gate de aislamiento (`env_isolation.allowlist` y `env_isolation.root`, fase 2) tienen que ser los que mide la base. Con la misma ruta, el contenido tampoco puede medir menos que el de la base: el allowlist no puede autorizar de más (una variable de entorno, una extensión excluida o un fichero de datos nuevo) ni la instantánea de etiquetas dejar de cubrir las que cubría; medir más se admite. Una ampliación del allowlist se admite si el allowlist la declara como exención con identidad (HR-33): la superficie, el elemento y quién la autoriza (`actor` o `issue`). La evidencia es una declaración POR FASE: la fase 1 y la fase 3 miden documentos distintos y cada una se compara con la de su fase en la base (#1348). Si la ruta de la base ya no existe en la cabeza, solo se admite un MOVIMIENTO PURO: la ruta nueva tiene el mismo contenido que la base, byte a byte (en un directorio, cada fichero de la base con el mismo contenido; la cabeza puede añadir ficheros). Un movimiento con edición en el mismo PR da hallazgo. La opción es opt-in: sin ella el gate se mide como siempre, y una base sin contrato legible es exit 2 (fallo cerrado, HR-3). Con `--config-from <dir>` el contrato que GOBIERNA el gate sale de `<dir>` (la base del PR, sin credenciales) y el estado que se mide sigue siendo el del repo: con la base como suelo el PR puede AÑADIR y no QUITAR — el inventario de la fase 0 y las rutas gobernadas declaradas se miden con la UNIÓN de la base y la cabeza (la base manda en el conflicto) y los `pattern_paths` de la fase 3 son los que declara el PR, con el suelo de sellado de la base: lo que la base sellaba no puede reducir un PR mientras el fichero siga en el árbol (E8b) —#1339—. Es una alternativa a `--seal-baseline`, no un añadido. El `host-contract` y el `ci-pattern.yaml` NO salen de la base: son el estado del consumer (#1351), pero el INVENTARIO manda sobre la lista de exenciones del `host-contract`: un ruleset que el inventario declara retirado no se exime por declararlo en el contrato del host. Exit: 0 cumple · 1 hallazgos nombrando cada artefacto o condición que falta · 2 contrato ilegible, esquema inválido o sujeto vacío. |
 | `ci-pattern adoption generate-doc <repo> --out <ruta>` | **Entregado** | Documento operativo del consumer (#279): flujo issues → ramas → commits → PR → checks → merge → release → fricciones, GENERADO desde sus datos (ci-pattern.yaml, host-contract, required-jobs, formularios de issue). Determinista byte a byte; nunca a stdout; entrada ilegible o ausente → exit 2. La deriva la detecta el gate de la fase de documentación operativa (#279). |
 | `ci-pattern pr contract --body <file> [--base main] [--label L]... [--number N] [--print-payload]` | **Entregado** | Contrato de PR completo en local (#912): construye el evento desde el cuerpo y git (rama actual, `base...HEAD`), escribe los datos del rango en temporales y corre en proceso `assets/pr-contract/check_pr_contract.py`. Mismos veredictos, textos y códigos que el CI. Sin red ni token; el `owner/repo` sale del remoto `origin` (o `--full-name`). Exit: 0 limpio · 1 hallazgos · 2 entrada inválida (cuerpo, política, base o remoto ilegibles). |
+| `ci-pattern pr preflight --draft --pr-body <file> --base <branch> [--label L]...` | **Entregado** | Preflight API-free de un PR en borrador (#1113): exige `--base`, acepta `--label` repetible y reusa en proceso `check_issue_spec.validate_body` y el gate local `pr-size` (`measure`, `has_override`, `envelope_for`). No crea un cliente de la API, no llama a `gh` y no usa la red aunque exista `GITHUB_TOKEN`. Exit: 0 solo si cuerpo y tamaño pasan · 1 si hay un hallazgo o falla la medición · 2 si la entrada o el uso son inválidos. |
 | `ci-pattern checkout-sync [--repo R] [--base B] [--max-age-hours N]` | **Entregado** | Control local del checkout atrasado (#914), sin red: compara `HEAD` con `origin/<base>` tal como quedó en la última sincronización. Exit: 0 sincronizado · 1 atrasado o rama equivocada (rama de flota `skill-fleet/*`, HEAD desacoplado) · 2 no puede medir (sin `origin`, sin sincronizar o último `fetch` más viejo que el límite). No es un gate de CI ni de push: el CI siempre hace checkout fresco; se ejecuta en el arranque, justo después de `git pull --ff-only` (invariante del partial `web`). |
 | `ci-pattern adopt <repo>` | **Retirado** | Redirige a `adoption check` (exit 2 con mensaje accionable). Esta CLI nunca copia plantillas ni escribe el manifiesto: la adopción la gobierna una IA con el contrato de datos. |
 | `ci-pattern update <repo>` | **Retirado** | Redirige a `adoption check` (exit 2 con mensaje accionable). La re-sincronización se gobierna por el manifiesto y el veredicto de `adoption check`. |
@@ -59,7 +61,7 @@ de adopción + `adoption check` (#276).
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 3,
   "adopted_at": "2026-10-02T12:00:00Z",
   "canonical_version": "0.4",
   "canonical_source": {
@@ -80,13 +82,79 @@ de adopción + `adoption check` (#276).
 }
 ```
 
-- `schema_version`: `1`. Un manifiesto con otra versión se rechaza con exit 3.
+- `schema_version`: `3`. El canon vigente mide también el `2` (cada formato con su
+  algoritmo); un manifiesto con otra versión se rechaza con exit 3.
 - `canonical_source`: repo + ruta del catálogo canónico del que se adoptó.
 - `parameters`: mapa `P<NN>_<snake_name>` → valor validado contra el esquema.
 - `files`: ruta repo-relativa → `sha256:<hex>` del contenido adoptado.
 - `slice_blocks`: nombre del bloque de slice (`<!-- personal-skills:slice:NAME @ … -->`
   en `AGENTS.md`) → `sha256:<hex>` del contenido entre marcadores (sin las líneas
   de marcador, saltos incluidos tal cual).
+
+**Imágenes fijadas por digest (`schema_version: 3`, #1361).** El formato 3 normaliza la clave
+`image:` con digest, también la anidada en `container:` o `services:` en forma larga:
+`image: <nombre>[:<tag>]@sha256:<64 hex>` se sella como `image: <nombre>@<PIN>`. Un bump de esa
+clave (tag y digest juntos) no mueve el sello; el nombre de la imagen sí, y quitar el digest
+también.
+
+No se normalizan, y por tanto **fallan cerrado**: el sello mide la línea tal cual y su bump exige
+re-sellar.
+
+- `docker run <imagen>@sha256:…` dentro de `run:`, en línea o en un bloque `run: |`. Es shell,
+  no una clave YAML. `cadete#665` usa esta forma y queda fuera a propósito: el requisito cubre
+  lo que Dependabot edita, nunca una línea de shell.
+- `image:` entre comillas (`image: "<imagen>@sha256:…"`).
+- `container: <imagen>@sha256:…` en forma corta.
+
+El gate HR-78 rechaza además una imagen sin digest, aparte del sello. El formato 2 lo mide
+también el canon vigente, con el algoritmo del 2 (la imagen va en crudo): es el formato que
+mide la base de un consumer mientras su canon siga siendo el viejo, y por eso la ronda de
+propagación puede sellar en él (#1371). `ci-pattern manifest seal` migra un manifiesto de un
+formato a otro comprobando antes sus hashes con el algoritmo del formato viejo, así que una
+deriva no se esconde; la ronda de propagación re-sella todas las entradas cuando la migración
+cambia el algoritmo.
+
+**Sello normalizado de los workflows (`schema_version: 2`, #1199).** Para un
+fichero bajo `.github/workflows/`, el hash es el del contenido **normalizado**:
+cada `uses: owner/repo@<sha de 40 hex>` y su comentario `# vX` se sustituyen
+por un marcador fijo (`@<PIN>`). El nombre de la action se conserva, y un
+`uses:` local (`./.github/actions/…`) o con etiqueta en vez de sha no se toca.
+Motivo: un bump de Dependabot cambia el sha y el comentario de una action, y
+eso no es un cambio de lógica; con el contenido normalizado el sello no se
+mueve y el PR de Dependabot no da un rojo de gobernanza. Todo lo demás del
+workflow (los pasos, el `run:`, los `permissions:`, el `if:`, los `needs:`) sí
+cambia el hash y sí rompe el sello: en los consumers el sello protege a los
+guardianes del merge y la cobertura de los pines la da `workflow-policy`
+(HR-26), que solo mira el formato del pin.
+
+El cambio de formato es explícito: un manifiesto `schema_version: 1` no lo mide
+ningún gate (exit 3, con el comando de re-sellar en el mensaje) y
+`manifest seal` lo migra al formato vigente.
+
+**El formato lo negocia la base del consumer (#1371).** La base mide el PR con SU
+canon (el de su rama base, el del sello `catalog @`): un manifiesto en un formato que la base
+no mide es un rojo (rc=2) en el gate de la base, aunque el canon de la cabeza lo entienda
+(DysTelefonica/cadete#733, ronda 15). Por eso el canon vigente mide los dos formatos vivos y
+`manifest seal --schema-version N` sella en el que la base mide. La ronda de propagación lee el
+`SCHEMA_VERSION` del canon vendorizado en la rama base del consumer y sella en el mayor formato
+que miden la base y el catálogo: con una base en el formato 2 la ronda sella 2 y vendoriza el
+canon nuevo (que lee 2 y 3); en la ronda siguiente, con la base ya en el formato 3, sella 3. Un
+formato que el canon no conoce falla cerrado (exit 3).
+
+**La migración comprueba antes los hashes del formato viejo** (#1199): si un
+fichero declarado ya no cuadra con el árbol, el manifiesto describe un
+contenido que no es el del repo, y firmarlo en el formato nuevo escondería esa
+deriva. `manifest seal` sale 1 nombrando los ficheros. La excepción es
+`--reeseal <ruta>`: quien re-sella declara que cambia ese fichero (es el caso
+del propagador, que acaba de escribirlo) y de esa declaración responde.
+
+**Re-sellar (`manifest seal`, #1172).** Cuando un fichero gobernado cambia, su
+hash del manifiesto deja de coincidir: el gate lo reporta y, desde #1172, el
+mensaje nombra el hash **esperado**, el hash **encontrado** y el comando exacto
+`ci-pattern manifest seal <repo>`. El sello es un dato de gobierno, no una
+firma: lo que manda es el contenido del repo, y el manifiesto se pone al día.
+`manifest seal` solo re-sella lo que ya está declarado (no añade entradas ni
+inventa contenido) y `manifest seal --out <ruta>` deja el árbol intacto.
 
 ## §4 Contrato de `verify`
 
@@ -230,7 +298,9 @@ modificado localmente sin reportarlo como hallazgo `locally-modified`.
 - Nunca borra ficheros que ella misma no escribió; jamás ejecuta `rm` ni
   equivalentes.
 - Nunca sobrescribe un fichero modificado localmente sin reportarlo como
-  hallazgo.
+  hallazgo. La única escritura sobre el repo es el propio manifiesto de
+  gobierno, y solo por `manifest seal` (que re-sella lo ya declarado, con
+  `--out` para no tocar el árbol); ningún fichero de contenido se reescribe.
 - Nunca decide el contenido de los parámetros: los lee, los valida y falla
   fuerte; los valores los elige el operador.
 
@@ -248,7 +318,7 @@ Estos puntos quedan fuera del determinismo, con procedimiento acotado:
 - **La completitud de una spec, la causa raíz de un rojo, si una edición es
   material**: según `references/porting-guide.md` y el playbook del origen.
 
-## §9 Receta de uso para una IA (flujo de 5 comandos)
+## §9 Receta de uso para una IA (adopción + preflight)
 
 Diseñada para que la salida de cada paso alimenta el siguiente, sin prosa
 intermedia:
@@ -270,7 +340,34 @@ ci-pattern adoption check --all <repo>
 
 # 4. Verificación de cumplimiento tras cualquier cambio
 ci-pattern verify <repo> --json
+
+# 5. Preflight del autor antes de `git push` o `gh pr create` (#865): corre
+#    los mismos veredictos que la CI sobre el PR abierto (rama, cuerpo,
+#    enlace a la issue, HR-64 si hay política y la fase 5 de docs), reusando
+#    los gates en proceso. Sin red cuando se omite `--issue` y
+#    `--with-adoption`. Salida: texto del gate prefijado por ``[<gate>]``;
+#    ``--json`` para máquinas. Exit 1 con el mismo texto que el gate emite si
+#    hay hallazgos.
+ci-pattern pr preflight --pr-body body.md --branch $(git rev-parse --abbrev-ref HEAD)
+ci-pattern pr preflight --pr-body body.md --issue 865 --repository DysTelefonica/team-skills --token "$GITHUB_TOKEN"
+
+# 5b. Modo borrador API-free (#1113): exige --base y admite --label repetible.
+# Reusa los gates locales de cuerpo y tamaño; no llama a la API, a gh ni a la red,
+# aunque GITHUB_TOKEN esté presente. Exit 0 exige que ambos gates pasen.
+ci-pattern pr preflight --draft --pr-body body.md --base main --label type:feature
+ci-pattern pr contract --body body.md --label type:feature --number 912   # contrato de PR completo (#912)
 ```
+
+El documento operativo del consumer se genera con `ci-pattern adoption
+generate-doc <repo> --out docs/ci-pattern-flow.md`, y el gate por fases se
+puede pedir con `--phase N` (fases 0..N) o `--only-phase N` (solo la N) en
+lugar de `--all`. Cuando el canon llega por
+propagación (#1152), el documento operativo lo regenera el propio propagador
+con el canon de la base del consumer y viaja en el tramo 1, porque es el canon
+que mide el PR (#1408). El documento del canon nuevo llega en la ronda
+siguiente, cuando ese canon ya es la base. El comando de `generate-doc` es
+el que se usa cuando el canon cambia SIN propagación (un consumer que adopta
+el patrón a mano).
 
 Frases de disparo del usuario: «actualizá el sistema de gobernanza»,
 «adoptá el patrón en este repo», «verificá el cumplimiento del patrón de CI».

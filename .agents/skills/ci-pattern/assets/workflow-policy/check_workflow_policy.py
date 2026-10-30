@@ -20,7 +20,10 @@ requirements file (``-r``) with ``--require-hashes``. Constraint files
 (``-c``) are always a finding: the pins inside are invisible to a
 structural gate, and reporting OK without measuring them would be the
 failure HR-3 forbids — declare the pins inline or in a hash-pinned
-requirements file instead.
+requirements file instead. A line whose every target is an explicit local path
+(``./app[dev]``, ``-e ./app``, ``.``; prefixes ``./`` ``../`` ``/`` ``~/``) is not a
+registry dependency: its pins live in the project's own lock, so it is exempt.
+A bare name such as ``app[dev]`` is a registry requirement to pip and stays a finding.
 
 HR-3 (fail loud), on required jobs: no ``continue-on-error: true``
 (workflow, job or step level; a conditional expression is a finding too)
@@ -49,6 +52,19 @@ PR's), whether or not they are in the required-jobs policy; a name no
 analyzed job publishes is a finding, and a malformed contract exits 2.
 Without the option every job of the required-jobs policy is in scope.
 
+A check that arrives through a reusable workflow is published under a composed
+name, ``<job that calls> / <job called>``: the gate recognizes that name when
+both workflows are among the analyzed files, and the job that publishes it
+enters the scope of the ``schedule``/``workflow_dispatch`` rule. A called
+workflow that is not among the analyzed files (or a remote one) proves no
+composed name, so nothing is declared published for it (fail closed: a name
+that cannot be proven is not published).
+
+A check a job POSTs through the check-runs API (a step that calls `check-runs`) is
+published under the literal value of its `CONTEXT` variable (DysTelefonica/team-skills#1313):
+the canonical `pr-contract` template publishes its verdict that way. A `CONTEXT` with `${{ }}`
+cannot be proven and declares nothing.
+
 The list of required jobs always comes from the required-jobs policy,
 never from code. A required job named by the policy but absent from every
 analyzed workflow is a finding: silence there would be a gate reporting
@@ -61,6 +77,20 @@ that keeps the last value would report OK), and every job declares ``timeout-min
 job (#806): a ``concurrency`` group at job or workflow level, no service container pinning a
 host port (``H:C``, ``IP:H:C``), and a ``timeout``-wrapped ``docker info`` before the first
 ``docker run`` (in an earlier step or earlier in the same step; a comment is no guard).
+In a workflow with a ``pull_request`` trigger, ``cancel-in-progress`` may be ``false`` or an
+expression naming ``synchronize``; a literal ``true`` is refused (#978): a run cancelled after
+its jobs exist leaves a cancelled required check on the head SHA, which blocks the merge.
+
+The same job can run in two instances: its own workflow (a ``pull_request`` trigger) and the
+same file called with ``workflow_call`` from another workflow. Two instances sharing one
+concurrency group are a finding (#1145): GitHub keeps a single pending request per group and
+cancels the pending one when another arrives, so an instance loses its verdict and, when an
+aggregator reads it, the pull request goes red with no defect. The group separates the
+instances when it names ``github.run_id``, or ``github.workflow`` when the instances resolve
+to distinct workflow names (inside a reusable workflow ``github.workflow`` is the caller's
+name), or an ``inputs.<x>`` that every caller fills with a distinct non-empty value; the
+other way out is a single instance. The rule reports nothing when the second instance cannot
+be proven (the reusable workflow is not among the analysed files).
 
 A plain scalar that continues on a more indented line (``run: cmd \\`` followed by
 its arguments) is rejected with the line and the fix: YAML folds it and the
@@ -75,6 +105,7 @@ import argparse
 import fnmatch
 import json
 import re
+import shlex
 import sys
 from pathlib import Path
 from typing import NamedTuple
@@ -87,9 +118,25 @@ KEY = re.compile(r"""^('[^']*'|"[^"]*"|[^:\s][^:]*?):(?:\s+(.*))?$""")
 PIP_INSTALL = re.compile(r"\bpip3? install\b")
 PIP_REQUIREMENTS = re.compile(r"\s(-r|--requirement)(\s|=)")
 PIP_CONSTRAINTS = re.compile(r"\s(-c|--constraint)(\s|=)")
+#: A pip target that is a local path: ``.``/``..``, or a prefix ``./`` ``../`` ``/`` ``~/``; extras optional.
+#: A bare name (``app[dev]``) is a registry requirement to pip, never a path.
+PIP_LOCAL_PATH = re.compile(r"^(\.{1,2}|(\.{1,2}/|/|~/)[^\s\[\]]*)(\[[\w.,-]+\])?$")
+#: Options that take a value, so the value is not a positional target.
+PIP_VALUE_OPTIONS = frozenset({"-i", "--index-url", "--extra-index-url", "-f", "--find-links", "-t",
+                               "--target", "--prefix", "--root", "--python", "--cache-dir"})
 MASK_TOKENS = ("|| true", "|| :", "|| exit 0")
 NORUN_TOKENS = ("set +e", "set +o errexit")
 SETUP_KEYS = {"actions/setup-python": "python-version", "actions/setup-node": "node-version"}
+#: `github.run_id` names the run: every instance lands in its own group (HR-73).
+RUN_ID_TERM = "github.run_id"
+#: `github.workflow` names the workflow; inside a reusable workflow it is the CALLER's name.
+WORKFLOW_TERM = "github.workflow"
+#: An input the caller fills can name the instance.
+INPUTS_TERM = re.compile(r"inputs\.([A-Za-z_][A-Za-z0-9_-]*)")
+#: A local reusable workflow call: `./.github/workflows/<file>.yml`.
+LOCAL_WORKFLOW_USE = re.compile(r"^\./\.github/workflows/([A-Za-z0-9_.\-/]+\.ya?ml)$")
+#: Instancias minimas para que dos ejecuciones del mismo gate compitan por la misma cola (HR-73).
+MIN_COLLIDING_INSTANCES = 2
 
 
 class InvalidInput(Exception):
@@ -102,6 +149,77 @@ class Line(NamedTuple):
     text: str
 
 
+
+#: Los eventos que evalúan un PR. `pull_request_target` corre el workflow de la base, así que
+#: también puede publicar el nombre de un check requerido (#1270).
+PR_EVENTS = ("pull_request", "pull_request_target")
+
+
+#: El token del catálogo. En `pull_request` el workflow, las acciones locales y el sello
+#: vienen de la cabeza del PR, así que un job que puede correr ahí puede leerlo (#1270).
+PR_CATALOG_SECRET = "secrets.TEAM_SKILLS_READ_TOKEN"  # noqa: S105 — el NOMBRE del secreto, no un valor.
+
+
+def _mentions_catalog_secret(node) -> bool:
+    """Whether the catalog token appears anywhere in the node."""
+    if isinstance(node, str):
+        return PR_CATALOG_SECRET in node
+    if isinstance(node, dict):
+        return any(_mentions_catalog_secret(v) for v in node.values())
+    if isinstance(node, list):
+        return any(_mentions_catalog_secret(v) for v in node)
+    return False
+def workflow_id(path: str) -> str:
+    """El nombre del workflow dentro de `.github/workflows/`, comparable entre rutas."""
+    marker = ".github/workflows/"
+    return path.split(marker)[-1] if marker in path else path
+def caller_map(docs: list[tuple[str, dict]]) -> dict[str, set[str]]:
+    """Quién llama a cada workflow reutilizable."""
+    callers: dict[str, set[str]] = {}
+    for w, doc in docs:
+        for job in doc["jobs"].values():
+            uses = job.get("uses")
+            if isinstance(uses, str) and uses.startswith("./.github/workflows/"):
+                callers.setdefault(workflow_id(uses[2:]), set()).add(workflow_id(w))
+    return callers
+def effective_events(ident: str, by_id: dict, callers: dict, seen: frozenset) -> set[str]:
+    """Los eventos del workflow, más los de quienes lo llaman."""
+    if ident in seen:
+        return set()
+    doc = by_id.get(ident)
+    events = set(workflow_events(doc)) if doc is not None else set()
+    for caller in callers.get(ident, ()):
+        events |= effective_events(caller, by_id, callers, seen | {ident})
+    return events
+def reads_secret_on_pull_request(job: dict, events: set[str]) -> bool:
+    """Si el job puede correr en un PR y lee el token del catálogo."""
+    allowed = allowed_events(job, events)
+    if allowed is not None and "pull_request" not in allowed:
+        return False
+    return _mentions_catalog_secret(job)
+def pull_request_secret_findings(docs: list[tuple[str, dict]], out: list[str]) -> None:
+    """#1270: a job that can run on `pull_request` must not read the catalog token.
+
+    On that event the workflow file, the local actions and the seal all come from
+    the PR head: any job that can run there can read the token and hand it on.
+    Only `pull_request_target` (whose workflow is the base's), `schedule` and
+    `workflow_dispatch` may hold it.
+
+    A reusable workflow inherits the events of whoever calls it, so the callers
+    are followed: a `workflow_call` workflow called from a `pull_request` workflow
+    is a `pull_request` workflow too, and the secret it declares reaches the PR.
+    """
+    by_id = {workflow_id(w): doc for w, doc in docs}
+    callers = caller_map(docs)
+    for w, doc in docs:
+        events = effective_events(workflow_id(w), by_id, callers, frozenset())
+        if "pull_request" not in events:
+            continue
+        for jid, job in doc["jobs"].items():
+            if reads_secret_on_pull_request(job, events):
+                out.append(f"{w} job '{jid}': reads '{PR_CATALOG_SECRET}' in a job that can run on "
+                           "pull_request, where the workflow, the local actions and the seal come "
+                           "from the PR head (#1270)")
 def strip_comment(text: str) -> str:
     quote = None
     for i, c in enumerate(text):
@@ -494,11 +612,26 @@ def load_declared_checks(path: str) -> list[str]:
     return [e["name"] for e in entries]
 
 
-def declared_name(jid: str, job: dict, declared: list[str]) -> str | None:
-    """The declared required check this job publishes, or None. `${{ }}` in a name matches anything."""
-    name = job.get("name") if isinstance(job.get("name"), str) else jid
-    rx = ".+".join(re.escape(part) for part in re.split(r"\$\{\{.*?\}\}", name))
-    return next((d for d in declared if re.fullmatch(rx, d)), None)
+def job_display_name(jid: str, job: dict) -> str:
+    """El nombre de pantalla del job: su `name:` o, si no lo tiene, su id de job."""
+    name = job.get("name")
+    return name if isinstance(name, str) else jid
+
+
+def name_matches(template: str, declared: str) -> bool:
+    """Si un nombre publicado casa con un nombre declarado; `${{ }}` en el nombre es comodín."""
+    rx = ".+".join(re.escape(part) for part in re.split(r"\$\{\{.*?\}\}", template))
+    return re.fullmatch(rx, declared) is not None
+
+
+def declared_name(jid: str, job: dict, declared: list[str],
+                  names: set[str] | None = None) -> str | None:
+    """The declared required check this job publishes, or None. `${{ }}` in a name matches anything.
+
+    `names` son los nombres que publica el job (plantillas); sin ellos, solo el
+    nombre propio del job."""
+    published = names if names is not None else {job_display_name(jid, job)}
+    return next((d for d in declared for n in published if name_matches(n, d)), None)
 
 
 DOCKER_RUN = re.compile(r"\bdocker\s+run\b")
@@ -548,8 +681,99 @@ def docker_preflight_finding(steps: list) -> str | None:
     return None
 
 
+def _cancels_on_any_event(value: object) -> bool:
+    """`cancel-in-progress` that can cancel a run of the same head SHA: literal true, or an
+    expression that does not restrict itself to `synchronize` (a new commit)."""
+    if value is True:
+        return True
+    if not isinstance(value, str):
+        return False
+    text = value.strip()
+    if text.lower() == "true":
+        return True
+    return "${{" in text and "synchronize" not in text
+
+
+def cancel_in_progress_findings(wf: str, doc: dict) -> list[str]:
+    """#978: in a workflow with a `pull_request` trigger, only a new commit may cancel a run.
+
+    `edited`, `labeled` and `reopened` fire runs on the same head SHA; cancelling one after its
+    jobs exist leaves a `cancelled` check run on that SHA, and a cancelled required check blocks
+    the merge even when a later run of the same SHA is green. A pending run that is replaced
+    creates no check run, so `cancel-in-progress: ${{ github.event.action == 'synchronize' }}`
+    keeps the saving where it matters (the superseded run belongs to an old SHA)."""
+    if not any(ev in workflow_events(doc) for ev in PR_EVENTS):
+        return []
+    why = ("`cancel-in-progress` can cancel a run of the same head SHA and leave a cancelled "
+           "required check that blocks the merge: use `false` or an expression on "
+           "`github.event.action == 'synchronize'` (#978)")
+    found = []
+    block = doc.get("concurrency")
+    if isinstance(block, dict) and _cancels_on_any_event(block.get("cancel-in-progress")):
+        found.append(f"{wf} workflow concurrency: {why}")
+    for jid, job in doc["jobs"].items():
+        block = job.get("concurrency")
+        if isinstance(block, dict) and _cancels_on_any_event(block.get("cancel-in-progress")):
+            found.append(f"{wf} job '{jid}' concurrency: {why}")
+    return found
+
+
+_NEEDS_OUTPUT_RE = re.compile(r"needs\.([A-Za-z0-9_-]+)\.outputs\.")
+
+
+def _marker_spans(value) -> list[tuple[int, int]]:
+    """Spans of the marker filter of #1192: a read used as a filter, not as a value."""
+    if not isinstance(value, str):
+        return []
+    return [(m.start(), m.end()) for m in _MARKER_IF.finditer(value)]
+
+
+def _needs_output_refs(job: dict) -> set[str]:
+    """The jobs whose outputs this job reads, wherever the expression lives.
+
+    The `needs` context only exposes the outputs of the DIRECT dependencies:
+    reading a transitive one arrives empty, without an error (HR-79). The marker
+    filter of #1192 is the exception: it reads a first-level job on purpose, as
+    a filter (`!= 'false'` / `== 'true'`), not as a value.
+    """
+    refs: set[str] = set()
+
+    def scan(value, skip=()):
+        if isinstance(value, str):
+            for m in _NEEDS_OUTPUT_RE.finditer(value):
+                if not any(start <= m.start() < end for start, end in skip):
+                    refs.add(m.group(1))
+        elif isinstance(value, dict):
+            for key, item in value.items():
+                scan(item, _marker_spans(item) if key == "if" else ())
+        elif isinstance(value, list):
+            for item in value:
+                scan(item)
+
+    scan(job)
+    return refs
+
+
+def _needs_output_findings(wf: str, jid: str, job: dict) -> list[str]:
+    """HR-79: `needs.<job>.outputs` exists only for a DIRECT dependency.
+
+    The `needs` graph is transitive for the ORDER, but the `needs` CONTEXT is
+    not: a job that reads the outputs of a job it does not depend on directly
+    gets an empty value and the workflow stays green with the wrong branch
+    taken (#1277).
+    """
+    needs = job.get("needs")
+    direct = {needs} if isinstance(needs, str) else {str(n) for n in (needs or [])}
+    return [
+        f"{wf} job '{jid}': reads `needs.{ref}.outputs`, but '{ref}' is not a direct "
+        f"dependency (needs: {', '.join(sorted(direct)) or 'none'}): the value arrives "
+        f"empty (HR-79)"
+        for ref in sorted(_needs_output_refs(job) - direct)
+    ]
+
+
 def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str, out: list,
-              root: Path = Path("."), declared: list[str] | None = None):
+              root: Path = Path("."), contract: HostContract | None = None):
     def finding(msg):
         out.append(f"{wf} job '{jid}': {msg}")
 
@@ -558,13 +782,13 @@ def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str
     qualified = isinstance(job.get("name"), str) and "github.event_name" in job["name"]
     # A job whose provable if excludes pull_request never publishes a PR check name,
     # so its schedule/dispatch runs cannot satisfy one (HR-30).
-    never_on_pr = allowed is not None and "pull_request" not in allowed
+    never_on_pr = allowed is not None and not any(ev in allowed for ev in PR_EVENTS)
     if required:
         if doc.get("continue-on-error") is True:
             finding("workflow-level `continue-on-error: true` masks failure (HR-3)")
         if job.get("continue-on-error") is True or isinstance(job.get("continue-on-error"), str):
             finding("`continue-on-error` masks failure (HR-3)")
-        if "pull_request" not in events:
+        if not any(ev in events for ev in PR_EVENTS):
             finding("required check name is never published from a PR event (HR-30)")
         if "push" in events:
             if not qualified and push_reaches_base_and_others(events["push"], base) and \
@@ -572,8 +796,11 @@ def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str
                 finding("`push` trigger reaches branches other than the base (HR-30)")
     # With a host contract, only the names it requires are in scope for schedule/dispatch;
     # without one, every job of the required-jobs policy is (a job that is not a required
-    # check cannot satisfy one from a run that is not the PR's).
-    if (declared_name(jid, job, declared) is not None) if declared is not None else required:
+    # check cannot satisfy one from a run that is not the PR's). The scope matches ANY of
+    # the names the job publishes, including the composed one of a reusable workflow.
+    scope = required if contract is None else \
+        declared_name(jid, job, contract.names, contract.published.get((wf, jid))) is not None
+    if scope:
         for ev in ("schedule", "workflow_dispatch"):
             if ev in events and not qualified and not never_on_pr and (allowed is None or ev in allowed):
                 finding(f"publishes its check name on '{ev}', which does not evaluate the PR (HR-30)")
@@ -632,8 +859,45 @@ def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str
                     elif PIP_CONSTRAINTS.search(raw):
                         finding("constraint-file install cannot be verified as exact; declare "
                                 "pins inline or in a hash-pinned requirements file (HR-26)")
-                    else:
+                    elif not pip_install_is_local_only(raw):
                         finding("`pip install` without an exact `==` pin (HR-26)")
+
+
+def pip_install_is_local_only(raw: str) -> bool:
+    """True when every target of this ``pip install`` line is a local path (an explicit one).
+
+    ``-e``/``--editable`` values count as targets. A line with no target, a registry name, or
+    anything the tokenizer cannot read is not local-only: the caller keeps reporting it.
+    """
+    try:
+        tokens = shlex.split(raw, comments=True)
+    except ValueError:
+        return False
+    start = next((j for j in range(1, len(tokens))
+                  if tokens[j] == "install" and tokens[j - 1].rsplit("/", 1)[-1] in ("pip", "pip3")), None)
+    if start is None:
+        return False
+    targets: list[str] = []
+    skip = False
+    editable = False
+    for tok in tokens[start + 1:]:
+        if skip:
+            skip = False
+            continue
+        if editable:
+            targets.append(tok)
+            editable = False
+        elif tok in ("-e", "--editable"):
+            editable = True
+        elif tok.startswith("--editable="):
+            targets.append(tok.split("=", 1)[1])
+        elif tok in PIP_VALUE_OPTIONS:
+            skip = True
+        elif tok.startswith("-"):
+            continue
+        else:
+            targets.append(tok)
+    return bool(targets) and not editable and all(PIP_LOCAL_PATH.fullmatch(tg) for tg in targets)
 
 
 def load_required(path: str) -> tuple[list[str], dict]:
@@ -680,6 +944,14 @@ def _job_runs_command(job: dict, command: str) -> bool:
     return False
 
 
+def _local_reusable_call(job: dict) -> str | None:
+    """#1196: ruta del workflow reutilizable local (`uses: ./...`) que llama el job."""
+    uses = job.get("uses")
+    if isinstance(uses, str) and uses.startswith("./"):
+        return uses
+    return None
+
+
 def _any_job_runs_command(doc: dict, command: str) -> bool:
     jobs = doc.get("jobs") or {}
     for job in jobs.values():
@@ -691,10 +963,16 @@ def _any_job_runs_command(doc: dict, command: str) -> bool:
 def _find_workflow(workflows: list[tuple[str, dict]], target: str):
     """Busca un workflow por igualdad de ruta normalizada. Sin red y sin
     adivinar: la ruta declarada en el policy debe coincidir con una de las
-    que el consumer paso por --workflow."""
-    t = str(Path(target))
+    que el consumer paso por --workflow.
+
+    Una ruta absoluta (el adoption check resuelve `@ruta` contra el repo) casa
+    con una declarada relativa si acaba en los mismos componentes: por
+    componentes, nunca por subcadena (HR-39 falso en fase 4 de BP, Refs #1359)."""
+    t = Path(target)
     for path, doc in workflows:
-        if str(Path(path)) == t:
+        p = Path(path)
+        if p == t or (p.is_absolute() and not t.is_absolute()
+                      and p.parts[-len(t.parts):] == t.parts):
             return path, doc
     return None, None
 
@@ -706,6 +984,83 @@ def _paths_cover(manifests: list[str], patterns: list[str]) -> list[str]:
         if not any(fnmatch.fnmatch(m, p) for p in patterns if isinstance(p, str)):
             uncovered.append(m)
     return uncovered
+
+
+_MARKER_IF = re.compile(
+    r"needs\.([A-Za-z0-9_-]+)\.outputs\.([A-Za-z0-9_]+)\s*(?:!=\s*'false'|==\s*'true')")
+
+
+def _marker_gate(pr_job, jobs: dict, workflows: list[tuple[str, dict]]):
+    """#1192: el `if:` del pr_job compara un marcador de salida de un job de
+    primer nivel que lo publica (en `outputs:` del job, o en
+    `workflow_call.outputs` del workflow reutilizable local que llama).
+    Equivale a `paths:`: el marcador es funcion del diff, y el `schedule` del
+    gate sigue corriendo sin filtro. Devuelve (gate, marcador) o None."""
+    cond = pr_job.get("if") if isinstance(pr_job, dict) else None
+    if not isinstance(cond, str):
+        return None
+    m = _MARKER_IF.search(cond)
+    if m is None:
+        return None
+    gate_id, marker = m.groups()
+    gate = jobs.get(gate_id)
+    if not isinstance(gate, dict):
+        return None
+    if marker in (gate.get("outputs") or {}):
+        return gate_id, marker
+    uses = gate.get("uses")
+    if isinstance(uses, str) and uses.startswith("./"):
+        _, called = _find_workflow(workflows, uses)
+        if called is not None:
+            published = (workflow_events(called).get("workflow_call") or {}).get("outputs") or {}
+            if marker in published:
+                return gate_id, marker
+    return None
+
+
+def _pr_trigger_findings(entry: dict, pr_path: str, pr_doc: dict,
+                         workflows: list[tuple[str, dict]]) -> list[str]:
+    """HR-39: el disparador de PR filtra por los manifiestos (`paths:`) o, en su
+    defecto, el pr_job lo hace por un marcador (#1192)."""
+    name, manifests = entry["name"], entry["manifests"]
+    jobs = pr_doc.get("jobs") or {}
+    pr_job = jobs.get(entry["pr_job"])
+    pr_paths = workflow_events(pr_doc).get("pull_request", {}).get("paths")
+    if not isinstance(pr_paths, list) or not pr_paths:
+        if _marker_gate(pr_job, jobs, workflows) is None:
+            return [f"HR-39: el gate '{name}' corre en pull_request sin `paths:` "
+                    f"en {pr_path}, ni un `if:` con el marcador de un job que lo "
+                    "publica; bloquea PRs que no tocan los manifiestos."]
+        return []
+    return [f"HR-39: el gate '{name}' no cubre el manifiesto '{m}' "
+            f"en paths: {pr_paths} ({pr_path})."
+            for m in _paths_cover(manifests, pr_paths)]
+
+
+def _pr_command_findings(entry: dict, pr_path: str, pr_doc: dict,
+                         workflows: list[tuple[str, dict]]) -> list[str]:
+    """HR-39: el pr_job ejecuta el comando, directamente o en el workflow
+    reutilizable local que llama (#1196)."""
+    name, command, pr_job_id = entry["name"], entry["command"], entry["pr_job"]
+    pr_job = (pr_doc.get("jobs") or {}).get(pr_job_id)
+    if not isinstance(pr_job, dict):
+        return [f"HR-39: el gate '{name}' declara pr_job='{pr_job_id}' pero "
+                f"ese job no existe en {pr_path}."]
+    if _job_runs_command(pr_job, command):
+        return []
+    called = _local_reusable_call(pr_job)
+    if called is None:
+        return [f"HR-39: el gate '{name}' declara pr_job='{pr_job_id}' pero "
+                f"ese job no ejecuta '{command}' en {pr_path}."]
+    called_path, called_doc = _find_workflow(workflows, called)
+    if called_doc is None:
+        return [f"HR-39: el gate '{name}' declara pr_job='{pr_job_id}' que "
+                f"llama a '{called}', pero ese workflow no esta entre los inputs."]
+    if not any(isinstance(j, dict) and _job_runs_command(j, command)
+               for j in (called_doc.get("jobs") or {}).values()):
+        return [f"HR-39: el gate '{name}' declara pr_job='{pr_job_id}' pero "
+                f"ni ese job ni '{called_path}' ejecutan '{command}'."]
+    return []
 
 
 def check_state_dependent_gates(workflows: list[tuple[str, dict]], data: dict,
@@ -733,8 +1088,6 @@ def check_state_dependent_gates(workflows: list[tuple[str, dict]], data: dict,
         name = entry["name"]
         command = entry["command"]
         pr_wf_path = entry["pr_workflow"]
-        pr_job_id = entry["pr_job"]
-        manifests = entry["manifests"]
         sched_path = entry["scheduled_workflow"]
         alert = entry["alert_command"]
         pr_path, pr_doc = _find_workflow(workflows, pr_wf_path)
@@ -752,22 +1105,8 @@ def check_state_dependent_gates(workflows: list[tuple[str, dict]], data: dict,
             out.append(f"HR-39: el gate '{name}' no se ejecuta en pull_request en "
                        f"{pr_path}; sin disparador de PR no puede gatear el PR.")
             continue
-        pr_paths = pr_events["pull_request"].get("paths")
-        if not isinstance(pr_paths, list) or not pr_paths:
-            out.append(f"HR-39: el gate '{name}' corre en pull_request sin `paths:` "
-                       f"en {pr_path}; bloquea PRs que no tocan los manifiestos.")
-        else:
-            for m in _paths_cover(manifests, pr_paths):
-                out.append(f"HR-39: el gate '{name}' no cubre el manifiesto '{m}' "
-                           f"en paths: {pr_paths} ({pr_path}).")
-        jobs = pr_doc.get("jobs") or {}
-        pr_job = jobs.get(pr_job_id)
-        if not isinstance(pr_job, dict):
-            out.append(f"HR-39: el gate '{name}' declara pr_job='{pr_job_id}' pero "
-                       f"ese job no existe en {pr_path}.")
-        elif not _job_runs_command(pr_job, command):
-            out.append(f"HR-39: el gate '{name}' declara pr_job='{pr_job_id}' pero "
-                       f"ese job no ejecuta '{command}' en {pr_path}.")
+        out.extend(_pr_trigger_findings(entry, pr_path, pr_doc, workflows))
+        out.extend(_pr_command_findings(entry, pr_path, pr_doc, workflows))
         sched_events = workflow_events(sched_doc)
         if "schedule" not in sched_events:
             out.append(f"HR-39: el gate '{name}' declara scheduled_workflow='{sched_real_path}' "
@@ -779,6 +1118,212 @@ def check_state_dependent_gates(workflows: list[tuple[str, dict]], data: dict,
             out.append(f"HR-39: el gate '{name}' corre programado pero no hay paso "
                        f"que ejecute alert_command='{alert}' en {sched_real_path}; "
                        "sin alerta, el rojo programado queda sin abrir issue.")
+
+
+class Instance(NamedTuple):
+    """Una instancia de un gate: la misma job, ejecutada desde otro workflow o disparador."""
+
+    label: str  # "disparador directo" o "<fichero> job '<id>'"
+    workflow: str  # el valor que toma `github.workflow` en esta instancia
+    with_: dict  # el `with:` del caller (vacío en la instancia directa)
+    is_caller: bool
+
+
+def workflow_name(path: str, doc: dict) -> str:
+    """El valor que toma `github.workflow`: el `name:` del workflow o, si no, su ruta."""
+    name = doc.get("name")
+    return name if isinstance(name, str) and name.strip() else str(path)
+
+
+def local_workflow_target(uses: object) -> str | None:
+    """El workflow local al que llama un job, o None (un reusable remoto es de otro repo)."""
+    if not isinstance(uses, str):
+        return None
+    m = LOCAL_WORKFLOW_USE.match(uses.strip())
+    return m.group(1) if m else None
+
+
+def _analysed_workflow(target: str, workflows: list[tuple[str, dict]]) -> tuple[str, dict] | None:
+    """El workflow de los analizados al que apunta `target` (nombre de fichero), o None.
+
+    Solo si el nombre apunta a UNO de los workflows analizados: con dos homónimos no se
+    sabe a cuál se llama, así que no se compone ningún nombre (fail closed)."""
+    matches = [(p, d) for p, d in workflows if Path(p).name == target]
+    return matches[0] if len(matches) == 1 else None
+
+
+def _caller_names(path: str, workflows: list[tuple[str, dict]]) -> list[str]:
+    """Los nombres de pantalla de los jobs que llaman a este workflow (reutilizable).
+
+    Sin prueba de a qué workflow llama cada `uses:` (el nombre del fichero no es único
+    entre los analizados) no se compone ningún nombre (fail closed)."""
+    target = Path(path).name
+    if _analysed_workflow(target, workflows) is None:
+        return []
+    names = []
+    for cpath, cdoc in workflows:
+        if cpath == path:
+            continue
+        for cjid, cjob in (cdoc.get("jobs") or {}).items():
+            if not isinstance(cjob, dict):
+                continue
+            if local_workflow_target(cjob.get("uses")) == target:
+                names.append(job_display_name(cjid, cjob))
+    return names
+
+
+def api_check_names(job: dict) -> set[str]:
+    """Check names a job publishes through the check-runs API (DysTelefonica/team-skills#1313).
+
+    A step that POSTs to `repos/.../check-runs` names its check in an env var, the
+    canonical `pr-contract` template does it with `CONTEXT`. The literal value is the
+    name; a value with `${{ }}` cannot be proven, so it declares nothing (fail closed).
+    """
+    names: set[str] = set()
+    for step in job.get("steps") or []:
+        if not isinstance(step, dict) or "check-runs" not in str(step.get("run", "")):
+            continue
+        env = step.get("env")
+        context = env.get("CONTEXT") if isinstance(env, dict) else None
+        if isinstance(context, str) and context.strip() and "${{" not in context:
+            names.add(context)
+    return names
+
+
+def published_names(path: str, jid: str, job: dict, doc: dict,
+                    workflows: list[tuple[str, dict]]) -> set[str]:
+    """Los nombres de check que publica el job (plantillas; `${{ }}` es comodín).
+
+    Un job publica su nombre de pantalla. Un job de un workflow reutilizable publica
+    además `<llamador> / <job>` por cada job que lo llama, y un job que llama a un
+    workflow reutilizable publica `<este job> / <job llamado>` por cada job del workflow
+    llamado: así compone GitHub el nombre del check. Un workflow llamado que no está
+    entre los ficheros analizados (o uno remoto) no prueba ningún nombre compuesto:
+    no se declara nada publicado (fail closed)."""
+    display = job_display_name(jid, job)
+    names = {display} | api_check_names(job)
+    target = local_workflow_target(job.get("uses"))
+    called = _analysed_workflow(target, workflows) if target is not None else None
+    if called is not None:
+        for cid, cjob in (called[1].get("jobs") or {}).items():
+            if isinstance(cjob, dict):
+                names.add(f"{display} / {job_display_name(cid, cjob)}")
+    if "workflow_call" in workflow_events(doc):
+        for caller in _caller_names(path, workflows):
+            names.add(f"{caller} / {display}")
+    return names
+
+
+def published_names_by_job(docs: list[tuple[str, dict]]) -> dict[tuple[str, str], set[str]]:
+    """Los nombres que publica cada job analizado, indexados por (workflow, job)."""
+    out: dict[tuple[str, str], set[str]] = {}
+    for path, doc in docs:
+        for jid, job in doc["jobs"].items():
+            out[(path, jid)] = published_names(path, jid, job, doc, docs)
+    return out
+
+
+class HostContract(NamedTuple):
+    """El contrato del host y los nombres que publica cada job de los workflows analizados."""
+    names: list[str]
+    published: dict[tuple[str, str], set[str]]
+
+
+def host_contract(declared: list[str] | None,
+                  docs: list[tuple[str, dict]]) -> HostContract | None:
+    """El contrato del host con los nombres publicados de cada job, o None si no hay contrato."""
+    if declared is None:
+        return None
+    return HostContract(declared, published_names_by_job(docs))
+
+
+def _instances_of(path: str, doc: dict, workflows: list[tuple[str, dict]]) -> list[Instance]:
+    """Las instancias en las que puede correr este workflow: su propio disparador y cada
+    job de otro workflow que lo llame con `uses:` local."""
+    events = workflow_events(doc)
+    instances: list[Instance] = []
+    if any(event != "workflow_call" for event in events):
+        instances.append(Instance("disparador directo", workflow_name(path, doc), {}, False))
+    target = Path(path).name
+    for cpath, cdoc in workflows:
+        if cpath == path:
+            continue
+        for cjid, cjob in (cdoc.get("jobs") or {}).items():
+            if not isinstance(cjob, dict):
+                continue
+            if local_workflow_target(cjob.get("uses")) != target:
+                continue
+            with_ = cjob.get("with")
+            instances.append(Instance(f"{cpath} job '{cjid}'", workflow_name(cpath, cdoc),
+                                      with_ if isinstance(with_, dict) else {}, True))
+    return instances
+
+
+def _group_finding(group: str, instances: list[Instance]) -> str | None:
+    """Por qué el grupo NO separa las instancias, o None si las separa."""
+    if RUN_ID_TERM in group:
+        return None
+    if WORKFLOW_TERM in group:
+        names = [i.workflow for i in instances]
+        if len(set(names)) == len(names):
+            return None
+        return ("`github.workflow` no separa las instancias: dos de ellas toman el mismo "
+                "nombre de workflow")
+    m = INPUTS_TERM.search(group)
+    if m:
+        key = m.group(1)
+        values = []
+        for i in instances:
+            raw = i.with_.get(key) if i.is_caller else None
+            values.append(raw if isinstance(raw, str) else "")
+        callers = [v for i, v in zip(instances, values, strict=True) if i.is_caller]
+        if callers and all(v.strip() for v in callers) and len(set(callers)) == len(callers):
+            return None
+        return (f"`inputs.{key}` no separa las instancias: cada caller debe pasarle un "
+                "valor no vacío y distinto")
+    return "el grupo no nombra la instancia"
+
+
+def check_instance_isolated_groups(workflows: list[tuple[str, dict]], out: list[str]) -> None:
+    """HR-73: un gate que corre en dos instancias no comparte el grupo de concurrencia.
+
+    El mismo job puede ejecutarse en dos instancias: su workflow con disparador propio y
+    el mismo fichero invocado con `workflow_call` desde otro workflow. Si las dos instancias
+    declaran el mismo grupo, GitHub las mete en la misma cola: guarda una sola peticion
+    pendiente por grupo y cancela la pendiente cuando llega otra, asi que una instancia
+    pierde su veredicto y, si el agregador lo lee, el PR queda rojo sin defecto (BP#1371,
+    run `ci` 40084048493 intento 1: job `pr-gate / pr-gate` cancelado a los 0 s).
+
+    El grupo separa las instancias si nombra `github.run_id`, o `github.workflow` cuando las
+    instancias toman nombres distintos (dentro de un reusable, `github.workflow` es el del
+    CALLER), o un `inputs.<x>` que cada caller rellene con un valor distinto. Sin prueba de
+    la segunda instancia no se reporta nada.
+    """
+    for path, doc in workflows:
+        if "workflow_call" not in workflow_events(doc):
+            continue
+        instances = _instances_of(path, doc, workflows)
+        if len(instances) < MIN_COLLIDING_INSTANCES:
+            continue
+        for jid, job in (doc.get("jobs") or {}).items():
+            if not isinstance(job, dict):
+                continue
+            block = job.get("concurrency") or doc.get("concurrency")
+            group = block.get("group") if isinstance(block, dict) else None
+            if not isinstance(group, str) or not group.strip():
+                continue  # la ausencia de grupo la reporta ya la regla #806
+            why = _group_finding(group, instances)
+            if why is None:
+                continue
+            labels = ", ".join(i.label for i in instances)
+            out.append(
+                f"{path} job '{jid}': {why}; el grupo '{group}' mete las {len(instances)} "
+                f"instancias del gate ({labels}) en la misma cola y GitHub guarda una sola "
+                f"peticion pendiente por grupo: la pendiente se cancela cuando llega otra, "
+                f"una instancia pierde su veredicto y el PR queda rojo sin defecto. Separe la "
+                f"instancia en el grupo (`github.workflow` vale el workflow caller dentro de "
+                f"un reusable) o deje una sola instancia; `cancel-in-progress: false` se "
+                f"mantiene (HR-73)")
 
 
 def repo_root(workflow: str, explicit: str | None) -> Path:
@@ -817,14 +1362,19 @@ def main(argv):
         print(f"WORKFLOW-POLICY ERROR: {exc}", file=sys.stderr)
         return 2
     findings, seen, published = [], set(), set()
+    contract = host_contract(declared, docs)
     for w, doc in docs:
+        findings.extend(cancel_in_progress_findings(w, doc))
         for jid, job in doc["jobs"].items():
             if jid in required:
                 seen.add(jid)
-            if declared is not None:
-                published.add(declared_name(jid, job, declared))
+            if contract is not None:
+                published.add(declared_name(jid, job, contract.names,
+                                            contract.published.get((w, jid))))
             check_job(w, jid, job, doc, jid in required, args.base_branch, findings,
-                      repo_root(w, args.repo_root), declared)
+                      repo_root(w, args.repo_root), contract)
+            findings.extend(_needs_output_findings(w, jid, job))
+    pull_request_secret_findings(docs, findings)
     for name in (declared or []):
         if name not in published:
             findings.append(f"host contract requires check '{name}' but no analyzed workflow job "
@@ -834,6 +1384,7 @@ def main(argv):
             findings.append(f"required job '{jid}' is absent from every analyzed workflow")
     try:
         check_state_dependent_gates(docs, data, findings)
+        check_instance_isolated_groups(docs, findings)
     except InvalidInput as exc:
         print(f"WORKFLOW-POLICY ERROR: {exc}", file=sys.stderr)
         return 2

@@ -8,8 +8,10 @@ Cobertura de las cuatro reglas del asset:
 - Adelante (docs -> repo): toda ruta citada en ``docs/codebase/**``
   existe en el repo (fichero o directorio).
 - Atrás (repo -> docs): todo módulo de primer nivel bajo
-  ``--code-root`` que case con ``--code-glob`` aparece mencionado en
-  alguna página de ``--docs-path``.
+  ``--code-root`` que case con ``--code-glob`` está nombrado en alguna
+  página de ``--docs-path``: el nombre completo y en contexto de código
+  (backticks, bloque cercado) o como segmento de una ruta (#1004). La
+  prosa no cuenta, porque «nuevo» y «datos» salían en cualquier mapa.
 - Fail-closed: la entrada vacía en cualquiera de los dos lados es
   FAIL — un codeguide sin páginas o un code-root sin módulos nunca
   declara OK (el comentario de la issue lo prohíbe: «mejor que el
@@ -42,6 +44,9 @@ from pathlib import Path
 
 ASSET = Path(__file__).resolve().parent.parent
 GATE = ASSET / "check_docs_codeguide.py"
+# Raíces explícitas de los fixtures de Go (#1166): el gate ya no asume ninguna.
+GO_ROOT = {"code_root": "internal/components", "code_glob": "*.go"}
+GO_ARGS = ["--code-root", "internal/components", "--code-glob", "*.go"]
 spec = importlib.util.spec_from_file_location("check_docs_codeguide", GATE)
 assert spec and spec.loader, (
     f"el gate {GATE.name} no existe todavía; el estado RED previo a la "
@@ -185,7 +190,7 @@ class TestFencedBlocksAreNotCitations(unittest.TestCase):
             _add_codeguide_page(
                 repo, "after.md", "# After\n\n```text\nx\n```\n\nVea `internal/ghost/gone.go`.\n"
             )
-            result = gate.check_docs_codeguide(repo)
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
             self.assertEqual(result["missing_in_repo"], ["internal/ghost/gone.go"])
 
     def test_inline_paths_around_a_fence_are_both_extracted(self) -> None:
@@ -221,7 +226,7 @@ class TestForwardDocsToRepo(unittest.TestCase):
         """Todas las rutas citadas existen: el veredicto es OK (lista vacía)."""
         with tempfile.TemporaryDirectory() as tmp:
             repo = _make_repo(Path(tmp))
-            result = gate.check_docs_codeguide(repo)
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
             self.assertEqual(result["missing_in_repo"], [])
             self.assertEqual(result["missing_in_codeguide"], [])
 
@@ -234,7 +239,7 @@ class TestForwardDocsToRepo(unittest.TestCase):
                 "# Repo map\n\n| Path | Owns |\n|---|---|\n"
                 "| `internal/ghost/foo.go` | Inventado |\n",
             )
-            result = gate.check_docs_codeguide(repo)
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
             self.assertIn("internal/ghost/foo.go", result["missing_in_repo"])
 
     def test_multiple_missing_paths_all_reported(self) -> None:
@@ -246,10 +251,40 @@ class TestForwardDocsToRepo(unittest.TestCase):
                 "| `internal/ghost-a/` | x |\n"
                 "| `internal/ghost-b/` | x |\n",
             )
-            result = gate.check_docs_codeguide(repo)
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
             missing = result["missing_in_repo"]
             self.assertIn("internal/ghost-a/", missing)
             self.assertIn("internal/ghost-b/", missing)
+
+    def test_github_action_name_is_not_a_repo_path(self) -> None:
+        """Caso real de #1359 (BP, «missing actions/checkout»): un nombre de acción no es una ruta."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            _add_codeguide_page(
+                repo, "ci.md",
+                "# CI\n\nEl job usa `actions/checkout` antes de los tests.\n",
+            )
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
+            self.assertEqual(result["missing_in_repo"], [])
+
+    def test_cross_repo_reference_is_not_a_repo_path(self) -> None:
+        """Caso real de #1359 (BP, «missing DysTelefonica/team-skills#1270»): una referencia cruzada no es una ruta."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            _add_codeguide_page(
+                repo, "ci.md",
+                "# CI\n\nVer `DysTelefonica/team-skills#1270` para el contrato.\n",
+            )
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
+            self.assertEqual(result["missing_in_repo"], [])
+
+    def test_dead_directory_citation_with_slash_still_fails(self) -> None:
+        """Guardia: un directorio muerto citado con barra final sigue siendo un enlace muerto."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            _add_codeguide_page(repo, "map.md", "| `docs/ghost/` | x |\n")
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
+            self.assertEqual(result["missing_in_repo"], ["docs/ghost/"])
 
 
 class TestGlobsMarkersAndBraces(unittest.TestCase):
@@ -261,7 +296,7 @@ class TestGlobsMarkersAndBraces(unittest.TestCase):
             for rel, body in (extra or {}).items():
                 _write(repo / rel, body)
             _add_codeguide_page(repo, "cites.md", f"Vea `{cite}`.\n")
-            return gate.check_docs_codeguide(repo)["missing_in_repo"]
+            return gate.check_docs_codeguide(repo, **GO_ROOT)["missing_in_repo"]
 
     def test_glob_matching_a_file_is_valid(self) -> None:
         self.assertEqual(self._missing("internal/components/app/*.go"), [])
@@ -310,7 +345,7 @@ class TestGlobsMarkersAndBraces(unittest.TestCase):
             repo = _make_repo(Path(tmp))
             _add_codeguide_page(repo, "cites.md", "Vea `internal/components/app/*.rs`.\n")
             result = subprocess.run(
-                [sys.executable, str(GATE), str(repo)],
+                [sys.executable, str(GATE), str(repo), *GO_ARGS],
                 capture_output=True, text=True, check=False)
             self.assertEqual(result.returncode, 1)
             self.assertIn("glob sin coincidencias", result.stderr)
@@ -332,7 +367,7 @@ class TestBackwardRepoToDocs(unittest.TestCase):
             # `` `internal/components/app/main.go` ``; ``billing``,
             # por la cita `` `internal/components/billing/core.go` ``.
             # Ambos están cubiertos.
-            result = gate.check_docs_codeguide(repo)
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
             self.assertEqual(result["missing_in_codeguide"], [])
 
     def test_orphan_module_fails_closed(self) -> None:
@@ -340,7 +375,7 @@ class TestBackwardRepoToDocs(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             repo = _make_repo(Path(tmp))
             _add_orphan_module(repo, "ghost")
-            result = gate.check_docs_codeguide(repo)
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
             self.assertIn("ghost", result["missing_in_codeguide"])
 
 
@@ -358,7 +393,7 @@ class TestFailClosed(unittest.TestCase):
             repo = Path(tmp) / "repo"
             repo.mkdir()
             # Sin directorio docs/codebase siquiera.
-            result = gate.check_docs_codeguide(repo)
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
             self.assertEqual(result["missing_in_repo"], ["<empty docs/codebase/>"])
 
     def test_empty_code_root_fails(self) -> None:
@@ -376,7 +411,7 @@ class TestFailClosed(unittest.TestCase):
     def test_empty_repo_path_returns_invalid(self) -> None:
         """El path no es un directorio: la API lanza el error explícito."""
         with self.assertRaises(FileNotFoundError):
-            gate.check_docs_codeguide(Path("/path/that/does/not/exist/xyzzy"))
+            gate.check_docs_codeguide(Path("/path/that/does/not/exist/xyzzy"), **GO_ROOT)
 
 
 # --------------------------------------------------------------------- #
@@ -396,7 +431,7 @@ class TestConfigurableRoots(unittest.TestCase):
             _write(repo / "docs" / "codeguide" / "page.md",
                    "# Page\n\nCita `internal/app/main.go`.\n")
             _write(repo / "internal" / "app" / "main.go", "// entry\n")
-            result = gate.check_docs_codeguide(repo, docs_path="docs/codeguide")
+            result = gate.check_docs_codeguide(repo, docs_path="docs/codeguide", **GO_ROOT)
             self.assertEqual(result["missing_in_repo"], [])
 
     def test_custom_code_root_and_glob_are_used(self) -> None:
@@ -430,7 +465,7 @@ class TestMultipleRoots(unittest.TestCase):
 
     def test_every_root_covered_passes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            repo = self._repo_with_two_roots(Path(tmp), "`app/users.py` y home\n")
+            repo = self._repo_with_two_roots(Path(tmp), "`app/users.py` y `templates/home.html`\n")
             result = gate.check_docs_codeguide_roots(
                 repo, [("app", "*.py"), ("templates", "*.html")]
             )
@@ -468,7 +503,7 @@ class TestMultipleRoots(unittest.TestCase):
 
     def test_cli_repeated_pairs_exit_zero_when_all_roots_are_covered(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            repo = self._repo_with_two_roots(Path(tmp), "`app/users.py` y home\n")
+            repo = self._repo_with_two_roots(Path(tmp), "`app/users.py` y `templates/home.html`\n")
             proc = subprocess.run(
                 [sys.executable, str(GATE), str(repo), "--code-root", "app",
                  "--code-glob", "*.py", "--code-root", "templates", "--code-glob", "*.html"],
@@ -476,7 +511,8 @@ class TestMultipleRoots(unittest.TestCase):
             )
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
-    def test_cli_repeated_pairs_exit_one_when_a_root_has_an_undescribed_module(self) -> None:
+    def test_cli_undescribed_module_warns_and_exits_zero(self) -> None:
+        # #1093 lote 2: un módulo sin documentar es AVISO, no bloqueo.
         with tempfile.TemporaryDirectory() as tmp:
             repo = self._repo_with_two_roots(Path(tmp), "`app/users.py`\n")
             proc = subprocess.run(
@@ -484,8 +520,23 @@ class TestMultipleRoots(unittest.TestCase):
                  "--code-glob", "*.py", "--code-root", "templates", "--code-glob", "*.html"],
                 capture_output=True, text=True, check=False, encoding="utf-8",
             )
-            self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            self.assertIn("AVISO", proc.stderr)
             self.assertIn("home (templates)", proc.stderr)
+
+    def test_cli_dead_link_still_exits_one_next_to_an_undescribed_module(self) -> None:
+        # Un enlace muerto bloquea aunque además haya un módulo sin documentar.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo_with_two_roots(
+                Path(tmp), "`app/users.py`\n`app/borrado.py`\n")
+            proc = subprocess.run(
+                [sys.executable, str(GATE), str(repo), "--code-root", "app",
+                 "--code-glob", "*.py", "--code-root", "templates", "--code-glob", "*.html"],
+                capture_output=True, text=True, check=False, encoding="utf-8",
+            )
+            self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+            self.assertIn("FAIL docs -> repo: missing app/borrado.py", proc.stderr)
+            self.assertIn("AVISO", proc.stderr)
 
     def test_cli_unpaired_roots_and_globs_exit_two(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -570,7 +621,7 @@ class TestCliExitCodes(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             repo = _make_repo(Path(tmp))
             proc = subprocess.run(
-                [sys.executable, str(GATE), str(repo)],
+                [sys.executable, str(GATE), str(repo), *GO_ARGS],
                 capture_output=True, text=True, check=False, encoding="utf-8",
             )
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
@@ -582,7 +633,7 @@ class TestCliExitCodes(unittest.TestCase):
             repo = _make_repo(Path(tmp))
             _add_missing_path(repo, "internal/ghost/foo.go")
             proc = subprocess.run(
-                [sys.executable, str(GATE), str(repo)],
+                [sys.executable, str(GATE), str(repo), *GO_ARGS],
                 capture_output=True, text=True, check=False, encoding="utf-8",
             )
             self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
@@ -591,7 +642,7 @@ class TestCliExitCodes(unittest.TestCase):
     def test_cli_exits_two_on_missing_repo_path(self) -> None:
         """Input inválido (path que no existe): exit 2 y mensaje en stderr."""
         proc = subprocess.run(
-            [sys.executable, str(GATE), "/path/that/does/not/exist/xyzzy"],
+            [sys.executable, str(GATE), "/path/that/does/not/exist/xyzzy", *GO_ARGS],
             capture_output=True, text=True, check=False, encoding="utf-8",
         )
         self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
@@ -602,6 +653,29 @@ class TestCliExitCodes(unittest.TestCase):
 # Cobertura: contrato del resultado (forma del dict, claves, JSON estable)
 # --------------------------------------------------------------------- #
 
+    def test_cli_without_code_root_exits_two_naming_the_flag(self) -> None:
+        """#1166: sin raíces declaradas no hay default que asumir: exit 2 y el flag nombrado."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            proc = subprocess.run(
+                [sys.executable, str(GATE), str(repo)],
+                capture_output=True, text=True, check=False, encoding="utf-8",
+            )
+            self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+            self.assertIn("--code-root", proc.stderr)
+            self.assertNotIn("OK", proc.stdout)
+
+    def test_cli_code_root_without_glob_exits_two(self) -> None:
+        """Una raíz sin su glob no se puede contar: exit 2, sin default de `*.go`."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            proc = subprocess.run(
+                [sys.executable, str(GATE), str(repo), "--code-root", "app"],
+                capture_output=True, text=True, check=False, encoding="utf-8",
+            )
+            self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+            self.assertIn("--code-glob", proc.stderr)
+
 
 class TestResultContract(unittest.TestCase):
     """El dict ``result`` es el contrato con la API programática."""
@@ -610,7 +684,7 @@ class TestResultContract(unittest.TestCase):
         """``missing_in_repo`` y ``missing_in_codeguide`` siempre presentes."""
         with tempfile.TemporaryDirectory() as tmp:
             repo = _make_repo(Path(tmp))
-            result = gate.check_docs_codeguide(repo)
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
             self.assertIn("missing_in_repo", result)
             self.assertIn("missing_in_codeguide", result)
             self.assertIsInstance(result["missing_in_repo"], list)
@@ -621,8 +695,127 @@ class TestResultContract(unittest.TestCase):
         externos lo consumen sin sorpresas."""
         with tempfile.TemporaryDirectory() as tmp:
             repo = _make_repo(Path(tmp))
-            result = gate.check_docs_codeguide(repo)
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
             json.dumps(result)  # no lanza
+
+
+class TestModuleNameIsNotAProseSubstring(unittest.TestCase):
+    """team-skills#1004: un nombre de módulo cuenta cuando el mapa lo nombra
+    como código, no cuando aparece por casualidad en la prosa.
+
+    El sentido atrás comparaba el nombre con ``in`` sobre el texto entero
+    del mapa. Eso daba por mapeado un módulo sin mapear en cuanto su
+    nombre era una palabra corriente del español (``nuevo``, ``datos``) o
+    un trozo de otra palabra (``core`` dentro de ``encore``). Medido en
+    BP: ``app/src/modules/nuevo/`` pasaba el gate porque «nuevo» salía 15
+    veces como adjetivo.
+
+    Cada test de este bloque monta el caso completo — una página del mapa
+    que menciona el nombre en prosa y un módulo en el árbol que el gate
+    tiene que nombrar— y comprueba el veredicto a través de la función
+    pública, no de un ayudante interno.
+    """
+
+    def _repo_with_module_and_page(self, root: Path, module: str, page: str) -> Path:
+        repo = root / "repo"
+        _write(repo / "docs" / "codebase" / "page.md", page)
+        _write(repo / "src" / "modules" / module / "__init__.py", "# " + module + "\n")
+        return repo
+
+    def _verdict(self, tmp: str, module: str, page: str) -> list[str]:
+        repo = self._repo_with_module_and_page(Path(tmp), module, page)
+        result = gate.check_docs_codeguide(
+            repo, docs_path="docs/codebase", code_root="src/modules", code_glob="*.py",
+        )
+        return result["missing_in_codeguide"]
+
+    def test_module_named_only_as_a_spanish_adjective_is_missing(self) -> None:
+        """``nuevo``: el mapa dice «nuevos módulos», «nueva regla», nunca el
+        nombre del módulo. Es el caso medido en BP."""
+        page = (
+            "# Guía\n\n"
+            "El árbol tiene nuevos módulos y cada uno recibe una nueva regla.\n\n"
+            "Los nuevos cambios llegan por PR; la nueva plantilla vive en el repo.\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(self._verdict(tmp, "nuevo", page), ["nuevo"])
+
+    def test_module_named_only_in_prose_and_inside_another_word_is_missing(self) -> None:
+        """``datos``: «los datos del usuario» es una palabra entera y aun así
+        no nombra un módulo; ``bigdatos`` es además un trozo de otra palabra."""
+        page = (
+            "# Guía\n\n"
+            "Los datos del usuario viven en su perfil y los bigdatos se archivan.\n\n"
+            "Este repositorio guarda datos y exporta datos a diario.\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(self._verdict(tmp, "datos", page), ["datos"])
+
+    def test_module_named_only_as_a_fragment_of_another_word_is_missing(self) -> None:
+        """``core``: no es prosa, es un fragmento: ``encore``, ``scores`` y el
+        acento de «núcleo» no son el nombre del módulo."""
+        page = (
+            "# Guía\n\n"
+            "La sección encore llega después, y los scores se publican aparte.\n\n"
+            "El núcleo del sistema se documenta en su propia página.\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(self._verdict(tmp, "core", page), ["core"])
+
+    def test_module_named_in_backticks_is_mapped(self) -> None:
+        """Camino verde: `` `lanzadera` `` en backticks sí nombra el módulo."""
+        page = (
+            "# Guía\n\n"
+            "Los datos del usuario y los nuevos módulos no dicen nada del código.\n\n"
+            "El módulo `lanzadera` es la madre; `nuevo` es un adjetivo.\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(self._verdict(tmp, "lanzadera", page), [])
+
+    def test_module_named_as_a_path_segment_is_mapped(self) -> None:
+        """Camino verde: el nombre como segmento de ruta también lo nombra,
+        sin backticks. Es como lo cita un mapa que dibuja el árbol."""
+        page = (
+            "# Guía\n\n"
+            "El árbol cuelga de app/src/modules/expedientes/dominio.py y sus\n"
+            "vecinos; los datos del usuario nomapped aquí.\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(self._verdict(tmp, "expedientes", page), [])
+
+    def test_module_named_in_a_fenced_block_is_mapped(self) -> None:
+        """Camino verde: un bloque cercado también es contexto de código."""
+        page = (
+            "# Guía\n\n"
+            "Los datos van fuera de código.\n\n"
+            "```\napp/src/modules/nuevo/\n```\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(self._verdict(tmp, "nuevo", page), [])
+
+    def test_module_named_as_a_file_with_extension_in_backticks_is_mapped(self) -> None:
+        """Caso real de APAP_WEB: el módulo ``index`` de
+        ``app/templates/index.html`` solo aparece como `` `index.html` ``.
+        El punto es un límite, no un carácter del nombre, así que el
+        nombre completo sigue contando."""
+        page = (
+            "# Guía\n\n"
+            "Los datos del usuario no dicen nada del código.\n\n"
+            "La portada vive en `index.html` y se llama index.\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(self._verdict(tmp, "index", page), [])
+
+
+
+class TestNoDefaultRoots(unittest.TestCase):
+    """#1166: la función no asume el árbol de ningún repo."""
+
+    def test_function_without_roots_raises_naming_them(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            with self.assertRaisesRegex(ValueError, "--code-root"):
+                gate.check_docs_codeguide(repo)
 
 
 if __name__ == "__main__":

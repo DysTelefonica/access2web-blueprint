@@ -1,0 +1,3 @@
+type: patch
+
+El escaneo de dependencias (`pip-audit`) sale del `security` de cada PR y pasa a un job propio, `dependency-scan`, que corre solo en un cron nocturno nuevo (`30 3 * * *`) y por `workflow_dispatch`. El veredicto depende de la base de avisos del día, no del diff: como comprobación requerida por PR bloqueaba PRs que no podían arreglarlo (D11, #1093). El cron semanal de la sesión de mutación sigue siendo semanal: su condición lo fija a `0 3 * * 1`. `gitleaks` y `trivy config` siguen por PR. El test `test_dependency_scan_runs_only_on_its_nightly_cron` fija que ningún evento de PR ni de `push` llega al escaneo (#1359).

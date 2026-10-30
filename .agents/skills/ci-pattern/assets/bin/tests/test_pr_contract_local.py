@@ -14,6 +14,7 @@ import importlib.util
 import io
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -51,8 +52,20 @@ BODY = """Closes #912
 - `{test}::test_caso_corregido`
 """
 
+# El `X-GitHub-Request-Id` que devuelve GitHub cambia en cada petición (#1281). Cuando la API
+# falla, el aviso de reintento del cliente REST lo imprime por stderr, y las dos ejecuciones
+# del gate que este test compara (la local, en proceso, y el gate real, como proceso aparte)
+# hacen llamadas distintas: sus identificadores nunca coinciden. Se normaliza SOLO ese valor;
+# el resto del aviso (ruta, intento, estado HTTP, mensaje) se compara byte a byte.
+REQUEST_ID_RX = re.compile(r"(X-GitHub-Request-Id:[ \t]*)\S+")
+
+
+def _sin_id_de_peticion(text):
+    """Sustituye el valor del identificador de petición por un marcador estable."""
+    return REQUEST_ID_RX.sub(r"\1<id>", text)
+
+
 POLICY = {
-    "required_labels": ["type:feature", "type:bug", "type:docs"],
     "chain_tip_requires_closes": True,
     "closes_pattern": "Closes|Fixes|Resolves",
     "review_budget_lines": 400,
@@ -179,15 +192,18 @@ class PrContractLocalTests(unittest.TestCase):
         self.assertIn("PR-CONTRACT OK", out)
 
     def test_same_body_gives_the_same_verdict_and_text_as_the_gate(self):
-        # Sección HR-53 sin test ni «No aplica»: el gate falla y el comando debe decir lo mismo.
+        # Sección HR-53 sin test ni «No aplica»: el gate avisa y el comando debe
+        # decir lo mismo (mismo texto, mismo exit code).
         body = BODY.format(branch=BRANCH, test=TEST_REL, budget=1).replace(
             "- `tests/test_fix.py::test_caso_corregido`", "- la prosa no nombra ningún test")
         local_rc, local_out, local_err = _run_local(self._argv(body))
         gate_rc, gate_out, gate_err = _gate_direct(self.root, body)
         self.assertEqual(local_rc, gate_rc)
         self.assertEqual(local_out, gate_out)
-        self.assertEqual(local_err, gate_err)
-        self.assertEqual(local_rc, 1)
+        # El identificador de petición es volátil (#1281); lo demás se compara tal cual.
+        self.assertEqual(_sin_id_de_peticion(local_err), _sin_id_de_peticion(gate_err))
+        self.assertEqual(local_rc, 0)
+        self.assertIn("AVISO", local_out)
 
     def test_missing_body_file_exits_2(self):
         rc, _, err = _run_local(["--body", str(self.root / "no-existe.md"),
@@ -221,6 +237,33 @@ class PrContractLocalTests(unittest.TestCase):
         source = LOCAL.read_text(encoding="utf-8")
         self.assertNotIn("urllib", source)
         self.assertNotIn('"gh"', source)
+
+
+class RequestIdNormalizationTests(unittest.TestCase):
+    """La normalización solo toca el valor del identificador (#1281)."""
+
+    AVISO = ("AVISO: GET /repos/o/r/pulls?state=all&per_page=100 fallo (intento 1 de 3); "
+             "reintento en 1.0s: HTTP 401 on GET /repos/o/r/pulls?state=all&per_page=100: "
+             "Bad credentials; X-GitHub-Request-Id: {rid}")
+
+    def test_two_request_ids_normalize_to_the_same_text(self):
+        one = self.AVISO.format(rid="D512:36BC:48494E:857F82:6ADE7576")
+        two = self.AVISO.format(rid="D542:1DFA03:4936FC:865E56:6ADE7579")
+        self.assertEqual(_sin_id_de_peticion(one), _sin_id_de_peticion(two))
+        self.assertIn("X-GitHub-Request-Id: <id>", _sin_id_de_peticion(one))
+
+    def test_the_rest_of_the_text_still_counts(self):
+        one = _sin_id_de_peticion(self.AVISO.format(rid="D512:36BC:48494E"))
+        other_status = _sin_id_de_peticion(
+            self.AVISO.format(rid="D512:36BC:48494E").replace("HTTP 401", "HTTP 403"))
+        other_attempt = _sin_id_de_peticion(
+            self.AVISO.format(rid="D512:36BC:48494E").replace("intento 1 de 3", "intento 2 de 3"))
+        self.assertNotEqual(one, other_status)
+        self.assertNotEqual(one, other_attempt)
+
+    def test_text_without_a_request_id_is_unchanged(self):
+        text = "PR-CONTRACT: apagadas por política: docs_evidence\n"
+        self.assertEqual(_sin_id_de_peticion(text), text)
 
 
 class DispatchTests(unittest.TestCase):

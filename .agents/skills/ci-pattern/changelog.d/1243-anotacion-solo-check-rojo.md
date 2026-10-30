@@ -1,0 +1,3 @@
+type: patch
+
+El generador del fichero de anotaciones (`assets/required-jobs/build_annotations.py`) solo pide las anotaciones de un check **rojo**: uno ya terminado con el nombre publicado y una conclusión que no sea verde, el mismo criterio que el lado del `needs` usa para decidir que un job está rojo. Antes, cuando no había ningún check rojo con ese nombre, el generador caía a un check verde con el mismo nombre y le pedía sus anotaciones: el gate imprimía el texto de un check que pasó como si fuera la causa del job rojo. Ahora ese job se queda sin anotación (la causa degrada a `no annotation`) y el generador avisa por stderr del motivo (#1243).

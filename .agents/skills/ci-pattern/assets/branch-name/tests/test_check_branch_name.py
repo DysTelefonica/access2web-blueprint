@@ -24,27 +24,32 @@ class TestDefaultConvention(unittest.TestCase):
             with self.subTest(ref=ref):
                 self.assertEqual(run(ref)[0], 0, ref)
 
-    def test_non_conforming_branches_fail_and_say_why(self):
+    def test_non_conforming_branches_warn_and_say_why_without_blocking(self):
         for ref in ("Feat/x", "feature/x", "feat/", "feat/Upper", "feat/with space", "main2",
                     "feat/x/y", "wip", "fix"):
             with self.subTest(ref=ref):
                 code, out = run(ref)
-                self.assertEqual(code, 1, out)
+                self.assertEqual(code, 0, out)
+                self.assertIn("AVISO", out)
+                self.assertNotIn("FAIL", out)
                 self.assertIn(ref, out)
                 self.assertIn("<type>/<slug>", out)
 
     def test_default_pattern_is_p01(self):
         self.assertEqual(run("--pattern", P01, "feat/x")[0], 0)
-        self.assertEqual(run("--pattern", P01, "nope")[0], 1)
+        self.assertEqual(run("--pattern", P01, "nope")[0], 0)
+        self.assertIn("AVISO", run("--pattern", P01, "nope")[1])
 
 
 class TestConsumerPattern(unittest.TestCase):
     def test_pattern_argument_replaces_the_convention(self):
         self.assertEqual(run("--pattern", r"^issue-\d+$", "issue-12")[0], 0)
-        self.assertEqual(run("--pattern", r"^issue-\d+$", "feat/x")[0], 1)
+        self.assertIn("AVISO", run("--pattern", r"^issue-\d+$", "feat/x")[1])
 
     def test_the_whole_name_must_match(self):
-        self.assertEqual(run("--pattern", r"feat/[a-z]+", "feat/abc/extra")[0], 1)
+        code, out = run("--pattern", r"feat/[a-z]+", "feat/abc/extra")
+        self.assertEqual(code, 0)
+        self.assertIn("AVISO", out)
 
     def test_unreadable_pattern_is_exit_two(self):
         code, out = run("--pattern", "(", "feat/x")
@@ -65,7 +70,7 @@ class TestExemptions(unittest.TestCase):
                 self.assertEqual(run(ref)[0], 0, ref)
 
     def test_allow_lists_grandfathered_branches(self):
-        self.assertEqual(run("legacy-branch")[0], 1)
+        self.assertIn("AVISO", run("legacy-branch")[1])
         code, out = run("--allow", "legacy-branch", "legacy-branch")
         self.assertEqual(code, 0, out)
         self.assertIn("grandfathered", out)
@@ -76,11 +81,18 @@ class TestExemptions(unittest.TestCase):
     def test_dependabot_branch_is_exempt_only_for_the_bot(self):
         ref = "dependabot/pip/ruff-0.15.0"
         self.assertEqual(run("--actor", "dependabot[bot]", ref)[0], 0)
-        self.assertEqual(run("--actor", "someone", ref)[0], 1)
-        self.assertEqual(run(ref)[0], 1)
+        self.assertEqual(run("--actor", "someone", ref)[0], 0)
+        self.assertIn("AVISO", run("--actor", "someone", ref)[1])
+        self.assertEqual(run(ref)[0], 0)
+
+    def test_dependabot_uv_branch_is_exempt_only_for_the_bot(self):
+        ref = "dependabot/uv/virtualenv-21.14.7"
+        self.assertEqual(run("--actor", "dependabot[bot]", ref)[0], 0)
+        self.assertEqual(run("--actor", "someone", ref)[0], 0)
+        self.assertEqual(run(ref)[0], 0)
 
     def test_dependabot_pattern_is_narrow(self):
-        self.assertEqual(run("--actor", "dependabot[bot]", "dependabot/evil/x")[0], 1)
+        self.assertIn("AVISO", run("--actor", "dependabot[bot]", "dependabot/evil/x")[1])
 
 
 if __name__ == "__main__":

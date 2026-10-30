@@ -1,5 +1,23 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — assets/scripts/check_mutation.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/scripts/check_mutation.py
+# Declared local deviations from the asset (team-skills#809 T6, BP issue #1316):
+#   - `--shards N` and the per-slice session list (BP #785): `release.yml` runs the matrix as ten
+#     slices and passes one session per slice. The asset reads a single session.
+#   - BASELINE aggregated per module, with `measure_survivors`/`check_ratchet` to match: the asset
+#     keys survivors by `module|operator|occurrence` (`mutant_identity`) and refuses an aggregate
+#     entry. That identity needs the whole ten-slice matrix to be re-acquired on the ARM runner,
+#     which this copy cannot do; `scripts/mutation_shards.py` prepares the slices. The query below
+#     already selects the operator and the occurrence, so the adoption is a BASELINE rewrite.
+# Everything else (degenerate-run guard, completeness, overdue acquisition, policy binding,
+# acquired_on) is the asset 2.2.
+#
+# Local baseline: arranca con AwaitingAcquisition (team-skills#809 T6, BP #1341):
+# BP aun no ha re-adquirido la matriz en el runner ARM, asi que cada modulo del target
+# set figura como AwaitingAcquisition con `since` = fecha del bump. Cuando un mutante
+# aparezca superviviente, el canon emite una notice (no un fail) y al cabo de 14 dias
+# de GRACE_PERIOD_DAYS el gate cierra. La decision de arrancar asi (en lugar de regenerar
+# el BASELINE con --emit-baseline en la readquisicion ARM) la tomo el orquestador en el
+# comentario de aprobacion de BP#1341.
 """Mutation-survivor ratchet with a degenerate-run guard.
 
 Mutation testing is the only mechanical answer to "do these tests assert anything". Coverage
@@ -47,6 +65,9 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+from policy_time import add_policy_date_argument
+from quality_policy import bind_envelope, expected_subjects
+
 # --------------------------------------------------------------------------------------------
 # CONFIGURATION
 # --------------------------------------------------------------------------------------------
@@ -90,99 +111,61 @@ class AwaitingAcquisition:
 # `ReplaceBinaryOperator_BitAnd_Pow` convierten una operación en `**` y agotan el
 # timeout de 120 s por mutante.
 BASELINE: dict[str, BaselineEntry | AwaitingAcquisition] = {
-    "app/src/modules/expedientes/domain/anexo/agregado.py": BaselineEntry(
-        survivors=3, target=0, target_date="2027-01-06"
+    "app/src/modules/expedientes/domain/anexo/agregado.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/expedientes/domain/anexo/reference.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/anexo/reference.py": BaselineEntry(
-        survivors=4, target=0, target_date="2027-01-06"
+    "app/src/modules/expedientes/domain/anexo/retention.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/anexo/retention.py": BaselineEntry(
-        survivors=22, target=0, target_date="2027-01-06"
+    "app/src/modules/expedientes/domain/anexo/size_limit.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/anexo/size_limit.py": BaselineEntry(
-        survivors=9, target=0, target_date="2027-01-06"
+    "app/src/modules/expedientes/domain/anualidad.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/expedientes/domain/cpv/code.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/expedientes/domain/cpv/structure.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/expedientes/domain/expediente.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/expedientes/domain/hash/versioning.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/anualidad.py": BaselineEntry(
-        survivors=20, target=0, target_date="2027-01-06"
+    "app/src/modules/expedientes/domain/hito.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/expedientes/domain/juridica.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/expedientes/domain/modificado.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/expedientes/domain/responsable.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/expedientes/domain/suministrador.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/lanzadera/domain/app.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/lanzadera/domain/audit_event.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/lanzadera/domain/legacy_role_map.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/lanzadera/domain/ports/__init__.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/lanzadera/domain/ports/app_repository.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/cpv/code.py": BaselineEntry(
-        survivors=28, target=0, target_date="2027-01-06"
+    "app/src/modules/lanzadera/domain/ports/assignment_repository.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/cpv/structure.py": BaselineEntry(
-        survivors=18, target=0, target_date="2027-01-06"
+    "app/src/modules/lanzadera/domain/ports/jwt_signer.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/lanzadera/domain/ports/presence_repository.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/expediente.py": BaselineEntry(
-        survivors=8, target=0, target_date="2027-01-06"
+    "app/src/modules/lanzadera/domain/ports/profile_repository.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/hash/versioning.py": BaselineEntry(
-        survivors=16, target=0, target_date="2027-01-06"
+    "app/src/modules/lanzadera/domain/ports/reset_token_repository.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/hito.py": BaselineEntry(
-        survivors=4, target=0, target_date="2027-01-06"
+    "app/src/modules/lanzadera/domain/ports/session_repository.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/juridica.py": BaselineEntry(
-        survivors=2, target=0, target_date="2027-01-06"
+    "app/src/modules/lanzadera/domain/profile.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/lanzadera/domain/reset_token.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/lanzadera/domain/services/consume_reset_token.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/modificado.py": BaselineEntry(
-        survivors=11, target=0, target_date="2027-01-06"
+    "app/src/modules/lanzadera/domain/services/issue_reset_token.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/responsable.py": BaselineEntry(
-        survivors=4, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/expedientes/domain/suministrador.py": BaselineEntry(
-        survivors=10, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/app.py": BaselineEntry(
-        survivors=1, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/audit_event.py": BaselineEntry(
-        survivors=1, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/legacy_role_map.py": BaselineEntry(
-        survivors=35, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/ports/__init__.py": BaselineEntry(
-        survivors=38, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/ports/app_repository.py": BaselineEntry(
-        survivors=45, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/ports/assignment_repository.py": BaselineEntry(
-        survivors=12, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/ports/jwt_signer.py": BaselineEntry(
-        survivors=1, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/ports/presence_repository.py": BaselineEntry(
-        survivors=2, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/ports/profile_repository.py": BaselineEntry(
-        survivors=23, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/ports/reset_token_repository.py": BaselineEntry(
-        survivors=11, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/ports/session_repository.py": BaselineEntry(
-        survivors=11, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/profile.py": BaselineEntry(
-        survivors=24, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/reset_token.py": BaselineEntry(
-        survivors=2, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/services/consume_reset_token.py": BaselineEntry(
-        survivors=17, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/services/issue_reset_token.py": BaselineEntry(
-        survivors=6, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/session.py": BaselineEntry(
-        survivors=4, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/user.py": BaselineEntry(
-        survivors=1, target=0, target_date="2027-01-06"
-    ),
+    "app/src/modules/lanzadera/domain/session.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/lanzadera/domain/user.py": AwaitingAcquisition(since="2026-10-22"),
 }
 
 
@@ -198,6 +181,8 @@ _SKIPPED = "skipped"
 #: Cosmic-ray session layout. Read-only, and never through the tool's own API.
 _QUERY = """
     SELECT ms.module_path AS module_path,
+           ms.operator_name AS operator_name,
+           ms.occurrence AS occurrence,
            wr.test_outcome AS test_outcome,
            wr.worker_outcome AS worker_outcome
     FROM work_items AS wi
@@ -230,6 +215,8 @@ def read_session(session_path: Path) -> tuple[list[dict[str, Any]], list[str]]:
     return [
         {
             "module_path": str(row["module_path"]).replace("\\", "/"),
+            "operator_name": str(row["operator_name"]),
+            "occurrence": int(row["occurrence"]),
             "test_outcome": _normalise(row["test_outcome"]),
             "worker_outcome": _normalise(row["worker_outcome"]),
         }
@@ -347,9 +334,21 @@ def render_baseline(survivors: dict[str, int], today: date, horizon_days: int = 
     return "\n".join(lines)
 
 
-def build_report(metrics: dict[str, float], violations: list[str], status: str) -> dict:
-    return {
+def build_report(
+    root: Path,
+    metrics: dict[str, float],
+    violations: list[str],
+    status: str,
+    policy_date: date,
+    observed_subjects: list[str],
+) -> dict:
+    expected = expected_subjects(root)
+    expected_set = set(expected)
+    observed_set = set(observed_subjects)
+    unclassified = sorted(observed_set - expected_set)
+    report = {
         "gate": "mutation",
+        "policy_date": policy_date.isoformat(),
         "status": status,
         "indicators": {
             "mutation_score_pct": metrics.get("mutation_score_pct", 0.0),
@@ -360,6 +359,17 @@ def build_report(metrics: dict[str, float], violations: list[str], status: str) 
         "ceilings": {"incompetent_ratio_pct": MAX_INCOMPETENT_RATIO * 100},
         "findings": [{"file": "<session>", "line": 0, "detail": item} for item in violations],
     }
+    return bind_envelope(
+        report,
+        root,
+        "mutation",
+        checked=sorted(observed_set & expected_set),
+        skipped=[
+            {"path": path, "reason": "no mutation specification in session"}
+            for path in sorted(expected_set - observed_set)
+        ],
+        unclassified=unclassified,
+    )
 
 
 def _pin_output_encoding() -> None:
@@ -373,6 +383,7 @@ def _pin_output_encoding() -> None:
 def main(argv: list[str] | None = None) -> int:
     _pin_output_encoding()
     parser = argparse.ArgumentParser(description=__doc__)
+    add_policy_date_argument(parser)
     parser.add_argument(
         "sessions",
         type=Path,
@@ -385,6 +396,12 @@ def main(argv: list[str] | None = None) -> int:
         help="número de tramos que el run debe traer; falla si llegan menos",
     )
     parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=Path.cwd(),
+        help="repository root; its quality policy decides the subjects and ceilings",
+    )
     parser.add_argument(
         "--emit-baseline",
         action="store_true",
@@ -401,12 +418,15 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 1
 
+    root = args.root.resolve()
     rows: list[dict[str, Any]] = []
     for session in args.sessions:
         part, errors = read_session(session)
         if errors:
             if args.json:
-                print(json.dumps({"gate": "mutation", "status": "error", "detail": errors[0]}))
+                report = build_report(root, {}, errors, "error", args.policy_date, [])
+                report["detail"] = errors[0]
+                print(json.dumps(report))
                 return 1
             for message in errors:
                 print(f"FAIL  {message}", file=sys.stderr)
@@ -422,7 +442,9 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         rows.extend(part)
 
-    today = date.today()
+    today = args.policy_date
+    observed_subjects = sorted({str(row["module_path"]).replace("\\", "/") for row in rows})
+    unexpected_subjects = sorted(set(observed_subjects) - set(expected_subjects(root)))
     health, metrics = check_run_health(rows)
     survivors = measure_survivors(rows)
 
@@ -433,10 +455,22 @@ def main(argv: list[str] | None = None) -> int:
     ratchet, notices = check_ratchet(survivors, today)
     overdue = check_pending_overdue(today)
     violations = health + ratchet + overdue
+    if unexpected_subjects:
+        violations.append(
+            "mutation session contains subjects outside quality policy: "
+            + ", ".join(unexpected_subjects)
+        )
 
     if args.json:
         status = "pass" if not violations else "fail"
-        print(json.dumps(build_report(metrics, violations, status), indent=2))
+        print(
+            json.dumps(
+                build_report(
+                    root, metrics, violations, status, args.policy_date, observed_subjects
+                ),
+                indent=2,
+            )
+        )
         return 0 if not violations else 1
 
     for message in violations:

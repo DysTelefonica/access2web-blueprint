@@ -9,6 +9,7 @@ compara contra el texto literal que el gate emite.
 
 from __future__ import annotations
 
+import http.client
 import importlib.machinery
 import importlib.util
 import io
@@ -19,12 +20,15 @@ import sys
 import tempfile
 import threading
 import unittest
+import uuid
 from contextlib import redirect_stderr, redirect_stdout
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 PREFLIGHT = Path(__file__).resolve().parents[1] / "pr_preflight.py"
+CLI = PREFLIGHT.parent / "ci-pattern"
 ISSUE_SPEC_GATE = Path(__file__).resolve().parents[2] / "issue-spec" / "check_issue_spec.py"
+PR_SIZE_GATE = PREFLIGHT.parent.parent / "pr-size" / "check_pr_size.py"
 BRANCH_NAME_GATE = Path(__file__).resolve().parents[2] / "branch-name" / "check_branch_name.py"
 PR_CONTRACT_GATE = Path(__file__).resolve().parents[2] / "pr-contract" / "check_pr_contract.py"
 DEFAULT_BRANCH_PATTERN = (
@@ -64,6 +68,58 @@ def _body_file(tmp, body):
     return str(path)
 
 
+def _git(repo, *args):
+    proc = subprocess.run(  # noqa: S603 — git del fixture, args controlados.
+        ["git", "-C", str(repo), *args],
+        capture_output=True, text=True, check=False, timeout=30)
+    if proc.returncode != 0:
+        raise AssertionError(f"git {' '.join(args)} failed: {proc.stderr}")
+    return proc
+
+
+def _draft_repo(tmp, changed_lines):
+    repo = Path(tmp) / "repo"
+    repo.mkdir()
+    _git(repo, "init", "-q", "-b", "main")
+    _git(repo, "config", "user.name", "preflight fixture")
+    _git(repo, "config", "user.email", "preflight@example.invalid")
+    (repo / "base.txt").write_text("base\n", encoding="utf-8")
+    _git(repo, "add", "base.txt")
+    _git(repo, "commit", "-q", "-m", "chore: base")
+    _git(repo, "switch", "-q", "-c", "feature/draft")
+    (repo / "change.txt").write_text(
+        "".join(f"line {index}\n" for index in range(changed_lines)),
+        encoding="utf-8")
+    _git(repo, "add", "change.txt")
+    _git(repo, "commit", "-q", "-m", "feat: draft")
+    return repo
+
+
+def _canonical_issue(body):
+    return subprocess.run(  # noqa: S603 — gate canónico, args controlados.
+        [sys.executable, str(ISSUE_SPEC_GATE), "local", "--body-file", str(body)],
+        capture_output=True, text=True, check=False, timeout=30)
+
+
+def _canonical_size(repo, labels):
+    label_arg = ",".join(labels) or ","
+    return subprocess.run(  # noqa: S603 — gate canónico, args controlados.
+        [sys.executable, str(PR_SIZE_GATE), "--base-ref", "main",
+         "--labels", label_arg, "--json"],
+        cwd=repo, capture_output=True, text=True, check=False, timeout=30)
+
+
+def _run_draft(repo, body, labels, env=None):
+    command = [sys.executable, str(CLI), "pr", "preflight", "--draft",
+               "--pr-body", str(body), "--base", "main"]
+    for label in labels:
+        command.extend(("--label", label))
+    command.append("--json")
+    return subprocess.run(  # noqa: S603 — CLI pública, args controlados.
+        command, cwd=repo, capture_output=True, text=True, check=False,
+        timeout=30, env=env)
+
+
 class BranchNameParityTests(unittest.TestCase):
     """Mismos casos que ``test_check_branch_name.py``."""
 
@@ -89,12 +145,13 @@ class BranchNameParityTests(unittest.TestCase):
                 self.assertEqual(code, 0)
                 self.assertIn("[branch-name] OK", err)
 
-    def test_non_conforming_branch_fails_with_gate_text(self):
+    def test_non_conforming_branch_warns_without_blocking(self):
         for branch in ("Feat/x", "feature/x", "feat/", "main2"):
             with self.subTest(branch=branch):
                 code, _, err = _invoke(self.preflight, self._kwargs(branch))
-                self.assertEqual(code, 1)
-                self.assertIn("[branch-name]", err)
+                self.assertEqual(code, 0, err)
+                self.assertIn("[branch-name] AVISO", err)
+                self.assertNotIn("FAIL", err)
                 self.assertIn(branch, err)
                 self.assertIn("<type>/<", err)
 
@@ -161,30 +218,30 @@ class IssueSpecRemoteParityTests(unittest.TestCase):
                     "body": ""}
         return fetch
 
-    def test_approved_typed_issue_passes(self):
-        bf = _body_file(self.tmp, "Closes #12\n")
-        code, _, err = _invoke(self.preflight,
-                               dict(body_file=bf, repository="owner/repo",
-                                    fetch_issue=self._fetcher(
-                                        "status:approved", "type:feature")))
-        self.assertEqual(code, 0, err)
-        self.assertIn("[issue-spec]", err)
-
-    def test_missing_approval_fails_with_gate_text(self):
+    def test_typed_issue_passes(self):
         bf = _body_file(self.tmp, "Closes #12\n")
         code, _, err = _invoke(self.preflight,
                                dict(body_file=bf, repository="owner/repo",
                                     fetch_issue=self._fetcher("type:feature")))
-        self.assertEqual(code, 1)
-        self.assertIn("[issue-spec] issue-spec: #12: requiere status:approved", err)
+        self.assertEqual(code, 0, err)
+        self.assertIn("[issue-spec]", err)
 
-    def test_missing_type_label_fails_with_gate_text(self):
+    def test_issue_without_approval_passes(self):
+        # R1 (DysTelefonica/team-skills#1093): la etiqueta de aprobación ya no bloquea.
         bf = _body_file(self.tmp, "Closes #12\n")
         code, _, err = _invoke(self.preflight,
                                dict(body_file=bf, repository="owner/repo",
-                                    fetch_issue=self._fetcher("status:approved")))
-        self.assertEqual(code, 1)
-        self.assertIn("[issue-spec] issue-spec: #12: requiere una etiqueta type:", err)
+                                    fetch_issue=self._fetcher("type:feature")))
+        self.assertEqual(code, 0, err)
+
+    def test_missing_type_label_does_not_block(self):
+        # R1 (DysTelefonica/team-skills#1093): el gate ya no mira las etiquetas de la
+        # issue, así que una issue sin `type:*` tampoco bloquea.
+        bf = _body_file(self.tmp, "Closes #12\n")
+        code, _, err = _invoke(self.preflight,
+                               dict(body_file=bf, repository="owner/repo",
+                                    fetch_issue=self._fetcher()))
+        self.assertEqual(code, 0, err)
 
     def test_api_error_fails_closed(self):
         def fetch(_number):
@@ -202,36 +259,24 @@ class IssueSpecRemoteParityTests(unittest.TestCase):
                     "labels": [{"name": n} for n in labels_by_number[number]]}
         return fetch
 
-    def test_closes_approved_with_non_approved_refs_passes(self):
-        # #913 (a): la Refs no aprobada es informativa.
-        bf = _body_file(self.tmp, "Closes #12\nRefs #13\n")
-        code, _, err = _invoke(self.preflight,
-                               dict(body_file=bf, repository="owner/repo",
-                                    fetch_issue=self._by_number({
-                                        12: ["status:approved", "type:bug"],
-                                        13: ["type:bug"]})))
-        self.assertEqual(code, 0, err)
-
-    def test_only_refs_to_non_approved_issue_fails(self):
-        # #913 (b): sin ninguna issue aprobada el PR sigue en rojo.
-        bf = _body_file(self.tmp, "Refs #13\n")
-        code, _, err = _invoke(self.preflight,
-                               dict(body_file=bf, repository="owner/repo",
-                                    fetch_issue=self._by_number({13: ["type:bug"]})))
-        self.assertEqual(code, 1)
-        self.assertIn("[issue-spec]", err)
-        self.assertIn("aprobada", err)
-
-    def test_closes_non_approved_with_approved_refs_fails(self):
-        # #913 (c): el issue que se cierra debe estar aprobado.
+    def test_closes_typed_issue_with_other_refs_passes(self):
+        # #913 (a): una Refs tipada es informativa.
         bf = _body_file(self.tmp, "Closes #12\nRefs #13\n")
         code, _, err = _invoke(self.preflight,
                                dict(body_file=bf, repository="owner/repo",
                                     fetch_issue=self._by_number({
                                         12: ["type:bug"],
-                                        13: ["status:approved", "type:bug"]})))
-        self.assertEqual(code, 1)
-        self.assertIn("[issue-spec] issue-spec: #12: requiere status:approved", err)
+                                        13: ["type:chore"]})))
+        self.assertEqual(code, 0, err)
+
+    def test_only_refs_to_untyped_issue_passes(self):
+        # R1 (DysTelefonica/team-skills#1093): lo que importa es que la PR enlace una
+        # issue; sus etiquetas no bloquean.
+        bf = _body_file(self.tmp, "Refs #13\n")
+        code, _, err = _invoke(self.preflight,
+                               dict(body_file=bf, repository="owner/repo",
+                                    fetch_issue=self._by_number({13: []})))
+        self.assertEqual(code, 0, err)
 
 
 class DocsEvidenceParityTests(unittest.TestCase):
@@ -253,20 +298,22 @@ class DocsEvidenceParityTests(unittest.TestCase):
                     changed_files_file=str(files_path))
 
     def test_missing_docs_evidence_emits_gate_warning(self):
-        policy = json.dumps({"required_labels": ["type:bug"]})
+        policy = json.dumps({})
         code, _, err = _invoke(self.preflight, self._kwargs(
             policy_text=policy, body="Closes #12\n", files=["app/x.py"]))
         self.assertEqual(code, 0)
         self.assertIn("[docs-evidence] HR-64: docs_evidence no declarado", err)
 
-    def test_touched_doc_page_without_section_fails(self):
+    def test_touched_doc_page_without_section_is_an_advisory(self):
+        # #1093 R1 (decisión del dueño, 2026-10-23): HR-64 avisa y no bloquea,
+        # igual que el gate de la CI: el preflight sale 0 y lo dice.
         policy = json.dumps({"docs_evidence": {
             "pages": [{"page": "docs/x.md", "covers": ["app/x.py"]}],
             "checklists": {}}})
         code, _, err = _invoke(self.preflight, self._kwargs(
             policy_text=policy, body="Closes #12\n", files=["app/x.py"]))
-        self.assertEqual(code, 1)
-        self.assertIn("[docs-evidence] HR-64: el PR toca app/x.py", err)
+        self.assertEqual(code, 0)
+        self.assertIn("[docs-evidence] AVISO: HR-64: el PR toca app/x.py", err)
         self.assertIn("Documentación", err)
 
 
@@ -318,6 +365,145 @@ class GateReuseContractTests(unittest.TestCase):
         body = "Sin enlace.\n"
         # Idempotencia: el veredicto es estable.
         self.assertEqual(gate.validate_body(body), gate.validate_body(body))
+
+
+class DraftPreflightParityTests(unittest.TestCase):
+    """El borrador local tiene el veredicto de los gates canónicos."""
+
+    def test_body_without_reference_matches_issue_spec_local(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _draft_repo(tmp, changed_lines=1)
+            body = Path(tmp) / "body.md"
+            body.write_text("Sin Refs ni Closes.\n", encoding="utf-8")
+
+            canonical_issue = _canonical_issue(body)
+            canonical_size = _canonical_size(repo, [])
+            draft = _run_draft(repo, body, [])
+
+            self.assertEqual(canonical_issue.returncode, 1, canonical_issue.stderr)
+            self.assertEqual(canonical_size.returncode, 0, canonical_size.stderr)
+            self.assertEqual(draft.returncode, canonical_issue.returncode, draft.stderr)
+            payload = json.loads(draft.stdout)
+            self.assertFalse(payload["clean"])
+            issue_failures = [
+                finding for finding in payload["findings"]
+                if finding["gate"] == "issue-spec" and finding["code"] == "fail"
+            ]
+            self.assertEqual(len(issue_failures), 1)
+            self.assertIn(canonical_issue.stderr.splitlines()[0],
+                          issue_failures[0]["detail"])
+            self.assertFalse(any(
+                finding["gate"] == "pr-size" and finding["code"] == "fail"
+                for finding in payload["findings"]
+            ))
+
+    def test_size_over_budget_matches_size_gate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _draft_repo(tmp, changed_lines=401)
+            body = Path(tmp) / "body.md"
+            body.write_text("Refs #1113\n", encoding="utf-8")
+
+            canonical_issue = _canonical_issue(body)
+            canonical_size = _canonical_size(repo, ["type:feature"])
+            draft = _run_draft(repo, body, ["type:feature"])
+
+            self.assertEqual(canonical_issue.returncode, 0, canonical_issue.stderr)
+            self.assertEqual(canonical_size.returncode, 1, canonical_size.stderr)
+            size_payload = json.loads(canonical_size.stdout)
+            self.assertEqual(size_payload["status"], "fail")
+            self.assertGreater(size_payload["indicators"]["changed_lines"],
+                               size_payload["ceilings"]["changed_lines"])
+            self.assertEqual(draft.returncode, canonical_size.returncode, draft.stderr)
+            payload = json.loads(draft.stdout)
+            self.assertFalse(payload["clean"])
+            self.assertTrue(any(
+                finding["gate"] == "pr-size" and finding["code"] == "fail"
+                for finding in payload["findings"]
+            ))
+
+    def test_valid_small_draft_passes_both_gates_without_api_or_gh(self):
+        api_calls = []
+        ambient_seen = []
+        api_prefix = f"/draft-preflight-{uuid.uuid4().hex}/"
+        ambient_path = f"/ambient-{uuid.uuid4().hex}"
+
+        class TrapHandler(BaseHTTPRequestHandler):
+            def do_GET(self):  # noqa: N802 — nombre fijado por http.server.
+                if self.path == ambient_path:
+                    ambient_seen.append(self.path)
+                if self.path.startswith(api_prefix):
+                    api_calls.append(self.path)
+                self.send_response(500)
+                self.send_header("Content-Length", "0")
+                self.end_headers()
+
+            def log_message(self, *_args):
+                return
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), TrapHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                repo = _draft_repo(tmp, changed_lines=1)
+                body = Path(tmp) / "body.md"
+                body.write_text("Refs #1113\n", encoding="utf-8")
+                labels = ["type:feature", "scope:tests"]
+                gh_marker = Path(tmp) / "gh-called"
+                gh_bin = Path(tmp) / "bin"
+                gh_bin.mkdir()
+                gh = gh_bin / "gh"
+                gh.write_text(
+                    "#!/usr/bin/env python3\n"
+                    "from pathlib import Path\n"
+                    f"Path({str(gh_marker)!r}).write_text('called', encoding='utf-8')\n"
+                    "raise SystemExit(99)\n",
+                    encoding="utf-8")
+                gh.chmod(0o755)
+                excluded = {
+                    "BASE_REF", "GH_TOKEN", "GITHUB_API_URL", "GITHUB_EVENT_PATH",
+                    "GITHUB_TOKEN", "GIT_CONFIG_COUNT", "PR_LABELS",
+                }
+                env = {
+                    key: value for key, value in os.environ.items()
+                    if key not in excluded
+                    and not key.startswith("GIT_CONFIG_KEY_")
+                    and not key.startswith("GIT_CONFIG_VALUE_")
+                }
+                git_config = Path(tmp) / "gitconfig"
+                git_config.write_text("", encoding="utf-8")
+                env["GIT_CONFIG_GLOBAL"] = str(git_config)
+                env["GIT_CONFIG_NOSYSTEM"] = "1"
+                env["GITHUB_TOKEN"] = "present-but-unused"
+                env["GITHUB_API_URL"] = (
+                    f"http://127.0.0.1:{server.server_address[1]}{api_prefix}")
+                env["PATH"] = f"{gh_bin}{os.pathsep}{env.get('PATH', os.defpath)}"
+
+                ambient = http.client.HTTPConnection(
+                    "127.0.0.1", server.server_address[1], timeout=5)
+                try:
+                    ambient.request("GET", ambient_path)
+                    ambient.getresponse().read()
+                finally:
+                    ambient.close()
+
+                canonical_issue = _canonical_issue(body)
+                canonical_size = _canonical_size(repo, labels)
+                draft = _run_draft(repo, body, labels, env=env)
+
+                self.assertEqual(canonical_issue.returncode, 0,
+                                 canonical_issue.stderr)
+                self.assertEqual(canonical_size.returncode, 0,
+                                 canonical_size.stderr)
+                self.assertEqual(draft.returncode, 0, draft.stderr)
+                payload = json.loads(draft.stdout)
+                self.assertTrue(payload["clean"])
+                self.assertEqual(ambient_seen, [ambient_path])
+                self.assertEqual(api_calls, [])
+                self.assertFalse(gh_marker.exists())
+        finally:
+            server.shutdown()
+            server.server_close()
 
 
 def _issue_api_handler(issues):
