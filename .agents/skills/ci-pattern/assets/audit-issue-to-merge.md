@@ -51,13 +51,12 @@ ejecutable se registra `documented-only`, no como control.
 | Checks requeridos por evento | HR-30 | CI-enforced | check publicado desde schedule | workflow-policy gate | `assets/workflow-policy/` |
 | Verde obsoleto | HR-31 | CI-enforced | gate que lee datos mutables | comparación contra la rama base | `assets/required-jobs/` |
 | Baselines/allowlists editables por el PR | HR-15 | CI-enforced | relajación sin motivo | comparación contra la rama base | `assets/ratchet/` |
-| Liveness de la medición (gates dormibles con policy file) | HR-18 | CI-enforced | medición degenerada (sujeto vacío o exit 2 falso) o gate dormible sin policy file con `target_date` | aplicar HR-3 (liveness) o declarar el policy file (parámetro 14) | `assets/host-readback/` (+ `assets/parameters.md` §Policy file) |
+| Liveness de la medición | HR-3 | CI-enforced | medición degenerada (sujeto vacío o exit 2 falso) | fallar en voz alta: sin ejecución real detrás no se imprime «OK» | `assets/host-readback/` |
 | Todo control falla ante su violación | HR-32 | CI-enforced | control sin test de comportamiento que ejecute su lógica contra un fixture violador | añadir el test al propio control (mismo baremo que `deterministic-quality-harness`) | el test de comportamiento del propio control (`assets/<gate>/tests/`) |
 | Exenciones por identidad | HR-33 | CI-enforced | exención sin responsable | escaneo de documentos de gobierno | `assets/exemptions/` |
 | Deriva del host | HR-34 | CI-enforced | regla declarada sin readback | drift check de solo lectura | `assets/host-readback/` |
 | Evidencia de deploy por SHA | HR-10 | CI-enforced | evidencia sobre rama o variable global | gate de evidencia | `assets/deploy-evidence/` |
 | Sustituto de revisión | HR-40 | documented-only | entrada de revisión aproximada | resolver desde lo desplegado | pendiente de mecanizar |
-| Salud del presupuesto | HR-38 | documented-only | presupuesto sin métrica | reporte de salud | pendiente de mecanizar |
 | Gates función del diff | HR-39 | CI-enforced | rojo externo bloquea PRs | re-agenda programada + manifiestos | `assets/workflow-policy/` |
 
 Complete cada fila con la evidencia vigente en el consumer auditado; una
@@ -120,29 +119,22 @@ de issues aún no fusionadas se marcan «pendiente» y no se auditan.
    editable debe contrastarse contra la copia de la rama base y llevar su
    campo de datos con motivo y referencia. Evidencia: diff del PR sobre los
    ficheros de datos del gate.
-5. **¿Cuál es el alcance de los gates dormidos?** (HR-18) — Gates con
-   `enforcement: "dormant"`: policy file presente, snapshot de activación
-   inmutable, supresión únicamente de la parte que se durmió, re-activación
-   como cambio de datos con review. Evidencia: policy files y su historia.
-6. **¿Cada control tiene un test que lo ve fallar?** (HR-32) — Receta de
+5. **¿Cada control tiene un test que lo ve fallar?** (HR-32) — Receta de
    violación por gate cuya ejecución sale con código distinto de 0.
    Evidencia: meta-test de violaciones y su salida.
-7. **¿Las exenciones llevan identidad verificable?** (HR-33) — Toda
+6. **¿Las exenciones llevan identidad verificable?** (HR-33) — Toda
    exención declarada como dato lleva `actor` no vacío o `issue` positivo.
    Evidencia: escaneo de baselines, políticas y matrices.
-8. **¿Hay deriva entre la documentación y el host?** (HR-34) — Contrato
+7. **¿Hay deriva entre la documentación y el host?** (HR-34) — Contrato
    declarado contra la API real (protección, rulesets, etiquetas, métodos
    de merge): toda regla host-enforced presente, toda ausente es hallazgo.
    Evidencia: drift check de solo lectura sobre las consultas del bloque 3.
-9. **¿La entrada de revisión previa se resuelve desde lo desplegado?**
+8. **¿La entrada de revisión previa se resuelve desde lo desplegado?**
    (HR-40) — Los gates de deploy o batería resuelven su entrada de revisión
    desde el estado real del despliegue (salud, SHA desplegado), no de una
    variable global ni de la rama por defecto. Evidencia: scripts de los
    workflows de deploy.
-10. **¿El presupuesto de revisión tiene salud medida?** (HR-38) — Métrica
-    de salud con ventana, excepciones, tasa y umbral declarado. Evidencia:
-    reporte de salud y su baseline.
-11. **¿Los gates requeridos por PR son función del diff?** (HR-39) — Gates
+9. **¿Los gates requeridos por PR son función del diff?** (HR-39) — Gates
     cuyo veredicto depende de estado externo ejecutan programados sobre la
     rama por defecto y por PR solo cuando el diff toca los manifiestos
     declarados; su rojo programado abre issue con la evidencia. Evidencia:

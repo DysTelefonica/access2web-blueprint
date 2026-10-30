@@ -63,7 +63,7 @@ Sin transacciones.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Ya se ve: la identidad depende del usuario de Windows (`VG.bas:372-376`) y de una ruta de red fija para aplicaciones y vídeos (`VG.bas:337`; `Entorno.cls:700`); identificador de correo `Max + 1` (`constructor.bas:1165`).
+Pendiente de la coexistencia (documento aún no redactado). Ya se ve: la identidad depende del usuario de Windows (`VG.bas:372-376`) y de una ruta de red fija para aplicaciones y vídeos (`VG.bas:337`; `Entorno.cls:700`); identificador de correo `Max + 1` (`constructor.bas:1165`).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

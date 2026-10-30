@@ -39,11 +39,10 @@
 │  │                       di,delivery}                              │
 │  ├── src/shared/  (cross-cutting: cache, audit, lockout)          │
 │  ├── migrations/versions/   (Alembic; Expand and Contract, D82)    │
-│  ├── tests/   (TDD + Playwright E2E; gates por módulo)            │
-│  └── pytest_plugin/   (coverage_gate, etc.)                       │
+│  └── tests/   (TDD + Playwright E2E; gates por módulo)            │
 │                                                                   │
 │  openspec/changes/<change>/{proposal,design,specs/*,tasks}.md    │
-│  scripts/check_*.py   (16 quality gates, ver §CI)                  │
+│  scripts/check_*.py   (14 quality gates, ver §CI)                  │
 │  skills/    (copy de las skills internalizadas)                    │
 └──────────────────────────────────────────────────────────────────┘
                                    │
@@ -90,7 +89,7 @@ access2web-blueprint/
 │   └── prompts/                 ← reportes a mantenedor dysflow
 ├── app/                         ← hexagonal Python (renombrado desde platform/)
 │   ├── README.md                ← naming deviation justificada
-│   ├── pyproject.toml           ← ruff==0.15.21, mypy==1.13.0, argon2-cffi==25.1.0
+│   ├── pyproject.toml           ← ruff==0.17.2, mypy==1.13.0, argon2-cffi==25.1.0
 │   ├── Dockerfile               ← python:3.12-slim-bookworm
 │   ├── src/
 │   │   ├── main.py              ← FastAPI composition root
@@ -100,7 +99,7 @@ access2web-blueprint/
 ├── e2e/                         ← suite Playwright (gate de release)
 ├── inputs/                      ← material de entrada legacy (automatizaciones-legacy)
 ├── openspec/changes/<change>/{proposal,design,specs/*,tasks}.md
-├── scripts/check_*.py           ← 16 quality gates (ver §CI gates)
+├── scripts/check_*.py           ← 14 quality gates (ver §CI gates)
 ├── .github/workflows/{ci,security,security-deep,codeql,release,operating-doc-drift}.yml
 ├── data/staging/                ← binarios legacy (R2-pulled)
 └── skills/                      ← copia internalizada de skills del proyecto
@@ -361,11 +360,11 @@ Las capas son las capas hexagonales de cada aplicación: una capa agrupa la carp
 
 ## CI gates
 
-Dieciséis `scripts/check_*.py` + `.github/workflows/`:
+Catorce `scripts/check_*.py` + `.github/workflows/`:
 
 | Gate | Vive en | QC |
 |---|---|---|
-| `check_pr_size.py` | scripts/ | QC-6 |
+| `check_pr_size.py` | .agents/skills/ci-pattern/assets/pr-size/ (canon) | QC-6 |
 | `docs-architecture` (job) | ci.yml | QC-2, QC-9: capas, independencia y pureza desde el bloque `architecture` |
 | `check_deadcode.py` | scripts/ | Código muerto (vulture) |
 | `check_issue_spec.py` | .agents/skills/ci-pattern/assets/issue-spec/ (canon) | Trazabilidad PR→issue aprobada y tipada |
@@ -382,9 +381,9 @@ Dieciséis `scripts/check_*.py` + `.github/workflows/`:
 | `check_workflows.py` | scripts/ | Integridad YAML, pins, concurrencia y aislamiento de PRs públicos |
 | `quality_report.py` | scripts/ | QC-11 (agregador) |
 | `check_walkthrough_schema.py` | scripts/ | MUST fields del template `walkthrough.json` |
-| `pytest_plugin/coverage_gate.py` | app/ | QC-5 |
 | ci.yml | .github/workflows/ | orquesta todo por PR |
-| security.yml | .github/workflows/ | pip-audit, gitleaks, trivy config |
+| security.yml | .github/workflows/ | gitleaks, trivy config |
+| pip-audit.yml | .github/workflows/ | auditoria del lockfile bloqueado por hashes |
 | security-deep.yml | .github/workflows/ | semanal |
 | codeql.yml | .github/workflows/ | cada PR, push a main y semanal |
 | release.yml | .github/workflows/ | tags + identidad + firma keyless del digest |
