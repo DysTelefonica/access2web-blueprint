@@ -425,14 +425,19 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
    "governance_seals": { "job": "governance-seals" }
    ```
 
-   y añada el job al `ci.yml` del consumer, con esta forma:
+   y añada el job en un workflow propio, con esta forma. El job solo mide el
+   árbol, así que dispara cuando el árbol puede cambiar (`opened`,
+   `synchronize`, `reopened`) y no al editar el cuerpo o las etiquetas, y
+   tiene su propia cola: no comparte la del workflow de contrato de PR (#1440).
+   Lo mismo vale para cualquier otro job que solo mida el árbol (lint,
+   nombre de rama): nunca va en el workflow de contrato de PR.
 
    ```yaml
-   name: pr-gates
+   name: governance-seals
 
    on:
      pull_request_target:
-       types: [opened, edited, labeled, unlabeled, synchronize, reopened]
+       types: [opened, synchronize, reopened]
 
    permissions:
      contents: read
@@ -440,7 +445,8 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
      checks: write
 
    concurrency:
-     group: pr-gates-${{ github.event.pull_request.number }}
+     # Cola propia (HR-73): no es la `pr-gates-<PR>` del contrato de PR.
+     group: governance-seals-${{ github.event.pull_request.number }}
      # Solo un commit nuevo cancela una corrida (#978).
      cancel-in-progress: ${{ github.event.action == 'synchronize' }}
 
@@ -736,7 +742,9 @@ Cierre: `ci-pattern adoption check --phase 3 <repo>` = 0.
   `assets/templates/.github/workflows/pr-contract.yml.tmpl`; generador:
   `assets/bin/origins_file.py`): sin el mapa el árbol vendorizado cuenta como
   líneas de autoría y la primera PR de propagación revienta el presupuesto
-  (#1133, #1149). La fase 4 lo mide (#1159, HR-74). Y el CI del consumer `MUST`
+  (#1133, #1149). El workflow pasa además el `.gitattributes` de la BASE con
+  `--gitattributes-file`: lo que marca `linguist-generated` no cuenta (#1440,
+  HR-54.11). La fase 4 lo mide (#1159, HR-74). Y el CI del consumer `MUST`
   ejecutarla en cada PR (`adoption check --phase 4 pr-head`), como ya hace con la
   fase 5: si solo la lanza quien la corre a mano, ningún gate ve la deriva del
   cableado (#1359).
