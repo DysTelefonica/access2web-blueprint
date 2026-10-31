@@ -877,7 +877,8 @@ class IssueLinkGateTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
 ALL_CHECKS = ("closes", "chain_context", "issue_links", "closure_tests",
-              "docs_evidence", "budget", "commits", "ai_disclosure")
+              "docs_evidence", "budget", "commits", "ai_disclosure",
+              "commit_identity")
 ONLY_DOCS = {name: False for name in ALL_CHECKS if name != "docs_evidence"}
 DOCS_EVIDENCE = {"pages": [{"page": "docs/p.md", "covers": ["f.txt"]}], "checklists": {}}
 
@@ -1143,9 +1144,12 @@ LIVE_PR = 7
 class _MockApiServer:
     """HTTP server local (stdlib) sirviendo los endpoints del API que consume el
     gate (`/repos/{r}/issues/{n}/labels`, `/repos/{r}/pulls/{n}` y, #1190, el listado
-    `/repos/{r}/pulls` de la cadena, vacío aquí: estos casos no tienen eslabones)."""
+    `/repos/{r}/pulls` de la cadena, vacío aquí: estos casos no tienen eslabones).
 
-    def __init__(self, pull_body, labels):
+    #1433: también `/repos/{r}/pulls/{n}/commits` (HR-84), una lista vacía por
+    defecto; `commits=None` quita la ruta y el servidor responde 404."""
+
+    def __init__(self, pull_body, labels, commits=()):
         import threading
         from http.server import BaseHTTPRequestHandler, HTTPServer
         from urllib.parse import urlsplit
@@ -1155,10 +1159,21 @@ class _MockApiServer:
             f"/repos/{LIVE_REPO}/pulls/{LIVE_PR}": state["pull"],
             f"/repos/{LIVE_REPO}/pulls": [],
         }
+        if commits is not None:
+            routes[f"/repos/{LIVE_REPO}/pulls/{LIVE_PR}/commits"] = list(commits)
 
         class _Handler(BaseHTTPRequestHandler):
             def do_GET(self):  # noqa: N802
-                raw = json.dumps(routes.get(urlsplit(self.path).path, None)).encode("utf-8")
+                parts = urlsplit(self.path)
+                doc = routes.get(parts.path, None)
+                if parts.path.endswith("/commits") and isinstance(doc, list):
+                    # HR-84 pagina a mano: el listado de commits respeta page/per_page.
+                    from urllib.parse import parse_qs
+                    query = parse_qs(parts.query)
+                    size = int(query.get("per_page", ["30"])[0])
+                    page = int(query.get("page", ["1"])[0])
+                    doc = doc[(page - 1) * size:page * size]
+                raw = json.dumps(doc).encode("utf-8")
                 if raw == b"null":
                     self.send_response(404)
                     self.end_headers()
@@ -1412,6 +1427,138 @@ class LiveApiTests(unittest.TestCase):
             server.close()
 
 
+def _api_commit(sha, name, email, login=None, parents=1):
+    """Un elemento de `GET /pulls/{n}/commits`: `author` es null si GitHub no
+    vincula el autor a ninguna cuenta."""
+    return {"sha": sha,
+            "commit": {"author": {"name": name, "email": email},
+                       "message": "feat: x"},
+            "author": {"login": login} if login else None,
+            "parents": [{"sha": f"{i}" * 40} for i in range(parents)]}
+
+
+class CommitIdentityTests(unittest.TestCase):
+    """#1433 (HR-84): el autor de cada commit de la PR tiene que estar vinculado
+    a una cuenta de GitHub. Avisa por defecto; bloquea con `mode: enforce`."""
+
+    PI = "8921963b" + "a" * 32
+    LINKED = "73dd1095" + "b" * 32
+    BOT = "91a1ed85" + "c" * 32
+
+    def _policy(self, identity=None, active=True):
+        checks = {n: False for n in ("closes", "chain_context", "issue_links",
+                                     "closure_tests", "docs_evidence", "budget",
+                                     "commits", "ai_disclosure")}
+        # `closes` sigue activa, como en LiveApiTests: un gate sin ninguna
+        # comprobación activa es error de configuración.
+        checks["closes"] = True
+        checks["commit_identity"] = active
+        policy = {**POLICY_DATA, "checks": checks}
+        if identity is not None:
+            policy["commit_identity"] = identity
+        return policy
+
+    def _run(self, policy, commits, *, live=True):
+        server = _MockApiServer(pull_body=_good_api_body(), labels=[], commits=commits)
+        try:
+            env = {k: v for k, v in os.environ.items()
+                   if k not in ("GITHUB_TOKEN", "GH_TOKEN", "PR_CONTRACT_USE_LIVE_API")}
+            if live:
+                env.update(GITHUB_TOKEN="test-token", GITHUB_API_URL=server.base_url,
+                           PR_CONTRACT_USE_LIVE_API="1")
+            with tempfile.TemporaryDirectory() as tmp:
+                event = LiveApiTests._event(None, tmp, payload_body=_good_api_body()["body"])
+                policy_file = Path(tmp) / "policy.json"
+                policy_file.write_text(json.dumps(policy), encoding="utf-8")
+                return subprocess.run(
+                    [sys.executable, str(GATE), "--event-file", str(event),
+                     "--policy-file", str(policy_file)],
+                    capture_output=True, text=True, encoding="utf-8", check=False,
+                    env=env, timeout=60)
+        finally:
+            server.close()
+
+    def _unlinked(self):
+        return [_api_commit(self.PI, "pi-agent", "pi-agent@local")]
+
+    def test_unlinked_author_is_an_advisory_by_default(self):
+        proc = self._run(self._policy(), self._unlinked())
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO (no bloquea): HR-84", proc.stdout)
+        self.assertIn("8921963b", proc.stdout)
+        self.assertIn("pi-agent <pi-agent@local>", proc.stdout)
+
+    def test_unlinked_author_fails_in_enforce_mode_with_the_fix(self):
+        proc = self._run(self._policy({"mode": "enforce"}), self._unlinked())
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("✗ HR-84", proc.stdout)
+        self.assertIn("8921963b", proc.stdout)
+        self.assertIn("pi-agent <pi-agent@local>", proc.stdout)
+        self.assertIn("git config user.email", proc.stdout)
+        self.assertIn("noreply", proc.stdout)
+        self.assertIn("GIT_AUTHOR_", proc.stdout)
+
+    def test_linked_authors_pass_in_enforce_mode(self):
+        commits = [_api_commit(self.LINKED, "Ana", "ana@x.com", login="ana")]
+        proc = self._run(self._policy({"mode": "enforce"}), commits)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertNotIn("HR-84", proc.stdout)
+
+    def test_an_allowed_bot_passes_by_name_or_email(self):
+        commits = [_api_commit(self.BOT, "dys-agentes",
+                               "dys-agentes@users.noreply.github.com")]
+        for entry in ("dys-agentes", "DYS-AGENTES@users.noreply.github.com"):
+            proc = self._run(self._policy({"mode": "enforce", "allowed_bots": [entry]}),
+                             commits)
+            self.assertEqual(proc.returncode, 0, entry + proc.stdout + proc.stderr)
+            self.assertNotIn("HR-84", proc.stdout)
+
+    def test_merge_commits_are_not_judged(self):
+        commits = [_api_commit(self.PI, "pi-agent", "pi-agent@local", parents=2)]
+        proc = self._run(self._policy({"mode": "enforce"}), commits)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertNotIn("HR-84", proc.stdout)
+
+    def test_api_down_fails_closed_in_both_modes(self):
+        for identity in (None, {"mode": "enforce"}):
+            proc = self._run(self._policy(identity), commits=None)
+            self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+            self.assertIn("HR-84", proc.stderr)
+
+    def test_invalid_policy_is_a_configuration_error(self):
+        for identity in ({"mode": "block"}, {"allowed_bots": "dys-agentes"}, "enforce"):
+            proc = self._run(self._policy(identity), self._unlinked())
+            self.assertEqual(proc.returncode, 2, f"{identity}: {proc.stdout}{proc.stderr}")
+            self.assertIn("commit_identity", proc.stderr)
+
+    def test_without_the_live_api_it_is_not_measured_and_says_so(self):
+        proc = self._run(self._policy({"mode": "enforce"}), self._unlinked(), live=False)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("HR-84", proc.stderr)
+        self.assertNotIn("HR-84", proc.stdout)
+
+    def test_a_commit_on_the_second_page_is_judged(self):
+        commits = [_api_commit(f"{i:08x}" + "d" * 32, "Ana", "ana@x.com", login="ana")
+                   for i in range(150)]
+        commits.append(_api_commit("ffff0000" + "e" * 32, "pi-agent", "pi-agent@local"))
+        proc = self._run(self._policy({"mode": "enforce"}), commits)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("ffff0000", proc.stdout)
+
+    def test_it_does_not_count_as_the_only_active_check(self):
+        """HR-3: sin la API viva no mide nada; con el resto apagado el gate sale 2."""
+        policy = self._policy()
+        policy["checks"]["closes"] = False
+        proc = self._run(policy, self._unlinked(), live=False)
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("ninguna", proc.stderr)
+
+    def test_switched_off_by_policy_it_does_not_call_the_api(self):
+        proc = self._run(self._policy({"mode": "enforce"}, active=False), commits=None)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertNotIn("HR-84", proc.stdout + proc.stderr)
+
+
 class Hr7AdvisoryTests(unittest.TestCase):
     """#1172 (decisión del dueño, 2026-10-24; auditoría #1093): HR-7 pasa a AVISO.
 
@@ -1624,6 +1771,68 @@ class A1VendoredOriginsTests(unittest.TestCase):
                 p = run_gate(ev, pol, repo, data_flags=flags)
             self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
             self.assertNotIn("--origins-file", p.stdout)
+
+
+class A1GeneratedFilesTests(unittest.TestCase):
+    """#1440: lo que el `.gitattributes` de la base marca generado no cuenta en A1."""
+
+    BODY = A1VendoredOriginsTests.BODY
+
+    def _run(self, tmp, gitattributes=None):
+        repo = Path(tmp) / "repo"
+        repo.mkdir()
+        env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+
+        def run(*args):
+            return subprocess.run(args, cwd=repo, capture_output=True, text=True, check=True,
+                                  env={**env, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+                                       "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"})
+
+        run("git", "init", "-q", "-b", "main")
+        (repo / "README.md").write_text("base\n", encoding="utf-8")
+        run("git", "add", "-A")
+        run("git", "commit", "-qm", "chore: base")
+        base_sha = run("git", "rev-parse", "HEAD").stdout.strip()
+        run("git", "checkout", "-q", "-b", "feature/x")
+        (repo / "docs").mkdir()
+        (repo / "docs" / "inventory.html").write_text(
+            "\n".join(f"<li>{i}</li>" for i in range(10)) + "\n", encoding="utf-8")
+        run("git", "add", "-A")
+        run("git", "commit", "-qm", "docs: regenera el inventario")
+        head_sha = run("git", "rev-parse", "HEAD").stdout.strip()
+        ev = make_event(tmp, body=self.BODY, labels=["type:feature"], base="main",
+                        base_sha=base_sha, head_sha=head_sha)
+        pol = make_policy(tmp, review_budget_lines=5)
+        with tempfile.TemporaryDirectory() as dest:
+            flags = write_range_data(ev, repo, dest)
+            if gitattributes is not None:
+                attrs_path = Path(dest) / "gitattributes"
+                attrs_path.write_text(gitattributes, encoding="utf-8", errors="surrogateescape")
+                flags += ["--gitattributes-file", str(attrs_path)]
+            return run_gate(ev, pol, repo, data_flags=flags)
+
+    def test_a_generated_file_marked_in_the_base_does_not_count(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp, gitattributes="docs/inventory.html linguist-generated\n")
+            self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+
+    def test_without_the_gitattributes_file_the_same_lines_count(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp)
+            self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+            self.assertIn("A1", p.stdout)
+
+    def test_a_non_utf8_gitattributes_file_is_a_clean_usage_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp, gitattributes="docs/\udcff linguist-generated\n")
+            self.assertEqual(p.returncode, 2, p.stdout + p.stderr)
+            self.assertIn("--gitattributes-file ilegible", p.stderr)
+            self.assertNotIn("Traceback", p.stderr)
+
+    def test_a_handwritten_doc_still_counts_with_gitattributes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp, gitattributes="docs/other.html linguist-generated\n")
+            self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
 
 
 if __name__ == "__main__":

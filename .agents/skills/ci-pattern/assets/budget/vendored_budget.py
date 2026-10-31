@@ -71,6 +71,97 @@ def is_generated_lockfile(path: str) -> bool:
     name = path.rsplit("/", 1)[-1]
     return any(fnmatchcase(name, pattern) for pattern in LOCKFILE_PATTERNS)
 
+
+#: Atributo de ``.gitattributes`` que marca un fichero como generado (#1440).
+#:
+#: Es la convención de GitHub (linguist): el diff de la PR ya pliega esos
+#: ficheros. El repositorio los declara una vez, en su ``.gitattributes``, y
+#: el presupuesto los deja fuera como a los lockfiles. La documentación escrita
+#: a mano sigue contando, como en ``gentle-ai`` («Check PR Cognitive Load»).
+GENERATED_ATTRIBUTE = "linguist-generated"
+
+#: Una línea de ``.gitattributes`` reducida a lo que el presupuesto usa:
+#: la expresión de la ruta y si la marca como generada (``True``) o la desmarca.
+GeneratedPatterns = tuple[tuple[re.Pattern[str], bool], ...]
+
+
+def _gitattributes_regex(pattern: str) -> re.Pattern[str]:
+    """Traduce un patrón de ``.gitattributes`` a una expresión anclada.
+
+    Sin ``/`` (salvo uno final) el patrón casa con el nombre en cualquier
+    nivel; con ``/`` se ancla a la raíz. Como en ``git check-attr``, ``**``
+    solo cruza directorios junto a una barra (``**/``, ``/**``); en otro sitio
+    vale lo mismo que ``*``, que no los cruza.
+    """
+    anchored = "/" in pattern.rstrip("/")
+    body = pattern.lstrip("/")
+    out, i = [], 0
+    while i < len(body):
+        at_start = i == 0 or body[i - 1] == "/"
+        if body.startswith("**/", i) and at_start:
+            out.append("(?:.*/)?")
+            i += 3
+        elif body.startswith("**", i) and at_start and i + 2 == len(body):
+            out.append(".*")
+            i += 2
+        elif body.startswith("**", i):
+            out.append("[^/]*")
+            i += 2
+        elif body[i] == "*":
+            out.append("[^/]*")
+            i += 1
+        elif body[i] == "?":
+            out.append("[^/]")
+            i += 1
+        else:
+            out.append(re.escape(body[i]))
+            i += 1
+    prefix = "" if anchored else "(?:.*/)?"
+    return re.compile(prefix + "".join(out) + r"\Z")
+
+
+def _generated_value(attrs: list[str]) -> bool | None:
+    """Valor de :data:`GENERATED_ATTRIBUTE` en una línea, o ``None`` si no lo toca."""
+    value = None
+    for attr in attrs:
+        if attr in (GENERATED_ATTRIBUTE, f"{GENERATED_ATTRIBUTE}=true"):
+            value = True
+        elif attr in (f"-{GENERATED_ATTRIBUTE}", f"!{GENERATED_ATTRIBUTE}",
+                      f"{GENERATED_ATTRIBUTE}=false"):
+            value = False
+    return value
+
+
+def generated_patterns(gitattributes: str) -> GeneratedPatterns:
+    """Las líneas de ``.gitattributes`` que marcan o desmarcan un generado (#1440).
+
+    Quien llama pasa el ``.gitattributes`` de la BASE de la PR: una PR no puede
+    sacar del presupuesto sus propias líneas declarándolas generadas.
+    """
+    patterns = []
+    for raw in gitattributes.lstrip("﻿").splitlines():
+        line = raw.strip()
+        # Los patrones entre comillas y las macros ``[attr]`` no marcan nada:
+        # el presupuesto se queda del lado de contar.
+        if not line or line.startswith(("#", '"', "[attr]")):
+            continue
+        pattern, *attrs = line.split()
+        value = _generated_value(attrs)
+        if value is not None:
+            patterns.append((_gitattributes_regex(pattern), value))
+    return tuple(patterns)
+
+
+def is_generated(path: str, patterns: GeneratedPatterns = ()) -> bool:
+    """True si ``path`` es un lockfile o la última línea que lo casa lo marca generado."""
+    if is_generated_lockfile(path):
+        return True
+    marked = False
+    for regex, value in patterns:
+        if regex.match(path):
+            marked = value
+    return marked
+
 #: Campos de una línea de ``--name-status``: estado y ruta; renombrado: estado, origen y destino.
 _ADDED_FIELDS = 2
 _RENAME_FIELDS = 3
@@ -84,17 +175,17 @@ def is_under_vendored(path: str) -> bool:
     return any(path.startswith(root) for root in VENDORED_ROOTS)
 
 
-def counts_to_budget(old_path: str, new_path: str) -> bool:
+def counts_to_budget(old_path: str, new_path: str, generated: GeneratedPatterns = ()) -> bool:
     """Decide si los cambios de un fichero cuentan para el presupuesto.
 
-    1. Destino que es un lockfile generado: no cuenta, salvo que el fichero
-       venga de una ruta de autoría (el trabajo fue de autoría) (#1177).
+    1. Destino generado (lockfile, o marcado en ``generated``): no cuenta,
+       salvo que el fichero venga de una ruta de autoría (#1177, #1440).
     2. Destino fuera de las rutas vendorizadas: cuenta.
     3. Destino vendorizado y sin renombrado desde autoría: no cuenta.
     4. Renombrado desde una ruta de autoría hacia una vendorizada: cuenta.
     """
-    if is_generated_lockfile(new_path):
-        return old_path != new_path and not is_generated_lockfile(old_path)
+    if is_generated(new_path, generated):
+        return old_path != new_path and not is_generated(old_path, generated)
     if not is_under_vendored(new_path):
         return True
     return old_path != new_path and not is_under_vendored(old_path)
@@ -188,18 +279,20 @@ def _iter_numstat(numstat: str):
         yield old_path, new_path, int(added) + int(deleted)
 
 
-def budget_lines(numstat: str, origins: dict[str, str | None] | None = None) -> int:
+def budget_lines(numstat: str, origins: dict[str, str | None] | None = None,
+                 generated: GeneratedPatterns = ()) -> int:
     """Líneas que cuentan para el presupuesto, desde un ``git diff --numstat``.
 
     Sin ``origins`` cuenta todo, como ``pr-contract`` antes de #931. Con
     ``origins``, un fichero vendorizado solo cuenta si su origen es de
     autoría o si es un renombrado desde una ruta de autoría. Un fichero
     vendorizado sin entrada en ``origins`` cuenta (fallo hacia contar).
+    ``generated`` (de :func:`generated_patterns`) deja fuera los generados.
     """
     total = 0
     for old_path, new_path, lines in _iter_numstat(numstat):
-        if is_generated_lockfile(new_path) and not counts_to_budget(old_path, new_path):
-            continue  # lockfile generado: no cuenta para el presupuesto (#1177)
+        if is_generated(new_path, generated) and not counts_to_budget(old_path, new_path, generated):
+            continue  # fichero generado: no cuenta para el presupuesto (#1177, #1440)
         if not is_under_vendored(new_path) or origins is None or new_path not in origins:
             total += lines
             continue
