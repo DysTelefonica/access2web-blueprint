@@ -358,7 +358,10 @@ def _range_inputs(name: str, yaml_text: str) -> tuple[str | None, bool]:
 
 # #1440: un job requerido de ``post_merge_verify`` tiene que correr en el dispatch. Regla
 # conservadora: si su ``if:`` de job filtra por ``github.event_name``, tiene que nombrar
-# ``workflow_dispatch`` y no negarlo; si no filtra por evento, se acepta.
+# ``workflow_dispatch`` y no negarlo; si no filtra por evento, se acepta. #1454: tambien
+# se acepta si una disyuncion de nivel superior es solo un filtro de evento que admite el
+# dispatch (``!= '<otro evento>'`` o ``== 'workflow_dispatch'``), porque entonces el
+# ``if:`` entero es verdadero en el dispatch.
 _EVENT_NAME = "github.event_name"
 _DISPATCH_EVENT = "workflow_dispatch"
 _NEGATES_DISPATCH = re.compile(
@@ -366,6 +369,12 @@ _NEGATES_DISPATCH = re.compile(
     r"|['\"]workflow_dispatch['\"]\s*!="          # 'workflow_dispatch' != github.event_name
     r"|!\s*\w*\s*\([^)]*workflow_dispatch")       # !(... 'workflow_dispatch') / !contains(...)
 _TRAILING_COMMENT = re.compile(r"\s+#.*$")
+_EVENT_OPERAND = r"github\.event_name"
+# GitHub solo admite literales entre comillas simples.
+_LITERAL = r"'(\w+)'"
+_EVENT_TEST = re.compile(
+    rf"^(?:{_EVENT_OPERAND}\s*(==|!=)\s*{_LITERAL}|{_LITERAL}\s*(==|!=)\s*{_EVENT_OPERAND})$")
+_BLOCK_INDICATOR = re.compile(r"^[>|][-+]?\s+")
 POLICY_PATH = ".github/required-jobs-policy.json"
 
 
@@ -414,9 +423,55 @@ def _job_conditions(yaml_text: str) -> dict[str, str]:
     return conditions
 
 
+def _bare_expression(condition: str) -> str:
+    """El ``if:`` sin indicador de bloque (``>-``) ni envoltorio ``${{ }}``."""
+    text = _BLOCK_INDICATOR.sub("", condition.strip()).strip()
+    if text.startswith("${{") and text.endswith("}}"):
+        text = text[3:-2].strip()
+    return text
+
+
+def _top_level_disjuncts(expression: str) -> list[str]:
+    """Los operandos de ``||`` fuera de parentesis y de literales."""
+    parts, depth, quote, start = [], 0, "", 0
+    index = 0
+    while index < len(expression):
+        char = expression[index]
+        if quote:
+            quote = "" if char == quote else quote
+        elif char in "'\"":
+            quote = char
+        elif char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+        elif depth == 0 and expression.startswith("||", index):
+            parts.append(expression[start:index].strip())
+            start, index = index + 2, index + 2
+            continue
+        index += 1
+    parts.append(expression[start:].strip())
+    return parts
+
+
+def _admits_dispatch(term: str) -> bool:
+    """#1454: el operando es solo un filtro de evento verdadero en ``workflow_dispatch``."""
+    match = _EVENT_TEST.match(term)
+    if match is None:
+        return False
+    operator = match.group(1) or match.group(4)
+    # GitHub compara cadenas sin distinguir mayusculas (verificador #1454, B1).
+    is_dispatch = (match.group(2) or match.group(3)).lower() == _DISPATCH_EVENT
+    return not is_dispatch if operator == "!=" else is_dispatch
+
+
 def _skips_dispatch(condition: str) -> bool:
     """Un ``if:`` que filtra por evento sin admitir ``workflow_dispatch`` lo salta."""
     if _EVENT_NAME not in condition:
+        return False
+    terms = _top_level_disjuncts(_bare_expression(condition))
+    # Un operando vacio es una expresion que GitHub rechaza: no se lee como filtro.
+    if all(terms) and any(_admits_dispatch(term) for term in terms):
         return False
     return _DISPATCH_EVENT not in condition or bool(_NEGATES_DISPATCH.search(condition))
 
@@ -438,22 +493,40 @@ def _verify_finding(name: str, yaml_text: str, required_jobs: frozenset[str]) ->
             "must admit 'workflow_dispatch'")
 
 
+def _dispatch_accepted_skips(policy: dict, base: str) -> frozenset[str]:
+    """#1454: los saltos que la politica acepta en ``workflow_dispatch``; mal formados = 2."""
+    events = policy.get("events", {})
+    spec = events.get(_DISPATCH_EVENT, {}) if isinstance(events, dict) else None
+    skips = spec.get("accepted_skips", []) if isinstance(spec, dict) else None
+    if not isinstance(skips, list) or not all(isinstance(j, str) and j for j in skips):
+        fail(f"{POLICY_PATH} on '{base}': events.{_DISPATCH_EVENT}.accepted_skips must be a "
+             "list of job names (#1454)")
+    return frozenset(skips)
+
+
 def required_jobs_policy(repo: str, base: str) -> frozenset[str]:
-    """#1440: ``required_jobs`` de la politica del repo en la base; ilegible falla cerrado (2).
+    """#1440: los jobs requeridos que tienen que correr en el dispatch; ilegible = 2.
 
     Es el mismo fichero que lee ``check_required_jobs.py``. Se lee por la API de
-    contenidos, como los workflows, y solo si hay ``post_merge_verify``.
+    contenidos, como los workflows, y solo si hay ``post_merge_verify``. Los saltos
+    que el consumer acepta en ``workflow_dispatch`` (``events.workflow_dispatch
+    .accepted_skips``, la lista que ya respeta el agregador) no cuentan (#1454).
     """
     try:
         contents = get_json(f"repos/{repo}/contents/{POLICY_PATH}?ref={base}")
-        jobs = json.loads(base64.b64decode(contents["content"]).decode("utf-8"))["required_jobs"]
+        policy = json.loads(base64.b64decode(contents["content"]).decode("utf-8"))
+        jobs = policy["required_jobs"]
     except (GitHubApiError, TypeError, KeyError, ValueError) as exc:
         fail(f"could not read required_jobs from {POLICY_PATH} on '{base}' to validate "
              f"post_merge_verify (fail closed, #1440): {exc!r}")
     if not isinstance(jobs, list) or not jobs or not all(isinstance(j, str) and j for j in jobs):
         fail(f"{POLICY_PATH} on '{base}': required_jobs must be a non-empty list of "
              "non-empty strings (#1440)")
-    return frozenset(jobs)
+    demanded = frozenset(jobs) - _dispatch_accepted_skips(policy, base)
+    if not demanded:
+        fail(f"{POLICY_PATH} on '{base}': events.{_DISPATCH_EVENT}.accepted_skips leaves no "
+             "required job to run on the post-merge verification (#1454)")
+    return demanded
 
 
 def _dispatchable_inputs(name: str, yaml_text: str, key: str,

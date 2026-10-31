@@ -17,6 +17,8 @@ protegido y sin `--admin`, y que el job `verify` comprueba la salida.
 Ejecuta sin red y sin consumer.
 """
 import importlib
+import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -82,6 +84,59 @@ class TestReleaseWorkflowTemplate(unittest.TestCase):
         self.assertIn("check_release_tag.py", commands)
         self.assertIn("check_release_ci.py", commands)
         self.assertIn("--workflow", commands)
+
+    def ci_gate_argv(self, drop=(), **env) -> list[str]:
+        """Argumentos con los que el paso del gate de CI llama a Python, según
+        el bloque `env`: el paso se ejecuta con bash y un `python3` falso."""
+        if shutil.which("bash") is None:
+            self.skipTest("bash no disponible")
+        step = next(s for s in self.doc["jobs"]["preflight"]["steps"]
+                    if "check_release_ci.py" in str(s.get("run") or ""))
+        with tempfile.TemporaryDirectory() as tmp:
+            stub = Path(tmp) / "python3"
+            stub.write_text('#!/bin/sh\nprintf "%s\\n" "$@"\n', encoding="utf-8")
+            stub.chmod(0o755)
+            script = Path(tmp) / "step.sh"
+            script.write_text(step["run"], encoding="utf-8")
+            environ = {**os.environ, **self.doc["env"], "GITHUB_REF_NAME": "v1.0.1", **env,
+                       "PATH": tmp + os.pathsep + os.environ.get("PATH", "")}
+            for name in drop:
+                environ.pop(name, None)
+            out = subprocess.run(["bash", str(script)], env=environ, capture_output=True,
+                                 text=True, check=True).stdout
+        return out.splitlines()
+
+    def test_por_defecto_el_gate_de_ci_no_espera_ni_filtra_el_run_del_tag(self):
+        self.assertEqual(self.doc["env"]["CI_TAG_RUN"], "false")
+        self.assertEqual(self.doc["env"]["CI_WAIT_MINUTES"], "0")
+        argv = self.ci_gate_argv()
+        self.assertNotIn("--tag-run", argv)
+        self.assertEqual(argv[argv.index("--wait-minutes") + 1], "0")
+
+    def test_ci_tag_run_espera_al_run_del_push_del_tag(self):
+        # Consumers cuyo CI solo ejecuta una suite en el push del tag (#1451).
+        argv = self.ci_gate_argv(CI_TAG_RUN="true", CI_WAIT_MINUTES="60")
+        self.assertIn("--tag-run", argv)
+        self.assertEqual(argv[argv.index("--wait-minutes") + 1], "60")
+        self.assertEqual(argv[argv.index("--tag") + 1], "v1.0.1")
+
+    def test_un_bloque_env_antiguo_sin_los_parametros_no_espera(self):
+        # Un consumer que actualiza el paso y conserva su bloque `env` anterior.
+        argv = self.ci_gate_argv(drop=("CI_TAG_RUN", "CI_WAIT_MINUTES"))
+        self.assertNotIn("--tag-run", argv)
+        self.assertEqual(argv[argv.index("--wait-minutes") + 1], "0")
+
+    def test_ci_tag_run_con_otro_valor_sale_dos_en_vez_de_medir_main(self):
+        with self.assertRaises(subprocess.CalledProcessError) as ctx:
+            self.ci_gate_argv(CI_TAG_RUN="True")
+        self.assertEqual(ctx.exception.returncode, 2)
+        self.assertIn("CI_TAG_RUN", ctx.exception.stderr)
+
+    def test_el_preflight_deja_tiempo_a_la_espera_maxima(self):
+        # Espera máxima documentada (100) más una consulta y los pasos previos.
+        timeout = int(self.doc["jobs"]["preflight"]["timeout-minutes"])
+        self.assertGreaterEqual(timeout, 100 + 10)
+        self.assertIn("como mucho 100", self.text)
 
     def test_la_publicacion_va_en_entorno_protegido_y_sin_admin(self):
         job = self.doc["jobs"]["release"]
