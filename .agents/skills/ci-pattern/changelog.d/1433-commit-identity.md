@@ -1,0 +1,3 @@
+type: minor
+
+HR-84: `pr-contract` mide la identidad del autor de cada commit de trabajo de la PR por la API (`GET /repos/{r}/pulls/{n}/commits`). Un autor que GitHub no vincula a ninguna cuenta (`pi-agent <pi-agent@local>`, `author: null`) y que no figura en `commit_identity.allowed_bots` de la política es hallazgo, con el SHA, la identidad y la corrección. Comprobación nueva `commit_identity` en `checks`; `commit_identity.mode` vale `advise` por defecto (aviso que no bloquea) o `enforce`. Solo se mide en el modo vivo del gate; con él, un fallo de la API sale 2. El documento operativo generado (sección «Commits») y el `CONTRIBUTING.md` lo explican. Refs #1433.
