@@ -1,6 +1,6 @@
 # PRD — No Conformidades
 
-> **Estado:** en curso · fases 0, 1 y 2 del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) completas (48 de 48 fichas). Faltan matriz de campos, coexistencia, capacidades, issues propuestas y ERD de origen.
+> **Estado:** en curso · fases 0, 1 y 2 del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) completas (48 de 48 fichas), con [matriz de campos](matriz-campos.md), [coexistencia](coexistencia.md), [capacidades](capacidades.md) e [issues propuestas](issues-propuestas.md). Falta el [ERD de origen](erd-origen.md), pendiente del propietario.
 
 | Campo | Valor |
 |---|---|
@@ -14,7 +14,7 @@
 
 ## Alcance actual
 
-Fija el commit, concilia el inventario y enlaza las 48 fichas de formulario. No contiene aún ERD, matriz, coexistencia ni capacidades: llegan en las tandas siguientes de la cadena. Los recuentos de líneas, controles y procedimientos son mecánicos (véase [Método del recuento](#método-del-recuento)) y no sustituyen al análisis.
+Fija el commit, concilia el inventario y enlaza las 48 fichas de formulario. Incluye la matriz de campos, la coexistencia, las capacidades y las issues propuestas; el ERD de origen queda pendiente del propietario. Los recuentos de líneas, controles y procedimientos son mecánicos (véase [Método del recuento](#método-del-recuento)) y no sustituyen al análisis.
 
 ## Inventario reconciliado
 
@@ -103,7 +103,7 @@ El estudio previo describe la rama `staging`; el commit fijado es `main`, que el
 
 ## Capacidades
 
-Pendiente. Las capacidades del [estudio previo](../capabilities.md) son contexto, no evidencia.
+45 capacidades (CAP-NC-1 a CAP-NC-45) clasificadas frente al estudio previo en [capacidades.md](capacidades.md): 8 sin cambios, 1 mixta, 30 modificadas, 1 añadida y 5 retiradas. Las propuestas de implementación están en [issues-propuestas.md](issues-propuestas.md) (sin publicar). Las capacidades del [estudio previo](../capabilities.md) son contexto, no evidencia.
 
 ## Discrepancias abiertas
 
@@ -112,6 +112,7 @@ Pendiente. Las capacidades del [estudio previo](../capabilities.md) son contexto
 | D-NC-1 | El snapshot del estudio previo procede de la rama `staging` (248 commits por delante de `main`, último 2026-09-16), mientras que el commit fijado es `main`. | `git rev-list --count 1d7a2f8..origin/staging` = 248; `git rev-list --count origin/staging..1d7a2f8` = 9 | Resuelta: la línea base es `main` (producción). Lo que solo existe en `staging` va al [anexo de cambios no liberados](#anexo-cambios-no-liberados), sin fichas propias; los módulos y clases ausentes de `main` se listan como retirados.  |
 | D-NC-2 | #1080 cita como fecha del commit de partida 2026-10-21; el commit `1d7a2f8` es del 2026-09-15 (el 2026-10-21 es el día del recuento). | `git log -1 1d7a2f8` | Resuelta: se cita la fecha real. |
 | D-NC-3 | El ERD de origen no se ha extraído: `dysflow` no está disponible en el entorno de trabajo y los backends `.accdb` no son legibles con herramientas de solo lectura. | véase `erd-origen.md` cuando llegue | Abierta, **pendiente del propietario** (runner Windows `dysflow-erd`). |
+| D-NC-4 | El volcado `ERD/schema.sql` declara 49 tablas y su DDL contiene 42. | `-- Tables: 49` en la cabecera del volcado frente a 42 `CREATE TABLE` | Abierta, **pendiente del propietario**: la extracciÃ³n de [erd-origen.md](erd-origen.md) lo resuelve. |
 
 ## Anexo: cambios no liberados
 
