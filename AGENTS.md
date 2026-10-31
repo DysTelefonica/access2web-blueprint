@@ -1,6 +1,6 @@
 # access2web-blueprint
 
-<!-- personal-skills:slice:access2web-blueprint @ v037c761 -->
+<!-- personal-skills:slice:access2web-blueprint @ v517557c -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -194,6 +194,7 @@ Un agente solo para o borra los contenedores, volúmenes y redes que haya creado
 
 - Anti-slop y anti-sobreingeniería de IA se delegan a la skill del catálogo `ai-slop-discipline` (comprobación de 23 puntos, 3 firmas, límite de delegación para subagentes). El partial no redefine la disciplina — el consumer que adopte la skill la aplica automáticamente antes de cualquier cambio.
 - **Sin atribución de IA en commits**: no se añade `Co-Authored-By: ... <AI>` ni equivalente. Esta regla vive también en `personal-skills/AGENTS.md` raíz de la flota; el partial la refleja para que sea visible en el slice de web.
+- **Autor con cuenta de GitHub**: el agente no firma los commits con una identidad propia (`pi-agent <pi-agent@local>`); usa la de la persona que lo dirige (`git config user.name`/`user.email` con un correo verificado o el noreply de la cuenta, y sin `GIT_AUTHOR_*`/`GIT_COMMITTER_*` que la sustituyan). `pr-contract` lo mide (HR-84 de `ci-pattern`).
 - Mensajes de commit en conventional commits. Castellano peninsular formal (usted) en artefactos documentales raíz; inglés en código, comentarios, mensajes de commit y PR bodies.
 
 ### CodeGraph preflight (cuando aplique)
