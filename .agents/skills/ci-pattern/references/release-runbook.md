@@ -29,7 +29,11 @@ orden:
 1. **`preflight`** — `check_release_tag.py` (semver estricto, anotado, versión
    mayor que la anterior, commit alcanzable desde la rama por defecto) y
    `check_release_ci.py` (el último run del workflow de CI para ese mismo
-   commit terminó en `success`; sin runs para ese SHA el gate sale 2).
+   commit terminó en `success`; sin runs para ese SHA el gate sale 2). Si su
+   CI ejecuta una suite solo en el push del tag, ponga `CI_TAG_RUN: "true"`
+   y un `CI_WAIT_MINUTES` mayor que lo que tarda ese CI: el gate mide el run
+   de ese push y espera a que termine, porque arranca a la vez que el release
+   (#1451).
 2. **`release`** — publica en el entorno protegido `release` la GitHub Release
    del tag, marcada *Latest*, leyendo las notas de `RELEASE-<TAG>.md`.
 3. **`verify`** — comprueba que la release publicada es la del tag, no es un

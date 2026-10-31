@@ -47,6 +47,14 @@ env:
   CI_PATTERN_ROOT: .agents/skills/ci-pattern
   # 2. Basename del workflow de CI cuyo run en verde exige el gate.
   CI_WORKFLOW: ci.yml
+  #    Si su CI ejecuta una suite solo en el push del tag (un E2E caro, por
+  #    ejemplo), ponga CI_TAG_RUN a "true": el gate mide el run de ese push y
+  #    no el del push a la rama, y como los dos workflows arrancan a la vez,
+  #    espera hasta CI_WAIT_MINUTES a que termine (como mucho 100: el job
+  #    preflight tiene 120 de plazo). Con "false" y "0" el gate mide el run
+  #    más nuevo sobre el commit y no espera (#1451).
+  CI_TAG_RUN: "false"
+  CI_WAIT_MINUTES: "0"
   # 3. Script del consumer que comprueba el artefacto ya desplegado.
   RELEASE_VERIFY_SCRIPT: scripts/verify-release-output.sh
   # 4. Solo si su endpoint de salud no está donde el script lo espera: la
@@ -60,7 +68,9 @@ jobs:
   preflight:
     name: release preflight (tag + CI en verde)
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    # Deja sitio a la espera máxima de CI_WAIT_MINUTES; sin espera, el job
+    # termina en segundos.
+    timeout-minutes: 120
     permissions:
       contents: read
       # Leer el veredicto del CI de este mismo commit. Release y CI son
@@ -85,7 +95,15 @@ jobs:
       - name: Gate de CI en verde sobre el commit del tag (HR-19)
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python3 "$CI_PATTERN_ROOT/assets/release-gate/check_release_ci.py" --repo . --tag "$GITHUB_REF_NAME" --workflow "$CI_WORKFLOW"
+        run: |
+          set -euo pipefail
+          tag_run=()
+          case "${CI_TAG_RUN:-false}" in
+            true) tag_run=(--tag-run) ;;
+            false) ;;
+            *) echo "CI_TAG_RUN must be \"true\" or \"false\", got \"$CI_TAG_RUN\"" >&2; exit 2 ;;
+          esac
+          python3 "$CI_PATTERN_ROOT/assets/release-gate/check_release_ci.py" --repo . --tag "$GITHUB_REF_NAME" --workflow "$CI_WORKFLOW" --wait-minutes "${CI_WAIT_MINUTES:-0}" "${tag_run[@]}"
 
   release:
     name: publicar la release

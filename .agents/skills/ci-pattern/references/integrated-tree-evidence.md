@@ -60,7 +60,15 @@ conservadora: un `if:` de job que filtra por `github.event_name` tiene que
 admitir `workflow_dispatch` (nombrarlo sin negarlo); si no lo admite
 (`!= 'workflow_dispatch'`, `== 'pull_request'`, `!(... 'workflow_dispatch')`),
 el merge se bloquea con exit 1 nombrando el workflow y el job, porque la
-verificación saldría verde sin haber corrido. Un `if:` que no filtra por
+verificación saldría verde sin haber corrido. También se acepta el `if:` en el
+que una disyunción de nivel superior es solo un filtro de evento que admite el
+dispatch, como `github.event_name != 'pull_request' || (...)` o
+`!= 'schedule'`: esa disyunción ya hace verdadero el `if:` en el dispatch
+(#1454). Un `&&` o una expresión que el gate no sabe evaluar siguen la regla
+conservadora. Un job requerido que de verdad solo corre en otro evento se
+declara en `events.workflow_dispatch.accepted_skips` de la misma política,
+la lista que ya respeta el agregador, y el gate no lo exige. Una lista mal
+formada falla cerrado con exit 2. Un `if:` que no filtra por
 evento se acepta, y los jobs que no son requeridos no se miran. Un mismo workflow no puede
 estar en las dos listas. Con `merge_freshness: off`, una
 `post_merge_verify` no vacía basta para que una PR atrasada se fusione,
