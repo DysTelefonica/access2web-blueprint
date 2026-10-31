@@ -19,7 +19,7 @@ from pathlib import Path
 
 from _github_stub import MERGED_SHA
 from test_governed_merge import SHA, TREE_MATCH, commit_obj, run_gate
-from test_governed_merge_post_dispatch import contract_with, with_workflow
+from test_governed_merge_post_dispatch import contract_with, with_policy, with_workflow
 
 TREE_BASE_MOVED = "9" * 40
 
@@ -115,6 +115,32 @@ class MergeFreshnessTests(unittest.TestCase):
                       "it after the merge; update the PR branch onto 'main', let CI go green and run "
                       "the governed merge again", proc.stdout)
         self.assertFalse(self.stored()["merges"])
+
+    def test_post_merge_verify_alone_lets_a_behind_pr_merge_and_verifies_it(self) -> None:
+        # #1440 (S4): la verificacion del arbol integrado es la red de seguridad del atraso.
+        data = freshness_contract()
+        del data["post_merge_dispatch"]
+        data["post_merge_verify"] = ["ci"]
+        state = with_policy(behind_state(["docs/guide.md"], ["src/app.php"]),
+                            {"required_jobs": ["build"], "events": {}})
+        proc = run_gate(self.root, data, state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertNotIn("BLOCKED", proc.stdout)
+        self.assertTrue(self.stored()["merges"])
+        self.assertEqual([item["name"] for item in self.stored()["dispatches"]], ["ci.yml"])
+
+    def test_only_post_merge_dispatch_dispatches_after_every_merge_as_before(self) -> None:
+        # #1440: compatibilidad; un consumer sin `post_merge_verify` sigue como hoy.
+        for base_changes in ([], ["docs/guide.md"]):
+            with self.subTest(behind=len(base_changes)):
+                state = behind_state(base_changes, ["src/app.php"])
+                if not base_changes:
+                    state["commits"][MERGED_SHA] = commit_obj(MERGED_SHA, TREE_MATCH)
+                proc = run_gate(self.root, freshness_contract(), state)
+                self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+                self.assertEqual([item["name"] for item in self.stored()["dispatches"]],
+                                 ["ci.yml"])
+                self.assertNotIn("post_merge_verify", proc.stdout + proc.stderr)
 
     def test_up_to_date_pr_merges_with_the_matching_verdict(self) -> None:
         state = behind_state([], ["src/app.php"])
