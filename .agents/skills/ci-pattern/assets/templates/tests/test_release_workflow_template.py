@@ -132,6 +132,127 @@ class TestReleaseWorkflowTemplate(unittest.TestCase):
         self.assertEqual(ctx.exception.returncode, 2)
         self.assertIn("CI_TAG_RUN", ctx.exception.stderr)
 
+    def run_step(self, job: str, marker: str, cwd: str, drop=(), **env):
+        """Ejecuta con bash el paso de `job` cuyo `run` contiene `marker`, con el
+        bloque `env` de la plantilla, y devuelve el proceso terminado."""
+        if shutil.which("bash") is None:
+            self.skipTest("bash no disponible")
+        step = next(s for s in self.doc["jobs"][job]["steps"]
+                    if marker in str(s.get("run") or ""))
+        script = Path(cwd) / "step.sh"
+        script.write_text(step["run"], encoding="utf-8")
+        environ = {**os.environ, **self.doc["env"], "GITHUB_REF_NAME": "v1.0.1",
+                   "GITHUB_ENV": str(Path(cwd) / "github_env"),
+                   "GITHUB_STEP_SUMMARY": str(Path(cwd) / "summary"), **env}
+        for name in drop:
+            environ.pop(name, None)
+        return subprocess.run(["bash", str(script)], env=environ, cwd=cwd,
+                              capture_output=True, text=True)
+
+    # --- #1456: ruta de las notas, entorno, runner y verificación aplazable ---
+
+    def notes_file(self, files, drop=(), **env):
+        with tempfile.TemporaryDirectory() as tmp:
+            for name in files:
+                (Path(tmp) / name).parent.mkdir(parents=True, exist_ok=True)
+                (Path(tmp) / name).write_text("notas\n", encoding="utf-8")
+            proc = self.run_step("release", "RELEASE_NOTES_PATH", tmp, drop=drop, **env)
+            github_env = Path(tmp) / "github_env"
+            exported = github_env.read_text(encoding="utf-8") if github_env.exists() else ""
+        return proc, exported
+
+    def test_por_defecto_las_notas_son_release_tag_en_la_raiz(self):
+        self.assertEqual(self.doc["env"]["RELEASE_NOTES_PATH"], "RELEASE-{tag}.md")
+        proc, exported = self.notes_file(["RELEASE-v1.0.1.md"])
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("RELEASE_NOTES_FILE=RELEASE-v1.0.1.md", exported)
+
+    def test_release_notes_path_lleva_las_notas_a_otra_ruta(self):
+        proc, exported = self.notes_file(["docs/releases/v1.0.1.md"],
+                                         RELEASE_NOTES_PATH="docs/releases/{tag}.md")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("RELEASE_NOTES_FILE=docs/releases/v1.0.1.md", exported)
+
+    def test_sin_el_fichero_de_notas_el_paso_falla_y_lo_nombra(self):
+        proc, exported = self.notes_file([], RELEASE_NOTES_PATH="docs/releases/{tag}.md")
+        self.assertEqual(proc.returncode, 1)
+        self.assertIn("docs/releases/v1.0.1.md", proc.stderr)
+        self.assertEqual(exported, "")
+
+    def test_un_bloque_env_antiguo_sin_ruta_de_notas_usa_la_raiz(self):
+        proc, exported = self.notes_file(["RELEASE-v1.0.1.md"], drop=("RELEASE_NOTES_PATH",))
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("RELEASE_NOTES_FILE=RELEASE-v1.0.1.md", exported)
+
+    def test_la_publicacion_lee_las_notas_del_checkout_del_tag(self):
+        steps = self.doc["jobs"]["release"]["steps"]
+        self.assertIn("actions/checkout@", str(steps[0].get("uses")))
+        self.assertIn('--notes-file "$RELEASE_NOTES_FILE"', run_commands(self.doc["jobs"]["release"]))
+
+    def test_el_entorno_es_release_salvo_que_la_variable_diga_none(self):
+        # `environment` no admite el contexto `env`: el parámetro es la variable
+        # del repositorio RELEASE_ENVIRONMENT (sin definir = `release`).
+        expr = self.doc["jobs"]["release"]["environment"]
+        self.assertEqual(expr, "${{ (vars.RELEASE_ENVIRONMENT || 'release') != 'none'"
+                               " && (vars.RELEASE_ENVIRONMENT || 'release') || '' }}")
+
+    def test_los_cuatro_jobs_corren_en_el_mismo_runner_literal(self):
+        # HR-61: un runs-on dinámico es hallazgo con perfil self-hosted, así que
+        # el runner es un literal que el consumer cambia igual en los cuatro jobs.
+        runners = {name: job["runs-on"] for name, job in self.doc["jobs"].items()}
+        self.assertEqual(set(runners), {"preflight", "release", "verify", "provenance"})
+        self.assertEqual(set(map(str, runners.values())), {"ubuntu-24.04"})
+        self.assertEqual(self.text.count("runs-on: ubuntu-24.04  # RELEASE_RUNS_ON"), 4)
+
+    def verify_output(self, drop=(), **env):
+        with tempfile.TemporaryDirectory() as tmp:
+            script = Path(tmp) / "verify.sh"
+            script.write_text("#!/bin/sh\necho SCRIPT-RAN\n", encoding="utf-8")
+            script.chmod(0o755)
+            proc = self.run_step("verify", "RELEASE_VERIFY_SCRIPT", tmp, drop=drop,
+                                 RELEASE_VERIFY_SCRIPT=str(script), **env)
+            summary = Path(tmp) / "summary"
+            proc.summary = summary.read_text(encoding="utf-8") if summary.exists() else ""
+        return proc
+
+    def test_por_defecto_verify_ejecuta_el_script(self):
+        self.assertEqual(self.doc["env"]["RELEASE_VERIFY"], "run")
+        proc = self.verify_output()
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("SCRIPT-RAN", proc.stdout)
+
+    def test_un_bloque_env_antiguo_sin_release_verify_ejecuta_el_script(self):
+        proc = self.verify_output(drop=("RELEASE_VERIFY", "RELEASE_VERIFY_DEFERRED_REASON"))
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("SCRIPT-RAN", proc.stdout)
+
+    def test_verify_aplazado_no_ejecuta_el_script_y_lo_dice(self):
+        proc = self.verify_output(RELEASE_VERIFY="deferred",
+                                  RELEASE_VERIFY_DEFERRED_REASON="producción tras VPN")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertNotIn("SCRIPT-RAN", proc.stdout)
+        self.assertIn("::warning", proc.stdout)
+        self.assertIn("producción tras VPN", proc.stdout)
+        self.assertIn("producción tras VPN", proc.summary)
+
+    def test_verify_aplazado_sin_motivo_sale_dos(self):
+        proc = self.verify_output(RELEASE_VERIFY="deferred", RELEASE_VERIFY_DEFERRED_REASON="")
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("RELEASE_VERIFY_DEFERRED_REASON", proc.stderr)
+        self.assertNotIn("SCRIPT-RAN", proc.stdout)
+
+    def test_verify_aplazado_con_motivo_en_blanco_sale_dos(self):
+        proc = self.verify_output(RELEASE_VERIFY="deferred", RELEASE_VERIFY_DEFERRED_REASON="   ")
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("RELEASE_VERIFY_DEFERRED_REASON", proc.stderr)
+        self.assertNotIn("SCRIPT-RAN", proc.stdout)
+
+    def test_release_verify_con_otro_valor_sale_dos(self):
+        proc = self.verify_output(RELEASE_VERIFY="skip")
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("RELEASE_VERIFY", proc.stderr)
+        self.assertNotIn("SCRIPT-RAN", proc.stdout)
+
     def test_el_preflight_deja_tiempo_a_la_espera_maxima(self):
         # Espera máxima documentada (100) más una consulta y los pasos previos.
         timeout = int(self.doc["jobs"]["preflight"]["timeout-minutes"])
@@ -141,7 +262,8 @@ class TestReleaseWorkflowTemplate(unittest.TestCase):
     def test_la_publicacion_va_en_entorno_protegido_y_sin_admin(self):
         job = self.doc["jobs"]["release"]
         self.assertEqual(job["needs"], "preflight")
-        self.assertEqual(job["environment"], "release")
+        # Sin RELEASE_ENVIRONMENT, el entorno protegido `release`.
+        self.assertIn("vars.RELEASE_ENVIRONMENT || 'release'", job["environment"])
         self.assertEqual(job["permissions"], {"contents": "write"})
         self.assertIn("--latest", run_commands(job))
         self.assertNotIn("--admin", run_commands(job))

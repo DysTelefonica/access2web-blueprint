@@ -1,8 +1,22 @@
 # Workflow de release del consumer (HR-19, HR-20; canon #1015).
 #
 # Para adoptarlo: copie este fichero a `.github/workflows/release.yml` y
-# cambie los valores del bloque `env` de abajo. Nada más es parametrizable:
-# los tres jobs no llevan ramas ni nombres de repositorios.
+# cambie los valores del bloque `env` de abajo. Fuera de él hay otros dos
+# parámetros, porque GitHub no deja leer `env` en esos campos (#1456):
+#
+#   runner   las cuatro líneas `runs-on: ...  # RELEASE_RUNS_ON`. Cámbielas
+#            las cuatro por el mismo valor, por ejemplo
+#            `[self-hosted, Linux, <pool>]`. Es un literal a propósito: un
+#            `runs-on` dinámico es hallazgo del gate de perfil de runners
+#            (HR-61) en un consumer self-hosted.
+#   entorno  la variable del repositorio RELEASE_ENVIRONMENT. Sin definir,
+#            el job `release` publica en el entorno protegido `release`.
+#            Con otro nombre, en ese entorno; con `none`, sin entorno (repos
+#            privados del plan Free, donde no existen los entornos
+#            protegidos). Sin entorno no hay aprobación previa: publicar
+#            depende solo de los dos gates de `preflight`.
+#
+# Los jobs no llevan ramas ni nombres de repositorios.
 #
 # Se dispara con un **tag estable**: `v*` y nunca `v*-*`. Un prerelease
 # (`v2.2.0-rc.1`) no se publica —el gate del tag solo acepta semver estricto,
@@ -11,11 +25,13 @@
 #   preflight  los dos gates: el tag (semver anotado, versión creciente,
 #              commit alcanzable desde la rama por defecto) y el CI en verde
 #              sobre el commit exacto que se etiqueta.
-#   release    publica en el entorno protegido `release`. El token con
-#              permiso de escritura vive solo en este job.
+#   release    publica en el entorno protegido `release` (o el de
+#              RELEASE_ENVIRONMENT). El token con permiso de escritura vive
+#              solo en este job.
 #   verify     comprueba que lo publicado corresponde al tag. Es una
 #              comprobación de salida, no una batería de tests: el CI ya
-#              quedó verde en preflight y no se repite aquí.
+#              quedó verde en preflight y no se repite aquí. La comprobación
+#              de lo desplegado puede declararse aplazada (RELEASE_VERIFY).
 #   provenance solo si existe el fichero de IMAGE_PROVENANCE_CONFIG (consumers
 #              que construyen la imagen fuera del CI, HR-83): sube a la
 #              release el manifiesto sha256 del árbol desplegable en el
@@ -57,6 +73,15 @@ env:
   CI_WAIT_MINUTES: "0"
   # 3. Script del consumer que comprueba el artefacto ya desplegado.
   RELEASE_VERIFY_SCRIPT: scripts/verify-release-output.sh
+  #    Con RELEASE_VERIFY "deferred" el script no se ejecuta: el paso lo
+  #    anuncia como aviso, con el motivo, en el log y en el resumen del run.
+  #    Úselo solo si el workflow no puede alcanzar lo desplegado (producción
+  #    tras una VPN, por ejemplo); el motivo es obligatorio (#1456).
+  RELEASE_VERIFY: "run"
+  RELEASE_VERIFY_DEFERRED_REASON: ""
+  #    Ruta de las notas en el commit etiquetado; `{tag}` se sustituye por el
+  #    tag (`docs/releases/{tag}.md`, por ejemplo).
+  RELEASE_NOTES_PATH: "RELEASE-{tag}.md"
   # 4. Solo si su endpoint de salud no está donde el script lo espera: la
   #    verificación de salida lee de aquí la revisión desplegada (parámetro 6).
   # RELEASE_HEALTH_URL: ${{ vars.RELEASE_HEALTH_URL }}
@@ -67,7 +92,7 @@ env:
 jobs:
   preflight:
     name: release preflight (tag + CI en verde)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04  # RELEASE_RUNS_ON
     # Deja sitio a la espera máxima de CI_WAIT_MINUTES; sin espera, el job
     # termina en segundos.
     timeout-minutes: 120
@@ -108,29 +133,45 @@ jobs:
   release:
     name: publicar la release
     needs: preflight
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04  # RELEASE_RUNS_ON
     timeout-minutes: 15
     # Entorno protegido: quien lo aprueba es quien aprueba la publicación.
-    environment: release
+    # Un nombre vacío deja el job sin entorno (RELEASE_ENVIRONMENT `none`).
+    environment: ${{ (vars.RELEASE_ENVIRONMENT || 'release') != 'none' && (vars.RELEASE_ENVIRONMENT || 'release') || '' }}
     permissions:
       contents: write
     steps:
+      - name: Checkout del tag exacto
+        # Las notas y el remoto que usa `gh` salen del commit etiquetado.
+        # actions/checkout v4.4.0
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+
       - name: Las notas del release están en el commit etiquetado (HR-19)
-        run: test -f "RELEASE-$GITHUB_REF_NAME.md"
+        run: |
+          set -euo pipefail
+          notes="${RELEASE_NOTES_PATH:-}"
+          [ -n "$notes" ] || notes='RELEASE-{tag}.md'
+          notes="${notes//\{tag\}/$GITHUB_REF_NAME}"
+          test -f "$notes" || { echo "no están las notas del release: falta $notes en el commit del tag" >&2; exit 1; }
+          printf 'RELEASE_NOTES_FILE=%s\n' "$notes" >> "$GITHUB_ENV"
 
       - name: Crear la GitHub Release y marcarla Latest
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file "RELEASE-$GITHUB_REF_NAME.md" --latest
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file "$RELEASE_NOTES_FILE" --latest
       # Sin `--admin`: el tag ya existe y es la release de ese tag, no un
       # movimiento de etiqueta que deba anteponerse a nadie.
 
   verify:
     name: verificar lo publicado
     needs: release
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04  # RELEASE_RUNS_ON
     timeout-minutes: 10
     permissions:
       contents: read
@@ -159,12 +200,26 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
-        run: "$RELEASE_VERIFY_SCRIPT"
+        run: |
+          set -euo pipefail
+          case "${RELEASE_VERIFY:-run}" in
+            run) "$RELEASE_VERIFY_SCRIPT" ;;
+            deferred)
+              if [ -z "${RELEASE_VERIFY_DEFERRED_REASON//[[:space:]]/}" ]; then
+                echo "RELEASE_VERIFY is \"deferred\" but RELEASE_VERIFY_DEFERRED_REASON is empty" >&2
+                exit 2
+              fi
+              echo "::warning title=Verificación de lo desplegado aplazada::$RELEASE_VERIFY_DEFERRED_REASON"
+              echo "Verificación de lo desplegado APLAZADA: $RELEASE_VERIFY_DEFERRED_REASON"
+              printf '**Verificación de lo desplegado aplazada:** %s\n' "$RELEASE_VERIFY_DEFERRED_REASON" >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            *) echo "RELEASE_VERIFY must be \"run\" or \"deferred\", got \"$RELEASE_VERIFY\"" >&2; exit 2 ;;
+          esac
 
   provenance:
     name: manifiesto de procedencia de la imagen
     needs: release
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04  # RELEASE_RUNS_ON
     timeout-minutes: 10
     permissions:
       # Subir un asset a la release del tag; nada más.

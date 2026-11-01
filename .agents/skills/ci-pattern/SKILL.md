@@ -888,7 +888,10 @@ generados (`uv.lock`, `package-lock.json`, `pnpm-lock.yaml`, `poetry.lock` y `re
   `--admin`, y job `verify` que comprueba que la release publicada es la del tag,
   no es un borrador y está marcada Latest, antes de comparar la revisión que
   sirve el endpoint de salud del consumer con el SHA del tag. Los valores a
-  cambiar viven todos en el bloque `env` del workflow; el job `provenance`
+  cambiar viven en el bloque `env` del workflow (ruta de las notas y
+  verificación aplazable incluidas), salvo el runner, literal en las cuatro
+  líneas `# RELEASE_RUNS_ON` (HR-61), y el entorno, en la variable del
+  repositorio `RELEASE_ENVIRONMENT` (`none` = sin entorno, #1456); el job `provenance`
   (HR-83) solo publica si existe el fichero de `IMAGE_PROVENANCE_CONFIG`. Pasa el gate
   `assets/workflow-policy/` del propio canon
   (`assets/templates/tests/test_release_workflow_template.py`).
