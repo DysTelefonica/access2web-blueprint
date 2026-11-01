@@ -9,6 +9,7 @@ overlays:
 agents_md_path: AGENTS.md
 slice_block_sha256: 517557c665697d6f4f1f645901fff7d2cf70d47dd6d528bea186c14db5f4d288
 include_skills:
+  - agent-operating-rules
   - ai-slop-discipline
   - ci-pattern
   - deterministic-quality-harness
