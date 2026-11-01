@@ -16,6 +16,7 @@ git fetch origin && git merge origin/main
 
 # 2. Las notas del release, en el commit que se va a etiquetar (HR-19).
 #    Plantilla: assets/templates/RELEASE-NOTES.md.tmpl → RELEASE-<TAG>.md
+#    (u otra ruta declarada en RELEASE_NOTES_PATH)
 
 # 3. El tag anotado, sobre el commit de la rama por defecto. Nunca ligero.
 git tag -a vX.Y.Z <sha> -m "vX.Y.Z"
@@ -35,10 +36,19 @@ orden:
    de ese push y espera a que termine, porque arranca a la vez que el release
    (#1451).
 2. **`release`** — publica en el entorno protegido `release` la GitHub Release
-   del tag, marcada *Latest*, leyendo las notas de `RELEASE-<TAG>.md`.
+   del tag, marcada *Latest*, leyendo las notas de `RELEASE-<TAG>.md` en el
+   commit etiquetado. Otra ruta se declara en `RELEASE_NOTES_PATH`
+   (`docs/releases/{tag}.md`, por ejemplo). Otro entorno, o ninguno con `none`,
+   se declara en la variable del repositorio `RELEASE_ENVIRONMENT` (#1456).
 3. **`verify`** — comprueba que la release publicada es la del tag, no es un
    borrador y está marcada *Latest*, y que lo que quedó desplegado sirve el SHA
-   del tag. Es comprobación de salida, no una batería de tests.
+   del tag. Es comprobación de salida, no una batería de tests. Si el workflow
+   no alcanza lo desplegado, `RELEASE_VERIFY: "deferred"` con su
+   `RELEASE_VERIFY_DEFERRED_REASON` la declara aplazada: el run lo anuncia como
+   aviso y la comprobación queda en manos del procedimiento de despliegue.
+
+Los cuatro jobs corren en el runner de las líneas `runs-on: ...  # RELEASE_RUNS_ON`;
+un consumer self-hosted las cambia las cuatro por su pool (HR-61).
 
 Si `preflight` falla, el tag se queda donde está: no hay publicación. El remedy
 es siempre el mismo —arreglar en la rama por defecto, dejar el CI en verde
@@ -89,7 +99,7 @@ Es una regla del patrón, no una preferencia:
 
 ## Notas de release (HR-19, HR-21)
 
-Se materializan como `RELEASE-<TAG>.md` en el commit etiquetado, desde
+Se materializan como `RELEASE-<TAG>.md` (o en la ruta de `RELEASE_NOTES_PATH`) en el commit etiquetado, desde
 `assets/templates/RELEASE-NOTES.md.tmpl`, y el workflow las publica tal cual.
 Las secciones son fijas y en este orden, las del informe de Cadete v1.0.1
 (#1148): Resumen (diciendo si es hotfix), Procedencia (tabla con la versión y el
