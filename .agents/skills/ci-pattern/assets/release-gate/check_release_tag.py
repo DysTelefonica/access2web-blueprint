@@ -16,7 +16,9 @@ Rules:
   first release is judgeable).
 - HR-20: the tagged commit MUST be an ancestor of the default branch
   (``--default-branch``, default ``main``) — a hotfix lands on main first
-  and never ships from a side branch.
+  and never ships from a side branch. The local branch is measured when it
+  exists; otherwise ``refs/remotes/origin/<branch>``, which is all a tag
+  push checkout holds.
 
 Liveness: a missing tag, a repository that is not a git repository, an
 empty repository or a missing default branch exits 2 — the gate refuses to
@@ -69,9 +71,16 @@ def main(argv):
                f"refs/tags/{args.tag}").returncode != 0:
             raise GateError(f"tag {args.tag!r} does not exist in the repository "
                             "(empty subject)")
-        if git(args.repo, "rev-parse", "-q", "--verify",
-               f"refs/heads/{args.default_branch}").returncode != 0:
-            raise GateError(f"default branch {args.default_branch!r} does not exist")
+        # A tag push checkout (actions/checkout, fetch-depth 0) is detached on
+        # the tag and holds only remote-tracking branches (#1456).
+        branch_ref = next(
+            (ref for ref in (f"refs/heads/{args.default_branch}",
+                             f"refs/remotes/origin/{args.default_branch}")
+             if git(args.repo, "rev-parse", "-q", "--verify", ref).returncode == 0),
+            None)
+        if branch_ref is None:
+            raise GateError(f"default branch {args.default_branch!r} does not exist "
+                            "(neither local nor origin)")
 
         report = []
         version = SEMVER.fullmatch(args.tag)
@@ -84,7 +93,7 @@ def main(argv):
                           "(create it with git tag -a -m ...)")
         commit = must_git(args.repo, "rev-parse", f"refs/tags/{args.tag}^{{}}")
         ancestor = git(args.repo, "merge-base", "--is-ancestor",
-                       commit, f"refs/heads/{args.default_branch}")
+                       commit, branch_ref)
         if ancestor.returncode not in (0, 1):
             raise GateError(f"git merge-base failed: {ancestor.stderr.strip()}")
         if ancestor.returncode == 1:
