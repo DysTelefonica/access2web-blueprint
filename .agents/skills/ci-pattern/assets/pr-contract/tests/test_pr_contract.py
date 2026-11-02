@@ -21,7 +21,7 @@ POLICY_DATA = json.loads(POLICY.read_text(encoding="utf-8")) if POLICY.is_file()
     "closes_pattern": "Closes|Fixes|Resolves",
     "review_budget_lines": 400,
     "size_exception_label": "size:exception",
-    "conventional_commit_pattern": "^(feat|fix|docs|chore|ci|test|perf|refactor|revert)(\\([^)]+\\))?!?: ",
+    "conventional_commit_pattern": "^(feat|fix|docs|chore|ci|test|perf|refactor|revert|build|style)(\\([^)]+\\))?!?: ",
     "ai_attribution_patterns": ["Co-Authored-By:", "Generated-by:", "Generated with"],
 }
 
@@ -207,6 +207,25 @@ class PrContractGateTests(unittest.TestCase):
             self.assertEqual(proc.returncode, 1)
             self.assertIn("convencional", proc.stdout)
             self.assertIn("HR-14", proc.stdout)
+
+    def test_hr14_accepts_build_and_style_like_the_branch_name(self):
+        """Fase 0, 0.1: el nombre de rama admite `build/` y `style/`
+        (`check_branch_name.py`), así que el asunto del commit también. Vale
+        para el patrón por defecto del gate y para el de la política de
+        ejemplo que copian los consumidores."""
+        body = ("Closes #42\n\n## Tests que prueban el cierre\n\n"
+                "- `tests/test_gate.py`\n" + chain_block("main") + "\n" + AI_OK)
+        defaults = {k: v for k, v in POLICY_DATA.items() if k != "conventional_commit_pattern"}
+        for name, policy in (("example", POLICY_DATA), ("default", defaults)):
+            with self.subTest(policy=name), tempfile.TemporaryDirectory() as tmp:
+                repo, base_sha, head_sha = make_repo(
+                    tmp, commits=["build(deps): bump ruff", "style(ui): align the footer"])
+                ev = make_event(tmp, body=body, labels=["type:chore"],
+                                base_sha=base_sha, head_sha=head_sha)
+                pol = Path(tmp) / "policy.json"
+                pol.write_text(json.dumps(policy), encoding="utf-8")
+                proc = run_gate(ev, str(pol), repo)
+                self.assertNotIn("HR-14", proc.stdout, proc.stdout)
 
     def test_hr14_merge_commit_is_not_judged_as_conventional(self):
         """Un commit de merge no tiene asunto conventional: la regla mide los

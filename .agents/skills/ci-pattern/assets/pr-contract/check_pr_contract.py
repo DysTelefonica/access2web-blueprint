@@ -452,7 +452,7 @@ def compile_ai_attribution(patterns):
 
 def check_commits(messages, policy, findings):
     pattern = policy.get("conventional_commit_pattern",
-                         r"^(feat|fix|docs|chore|ci|test|perf|refactor|revert)(\([^)]+\))?!?: ")
+                         r"^(feat|fix|docs|chore|ci|test|perf|refactor|revert|build|style)(\([^)]+\))?!?: ")
     ai_patterns = compile_ai_attribution(
         policy.get("ai_attribution_patterns",
                    ["Co-Authored-By:", "Generated-by:", "Generated with"]))

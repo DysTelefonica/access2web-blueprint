@@ -56,6 +56,7 @@ from check_push_compliance import (
     check_verdict,
     commit_tree_sha,
     fail,
+    fetch_check_runs,
     gh_json,
     load_json,
     protected_branches,
@@ -802,6 +803,21 @@ def freshness_findings(args: argparse.Namespace, pull: dict,
             f"from the tree CI reviewed and {reason}; " + action], behind
 
 
+def absent_from_completed_run(findings: list[str], runs: list, sha: str) -> list[str]:
+    """Un `missing` que ya no va a aparecer deja de ser esperable (fase 0, 0.4).
+
+    Si el commit tiene check-runs y todos han terminado, el requerido que falta
+    no se va a publicar: suele ser un run relanzado solo en sus jobs fallidos,
+    que no vuelve a correr el rollup (cadete#992). Esperar el techo solo
+    retrasaba el mismo `missing`; se dice que hay que relanzar el run entero.
+    """
+    if not runs or any(not isinstance(run, dict) or run.get("status") != "completed" for run in runs):
+        return findings
+    return [f"{item}; every check run of {sha[:12]} is completed, so it will not appear: "
+            "re-run the whole workflow run (not only its failed jobs) and merge again"
+            if item.endswith(": missing") else item for item in findings]
+
+
 def verdict_findings(args: argparse.Namespace, sha: str, required: list[str]) -> list[str]:
     """Veredicto de los checks requeridos, esperando (acotado) a los que aun no existen.
 
@@ -811,7 +827,9 @@ def verdict_findings(args: argparse.Namespace, sha: str, required: list[str]) ->
     """
     deadline = time.monotonic() + args.wait_seconds
     while True:
-        findings = check_verdict(args.repo, args.pr, sha, required)
+        runs = fetch_check_runs(args.repo, args.pr, sha)
+        findings = absent_from_completed_run(check_verdict(args.repo, args.pr, sha, required, runs),
+                                             runs, sha)
         waiting = [item for item in findings if item.endswith(WAITABLE)]
         if not waiting or len(waiting) != len(findings) or time.monotonic() >= deadline:
             return findings

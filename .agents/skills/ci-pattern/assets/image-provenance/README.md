@@ -97,6 +97,23 @@ Quien tenga permisos de `oc` puede saltarse el script. El gate convierte el salt
 un acto explícito, no en un accidente; la política de admisión de OpenShift (solo
 imágenes firmadas) es el seguimiento de infraestructura.
 
+## Nombres de imagen cortos (fase 0, 0.10)
+
+`build_release_image.py` construye con `--pull --no-cache`. Con podman, un nombre
+corto (`composer:2.5`, sin registro) no se resuelve sin preguntar, y si la imagen no
+está en local el build falla con «no stage or image found with that name». Por eso
+`FROM` y `COPY --from` de un Dockerfile que construye podman llevan el nombre completo
+(`docker.io/library/composer:2.5`); cadete lo corrigió en su Dockerfile.
+
+Decisión: el gate de imágenes de CI (HR-78, `ci-images/check_ci_images_pinned.py`)
+no se amplía a los Dockerfiles. Mide lo que descarga el CI, y el fallo de los nombres
+cortos es del build con podman, que en la flota solo hace cadete y a mano; blueprint y
+APAP_WEB construyen con docker, que completa `docker.io` por su cuenta. Inventario del
+2026-11-02 (rama por defecto): cadete `Dockerfile` usa nombres completos; quedan con
+nombre corto `devops/runners/oracle/Dockerfile` (`ubuntu:24.04@sha256:…`, imagen de
+runner, construida con docker) y los `FROM` de blueprint y APAP_WEB, todos con digest.
+Si un segundo consumer construye con podman, se revisa la decisión.
+
 ## Tests
 
 `tests/test_manifest.py`, `tests/test_image_tree.py`, `tests/test_gate.py` y

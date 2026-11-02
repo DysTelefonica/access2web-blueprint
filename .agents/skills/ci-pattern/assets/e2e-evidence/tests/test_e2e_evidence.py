@@ -90,6 +90,34 @@ class E2eEvidenceGateTests(unittest.TestCase):
         self.addCleanup(self._tmp.cleanup)
         self.repo = make_repo(self._tmp.name, BASE_FILES)
 
+    # --- fase 0, 0.6: los globs de UI salen del ci-pattern.yaml del consumer ---
+
+    def test_ui_globs_from_ci_pattern_yaml_replace_the_defaults(self) -> None:
+        # cadete sirve su UI desde `www/`, fuera de los globs por defecto.
+        add_commit(self.repo, {"ci-pattern.yaml": "P59_e2e_ui_globs: [www/**]\n",
+                               "www/index.php": "<?php echo 1;\n"}, "www ui")
+        proc = run_gate(self.repo, "--head", "HEAD")
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("1 paths de UI cambiados", proc.stdout + proc.stderr)
+
+    def test_with_ci_pattern_yaml_a_default_glob_is_no_longer_ui(self) -> None:
+        add_commit(self.repo, {"ci-pattern.yaml": "P59_e2e_ui_globs: [www/**]\n",
+                               "app/pages/Home.tsx": "// ya no es UI en este consumer\n"}, "app")
+        proc = run_gate(self.repo, "--head", "HEAD")
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_the_command_line_glob_wins_over_ci_pattern_yaml(self) -> None:
+        add_commit(self.repo, {"ci-pattern.yaml": "P59_e2e_ui_globs: [www/**]\n",
+                               "www/index.php": "<?php echo 1;\n"}, "www ui")
+        proc = run_gate(self.repo, "--head", "HEAD", "--ui-glob", "app/**")
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_an_invalid_p59_exits_2(self) -> None:
+        add_commit(self.repo, {"ci-pattern.yaml": "P59_e2e_ui_globs: www/**\n"}, "bad")
+        proc = run_gate(self.repo, "--head", "HEAD")
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("P59_e2e_ui_globs", proc.stderr)
+
     def test_ui_without_e2e_is_red(self) -> None:
         add_commit(self.repo, {"app/pages/Home.tsx": "// cambio de UI\n"},
                    "ui change")

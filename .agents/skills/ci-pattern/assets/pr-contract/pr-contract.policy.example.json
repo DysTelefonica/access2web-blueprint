@@ -3,7 +3,7 @@
   "closes_pattern": "Closes|Fixes|Resolves",
   "review_budget_lines": 400,
   "size_exception_label": "size:exception",
-  "conventional_commit_pattern": "^(feat|fix|docs|chore|ci|test|perf|refactor|revert)(\\([^)]+\\))?!?: ",
+  "conventional_commit_pattern": "^(feat|fix|docs|chore|ci|test|perf|refactor|revert|build|style)(\\([^)]+\\))?!?: ",
   "ai_attribution_patterns": [
     "Co-Authored-By:",
     "Generated-by:",

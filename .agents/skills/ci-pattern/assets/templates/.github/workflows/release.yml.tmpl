@@ -45,6 +45,17 @@ on:
     tags:
       - "v*"
       - "!v*-*"
+  # Re-publicar un tag que ya existe con el workflow de la rama por defecto.
+  # Un push de tag ejecuta el workflow de SU commit: si un defecto del propio
+  # workflow «quemó» esa versión, solo se repite así (fase 0, 0.3). El
+  # preflight sigue exigiendo tag anotado, semver estable y alcanzable desde
+  # la rama por defecto, y CI en verde sobre su commit.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag estable que ya existe (vX.Y.Z) y se vuelve a publicar"
+        required: true
+        type: string
 
 # El workflow es de solo lectura por defecto. Solo el job de publicación
 # recibe la capacidad de escritura, y solo mientras dura.
@@ -52,12 +63,16 @@ permissions:
   contents: read
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ inputs.tag || github.ref_name }}
   # Nunca se cancela una release en curso: dos tags a la vez no se
   # entrelazan, y una publicación a medias no se relanza sola.
   cancel-in-progress: false
 
 env:
+  # El tag que se publica: el del push, o el que se pidió a mano. No es un
+  # parámetro: todos los jobs leen el tag de aquí y nunca de GITHUB_REF_NAME,
+  # que en un dispatch es la rama.
+  RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
   # 1. Raíz donde el propagador materializó la skill: `.agents/skills/` en
   #    los consumers del catálogo, `skills/` en los que la usan en local.
   CI_PATTERN_ROOT: .agents/skills/ci-pattern
@@ -107,6 +122,7 @@ jobs:
         # actions/checkout v4.4.0
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          ref: refs/tags/${{ env.RELEASE_TAG }}
           fetch-depth: 0
           # actions/checkout descarga con --no-tags: sin esto el ref del tag
           # no existe en el runner y el gate del tag muere sobre un tag que
@@ -127,10 +143,10 @@ jobs:
           auth=$(printf 'x-access-token:%s' "$GH_AUTH" | base64 | tr -d '\n')
           GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="http.https://github.com/.extraheader" \
             GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth" \
-            git fetch --force --no-tags origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+            git fetch --force --no-tags origin "refs/tags/$RELEASE_TAG:refs/tags/$RELEASE_TAG"
 
       - name: Gate del tag (HR-19, HR-20)
-        run: python3 "$CI_PATTERN_ROOT/assets/release-gate/check_release_tag.py" --repo . --tag "$GITHUB_REF_NAME" --default-branch main
+        run: python3 "$CI_PATTERN_ROOT/assets/release-gate/check_release_tag.py" --repo . --tag "$RELEASE_TAG" --default-branch main
 
       - name: Gate de CI en verde sobre el commit del tag (HR-19)
         env:
@@ -143,7 +159,7 @@ jobs:
             false) ;;
             *) echo "CI_TAG_RUN must be \"true\" or \"false\", got \"$CI_TAG_RUN\"" >&2; exit 2 ;;
           esac
-          python3 "$CI_PATTERN_ROOT/assets/release-gate/check_release_ci.py" --repo . --tag "$GITHUB_REF_NAME" --workflow "$CI_WORKFLOW" --wait-minutes "${CI_WAIT_MINUTES:-0}" "${tag_run[@]}"
+          python3 "$CI_PATTERN_ROOT/assets/release-gate/check_release_ci.py" --repo . --tag "$RELEASE_TAG" --workflow "$CI_WORKFLOW" --wait-minutes "${CI_WAIT_MINUTES:-0}" "${tag_run[@]}"
 
   release:
     name: publicar la release
@@ -161,6 +177,7 @@ jobs:
         # actions/checkout v4.4.0
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          ref: refs/tags/${{ env.RELEASE_TAG }}
           fetch-depth: 0
           fetch-tags: true
           persist-credentials: false
@@ -170,7 +187,7 @@ jobs:
           set -euo pipefail
           notes="${RELEASE_NOTES_PATH:-}"
           [ -n "$notes" ] || notes='RELEASE-{tag}.md'
-          notes="${notes//\{tag\}/$GITHUB_REF_NAME}"
+          notes="${notes//\{tag\}/$RELEASE_TAG}"
           test -f "$notes" || { echo "no están las notas del release: falta $notes en el commit del tag" >&2; exit 1; }
           printf 'RELEASE_NOTES_FILE=%s\n' "$notes" >> "$GITHUB_ENV"
 
@@ -179,7 +196,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file "$RELEASE_NOTES_FILE" --latest
+          # Re-publicación a mano (0.3): si la Release del tag ya existe, se
+          # conserva y los jobs siguientes la verifican y completan.
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "la release de $RELEASE_TAG ya existe; se conserva y se verifica"
+          else
+            gh release create "$RELEASE_TAG" --title "$RELEASE_TAG" --notes-file "$RELEASE_NOTES_FILE" --latest
+          fi
       # Sin `--admin`: el tag ya existe y es la release de ese tag, no un
       # movimiento de etiqueta que deba anteponerse a nadie.
 
@@ -195,6 +218,7 @@ jobs:
         # actions/checkout v4.4.0
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          ref: refs/tags/${{ env.RELEASE_TAG }}
           fetch-depth: 0
           fetch-tags: true
           persist-credentials: false
@@ -204,17 +228,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag_sha=$(git rev-parse "refs/tags/$GITHUB_REF_NAME^{}")
-          draft=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$GITHUB_REF_NAME" --jq .draft)
-          test "$draft" = "false" || { echo "la release de $GITHUB_REF_NAME es un borrador" >&2; exit 1; }
+          tag_sha=$(git rev-parse "refs/tags/$RELEASE_TAG^{}")
+          draft=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" --jq .draft)
+          test "$draft" = "false" || { echo "la release de $RELEASE_TAG es un borrador" >&2; exit 1; }
           latest=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)
-          test "$latest" = "$GITHUB_REF_NAME" || { echo "la release Latest es $latest y no $GITHUB_REF_NAME" >&2; exit 1; }
+          test "$latest" = "$RELEASE_TAG" || { echo "la release Latest es $latest y no $RELEASE_TAG" >&2; exit 1; }
           printf 'RELEASE_SHA=%s\n' "$tag_sha" >> "$GITHUB_ENV"
 
       - name: Lo desplegado lleva el commit del tag
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
           case "${RELEASE_VERIFY:-run}" in
@@ -244,6 +267,7 @@ jobs:
         # actions/checkout v4.4.0
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          ref: refs/tags/${{ env.RELEASE_TAG }}
           fetch-depth: 0
           fetch-tags: true
           persist-credentials: false
@@ -257,5 +281,5 @@ jobs:
             echo "Sin $IMAGE_PROVENANCE_CONFIG: este consumer no declara imágenes construidas fuera del CI."
             exit 0
           fi
-          python3 "$CI_PATTERN_ROOT/assets/image-provenance/image_provenance.py" manifest --config "$IMAGE_PROVENANCE_CONFIG" --repo . --tag "$GITHUB_REF_NAME" --out image-provenance-manifest.json
-          gh release upload "$GITHUB_REF_NAME" image-provenance-manifest.json --clobber
+          python3 "$CI_PATTERN_ROOT/assets/image-provenance/image_provenance.py" manifest --config "$IMAGE_PROVENANCE_CONFIG" --repo . --tag "$RELEASE_TAG" --out image-provenance-manifest.json
+          gh release upload "$RELEASE_TAG" image-provenance-manifest.json --clobber

@@ -79,6 +79,25 @@ class ConsolidateTests(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertIn('version: "1.20.0"', self.version())
 
+    def test_any_major_bumps_major_and_keeps_the_migration_note(self):
+        # Fase 0, 0.2: un fragmento `type: major` sube la versión mayor y su
+        # nota de migración llega al CHANGELOG.
+        self.fragment("a.md", "type: minor\n\nAñade A.\n")
+        self.fragment("b.md", "type: major\n\nCambia la ruta por defecto.\n\n"
+                              "Migración: mueva el fichero a la ruta nueva.\n")
+        code, out = self.run_script("--write")
+        self.assertEqual(code, 0, out)
+        self.assertIn('version: "2.0.0"', self.version())
+        self.assertIn("Migración: mueva el fichero a la ruta nueva.",
+                      self.changelog.read_text(encoding="utf-8"))
+
+    def test_major_without_a_migration_note_exits_2_and_changes_nothing(self):
+        self.fragment("b.md", "type: major\n\nCambia la ruta por defecto.\n")
+        code, out = self.run_script("--write")
+        self.assertEqual(code, 2, out)
+        self.assertIn("migration note", out)
+        self.assertIn('version: "1.19.12"', self.version())
+
     def test_bullet_lands_under_unreleased_changed_with_versions(self):
         self.fragment("a.md", "type: patch\n\nCorrige A.\n")
         code, out = self.run_script("--write")
@@ -124,7 +143,7 @@ class ConsolidateTests(unittest.TestCase):
 
     def test_invalid_fragment_exits_2_and_changes_nothing(self):
         self.fragment("a.md", "type: patch\n\nCorrige A.\n")
-        self.fragment("bad.md", "type: major\n\nNo existe.\n")
+        self.fragment("bad.md", "type: huge\n\nNo existe.\n")
         before = (self.skill / "SKILL.md").read_text(encoding="utf-8")
         code, out = self.run_script("--write")
         self.assertEqual(code, 2, out)
