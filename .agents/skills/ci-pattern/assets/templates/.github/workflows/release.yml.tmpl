@@ -114,6 +114,21 @@ jobs:
           fetch-tags: true
           persist-credentials: false
 
+      - name: El tag anotado del remoto, no el ligero de actions/checkout
+        # En un push de tag, actions/checkout crea refs/tags/<tag> como tag
+        # ligero sobre el commit, y fetch-tags no lo sobrescribe: el gate
+        # veía «lightweight» sobre un tag anotado (cadete v1.3.2). Se trae el
+        # objeto del remoto con --force. El token va por la configuración de
+        # git en el entorno, nunca en la línea de comandos ni persistido.
+        env:
+          GH_AUTH: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          auth=$(printf 'x-access-token:%s' "$GH_AUTH" | base64 | tr -d '\n')
+          GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="http.https://github.com/.extraheader" \
+            GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth" \
+            git fetch --force --no-tags origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+
       - name: Gate del tag (HR-19, HR-20)
         run: python3 "$CI_PATTERN_ROOT/assets/release-gate/check_release_tag.py" --repo . --tag "$GITHUB_REF_NAME" --default-branch main
 
