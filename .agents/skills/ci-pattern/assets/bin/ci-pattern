@@ -3375,14 +3375,55 @@ def _manifest_identity_findings(repo, declared_paths):
                 f"(esperado {manifest_files[rel]}, encontrado {actual}); "
                 "la identidad del patrón no es autodeclarada (HR-46). "
                 f"Re-selle el manifiesto con: ci-pattern manifest seal {repo}")
-    # (b) todo artefacto declarado del patrón está cubierto por el manifiesto.
+    # (b) todo artefacto declarado del patrón está cubierto por el manifiesto:
+    # en `files` o, para AGENTS.md, por sus bloques propagados en
+    # `slice_blocks` (fase 0, 0.5): la sección local del consumer cambia sin
+    # re-sellar, y el bloque del patrón sigue verificado aquí mismo.
+    covered = set(manifest_files)
+    slice_state = _agents_slice_seal(repo, manifest)
+    if slice_state is True:
+        covered.add(AGENTS_MD)
     for rel in sorted(declared_paths):
-        if rel not in manifest_files:
+        if rel in covered:
+            continue
+        if rel == AGENTS_MD and isinstance(slice_state, str):
             findings.append(
-                f"fase 3: '{rel}' se declara del patrón pero no está en el "
-                "manifiesto de gobierno; la identidad del patrón no es "
-                "autodeclarada (HR-46)")
-    return findings, manifest_files
+                f"fase 3: '{rel}' se sella por 'slice_blocks', pero {slice_state}; "
+                "la identidad del patrón no es autodeclarada (HR-46). "
+                f"Re-propague o re-selle el manifiesto con: ci-pattern manifest seal {repo}")
+            continue
+        findings.append(
+            f"fase 3: '{rel}' se declara del patrón pero no está en el "
+            "manifiesto de gobierno; la identidad del patrón no es "
+            "autodeclarada (HR-46)")
+    return findings, covered
+
+
+AGENTS_MD = "AGENTS.md"
+
+
+def _agents_slice_seal(repo, manifest):
+    """¿Sellan los `slice_blocks` del manifiesto el AGENTS.md del árbol? (0.5).
+
+    `True` si hay bloques declarados y todos están en AGENTS.md con su hash;
+    `None` si el manifiesto no declara bloques; si no, el motivo, para el
+    hallazgo. El hash es el de `verify` y `manifest seal`: el cuerpo del bloque
+    con LF."""
+    blocks = manifest.get("slice_blocks")
+    if not isinstance(blocks, dict) or not blocks:
+        return None
+    agents = Path(repo) / AGENTS_MD
+    if not agents.is_file():
+        return "AGENTS.md no existe en el árbol"
+    text = agents.read_text(encoding="utf-8")
+    for name, expected in sorted(blocks.items()):
+        block = extract_slice_block(text, name)
+        if block is None:
+            return f"el bloque '{name}' no está en AGENTS.md"
+        actual = "sha256:" + hashlib.sha256(block[1].replace("\r\n", "\n").encode("utf-8")).hexdigest()
+        if actual != expected:
+            return f"el bloque '{name}' difiere del hash del manifiesto"
+    return True
 
 
 def _pattern_rulesets_from_host_contract(repo):

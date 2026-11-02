@@ -1076,6 +1076,76 @@ class Phase3SubstitutionTests(unittest.TestCase):
             self.assertIn("name", err)
 
 
+class Phase3SliceBlocksTests(unittest.TestCase):
+    """Fase 0, 0.5: AGENTS.md se sella por sus bloques propagados.
+
+    Un AGENTS.md con marcadores `personal-skills:slice:*` lleva dos partes: el
+    bloque que escribe la propagación y la sección local del consumer. Sellar
+    el fichero entero obligaba a re-sellar cada vez que el consumer tocaba su
+    sección. Con el bloque en `slice_blocks`, la fase 3 da AGENTS.md por
+    sellado aunque no esté en `files`, también con `--seal-baseline`, que
+    sigue exigiendo el mismo `pattern_path` (cadete 0.5c).
+    """
+
+    BLOCK = ("<!-- personal-skills:slice:consumer @ v1234567 -->\n"
+             "Regla propagada.\n"
+             "<!-- /personal-skills:slice:consumer -->\n")
+
+    def _repo(self, tmp, local="Sección local.\n"):
+        contract = complete_contract(upto=3)
+        contract["phases"]["3"]["pattern_paths"].append("AGENTS.md")
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        seed_evidence(repo, 3)
+        seed_phase3(repo)
+        (repo / "AGENTS.md").write_text("# consumer\n\n" + self.BLOCK + "\n" + local,
+                                        encoding="utf-8")
+        block = CLI.extract_slice_block((repo / "AGENTS.md").read_text(encoding="utf-8"),
+                                        "consumer")
+        manifest = json.loads((repo / ".governance-manifest.json").read_text(encoding="utf-8"))
+        manifest["files"].pop("AGENTS.md")
+        manifest["slice_blocks"] = {"consumer": "sha256:" + hashlib.sha256(
+            block[1].encode("utf-8")).hexdigest()}
+        touch(repo, ".governance-manifest.json", json.dumps(manifest, indent=2))
+        return repo
+
+    def test_agents_md_sealed_by_its_slice_block_passes_phase_three(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            code, out, err = run_cli(["adoption", "check", "--phase", "3", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_the_local_section_changes_without_a_reseal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            with (repo / "AGENTS.md").open("a", encoding="utf-8") as agents:
+                agents.write("Otra regla local.\n")
+            code, out, err = run_cli(["adoption", "check", "--phase", "3", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_it_holds_under_the_seal_baseline_that_still_declares_agents_md(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            base = Path(tmp) / "base"
+            (base / ".github").mkdir(parents=True)
+            (base / ".github" / "ci-pattern-adoption.json").write_text(json.dumps(
+                {"schema_version": 1, "phases": {"3": {"pattern_paths": [
+                    ".github/workflows/ci.yml", "AGENTS.md"]}}}), encoding="utf-8")
+            code, out, err = run_cli(["adoption", "check", "--phase", "3",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_a_modified_propagated_block_still_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            text = (repo / "AGENTS.md").read_text(encoding="utf-8")
+            (repo / "AGENTS.md").write_text(text.replace("Regla propagada.", "Regla pirata."),
+                                            encoding="utf-8")
+            code, _, err = run_cli(["adoption", "check", "--phase", "3", str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn("AGENTS.md", err)
+            self.assertIn("slice_blocks", err)
+
+
 class SealBaselineTests(unittest.TestCase):
     """#1317: la fase 3 no puede reducir la base de sellado del patrón.
 

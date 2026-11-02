@@ -128,7 +128,11 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
             polls = state.setdefault("check_runs_polls", {})
             runs = script[min(polls.get(sha, 0), len(script) - 1)]
             polls[sha] = polls.get(sha, 0) + 1
-        return 200, {"total_count": len(runs), "check_runs": runs}, {}
+        # Fase 0, 0.4: paginada como la API real (per_page por defecto 30).
+        per_page = int(query.get("per_page", ["30"])[0])
+        page = int(query.get("page", ["1"])[0])
+        window = runs[(page - 1) * per_page:page * per_page]
+        return 200, {"total_count": len(runs), "check_runs": window}, {}
     if method == "GET" and path.endswith("/actions/workflows") \
             and "/runs" not in path and "/dispatches" not in path:
         # #817: lista de workflows para validar que cada nombre declarado en

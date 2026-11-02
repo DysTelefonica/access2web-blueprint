@@ -410,7 +410,10 @@ sin atribución de IA, re-ejecución en edited/labeled/unlabeled). HR-7 avisa y 
   Toda edición material de una skill `SHOULD` dejar un fragmento válido en
   `changelog.d/` del propio skill (`type: patch`
   para reglas y evidencia, `type: minor` para piezas de ola, más una
-  entrada). El PR no fija `metadata.version` ni `CHANGELOG.md`: el PR de
+  entrada; `type: major` para un cambio incompatible, con una línea
+  `Migración: …` que diga qué tiene que hacer quien usa la skill: cambiar
+  una ruta o un valor por defecto de un script que ejecuta una persona es
+  incompatible). El PR no fija `metadata.version` ni `CHANGELOG.md`: el PR de
   release consolida los fragmentos pendientes y sube la versión (#665). Desde
   #1093 (R4) ningún gate bloquea el PR de trabajo por falta de fragmento: el
   consolidador valida cada fragmento pendiente en el PR de release y falla

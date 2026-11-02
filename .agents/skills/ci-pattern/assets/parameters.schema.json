@@ -546,6 +546,15 @@
     "required": false,
     "consumed_by": ["assets/runner-controls/check_governed_merge.py"],
     "description": "Si el merge gobernado exige que el PR este al dia con su base (#1397). off (por defecto): el CI corre una vez, en la PR; un PR atrasado con los checks requeridos en verde se fusiona y el arbol integrado lo verifica el CI post-merge (P54) mas el nightly; sin P54 el atraso sigue bloqueando. required: un PR atrasado se bloquea (#787) y un arbol integrado distinto del head sale con 5; para consumers cuyo deploy compara el arbol fusionado con el revisado (#426; APAP_WEB lo uso y esta en off desde APAP_WEB#3098). El solape de workflows (#783) se rechaza en ambos casos. Se declara en `.github/host-contract.json`; otro valor falla cerrado (2)."
+  },
+  {
+    "id": "P59",
+    "name": "e2e_ui_globs",
+    "type": "list",
+    "default": ["app/**", "web/**", "src/**", "pages/**", "components/**", "views/**", "templates/**"],
+    "required": false,
+    "consumed_by": ["assets/e2e-evidence/check_e2e_evidence.py"],
+    "description": "Globs de los paths de UI del consumer para el gate de evidencia e2e (fase 0, 0.6): una PR que toca uno de ellos trae un flujo e2e o una exencion justificada. Sustituye a los defaults; --ui-glob en la linea de comandos manda sobre el. Un valor que no es una lista no vacia de cadenas sale con 2."
   }
   ]
 }

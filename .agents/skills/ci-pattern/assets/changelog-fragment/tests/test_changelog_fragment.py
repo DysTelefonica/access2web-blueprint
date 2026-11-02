@@ -96,6 +96,25 @@ class ChangelogFragmentGateTests(unittest.TestCase):
         code, out = run_gate(self.tmp, self.base)
         self.assertEqual(code, 0, out)
 
+    def test_major_fragment_with_a_migration_note_is_clean(self):
+        # Fase 0, 0.2: un cambio incompatible es `type: major` y dice cómo migrar.
+        self.edit_skill()
+        self.repo.write(f"{self.skill}/changelog.d/breaking.md",
+                        "type: major\n\nEl authfile por defecto pasa a ~/.config.\n\n"
+                        "Migración: mueva el fichero a la ruta nueva con modo 600.\n")
+        self.repo.commit("breaking")
+        code, out = run_gate(self.tmp, self.base)
+        self.assertEqual(code, 0, out)
+
+    def test_major_fragment_without_a_migration_note_fails(self):
+        self.edit_skill()
+        self.repo.write(f"{self.skill}/changelog.d/breaking.md",
+                        (FIXTURE / "major-without-migration.md").read_text(encoding="utf-8"))
+        self.repo.commit("breaking sin migracion")
+        code, out = run_gate(self.tmp, self.base)
+        self.assertEqual(code, 1, out)
+        self.assertIn("migration note", out)
+
     def test_skill_edit_without_fragment_fails_and_names_the_skill(self):
         self.edit_skill()
         self.repo.commit("edit sin fragmento")
@@ -105,7 +124,7 @@ class ChangelogFragmentGateTests(unittest.TestCase):
         self.assertIn(self.skill, out)
 
     def test_fragment_with_unknown_type_fails(self):
-        # Fixture violador: 'type: major' no es patch ni minor.
+        # Fixture violador: 'type: huge' no es patch, minor ni major.
         self.edit_skill()
         self.repo.write(f"{self.skill}/changelog.d/bad-type.md",
                         (FIXTURE / "bad-type.md").read_text(encoding="utf-8"))
@@ -113,7 +132,7 @@ class ChangelogFragmentGateTests(unittest.TestCase):
         code, out = run_gate(self.tmp, self.base)
         self.assertEqual(code, 1, out)
         self.assertIn("invalid fragment", out)
-        self.assertIn("'type: patch' or 'type: minor'", out)
+        self.assertIn("'type: patch', 'type: minor' or 'type: major'", out)
 
     def test_fragment_without_entry_fails(self):
         # Fixture violador: cabecera válida y ninguna entrada debajo.

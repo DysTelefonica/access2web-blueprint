@@ -269,6 +269,33 @@ class GovernedMergeTests(unittest.TestCase):
         stored = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
         self.assertEqual(sum("/check-runs" in call for call in stored["calls"]), 1)
 
+    def test_required_check_beyond_the_first_page_is_read(self) -> None:
+        # Fase 0, 0.4: un commit con mas de 100 check-runs dejaba `required`
+        # fuera de la primera pagina y el merge lo daba por ausente.
+        state = base_state()
+        others = [{"id": i, "name": f"job-{i}", "conclusion": "success", "status": "completed"}
+                  for i in range(1, 151)]
+        state["check_runs"][SHA] = [*others, {"id": 151, "name": CHECK,
+                                              "conclusion": "success", "status": "completed"}]
+        proc = run_gate(self.root, contract(), state, "--wait-seconds", "0.3", "--poll-seconds", "0.05")
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assert_merged(proc, True)
+
+    def test_required_absent_from_a_completed_run_fails_fast_and_says_what_to_do(self) -> None:
+        # Fase 0, 0.4 (cadete#992): todos los check-runs del commit han
+        # terminado y `required` no esta: no va a aparecer. No se espera el
+        # techo; se dice que hay que relanzar el run entero.
+        state = base_state()
+        state["check_runs"][SHA] = [{"id": 1, "name": "lint", "conclusion": "success",
+                                     "status": "completed"}]
+        proc = run_gate(self.root, contract(), state, "--wait-seconds", "30", "--poll-seconds", "0.05")
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assert_merged(proc, False)
+        self.assertIn(f'required check "{CHECK}": missing', proc.stdout)
+        self.assertIn("re-run the whole workflow run", proc.stdout)
+        stored = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        self.assertEqual(sum("/check-runs" in call for call in stored["calls"]), 1)
+
     def test_negative_wait_is_rejected(self) -> None:
         proc = run_gate(self.root, contract(), base_state(), "--wait-seconds", "-1")
         self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)

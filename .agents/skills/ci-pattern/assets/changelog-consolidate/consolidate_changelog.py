@@ -6,8 +6,9 @@ Run by hand inside the release PR, never by CI and never on main (main is
 PR-only). For the skill directory it:
 
 1. reads every fragment in ``<skill>/changelog.d/*.md`` (``README.md`` excluded);
-2. validates each one: first line ``type: patch`` or ``type: minor``, then an entry;
-3. takes the highest type (``minor`` if any fragment is minor, else ``patch``)
+2. validates each one: first line ``type: patch``, ``type: minor`` or
+   ``type: major``, then an entry; a ``major`` one needs a ``Migración:`` line;
+3. takes the highest type (``major``, then ``minor``, else ``patch``)
    and computes the next version from ``metadata.version`` in SKILL.md;
 4. writes that version into SKILL.md, adds one bullet (one sub-bullet per fragment) under the first
    ``### Changed`` of ``## [Unreleased]`` in CHANGELOG.md, and deletes the
@@ -32,12 +33,26 @@ import sys
 from pathlib import Path
 
 FRAGMENT_DIR = "changelog.d"
-TYPE_LINE = re.compile(r"type:\s*(patch|minor)")
+# Fase 0, 0.2: un cambio incompatible es `type: major` y lleva una nota de
+# migración, una línea `Migración: …` (o `Migration: …`, con o sin negrita) que
+# dice qué tiene que hacer quien usa la skill. Cambiar una ruta o un valor por
+# defecto de un script que ejecuta una persona es incompatible.
+TYPE_LINE = re.compile(r"type:\s*(patch|minor|major)")
+MIGRATION_LINE = re.compile(r"(?:\*\*)?(?:migración|migration)(?:\*\*)?\s*[.:]\s*(?:\*\*)?\s*\S",
+                            re.IGNORECASE)
 VERSION = re.compile(r"^(\s*version:\s*[\"']?)(\d+)\.(\d+)\.(\d+)([\"']?\s*)$", re.M)
 
 
 class ConsolidateError(Exception):
     """A condition the consolidation refuses to interpret; maps to exit 2."""
+
+
+class MissingMigrationError(ConsolidateError):
+    """A ``type: major`` fragment without its ``Migración:`` line (fase 0, 0.2)."""
+
+    def __init__(self, path: Path) -> None:
+        super().__init__(f"{path}: a 'type: major' fragment needs a migration note: a line "
+                         "'Migración: <what whoever uses the skill must do>'")
 
 
 def read_fragments(skill: Path) -> list[tuple[Path, str, str]]:
@@ -50,10 +65,13 @@ def read_fragments(skill: Path) -> list[tuple[Path, str, str]]:
                  if line.strip()]
         if not lines or not TYPE_LINE.fullmatch(lines[0]):
             raise ConsolidateError(
-                f"{path}: first line must be 'type: patch' or 'type: minor'")
+                f"{path}: first line must be 'type: patch', 'type: minor' or 'type: major'")
         if len(lines) < 2:
             raise ConsolidateError(f"{path}: fragment has no entry after the type line")
-        out.append((path, TYPE_LINE.fullmatch(lines[0]).group(1), " ".join(lines[1:])))
+        kind = TYPE_LINE.fullmatch(lines[0]).group(1)
+        if kind == "major" and not any(MIGRATION_LINE.match(line) for line in lines[1:]):
+            raise MissingMigrationError(path)
+        out.append((path, kind, " ".join(lines[1:])))
     return out
 
 
@@ -65,7 +83,9 @@ def next_version(skill_md: Path, kind: str) -> tuple[str, str, str]:
         raise ConsolidateError(f"{skill_md}: metadata.version not found")
     major, minor, patch = int(m.group(2)), int(m.group(3)), int(m.group(4))
     old = f"{major}.{minor}.{patch}"
-    if kind == "minor":
+    if kind == "major":
+        new = f"{major + 1}.0.0"
+    elif kind == "minor":
         new = f"{major}.{minor + 1}.0"
     else:
         new = f"{major}.{minor}.{patch + 1}"
@@ -95,7 +115,8 @@ def consolidate(skill: Path, changelog: Path, write: bool) -> int:
     if not fragments:
         print(f"CONSOLIDATE: nada pendiente en {skill / FRAGMENT_DIR}")
         return 0
-    kind = "minor" if any(t == "minor" for _, t, _ in fragments) else "patch"
+    kinds = {t for _, t, _ in fragments}
+    kind = next(k for k in ("major", "minor", "patch") if k in kinds)
     old, new, new_skill_text = next_version(skill / "SKILL.md", kind)
     entries = [entry for _, _, entry in fragments]
     new_changelog = add_changelog_bullet(changelog, skill.name, old, new, entries)

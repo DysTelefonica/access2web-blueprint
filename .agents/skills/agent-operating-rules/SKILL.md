@@ -4,7 +4,7 @@ description: "Trigger: trabajar como agente en oracle o rosa, crear un checkout 
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: "1.1"
+  version: "1.2"
   last_verified: 2026-11-02
   scope: ['universal', 'ops']
   auto_invoke: ['working as an agent on a shared host', 'creating a work checkout', 'cleaning up scratch files']
@@ -113,7 +113,7 @@ Cargue esta skill cuando:
 
 4. **Tests y CI.** Ejecute los tests del cambio con `nice -n 15`. Para vigilar la CI, consulte cada 120 s como mínimo y use la API de check-runs si la App no puede leer `/actions/runs`.
 
-5. **Commit.** Ejecute `ruff format --check` y `ruff check` con la versión del lock. Los commits son convencionales (`feat`, `fix`, `docs`, `chore`, `ci`, `test`, `perf`, `refactor`, `revert`). `style` no está en esa lista: un reformateo puro va como `chore(...)`. El mensaje del commit no lleva atribución de IA (`Co-Authored-By:`, `Generated-by:` ni `Generated with`); el cuerpo de la PR sí puede llevar la marca de Claude Code.
+5. **Commit.** Ejecute `ruff format --check` y `ruff check` con la versión del lock. Los commits son convencionales (`feat`, `fix`, `docs`, `chore`, `ci`, `test`, `perf`, `refactor`, `revert`, `build`, `style`), los mismos tipos que admite el nombre de rama. Si la política del repositorio (`.github/pr-contract.policy.json`) declara su propio `conventional_commit_pattern`, manda ese. El mensaje del commit no lleva atribución de IA (`Co-Authored-By:`, `Generated-by:` ni `Generated with`); el cuerpo de la PR sí puede llevar la marca de Claude Code.
 
 6. **Aparcar y retomar (workers).** Si MiniMax se agota, termine el paso en curso y guarde su posición: tarea, rama, worktree y siguiente paso. Su coordinador avisa al dueño de que el worker queda aparcado. En la siguiente ventana de MiniMax (10, 15, 20, 01 y 06 UTC; avisa el cron `minimax-cycle`), el coordinador lo retoma con `/new` y un brief autocontenido que parte de esa posición, y vuelve a avisar al dueño.
 
@@ -144,7 +144,6 @@ Cargue esta skill cuando:
 | `testing/run-unit-suites.sh` completo en oracle | Solo los tests del cambio con `nice -n 15`; la suite completa la corre la CI. |
 | `while :; do gh pr checks; sleep 10; done` | Una consulta cada 120 s como mínimo, o la API de check-runs. |
 | `pkill -f <patrón>` para parar sus tests | El patrón coincide con el propio `pkill`. Use `/proc/<pid>/cwd` para matar solo lo suyo. |
-| Commit `style(ci): ruff format` | `chore(...)`: el gate de commits no admite `style`. |
 | El ruff del `PATH` dice «limpio» y la CI falla por formato | Use la versión que fija el lock del repositorio. |
 | Un push por cada arreglo pequeño, o la cadena entera en cada cambio | Juntar en local y empujar una vez solo el eslabón que sigue (HR-13). |
 | `git merge origin/main` en todas las ramas abiertas «para tenerlas al día» | Solo justo antes de fusionar, y cuando el contrato lo exige (HR-13). |
