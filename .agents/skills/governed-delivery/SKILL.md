@@ -4,8 +4,8 @@ description: "Trigger: actualizar mi rama, abrir un pull request, encadenar PRs,
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: "1.1"
-  last_verified: 2026-10-21
+  version: "1.2"
+  last_verified: 2026-11-02
   scope: ['universal', 'ops']
   auto_invoke: ['actualizar rama', 'abrir un PR', 'encadenar PRs', 'pedir merge', 'etiquetar un PR']
   tiers: ['universal', 'ops']
@@ -37,7 +37,7 @@ PR-1 (chain:partial, Refs #N) ──> PR-2 (chain:partial, Refs #N) ──> PR-N
         📍 actual
 ```
 
-## Las siete reglas
+## Las nueve reglas
 
 Antes de `gh pr create`, ejecute `ci-pattern pr preflight --draft --pr-body <cuerpo.md> --base <rama-base> --label <etiqueta>`: comprueba cuerpo, etiquetas y tamaño sin API.
 
@@ -86,6 +86,21 @@ Antes de `gh pr create`, ejecute `ci-pattern pr preflight --draft --pr-body <cue
    comentarios, documentación ni tests para entrar en el presupuesto. —
    *referencia: `ci-pattern`, HR-8 y HR-54.*
 
+   El presupuesto se planifica **antes** de empezar, no se descubre al final
+   (regla del dueño, 2026-11-02). Quien encarga el trabajo estima su tamaño y
+   lo parte en eslabones de una cadena ya en el encargo. Quien lo hace mira el
+   tamaño de su diff mientras trabaja y corta el eslabón hacia las 350 líneas.
+   El chequeo de tamaño del preflight local es la última red, y la CI nunca
+   debería ser la primera en descubrir que una PR se pasa.
+
+   Si un eslabón no se puede partir, quien lo hace pide la excepción a su
+   coordinador **antes** del push, con el motivo. El coordinador decide si de
+   verdad no se puede partir (un fichero generado, una migración atómica o un
+   renombrado mecánico) o si falta el esfuerzo de partirlo, y lo registra con
+   un comentario en la PR. El único mecanismo de la flota es la etiqueta
+   `size:exception` que lee el gate `pr-size` (`ci-pattern` HR-8); quién la
+   pone está pendiente de decisión del dueño (hoy, el mantenedor).
+
 6. **La rama remota se conserva tras el merge** (nunca `git push origin
    --delete <rama>`): permite seguir o revertir con exactitud algo que se
    hizo, y su aparente ruido en la lista de ramas no justifica perder esa
@@ -105,6 +120,14 @@ Antes de `gh pr create`, ejecute `ci-pattern pr preflight --draft --pr-body <cue
    §Divergencias documentadas). Si el partial del consumer prescribe una
    concreta, gana el partial; en ausencia de prescripción, el agente
    respeta el método configurado en el host o pregunta al mantenedor.
+
+9. **El coordinador revisa la conformidad con la issue, no la CI.** Revisa que
+   la PR haga lo que pide la issue (alcance y criterios de aceptación), y que
+   cada criterio tenga su evidencia en la PR, una línea por criterio: test con
+   su salida en verde, comando con su salida real, captura para la UI, consulta
+   o log para los datos. Un criterio sin evidencia no está hecho y la PR vuelve
+   a quien la hizo. Que la CI pase es responsabilidad de quien hace la PR
+   (`ci-pattern` HR-86 y HR-87).
 
 ## Anti-patrones
 
