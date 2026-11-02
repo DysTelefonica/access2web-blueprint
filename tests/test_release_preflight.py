@@ -36,9 +36,7 @@ pytestmark = pytest.mark.skipif(
 
 
 def git(cwd: Path, *args: str) -> None:
-    subprocess.run(
-        ["git", *args], cwd=cwd, env=GIT_ENV, check=True, capture_output=True
-    )
+    subprocess.run(["git", *args], cwd=cwd, env=GIT_ENV, check=True, capture_output=True)
 
 
 def preflight(repo: Path) -> subprocess.CompletedProcess[str]:
@@ -69,9 +67,7 @@ def clone(remote: Path, target: Path) -> Path:
     return target
 
 
-def test_an_annotated_remote_tag_passes_although_the_local_one_is_lightweight(
-    remote, tmp_path
-):
+def test_an_annotated_remote_tag_passes_although_the_local_one_is_lightweight(remote, tmp_path):
     runner = clone(remote, tmp_path / "runner")
     # What actions/checkout leaves on a tag push: the same name, lightweight.
     git(runner, "tag", "-f", TAG, f"{TAG}^{{commit}}")
