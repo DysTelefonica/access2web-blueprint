@@ -32,9 +32,20 @@ fi
 
 # 2. The tag object must be annotated, so it carries an author and a date.
 #    A lightweight tag records who released nothing at all.
+#    Once the tag is on origin, its type is read there: on a tag push,
+#    actions/checkout writes refs/tags/<tag> as a lightweight tag on the
+#    commit, and fetch-tags does not overwrite it (#1541). The fetch lands in
+#    FETCH_HEAD only, so no ref changes. Before the push, the local tag is
+#    the one measured.
 git rev-parse -q --verify "refs/tags/$tag" >/dev/null ||
   die "tag $tag does not exist here; create it with: git tag -a $tag"
-[[ "$(git cat-file -t "refs/tags/$tag")" == tag ]] ||
+tag_object="refs/tags/$tag"
+if [[ -n "$(git ls-remote --tags origin "refs/tags/$tag")" ]]; then
+  git fetch --no-tags --quiet origin "refs/tags/$tag" ||
+    die "could not fetch tag $tag from origin"
+  tag_object=FETCH_HEAD
+fi
+[[ "$(git cat-file -t "$tag_object")" == tag ]] ||
   die "tag $tag is lightweight; releases must be annotated (git tag -a $tag)"
 
 tag_sha=$(git rev-parse "refs/tags/$tag^{commit}")
