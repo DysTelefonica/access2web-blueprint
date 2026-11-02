@@ -788,6 +788,18 @@ class ClosingKeywordInCommitsTests(unittest.TestCase):
         self.assertIn("Closes #1035", proc.stdout)
         self.assertIn("Refs #1035", proc.stdout)
 
+    def test_chain_partial_con_closes_en_el_cuerpo_cita_la_linea(self):
+        """cadete#1031: `follow-up: … closes #1029` en Chain Context. GitHub
+        cierra la issue al fusionar esté donde esté la palabra, y el merge
+        gobernado lo bloquea; el aviso de HR-7 cita la línea para que se vea
+        antes del merge (HR-86: la CI confirma, no descubre)."""
+        body = ("Refs #1029\n\n" + chain_ok("feature/x")
+                + "\n- follow-up: el tramo 2 closes #1029\n\n" + AI_OK)
+        proc = self.run_case(["fix: tramo 1"], body=body)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("HR-7", proc.stdout)
+        self.assertIn("- follow-up: el tramo 2 closes #1029", proc.stdout)
+
     def test_tip_sin_chain_partial_puede_llevar_closes_en_su_commit(self):
         proc = self.run_case(
             ["feat(x): el cierre de la cadena (Closes #1035)"],

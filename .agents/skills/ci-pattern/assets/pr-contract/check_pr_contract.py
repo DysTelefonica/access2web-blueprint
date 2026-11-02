@@ -331,9 +331,15 @@ def check_closes(pr, base, default_branch, policy, advisories):
                 "en el cuerpo (la issue la cierra el PR punta de cadena)."
             )
         if has_closes:
+            # cadete#1031: la palabra de cierre puede estar en cualquier parte
+            # del cuerpo (un `follow-up: … closes #N` en Chain Context), y GitHub
+            # cierra la issue igual al fusionar. Se cita la línea: el merge
+            # gobernado la bloquea, y la CI tiene que decirlo antes (HR-86).
+            lines = "; ".join(repr(line.strip()) for line in body.splitlines() if rx.search(line))
             advisories.append(
                 "HR-7: el PR con etiqueta chain:partial no debe llevar "
-                "'Closes #<issue>'; solo el PR punta de cadena la cierra."
+                "'Closes #<issue>'; solo el PR punta de cadena la cierra. "
+                f"El merge gobernado lo bloquea. Línea(s): {lines}."
             )
     elif is_tip and requires and not has_closes:
         advisories.append(
