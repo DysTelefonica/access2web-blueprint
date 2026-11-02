@@ -149,6 +149,42 @@ class TestReleaseWorkflowTemplate(unittest.TestCase):
         return subprocess.run(["bash", str(script)], env=environ, cwd=cwd,
                               capture_output=True, text=True)
 
+    # --- tag anotado frente al tag ligero que deja actions/checkout ---
+
+    def test_el_preflight_mide_el_tag_anotado_del_remoto_y_no_el_ligero_local(self):
+        """En un push de tag, actions/checkout crea `refs/tags/<tag>` como tag
+        ligero sobre el commit y `fetch-tags` no lo sobrescribe: el gate veía
+        HR-19 «lightweight» sobre un tag anotado (cadete v1.3.2)."""
+        if shutil.which("git") is None:
+            self.skipTest("git no disponible")
+        gate = ASSET.parent / "release-gate" / "check_release_tag.py"
+        git_env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+                   "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
+
+        def git(cwd, *args):
+            subprocess.run(["git", *args], cwd=cwd, env=git_env, check=True,
+                           capture_output=True, text=True)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            src, remote, runner = (str(Path(tmp) / n) for n in ("src", "remote.git", "runner"))
+            git(tmp, "init", "-q", "-b", "main", src)
+            git(src, "commit", "-q", "--allow-empty", "-m", "release")
+            git(src, "tag", "-a", "v1.0.1", "-m", "v1.0.1")
+            git(tmp, "clone", "-q", "--bare", src, remote)
+            git(tmp, "clone", "-q", remote, runner)
+            # Lo que deja actions/checkout: el mismo nombre, como tag ligero.
+            git(runner, "tag", "-f", "v1.0.1", "v1.0.1^{commit}")
+            argv = [sys.executable, str(gate), "--repo", runner, "--tag", "v1.0.1",
+                    "--default-branch", "main"]
+            before = subprocess.run(argv, capture_output=True, text=True)
+            self.assertIn("lightweight", before.stdout + before.stderr)
+
+            proc = self.run_step("preflight", "refs/tags/$GITHUB_REF_NAME:refs/tags/", runner,
+                                 GH_AUTH="dummy")
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            after = subprocess.run(argv, capture_output=True, text=True)
+            self.assertEqual(after.returncode, 0, after.stdout + after.stderr)
+
     # --- #1456: ruta de las notas, entorno, runner y verificación aplazable ---
 
     def notes_file(self, files, drop=(), **env):

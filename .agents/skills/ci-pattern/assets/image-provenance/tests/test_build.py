@@ -63,6 +63,13 @@ class BuildTests(unittest.TestCase):
         self.assertTrue(call[call.index("-f") + 1].endswith("Dockerfile"))
         self.assertNotEqual(Path(call[-1]).resolve(), self.repo.d.resolve())
 
+    def test_release_build_pulls_the_base_and_reuses_no_cached_layer(self):
+        r = self.build()
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        (call,) = self.engine_calls()
+        self.assertIn("--pull", call)
+        self.assertIn("--no-cache", call)
+
     def test_push_runs_after_the_build(self):
         r = self.build("v1.0.0", "--push")
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)

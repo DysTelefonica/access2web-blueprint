@@ -1,11 +1,11 @@
 ---
 name: agent-operating-rules
-description: "Trigger: trabajar como agente en oracle o rosa, crear un checkout de trabajo, scratch temporal, borrar un directorio, lanzar tests en local, vigilar la CI, credencial en un comando, antes de commitear, MiniMax agotado. Reglas de trabajo del dueño para los agentes en sus máquinas compartidas."
+description: "Trigger: trabajar como agente en oracle o rosa, crear un checkout de trabajo, scratch temporal, borrar un directorio, lanzar tests en local, vigilar la CI, credencial en un comando, antes de commitear, antes de empujar, MiniMax agotado. Reglas de trabajo del dueño para los agentes en sus máquinas compartidas."
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: "1.0"
-  last_verified: 2026-11-01
+  version: "1.1"
+  last_verified: 2026-11-02
   scope: ['universal', 'ops']
   auto_invoke: ['working as an agent on a shared host', 'creating a work checkout', 'cleaning up scratch files']
   tiers: ['universal', 'ops']
@@ -33,6 +33,7 @@ Cargue esta skill cuando:
 - vaya a lanzar tests o a vigilar la CI desde la máquina;
 - un comando necesite una credencial;
 - vaya a hacer un commit;
+- vaya a empujar una rama;
 - trabaje como worker y MiniMax se haya agotado.
 
 **No la cargue** para la estación Windows del dueño: allí rige el diseño de worktrees de `worktree-reorg-per-project` (`<proyecto>-worktrees\<nombre>`).
@@ -51,6 +52,12 @@ Cargue esta skill cuando:
 - **HR-10** — Antes de cada commit, ejecute `ruff format --check` y `ruff check` con la versión de ruff que fija el lock del repositorio, no con la del `PATH`.
 - **HR-11** — Cierre una PR con `gh pr close`, nunca con `gh issue close`.
 - **HR-12** — Como worker, trabaje solo con MiniMax. Nunca pase a Claude (Haiku ni ningún otro modelo): la cuenta personal de Claude del dueño, con la mitad de capacidad que la de empresa, queda para los coordinadores.
+- **HR-13** — Cada push encola la CI entera de la rama: en APAP_WEB, unos 10 jobs y entre 7 y 8 minutos de runner. Por eso:
+  - Junte los commits de una tanda en local y empuje una sola vez, no uno por cada arreglo pequeño.
+  - No ponga al día una rama que aún no se va a fusionar. Se pone al día justo antes de fusionarla, y solo cuando `governed-delivery` o el contrato del repositorio lo exigen.
+  - En una cadena, empuje solo el eslabón que sigue, no la cadena entera en cada cambio.
+  - Antes de empujar, pase en local lo que ya exigen HR-8 y HR-10, para no gastar una ejecución de la CI en un fallo de formato.
+  - Si vuelve a empujar y la ejecución anterior de **su** rama ya no sirve, cancélela. Nunca cancele ejecuciones de ramas ajenas.
 
 ## Decision Gates
 
@@ -67,6 +74,8 @@ Cargue esta skill cuando:
 | Quiere comprobar el cambio en local | Solo los tests del cambio, con `nice -n 15` (HR-8). |
 | Hay que matar un proceso suyo | Recorra `/proc` y mate solo los procesos cuyo `cwd` cae en su worktree, empezando por el padre. `pkill -f` coincide con su propio comando. |
 | Va a hacer un commit | Primero `ruff format --check` y `ruff check` (HR-10). |
+| Va a empujar | Una sola vez por tanda, solo el eslabón que sigue y sin poner al día una rama que aún no se fusiona (HR-13). |
+| La cola de la CI sigue llena aunque se empuja poco | Pídale a infra-coord más runners con un `infra-request`. |
 | MiniMax se ha agotado | Aparque el trabajo al terminar el paso en curso (paso 6 de Execution Steps). |
 
 ## Execution Steps
@@ -137,6 +146,8 @@ Cargue esta skill cuando:
 | `pkill -f <patrón>` para parar sus tests | El patrón coincide con el propio `pkill`. Use `/proc/<pid>/cwd` para matar solo lo suyo. |
 | Commit `style(ci): ruff format` | `chore(...)`: el gate de commits no admite `style`. |
 | El ruff del `PATH` dice «limpio» y la CI falla por formato | Use la versión que fija el lock del repositorio. |
+| Un push por cada arreglo pequeño, o la cadena entera en cada cambio | Juntar en local y empujar una vez solo el eslabón que sigue (HR-13). |
+| `git merge origin/main` en todas las ramas abiertas «para tenerlas al día» | Solo justo antes de fusionar, y cuando el contrato lo exige (HR-13). |
 | `gh issue close <N>` sobre una PR | `gh pr close <N>`. |
 | Worker sin MiniMax que sigue con Haiku | Aparcarlo al terminar el paso y retomarlo en la siguiente ventana. |
 
