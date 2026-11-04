@@ -296,6 +296,41 @@ class GovernedMergeTests(unittest.TestCase):
         stored = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
         self.assertEqual(sum("/check-runs" in call for call in stored["calls"]), 1)
 
+    def test_required_absent_after_a_base_retarget_says_to_reopen_or_push(self) -> None:
+        # #1495 (cadete#1074): redirigir la base dispara `edited`, que el CI no
+        # escucha; los runs de la cabeza son de la base anterior. Relanzarlos
+        # no sirve: hay que cerrar y reabrir la PR o empujar un commit.
+        state = base_state()
+        state["check_runs"][SHA] = [{"id": 1, "name": "lint", "conclusion": "success",
+                                     "status": "completed", "started_at": "2026-11-04T16:00:00Z"}]
+        state["timeline"] = [{"event": "labeled", "created_at": "2026-11-04T15:00:00Z"},
+                             {"event": "base_ref_changed", "created_at": "2026-11-04T16:30:00Z"}]
+        proc = run_gate(self.root, contract(), state, "--wait-seconds", "30", "--poll-seconds", "0.05")
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assert_merged(proc, False)
+        self.assertIn(f'required check "{CHECK}": missing; no check run of {SHA[:12]} started after '
+                      "the PR's base was changed (2026-11-04T16:30:00Z), and a base change does not "
+                      "start CI: close and reopen the PR, or push a commit (never a merge of the base, "
+                      "HR-13), then merge again", proc.stdout)
+        self.assertNotIn("re-run the whole workflow run", proc.stdout)
+
+    def test_base_changed_before_the_runs_keeps_the_rerun_hint(self) -> None:
+        # Una base cambiada ANTES de los runs no es el caso: los runs ya son de esa base.
+        for timeline in ([{"event": "base_ref_changed", "created_at": "2026-11-04T15:30:00Z"}], None):
+            with self.subTest(timeline=timeline):
+                state = base_state()
+                state["check_runs"][SHA] = [{"id": 1, "name": "lint", "conclusion": "success",
+                                             "status": "completed", "started_at": "2026-11-04T16:00:00Z"}]
+                if timeline is None:
+                    state["timeline_error"] = True  # sin timeline legible, la pista de siempre
+                else:
+                    state["timeline"] = timeline
+                proc = run_gate(self.root, contract(), state, "--wait-seconds", "30",
+                                "--poll-seconds", "0.05")
+                self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+                self.assertIn("re-run the whole workflow run", proc.stdout)
+                self.assertNotIn("base was changed", proc.stdout)
+
     def test_negative_wait_is_rejected(self) -> None:
         proc = run_gate(self.root, contract(), base_state(), "--wait-seconds", "-1")
         self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)

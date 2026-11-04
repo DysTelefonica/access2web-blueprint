@@ -120,6 +120,11 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
         if state.get("invalid_body"):
             return 200, "{not valid json", {}
         return _pulls_page(state, sha, query, base)
+    if path.endswith("/timeline"):
+        # #1495: eventos de la PR; `base_ref_changed` marca una base redirigida.
+        if state.get("timeline_error"):
+            return 500, {"message": "timeline_error fixture"}, {}
+        return 200, state.get("timeline", []), {}
     if "/check-runs" in path:
         sha = path.split("/commits/")[1].split("/")[0]
         runs = state["check_runs"].get(sha, [])
