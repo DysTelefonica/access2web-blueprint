@@ -14,6 +14,7 @@ Inventario de solo lectura del backend de la Lanzadera, la primera aplicación e
 - **Consumidores:** el mismo script sobre los 16 backends de `C:\00repos\datos` dentro del alcance; se cuentan los vínculos cuyo origen es `Lanzadera_Datos.accdb`.
 - **Referencias en código:** recuento por nombre exacto de tabla en `src` (`.bas`, `.cls`, `.form.txt`, `.report.txt`, `.sql`) de los 13 fronts con repositorio. Es un recuento por nombre: `tbUsuarios` coincide con una tabla propia de HPS y sus referencias fuera de la Lanzadera no se cuentan.
 - **Consultas guardadas:** el front no tiene ninguna (`export_queries`); el backend tiene `Consulta1` a `Consulta4`, de prueba, que solo leen tablas de identidad.
+- **Uso vivo o muerto:** CodeGraph-VBA (índice del 2026-11-04) y búsqueda de llamadores en `src`, incluidas las secciones de código de los `.form.txt`; `find_references` de dysflow con `scope: binary` para el binario. CodeGraph modela las tablas solo de forma parcial (nodos sintéticos en algunas líneas de SQL), así que no sirve para contar referencias; sí para el grafo de llamadas. Quedan sin revisar las macros, la cinta de opciones y las expresiones de propiedades de formularios, que no se exportan a `src`.
 - **Patrones de VBA del front:** ya inventariados en la [coexistencia de Lanzadera](../../03-aplicaciones/lanzadera/prd/coexistencia.md), apartados 4 y 5; no se repiten aquí.
 
 ## Resumen
@@ -27,7 +28,7 @@ Inventario de solo lectura del backend de la Lanzadera, la primera aplicación e
 | Relaciones con integridad referencial | 5, todas con actualización y borrado en cascada |
 | Campos Sí/No guardados como texto | 28; valores reales solo `Sí`, `No` y nulo |
 | Tablas que vinculan otros backends | 5 |
-| Candidatas a huérfanas | 20 |
+| Candidatas a huérfanas | 22 (20 sin referencias y 2 con referencias solo en código muerto) |
 
 El backend es apto para PostgreSQL sin cambios de tipo: las tablas tienen clave primaria salvo una y no hay tipos sin equivalente.
 
@@ -40,8 +41,8 @@ Antes de cualquier acción: copia de seguridad del backend de producción y vent
 | A1 | Corregir la ayuda: el código consulta `TbHerramientaDocAyuda` (`Funciones Genreales.bas:538`) y la tabla se llama `Tb0HerramientaDocAyuda`. Renombre la tabla a `TbHerramientaDocAyuda`, o retire la llamada si la ayuda ya no se usa. | Imprescindible | Abra la ayuda desde la Lanzadera: hoy debe fallar. | Volver a renombrar. |
 | A2 | Poner en cuarentena las 6 tablas vacías y sin referencias: `TbAplicacionesVideos`, `TbCuestionarioPreguntas`, `TbCuestionarios`, `TbCuestionaroRespuestas`, `TbUsuarioAplicacionesSolicitud`, `TbVideosCuestionario`. Renombrar a `zzBAJA_<tabla>`. | Imprescindible | `SELECT COUNT(*)` de cada una en producción da 0. | Quitar el prefijo. |
 | A3 | Poner en cuarentena `TbTablasAVincular` (411 filas, sin clave primaria, 0 referencias en ningún `src`). Si resulta que la usa un front sin repositorio, en lugar de cuarentena añada la clave primaria (`IDBBDD`, `IDAplicacion`, `NombreTabla`). | Imprescindible | Confirme que ningún front fuera de los repositorios relinka desde esta tabla. Para la clave: `SELECT IDBBDD, IDAplicacion, NombreTabla FROM TbTablasAVincular GROUP BY IDBBDD, IDAplicacion, NombreTabla HAVING COUNT(*) > 1` debe devolver 0 filas. | Quitar el prefijo o la clave. |
-| A4 | Poner en cuarentena las 13 candidatas restantes con datos (lista en la ficha). Empezar por las de uso más improbable: `TbPermisos` (69 de sus 205 filas apuntan a aplicaciones inexistentes), `TbAplicacionesEdiciones`, `TbAplicacionesEdicionesCambios`, `TbDetalleVersiones`, `TbParametros` y `TbAplicacionesParametros`. | Imprescindible | El [protocolo de huérfanas](../epica-coexistencia-postgresql.md#protocolo-de-huérfanas): confirmar que no las leen Excel, informes ni tareas programadas. `tbUsuarios` contiene datos personales (DNI): no se borra sin decisión expresa. | Quitar el prefijo. |
-| A5 | Borrar los registros huérfanos de las tablas en uso y declarar su relación con integridad referencial: `TbConexionUltimaAppAbierta.IDUltimaAplicacionAbierta` → `TbAplicaciones` (9 huérfanos) y `TbVideosVisionados.IDVideo` → `TbVideos` (25 huérfanos). | Imprescindible | Las consultas de huérfanos de [reproducción](#reproducción) devuelven los mismos recuentos. | Restaurar las filas de la copia y quitar la relación. |
+| A4 | Poner en cuarentena las 15 candidatas restantes con datos: las 13 sin referencias de la ficha y `TbVideosVisionados` y `TbUsuariosCorreosEnvio`, cuyas referencias están todas en código muerto (la clase `Visionado` nunca se instancia; `Constructor.getCorreo` no tiene llamadores). Empezar por las de uso más improbable: `TbPermisos` (69 de sus 205 filas apuntan a aplicaciones inexistentes), `TbAplicacionesEdiciones`, `TbAplicacionesEdicionesCambios`, `TbDetalleVersiones`, `TbParametros` y `TbAplicacionesParametros`. | Imprescindible | El [protocolo de huérfanas](../epica-coexistencia-postgresql.md#protocolo-de-huérfanas): confirmar que no las leen Excel, informes ni tareas programadas. `tbUsuarios` contiene datos personales (DNI): no se borra sin decisión expresa. | Quitar el prefijo. |
+| A5 | Borrar los registros huérfanos de `TbConexionUltimaAppAbierta.IDUltimaAplicacionAbierta` → `TbAplicaciones` (9 huérfanos) y declarar la relación con integridad referencial. (`TbVideosVisionados`, que figuraba aquí, pasa a A4.) | Imprescindible | Las consultas de huérfanos de [reproducción](#reproducción) devuelven los mismos recuentos. | Restaurar las filas de la copia y quitar la relación. |
 | A6 | Declarar con integridad referencial las relaciones que ya cumplen los datos (0 huérfanos): `TbAplicacionesAperturas.IDAplicacion` → `TbAplicaciones`, `TbVideos.IDAplicacion` → `TbAplicaciones`, `TbVideosCategorias.IDVideo` → `TbVideos`, `TbVideosCategorias.IDCategoria` → `TbCategorias`. Sin borrado en cascada. | Recomendable si es barato | Consultas de huérfanos con 0 filas. Compruebe que la Lanzadera no borra aplicaciones ni vídeos con datos dependientes: con la relación, ese borrado fallará. | Quitar la relación. |
 | A7 | Borrar las consultas de prueba `Consulta1` a `Consulta4` del backend. | Recomendable si es barato | Ningún front las referencia (0 apariciones en `src`). | Recrearlas desde este inventario. |
 
@@ -66,7 +67,7 @@ Las tablas de identidad (`TbUsuariosAplicaciones` y `TbUsuariosAplicacionesPermi
 
 ## Verificación de R-1 y R-2
 
-- **R-1 (cada front consulta solo su backend): confirmada para la Lanzadera.** El front abre solo `Lanzadera_Datos` (`getdb()`), y lo que necesita de otro backend lo tiene vinculado en él (`TbCorreosEnviados`).
+- **R-1 (cada front consulta solo su backend): se cumple en el front de la Lanzadera y se refuta para su backend.** El front de la Lanzadera abre solo `Lanzadera_Datos` (`getdb()`) y tiene vinculado lo que necesita de otros (`TbCorreosEnviados`). Pero **10 fronts abren `Lanzadera_Datos.accdb` directamente** (y Condor probablemente), con la ruta escrita en el código y sin pasar por un vínculo de su backend: AGEDYS (`Variables Globales.bas:447`), AGEDYS ECO (`Variables Globales.bas:447`), Brass (`Variables Globales.bas:528`), Contratos (`Variables Entorno.bas:257`), Registros (`Variables de Entorno.bas:380`), Gestión de Riesgos (`Variables Globales.bas:465`), HPS (`VariablesEntorno.bas:553`), Solicitudes HPS (`Variables Globales.bas:438`), Seguridad (`Variables de Entorno.bas:411`) y Expedientes (`getdbLanzadera()`). En Condor solo hay un mensaje de error que nombra el fichero (`FUNCIONES UTILES.bas:75`): probable, pendiente de confirmar. Solo No Conformidades accede únicamente por vínculos. Así es como otros fronts escriben `TbAplicacionesAperturas` y `TbConexionesRegistro`, que la Lanzadera solo lee: sus propias rutas de escritura (`RegistroApertura`, `RegistroCierre`, `RegistroConexion`) no tienen llamadores.
 - **R-2 (cada tabla vive en el backend de quien la usa): una excepción.** `TbUsuariosAplicacionesTareas` vive en `Lanzadera_Datos`, pero solo la usa `Tareas_datos1`. Su dueño real es Tareas, que no figura en el catálogo de la Lanzadera.
 
 ## Hallazgos del ecosistema
@@ -87,7 +88,7 @@ Clasificación según la [épica](../epica-coexistencia-postgresql.md#clasificac
 |---|---|---|---|---|---|---|
 | `Tb0HerramientaDocAyuda` | NombreFormulario, NombreArchivoAyuda | 4 | 0 | 1 | — | propia, con nombre roto (A1) |
 | `TbAplicaciones` | IDAplicacion | 22 | 18 | 0 | AGEDYS_DATOS, Gestion_Riesgos_Datos | propia y compartida |
-| `TbAplicacionesAperturas` | IDApertura | 1697 | 19 | 14 | — | propia |
+| `TbAplicacionesAperturas` | IDApertura | 1697 | 19 | 14 | — | propia y compartida (la escriben otros fronts por apertura directa) |
 | `TbAplicacionesEdiciones` | IDAplicacion, IDVersion | 1262 | 0 | 0 | — | candidata a huérfana |
 | `TbAplicacionesEdicionesCambios` | IDCambio | 1364 | 0 | 0 | — | candidata a huérfana |
 | `TbAplicacionesEstados` | PerfilAplicacion | 6 | 0 | 0 | — | candidata a huérfana |
@@ -113,13 +114,13 @@ Clasificación según la [épica](../epica-coexistencia-postgresql.md#clasificac
 | `TbUsuariosAplicaciones` | CorreoUsuario | 190 | 39 | 390 | AGEDYS_DATOS, Expedientes_datos, Gestion_Riesgos_Datos, HPST, NoConformidades_Datos, Tareas_datos1, condor_datos | propia y compartida |
 | `TbUsuariosAplicacionesPermisos` | CorreoUsuario, IDAplicacion | 655 | 16 | 114 | AGEDYS_DATOS, Expedientes_datos, Gestion_Riesgos_Datos, HPST, NoConformidades_Datos, Tareas_datos1, condor_datos | propia y compartida |
 | `TbUsuariosAplicacionesTareas` | CorreoUsuario | 7 | 0 | 0 | Tareas_datos1 | mal ubicada |
-| `TbUsuariosCorreosEnvio` | IDCorreo | 1042 | 3 | 0 | — | propia |
+| `TbUsuariosCorreosEnvio` | IDCorreo | 1042 | 3 | 0 | — | candidata a huérfana (solo código muerto) |
 | `TbUsuariosHistoricoContrasenias` | Usuario, PassAntigua | 483 | 20 | 0 | — | propia |
 | `TbUsuariosTareasDiarias` | UsuarioRed | 8 | 0 | 0 | — | candidata a huérfana |
 | `TbVideos` | IDVideo | 16 | 31 | 0 | — | propia |
 | `TbVideosCategorias` | IDCategoriaVideo | 15 | 27 | 0 | — | propia |
 | `TbVideosCuestionario` | IDVideoCuestionario | 0 | 0 | 0 | — | candidata a huérfana |
-| `TbVideosVisionados` | IDVisionado | 138 | 4 | 0 | — | propia |
+| `TbVideosVisionados` | IDVisionado | 138 | 4 | 0 | — | candidata a huérfana (solo código muerto) |
 
 ## Reproducción
 
