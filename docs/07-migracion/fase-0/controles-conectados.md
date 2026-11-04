@@ -52,7 +52,7 @@ Lo que sí se confirma para el resto es que los formularios no tienen `RecordSou
 
 ### Brass
 
-El detalle de Brass, con sus 106 controles, está en [`controles-conectados-brass.md`](controles-conectados-brass.md) por volumen.
+El detalle de Brass, con sus 106 controles, va en un documento aparte por volumen: `controles-conectados-brass.md`.
 
 ### Registros
 
@@ -136,7 +136,7 @@ La columna «con lista de valores literal» domina casi todas las aplicaciones: 
 
 ### Brass
 
-El detalle de Brass en tiempo de ejecución está en [`controles-conectados-brass.md`](controles-conectados-brass.md).
+El detalle de Brass en tiempo de ejecución va en `controles-conectados-brass.md`.
 
 ### Registros
 
