@@ -6,11 +6,17 @@
 
 Inventario de solo lectura de los fronts que abren `Lanzadera_Datos.accdb` sin pasar por un vínculo de su backend. Es el cuarto mecanismo de acceso de la fase 2: tiene que adaptarse a ODBC en el mismo corte que `Lanzadera_Datos`. Este documento propone alternativas; la decisión es del propietario.
 
+## Reglas del propietario
+
+Confirmadas expresamente el 2026-11-04: no hay macros ni `AutoExec`; los formularios son desconectados y sus controles se rellenan en tiempo de ejecución; el front no tiene tablas vinculadas del backend. Los vínculos inventariados en este documento están **dentro de los backends**, no en los fronts. El análisis de código se basa en CodeGraph, trazando los procedimientos que cargan formularios y controles. No se deducen usos de datos a partir de propiedades de diseño vacías.
+
+Estas reglas retiran el anterior pendiente de inspeccionar macros y `AutoExec`: era una suposición del análisis, no una carencia del legacy.
+
 ## Fuente y método
 
 - **Código:** `src` de cada front en su rama `main` local, con el SHA de la tabla de resumen. No se hizo `fetch`: el SHA fija lo inspeccionado, no lo desplegado en producción.
 - **Rutas:** relativas al `src` de cada front. `apertura` es la línea donde empieza la función; `OpenDatabase` es la línea de la llamada real.
-- **Búsqueda:** `Lanzadera`, `OpenDatabase`, `DBEngine` y `Workspaces` en `src`, y lectura de los llamadores. CodeGraph-VBA solo se usó con éxito en Condor (`getdbLanzadera` → `CheckAndReconnect` → `OpenDatabase`). En el resto, el grafo de llamadas sale de búsqueda y lectura, no de CodeGraph.
+- **Búsqueda inicial:** `Lanzadera`, `OpenDatabase`, `DBEngine` y `Workspaces` en `src`; el explorador usó lectura directa al no disponer del acceso multirrepositorio a CodeGraph. **Contraste posterior del coordinador:** `codegraph_explore` con `projectPath` funcionó en los doce repositorios, consultando `getdbLanzadera`, `getUsuario` y `getAplicacionesPermisos`. En Condor traza también `CheckAndReconnect` y `OpenDatabase`. Se preservan las aristas marcadas como dinámicas: el grafo estático no es prueba de ejecución ni de ausencia de invocaciones.
 - **Vínculos:** extracción DAO de solo lectura de las copias de desarrollo de los backends (la misma de la [fase 0 de la Lanzadera](lanzadera-datos.md#fuente-y-método)).
 - **Recuentos:** «llamadas» son las líneas de `src` que invocan la función de apertura, y «procedimientos», los distintos que las contienen. Miden la superficie de código que toca la adaptación, no el esfuerzo de implementarla.
 - **Claves:** diez fronts escriben la clave del `.accdb` como literal en el código; Condor la obtiene de `GetPasswordDB()`. Los literales no se reproducen aquí.
@@ -124,7 +130,7 @@ El coste de cada front se expresa como superficie acotada: una función de apert
 
 | Alternativa | Qué cambia | Superficie por front | Riesgos |
 |---|---|---|---|
-| A. Vínculo ODBC del propio backend (R-1) | Las lecturas pasan a `getdb()` del front sobre tablas vinculadas; el backend vincula lo que falte | Las llamadas de la tabla de resumen, más los vínculos nuevos | Hay que crear vínculos en los backends sin identidad vinculada (Brass, Contratos, Registros, Solicitudes HPS, Seguridad) y en todos los que escriben `TbAplicacionesAperturas`, que hoy no la vinculan |
+| A. Vínculo ODBC del propio backend (R-1) | Las lecturas pasan al abridor `getdb()` del backend propio; ese backend contiene los vínculos necesarios y el front permanece sin tablas vinculadas | Las llamadas de la tabla de resumen, más los vínculos nuevos | Hay que crear vínculos en los backends sin identidad vinculada (Brass, Contratos, Registros, Solicitudes HPS, Seguridad) y en todos los que escriben `TbAplicacionesAperturas`, que hoy no la vinculan |
 | B. Conexión ODBC centralizada | La función de apertura de cada front cambia la ruta del `.accdb` por una cadena ODBC sin DSN; las llamadas no cambian | Una función por front (11 en total) | Sobre ODBC, DAO no admite recordsets de tipo tabla (Brass `Constructor.bas:110`, Seguridad `Constructor.bas:111`) y `TableDefs` (`UsuarioAplicacionPermisos.cls`) devuelve otra colección: hay que probarlo por front |
 
 Por front:
@@ -145,10 +151,51 @@ Por front:
 
 La alternativa B deja la clave fuera del `.accdb` solo si la cadena ODBC no repite el patrón de literal en el código; eso forma parte de la decisión.
 
+## Superficie medida y requisitos previos al corte
+
+Ampliación de #1570 (2026-11-04), sobre las revisiones fijadas arriba. A cuenta líneas de llamada existentes, no comentarios ni definiciones. B cuenta líneas no vacías del abridor y de la selección de ruta más apertura. Son superficies de revisión: no presupuestos de implementación ni líneas de diff garantizadas.
+
+| Front | Función existente (inicio–fin) | B: función no vacía / bloque de ruta y apertura | A: líneas de llamada |
+|---|---|---|---|
+| AGEDYS | `Variables Globales.bas:439–466` | 22 / 10 | 12 |
+| AGEDYS ECO | `Variables Globales.bas:439–466` | 22 / 10 | 12 |
+| Brass | `Variables Globales.bas:520–547` | 22 / 10 | 6 |
+| Contratos | `Variables Entorno.bas:249–276` | 22 / 10 | 8 |
+| Registros | `Variables de Entorno.bas:372–399` | 22 / 10 | 8 |
+| Gestión de Riesgos | `Variables Globales.bas:457–484` | 22 / 10 | 9 |
+| HPS | `VariablesEntorno.bas:545–572` | 22 / 10 | 5 |
+| Solicitudes HPS | `Variables Globales.bas:430–457` | 22 / 10 | 6 |
+| Seguridad | `Variables de Entorno.bas:403–430` | 22 / 10 | 5 |
+| Expedientes | `Variables Globales.bas:487–514` | 22 / 10 | 6 |
+| Condor | `FUNCIONES UTILES.bas:234–235,252` | 2 líneas de selección propias y 1 apertura compartida | 4 |
+| No Conformidades `main` | Sin apertura directa identificada | 0 | 0 |
+| No Conformidades RC | `modOrigenExpedientes.bas:166–168`; abridor compartido `:64–107` | 3 líneas propias, más adaptación del abridor compartido | 4 más 1 camino de arranque |
+
+En los diez abridores iguales: 220 líneas no vacías de función, 100 de bloque de ruta y apertura, y 77 llamadas. Con Condor, A suma las 81 llamadas del inventario inicial. La RC de No Conformidades no entra en ese total: además de `constructor.bas:407,5126`, lee mediante `OrigenLanzadera_Abrir` en `constructor.bas:336` y `modCatalogoUsuarios.bas:140`; arranca por `Variables Globales.bas:441` y `modOrigenExpedientes.bas:132`. Si no consigue abrir, existe retorno al vínculo (`:170–183`). Los ficheros citados no presentan diferencias locales frente al HEAD RC comprobado.
+
+No se puede sustituir indiscriminadamente el abridor compartido: Condor lo usa también para sus otras cuatro bases y la RC de No Conformidades para Expedientes y Riesgos. Tampoco está demostrado que una cadena ODBC pueda reemplazar sin más el contrato DAO actual: requiere ensayo del modo de apertura, SQL y recordsets.
+
+### Acciones de preparación derivadas
+
+| Id | Acción propuesta, sin ejecutarla en el legacy | Evidencia / aceptación antes del corte |
+|---|---|---|
+| P1 | Sustituir la asignación `MAX+1` por una fuente de ID atómica, coordinando todos los escritores de aperturas | `DameID1` en AGEDYS (`Funciones Generales.bas:1261`), Brass (`:332`) y Registros (`:495`); `DameID` en AGEDYS ECO (`FUNCIONES UTILES.bas:519`) y Contratos (`Funciones Generales.bas:213`). Solo leen `MAX` y devuelven el siguiente valor; no reservan el ID. Probar dos inserciones simultáneas sin colisiones. No es un cambio solo del backend: adaptar también los fronts escritores. |
+| P2 | Extraer credenciales del código y definir cómo se proporcionan en Citrix | Diez abridores contienen un literal, sin reproducirlo aquí; Condor usa `GetPasswordDB`. Acordar almacenamiento, permisos y rotación antes de implementar. |
+| P3 | Revisar la vida de las conexiones antes de ODBC | AGEDYS declara `wks` y `db1` a nivel de módulo (`Variables Globales.bas:375,377`) y reasigna una apertura por llamada. Medir sesiones y cierre; no se ha probado una fuga ni su impacto en PostgreSQL. |
+| P4 | Decidir qué hacer con `getEsUsuarioAutorizado` de Contratos antes de conservarla o retirarla | `Funciones Generales.bas:143–207`: sin llamadores encontrados en `src`, solo lee permisos pero llama a `Desconectar` (`:128`), que cierra la base global propia. Tiene lógica de autorización pendiente de revisión; no declararla muerta ni corregirla sin revisar el grafo de llamadores y los requisitos. |
+
+Los auxiliares de ID citados no escriben registros ni cierran la base recibida; si reciben `Nothing` eligen otra base por defecto. La lectura de `MAX` seguida de `AddNew` no constituye una operación atómica.
+
+### Corrección de la incertidumbre sobre macros y arranque
+
+Se consultaron los contratos de lectura de dysflow y una muestra de `FormLogin`, pero esa comprobación no era el camino apropiado para este ecosistema. El propietario confirmó después que no existen macros ni `AutoExec` y que los formularios son desconectados. Se retira ese bloqueo y se usa CodeGraph sobre los procedimientos de carga y eventos; no se ejecuta el arranque contra producción.
+
+El contraste posterior con `codegraph_explore(projectPath, query)` funcionó en los doce fronts: el fallo anterior pertenecía al acceso del explorador, no al servidor. No convierte las aristas dinámicas en ejecución demostrada. La adaptación concreta y sus pruebas funcionales siguen pendientes de elegir e implementar; esta issue solo entrega el inventario y su superficie medida.
+
 ## Riesgo residual
 
-- Macros, `AutoExec`, cinta de opciones, expresiones de propiedades y formularios de arranque del binario no están en `src`: pueden existir llamadas no inventariadas.
-- Las llamadas comentadas a las escrituras (AGEDYS, AGEDYS ECO, Brass) no prueban que el binario no las alcance por otro camino.
+- No se inspeccionan macros ni `AutoExec`: no existen por regla del propietario. La revisión se centra en los eventos y procedimientos de carga en ejecución mediante CodeGraph.
+- Las llamadas comentadas a las escrituras (AGEDYS, AGEDYS ECO, Brass) no prueban ejecución; hay que conservar las limitaciones de resolución dinámica del grafo.
 - Las rutas construidas en tiempo de ejecución se buscaron por `OpenDatabase`, `DBEngine` y `Workspaces`, no por todo SQL dinámico.
-- No se inspeccionaron los efectos secundarios de `DameID` y `DameID1`, ni los llamadores de `getEsUsuarioAutorizado` en Contratos.
+- Los auxiliares de ID y `getEsUsuarioAutorizado` ya se inspeccionaron en `src` (ampliación anterior); sus posibles invocaciones externas al código siguen sin verificarse.
 - No hay pruebas en ejecución: todo lo anterior es lectura de código y de vínculos.

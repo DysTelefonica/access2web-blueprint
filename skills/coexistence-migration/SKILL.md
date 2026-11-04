@@ -30,6 +30,13 @@ Las fuentes son la épica [`docs/07-migracion/epica-coexistencia-postgresql.md`]
 9. **Las tablas que se unen comparten motor.** Una unión mixta `.accdb` + ODBC se resuelve en local dentro de Citrix, con lentitud; los backends cuyas tablas se unen entre sí se trasladan juntos.
 10. **La épica es un documento vivo.** Los cambios de rumbo se registran en su sección «Cambios de rumbo»; nunca se editan fases en silencio. Una fase equivocada se marca `descartada` con su motivo.
 
+## Convenciones del legacy confirmadas por el propietario
+
+- No hay macros ni `AutoExec`; no se bloquea un inventario esperando inspeccionarlas.
+- Los formularios son desconectados. Sus controles y datos se rellenan en tiempo de ejecución: trace los procedimientos de carga y los eventos, no deduzca ausencia de uso por propiedades de diseño vacías.
+- Los fronts no tienen tablas vinculadas de sus backends. Las tablas vinculadas de otros aplicativos están en el backend propio; no proponga trasladar esos vínculos al front.
+- Para revisar código utilice CodeGraph como primera herramienta. Use `projectPath` en el MCP multirrepositorio; una limitación del subagente no demuestra que CodeGraph no funcione. Declare las aristas dinámicas y cualquier fallback, sin convertir ausencia de llamadores estáticos en prueba de código muerto.
+
 ## Decision Gates
 
 | Situation | Action |
