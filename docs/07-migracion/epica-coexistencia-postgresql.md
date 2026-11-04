@@ -148,7 +148,14 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 - **Coste de cada cambio estructural:** número de referencias en código por tabla y por columna, sumando todos los fronts. Es el criterio de coste de la fase 1.
 - **Verificación de R-1 y R-2**, con sus excepciones listadas.
 
-**Avance.** Inventarios publicados: [`Lanzadera_Datos`](fase-0/lanzadera-datos.md), [`Brass`](fase-0/brass.md) y el [grafo de dependencias entre backends](fase-0/grafo-dependencias.md). El grafo se obtuvo del ERD de cada front y cada backend, sin tablas de sistema: R-1 se confirma en los backends y se refuta en los fronts, con excepciones medidas.
+**Avance.** Inventarios publicados, todos de solo lectura y con las propuestas de acción catalogadas sin aplicar:
+
+- [`Lanzadera_Datos`](fase-0/lanzadera-datos.md) y el [inventario de aperturas directas](fase-0/aperturas-directas-lanzadera.md).
+- [`Brass`](fase-0/brass.md), la excepción con controles conectados y vínculos en el front.
+- [`HPS`](fase-0/hps.md), [`Condor`](fase-0/condor.md), [`Expedientes`](fase-0/expedientes.md), [`Gestión de Riesgos`](fase-0/gestion-riesgos.md) y [`No Conformidades`](fase-0/no-conformidades.md).
+- El [grafo de dependencias entre backends](fase-0/grafo-dependencias.md), obtenido del ERD de cada front y cada backend sin consultar tablas de sistema.
+
+R-1 se confirma en los backends y se refuta en los fronts, con las excepciones medidas. La base de análisis de cada aplicación es su RC1 pendiente de UAT cuando existe; HPS queda en `main` porque su UAT ya está aprobada y liberada.
 
 **Criterio de terminado.** Todo backend dentro de alcance tiene su lista de vínculos; toda tabla tiene clasificación y ficha; todo front tiene su inventario de patrones de riesgo; R-1 y R-2 constan como confirmadas o con sus excepciones.
 
