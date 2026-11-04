@@ -4,7 +4,7 @@ description: "Trigger: actualizar mi rama, abrir un pull request, encadenar PRs,
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: "1.2"
+  version: "1.3"
   last_verified: 2026-11-02
   scope: ['universal', 'ops']
   auto_invoke: ['actualizar rama', 'abrir un PR', 'encadenar PRs', 'pedir merge', 'etiquetar un PR']
@@ -25,7 +25,7 @@ Para ADOPTAR o AUDITAR el patrón (gates, contratos, HRs, fases) cargue
 | El PR está en verde y hay que integrarlo | 2 — lo lanza un mantenedor, camino gobernado; un agente solo por orden registrada |
 | El cambio no cabe en un PR | 3 y 5 — cadena de unidades, punta cierra |
 | Añadir o elegir etiquetas | 4 — `type:*` orientativa, del contrato del host |
-| El diff pasa de 400 líneas | 5 — partir o pedir la etiqueta `size:exception` al mantenedor, nunca recortar |
+| El diff pasa de 400 líneas | 5 — partir o pedir la etiqueta `size:exception` al coordinador, nunca recortar |
 | Después del merge | 6 — la rama remota se conserva |
 | Empujé algo que la política prohíbe | 7 — el detective/guard abre el incidente |
 | El consumer decide la estrategia de merge | 8 — `--squash` o `--no-ff`, ambos válidos; la rama remota sobrevive |
@@ -82,7 +82,7 @@ Antes de `gh pr create`, ejecute `ci-pattern pr preflight --draft --pr-body <cue
 
 5. **400 líneas por PR.** Corte por unidad de trabajo —cada commit, una
    pieza entregable con sus tests y su doc—. La etiqueta `size:exception` la
-   pone el mantenedor, solo cuando el corte honesto no cabe; nunca se recortan
+   pone el coordinador del proyecto, solo cuando el corte honesto no cabe; nunca se recortan
    comentarios, documentación ni tests para entrar en el presupuesto. —
    *referencia: `ci-pattern`, HR-8 y HR-54.*
 
@@ -98,8 +98,9 @@ Antes de `gh pr create`, ejecute `ci-pattern pr preflight --draft --pr-body <cue
    verdad no se puede partir (un fichero generado, una migración atómica o un
    renombrado mecánico) o si falta el esfuerzo de partirlo, y lo registra con
    un comentario en la PR. El único mecanismo de la flota es la etiqueta
-   `size:exception` que lee el gate `pr-size` (`ci-pattern` HR-8); quién la
-   pone está pendiente de decisión del dueño (hoy, el mantenedor).
+   `size:exception` que lee el gate `pr-size` (`ci-pattern` HR-8), y la pone el
+   coordinador: nunca el worker y sin esperar a una persona, con las cuatro
+   respuestas en el cuerpo de la PR (decisión del dueño, 2026-11-02).
 
 6. **La rama remota se conserva tras el merge** (nunca `git push origin
    --delete <rama>`): permite seguir o revertir con exactitud algo que se

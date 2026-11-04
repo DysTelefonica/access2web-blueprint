@@ -394,7 +394,7 @@ class BudgetFigure:
 def check_budget(pr, figure, policy, findings):
     """A1: el presupuesto es 400 (adiciones + eliminaciones del PR, sin
     exclusiones). Si el diff lo supera, la única vía válida es la
-    etiqueta `size:exception` aplicada por el mantenedor; el campo
+    etiqueta `size:exception` aplicada por el coordinador del proyecto; el campo
     `size-exception-reason:` del cuerpo está retirado.
 
     Sin el mapa de orígenes (--origins-file) el árbol vendorizado cuenta
@@ -410,8 +410,8 @@ def check_budget(pr, figure, policy, findings):
     if not size_exception_applied(pr, policy):
         message = (
             f"A1: el diff supera el presupuesto ({figure.lines} > {budget}) y "
-            f"no lleva la etiqueta '{label_name}' aplicada por el mantenedor. "
-            "Encadene PRs o pida al mantenedor la etiqueta tras responder las "
+            f"no lleva la etiqueta '{label_name}' aplicada por el coordinador. "
+            "Encadene PRs o pida al coordinador del proyecto la etiqueta tras responder las "
             "4 preguntas de '## Excepción de tamaño' en el cuerpo."
         )
         if figure.vendored and not figure.origins_supplied:

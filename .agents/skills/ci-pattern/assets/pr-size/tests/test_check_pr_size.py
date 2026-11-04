@@ -482,10 +482,10 @@ class TestLabelOverride(unittest.TestCase):
     def tearDown(self) -> None:
         self._tmp.cleanup()
 
-    def test_over_budget_without_label_fails_and_names_the_maintainer(self) -> None:
+    def test_over_budget_without_label_fails_and_names_the_coordinator(self) -> None:
         result = _run_cli(self.repo)
         self.assertEqual(result.returncode, 1, result.stdout)
-        self.assertIn("maintainer", result.stdout)
+        self.assertIn("coordinator", result.stdout)
         self.assertIn("size:exception", result.stdout)
 
     def test_label_flag_overrides(self) -> None:
@@ -557,7 +557,7 @@ class TestGeneratedLockfilesAreExcluded(unittest.TestCase):
             repo = _over_budget_repo(Path(tmp), "app/x.py")
             result = _run_cli(repo)
             self.assertEqual(result.returncode, 1, result.stdout)
-            self.assertIn("maintainer", result.stdout)
+            self.assertIn("coordinator", result.stdout)
 
     def test_requirements_txt_still_counts(self) -> None:
         """Solo la extension ``.lock`` queda fuera: ``requirements.txt`` es de autoria."""

@@ -36,7 +36,7 @@ two red checks with two different numbers on the same PR. This script stays as
 a local measurement and as the size diagnostic of ``pr preflight --draft``.
 
 The only override is the ``size:exception`` label, applied by the
-maintainer (never by the author, never read from the PR body). With
+project's coordinator (never by the author, never read from the PR body). With
 ``--event`` it is read live from the API (``GET issues/N/labels``), because the
 event payload is a snapshot from the moment the event fired: a label added right
 after the ``opened`` event (cadete#715) would otherwise be missed (#1359). Local
@@ -88,7 +88,7 @@ from vendored_budget import (
 
 MAX_CHANGED_LINES = 400
 
-#: The only override: applied by the maintainer, never read from the PR body.
+#: The only override: applied by the project's coordinator, never read from the PR body.
 OVERRIDE_LABEL = "size:exception"
 
 FILES_PER_PAGE = 100
@@ -220,7 +220,7 @@ def pr_base_ref() -> str | None:
 
 
 def has_override(labels: set[str]) -> bool:
-    """True when the maintainer applied the ``size:exception`` label."""
+    """True when the coordinator applied the ``size:exception`` label."""
     return OVERRIDE_LABEL in labels
 
 
@@ -570,7 +570,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"FAIL  {counted} changed line(s) vs {source}, budget is {MAX_CHANGED_LINES}{suffix}")
     for path, count in per_file[:10]:
         print(f"        {count:>6}  {path}")
-    print(f"        split the PR; only the maintainer can apply the '{OVERRIDE_LABEL}' label")
+    print(f"        split the PR; only the project's coordinator applies the '{OVERRIDE_LABEL}' label")
     return 1
 
 
