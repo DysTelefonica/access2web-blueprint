@@ -52,7 +52,7 @@ Lo que sí se confirma para el resto es que los formularios no tienen `RecordSou
 
 ### Brass
 
-El detalle de Brass, con sus 106 controles, va en un documento aparte por volumen: `controles-conectados-brass.md`.
+El detalle de Brass, con sus 106 controles, esta en [`controles-conectados-brass.md`](controles-conectados-brass.md), aparte por volumen.
 
 ### Registros
 
