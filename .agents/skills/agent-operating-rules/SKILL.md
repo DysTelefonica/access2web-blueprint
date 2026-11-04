@@ -4,7 +4,7 @@ description: "Trigger: trabajar como agente en oracle o rosa, crear un checkout 
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: "1.4"
+  version: "1.6"
   last_verified: 2026-11-02
   scope: ['universal', 'ops']
   auto_invoke: ['working as an agent on a shared host', 'creating a work checkout', 'cleaning up scratch files']
@@ -55,6 +55,7 @@ Cargue esta skill cuando:
 - **HR-13** — Cada push encola la CI entera de la rama: en APAP_WEB, unos 10 jobs y entre 7 y 8 minutos de runner. Por eso:
   - Junte los commits de una tanda en local y empuje una sola vez, no uno por cada arreglo pequeño.
   - No ponga al día una rama que aún no se va a fusionar. Se pone al día justo antes de fusionarla, y solo cuando `governed-delivery` o el contrato del repositorio lo exigen.
+  - Con `merge_freshness` en `off` (el defecto), no fusione `main` en su rama ni pulse «Update branch»: el merge gobernado fusiona la PR atrasada y el CI posterior verifica el árbol integrado. Solo se pone al día si la PR tiene conflicto con `main` (`DIRTY`) o si las dos cambiaron el mismo fichero de `.github/workflows/` (#783). Cada merge de `main` en la rama es una ejecución completa de la CI: en APAP_WEB, unos 25 minutos por eslabón (#3358 y #3371 el 2026-11-02; #3351 se fusionó atrasado sin ponerse al día).
   - En una cadena, empuje solo el eslabón que sigue, no la cadena entera en cada cambio.
   - Antes de empujar, pase en local lo que ya exigen HR-8 y HR-10, para no gastar una ejecución de la CI en un fallo de formato.
   - Si vuelve a empujar y la ejecución anterior de **su** rama ya no sirve, cancélela. Nunca cancele ejecuciones de ramas ajenas.
@@ -62,7 +63,7 @@ Cargue esta skill cuando:
   - El coordinador estima el tamaño de la misión y la parte en eslabones de una cadena **en el brief**, con lo que entra en cada uno.
   - El worker mira el tamaño de su diff mientras trabaja (`git diff --shortstat origin/main...`) y corta el eslabón hacia las 350 líneas, aunque el brief no lo previera.
   - El chequeo de tamaño del preflight local es la última red. Si es la CI la que descubre que una PR se pasa, el corte llegó tarde.
-  - Si un eslabón no se puede partir, pida la excepción a su coordinador **antes** del push, con el motivo. Él juzga y lo registra; la etiqueta `size:exception` la pone quien decida el dueño, hoy el mantenedor (`governed-delivery`, regla 5).
+  - Si un eslabón no se puede partir, pida la excepción a su coordinador **antes** del push, con el motivo. Él juzga, lo registra y pone la etiqueta `size:exception`; usted nunca se la pone (`governed-delivery`, regla 5).
 - **HR-15** — La CI confirma, no descubre (`ci-pattern` HR-86): antes de cada push pase el preflight local del repositorio (cadete: `scripts/local-ci.sh`), con tamaño, contrato de PR y commits, nombre de rama, lint, tipos, tests unitarios y secretos. Una PR en rojo en uno de esos gates es un defecto de proceso: el coordinador lo apunta y corrige su brief.
 - **HR-16** — Cada criterio de aceptación de la issue lleva su evidencia en la PR, una línea por criterio: test con su salida en verde, comando con su salida real, captura para la UI, consulta o log para los datos. Un criterio sin evidencia no está hecho y la PR le vuelve (`ci-pattern` HR-87).
 
