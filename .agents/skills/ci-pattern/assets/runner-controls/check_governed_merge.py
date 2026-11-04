@@ -812,19 +812,51 @@ def freshness_findings(args: argparse.Namespace, pull: dict,
             f"from the tree CI reviewed and {reason}; " + action], behind
 
 
-def absent_from_completed_run(findings: list[str], runs: list, sha: str) -> list[str]:
+def base_changed_after(repo: str, number: object, runs: list) -> str | None:
+    """Cuando cambio la base de la PR por ultima vez, si fue despues de todos sus runs (#1495).
+
+    Redirigir la base dispara `edited`, que el CI no escucha: la cabeza no tiene
+    ningun run contra la base actual. Sin timeline legible se devuelve None y
+    queda la pista de siempre: el gate bloquea igual, solo cambia el consejo.
+    """
+    try:
+        events = get_json(f"repos/{repo}/issues/{number}/timeline?per_page=100")
+    except (GitHubApiError, json.JSONDecodeError):
+        return None
+    if not isinstance(events, list):
+        return None
+    changes = [event["created_at"] for event in events
+               if isinstance(event, dict) and event.get("event") == "base_ref_changed"
+               and isinstance(event.get("created_at"), str)]
+    started = [run.get("started_at") for run in runs if isinstance(run.get("started_at"), str)]
+    if not changes or not started or max(changes) <= max(started):
+        return None
+    return max(changes)
+
+
+def absent_from_completed_run(findings: list[str], runs: list, sha: str,
+                              repo: str = "", number: object = None) -> list[str]:
     """Un `missing` que ya no va a aparecer deja de ser esperable (fase 0, 0.4).
 
     Si el commit tiene check-runs y todos han terminado, el requerido que falta
     no se va a publicar: suele ser un run relanzado solo en sus jobs fallidos,
     que no vuelve a correr el rollup (cadete#992). Esperar el techo solo
     retrasaba el mismo `missing`; se dice que hay que relanzar el run entero.
+    Si la base cambio despues de esos runs, relanzarlos no sirve (#1495).
     """
     if not runs or any(not isinstance(run, dict) or run.get("status") != "completed" for run in runs):
         return findings
-    return [f"{item}; every check run of {sha[:12]} is completed, so it will not appear: "
-            "re-run the whole workflow run (not only its failed jobs) and merge again"
-            if item.endswith(": missing") else item for item in findings]
+    if not any(item.endswith(": missing") for item in findings):
+        return findings
+    changed = base_changed_after(repo, number, runs) if repo else None
+    if changed is not None:
+        hint = (f"no check run of {sha[:12]} started after the PR's base was changed ({changed}), "
+                "and a base change does not start CI: close and reopen the PR, or push a commit "
+                "(never a merge of the base, HR-13), then merge again")
+    else:
+        hint = (f"every check run of {sha[:12]} is completed, so it will not appear: "
+                "re-run the whole workflow run (not only its failed jobs) and merge again")
+    return [f"{item}; {hint}" if item.endswith(": missing") else item for item in findings]
 
 
 def verdict_findings(args: argparse.Namespace, sha: str, required: list[str]) -> list[str]:
@@ -838,7 +870,7 @@ def verdict_findings(args: argparse.Namespace, sha: str, required: list[str]) ->
     while True:
         runs = fetch_check_runs(args.repo, args.pr, sha)
         findings = absent_from_completed_run(check_verdict(args.repo, args.pr, sha, required, runs),
-                                             runs, sha)
+                                             runs, sha, args.repo, args.pr)
         waiting = [item for item in findings if item.endswith(WAITABLE)]
         if not waiting or len(waiting) != len(findings) or time.monotonic() >= deadline:
             return findings
