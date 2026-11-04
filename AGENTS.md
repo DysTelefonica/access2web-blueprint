@@ -422,4 +422,6 @@ Si una IA llega al repo y NO ve `architecture-guardrails` cargada, está operand
 
 El índice de skills, las lecturas obligatorias y las reglas duras del repositorio viven en
 [`docs/agents-repo-guide.md`](docs/agents-repo-guide.md). El flujo operativo del CI se genera
-en [`docs/ci-pattern-flow.md`](docs/ci-pattern-flow.md) y no se edita a mano.
+en [`docs/ci-pattern-flow.md`](docs/ci-pattern-flow.md) y no se edita a mano. Antes de cualquier trabajo de
+migración, modelo de datos, adaptadores de PostgreSQL o issues de migración, cargue
+[`skills/coexistence-migration/SKILL.md`](skills/coexistence-migration/SKILL.md).
