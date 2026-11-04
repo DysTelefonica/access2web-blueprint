@@ -133,7 +133,7 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 
 ### Fase 0. Inventario
 
-**Estado:** en curso. Hecho: [`Lanzadera_Datos`](fase-0/lanzadera-datos.md) (#1560), con sus propuestas de acción catalogadas, pendientes de revisión transversal. Pendiente: el resto de backends. Completar un inventario individual no habilita cambios en el legacy.
+**Estado:** en curso. Hecho: [`Lanzadera_Datos`](fase-0/lanzadera-datos.md) (#1560) y [`Brass`](fase-0/brass.md) (#1574), con sus propuestas de acción catalogadas, pendientes de revisión transversal. Pendiente: el resto de backends. Completar un inventario individual no habilita cambios en el legacy.
 
 **Objetivo.** Conocer, en solo lectura, el grafo completo de dependencias entre backends, el estado de cada tabla y los patrones de VBA que no sobrevivirían a PostgreSQL.
 
