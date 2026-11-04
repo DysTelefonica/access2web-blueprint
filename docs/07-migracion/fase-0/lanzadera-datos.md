@@ -4,7 +4,7 @@
 
 ## Propósito
 
-Inventario de solo lectura del backend de la Lanzadera, la primera aplicación en coexistir. Termina en una lista de **acciones aplicables ya en el legacy** (fase 1), cada una con su comprobación previa y su reversión.
+Inventario de solo lectura del backend de la Lanzadera, la primera aplicación en coexistir. Termina en un catálogo de **propuestas de acción para la fase 1**, cada una con su comprobación previa y su reversión. No se aplica ninguna hasta terminar el descubrimiento de todas las herramientas y revisar conjuntamente las dependencias.
 
 ## Fuente y método
 
@@ -32,9 +32,13 @@ Inventario de solo lectura del backend de la Lanzadera, la primera aplicación e
 
 El backend es apto para PostgreSQL sin cambios de tipo: las tablas tienen clave primaria salvo una y no hay tipos sin equivalente.
 
-## Acciones para aplicar ya en el legacy
+## Catálogo de propuestas para después del descubrimiento global
 
-Antes de cualquier acción: copia de seguridad del backend de producción y ventana sin usuarios conectados. Las consultas de comprobación se ejecutan en producción, no en la copia de desarrollo.
+**Estado de A1–A7: propuestas pendientes; no autorizadas para aplicar.** La decisión del propietario (#1576) sustituye la recomendación anterior de actuar inmediatamente. Primero debe terminar el descubrimiento de todas las herramientas y reconciliar sus dependencias; después se revisará este catálogo. «Imprescindible» en la tabla es una clasificación provisional, no una instrucción para ejecutar ahora.
+
+Durante el descubrimiento no se hacen renombrados de cuarentena, borrados, movimientos ni cambios de claves o restricciones. Los recuentos de desarrollo y la ausencia de referencias literales no bastan para aprobarlos, especialmente por los controles conectados de Brass.
+
+Tras esa revisión, para las acciones aprobadas se definirá una comprobación sobre una copia reciente de producción, respaldo validado, ventana de mantenimiento y reversión. El catálogo conserva a continuación las propuestas iniciales para revisarlas, no para ejecutarlas tal cual.
 
 | Id | Acción | Grupo (fase 1) | Comprobación previa | Reversión |
 |---|---|---|---|---|

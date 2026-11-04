@@ -25,25 +25,27 @@ Las fuentes son la épica [`docs/07-migracion/epica-coexistencia-postgresql.md`]
 4. **R-1 y R-2 son pendientes de verificar en la fase 0.** R-1: cada front consulta solo su backend, que contiene tablas propias y tablas vinculadas desde otros backends. R-2: una tabla vive en el backend de la aplicación que la usa. No las trate como hechos hasta que la fase 0 las confirme.
 5. **Tablas con forma legacy durante la coexistencia (D92).** La web trabaja directamente sobre las tablas con forma legacy en PostgreSQL que Access vincula por ODBC. Una sola fuente de verdad mantiene vivo el legacy y hace posible la reversión.
 6. **Cambios de esquema solo aditivos.** Columnas nuevas que admiten nulos y tablas nuevas; nunca cambie el significado, el nombre ni el tipo de lo existente: rompería los fronts Access que siguen leyendo esas tablas.
-7. **Las mejoras estructurales se hacen en Access.** Se aplican en el backend `.accdb`, con sus fronts adaptados, antes de migrar ese backend. La refactorización a un esquema moderno llega solo tras el apagado completo del legacy.
+7. **Primero descubrimiento global; después mejoras en Access.** Durante la fase 0 solo se catalogan accionables. No se aplica ninguno hasta terminar el descubrimiento de todas las herramientas, reconciliar dependencias y revisar el catálogo conjunto con el propietario. Esto incluye renombrados de cuarentena, borrados, movimientos y nuevas claves o restricciones. Las mejoras aprobadas se aplican en el backend `.accdb`, con sus fronts adaptados, antes de migrar ese backend. La refactorización a un esquema moderno llega solo tras el apagado completo del legacy.
 8. **Nunca `DROP SCHEMA` como reversión** sobre esquemas con tablas con forma legacy: destruiría datos que Access sigue usando. DA-7 y D82 de `docs/architecture.md` están pendientes de revisión por este motivo.
 9. **Las tablas que se unen comparten motor.** Una unión mixta `.accdb` + ODBC se resuelve en local dentro de Citrix, con lentitud; los backends cuyas tablas se unen entre sí se trasladan juntos.
 10. **La épica es un documento vivo.** Los cambios de rumbo se registran en su sección «Cambios de rumbo»; nunca se editan fases en silencio. Una fase equivocada se marca `descartada` con su motivo.
 
 ## Convenciones del legacy confirmadas por el propietario
 
+- Base del descubrimiento: si la aplicación tiene una rama RC1 con UAT todavía pendiente, se analiza esa RC1 en lugar de `main`, fijando su nombre y SHA. No equivale a afirmar que esté desplegada. Un inventario anterior basado solo en `main` se revisa contra la RC1 aplicable; no se mezclan versiones ni cambios locales sin identificar.
 - No hay macros ni `AutoExec`; no se bloquea un inventario esperando inspeccionarlas.
 - Salvo Brass, los formularios son desconectados: sus controles y datos se rellenan en tiempo de ejecución. Trace los procedimientos de carga y los eventos; no deduzca ausencia de uso por propiedades de diseño vacías.
 - Salvo Brass, los fronts no tienen tablas vinculadas de sus backends: los vínculos a otros aplicativos están en el backend propio. **Brass es la excepción confirmada por el propietario:** tiene controles conectados y vínculos en el front tanto a su backend como al de Lanzadera. En Brass revise también los orígenes de datos y vínculos del front; la adaptación de abridores VBA no basta por sí sola.
 - Una tabla, propia o vinculada, solo debe estar en el backend si la necesita el VBA de su propio front. Que otro front la consuma no justifica conservarla allí si el front propietario no la usa: es una tabla mal ubicada y debe asignarse al aplicativo que la necesita, adaptando sus consumidores. Si nadie la usa, es candidata a retirada. Esta regla de propiedad no autoriza borrar ni mover datos sin comprobar referencias y acordar la intervención.
 - La inicialización de CodeGraph se hace mediante Gentle AI, según su integración vigente; no ejecute `codegraph init` directamente ni invente una invocación alternativa.
+- Para inventariar tablas propias y vinculadas, obtenga con dysflow el ERD del front y del backend, inspeccionando el contrato vivo y la ruta de salida antes de generarlo. No dependa de consultas a `MSysObjects` ni otras tablas de sistema: los permisos pueden impedirlas. El ERD del backend no sustituye al del front, especialmente en Brass.
 - Para revisar código utilice CodeGraph como primera herramienta. Use `projectPath` en el MCP multirrepositorio; una limitación del subagente no demuestra que CodeGraph no funcione. Declare las aristas dinámicas y cualquier fallback, sin convertir ausencia de llamadores estáticos en prueba de código muerto.
 
 ## Decision Gates
 
 | Situation | Action |
 |---|---|
-| Tabla sin uso aparente (huérfana) | Aporte evidencia: vínculos de todos los backends y búsqueda en el `src` del front propietario, incluido el SQL dinámico. Proponga cuarentena (copia de seguridad y renombrado a `zzBAJA_<tabla>`, o traslado a un `.accdb` de archivo) y borrado tras un periodo sin incidencias. El propietario borra en el legacy; el agente solo aporta la evidencia. |
+| Tabla sin uso aparente (huérfana) | Catalogue la propuesta sin aplicarla hasta cerrar el descubrimiento global. Aporte evidencia: vínculos de todos los backends y búsqueda en el `src` del front propietario, incluido el SQL dinámico. Proponga cuarentena (copia de seguridad y renombrado a `zzBAJA_<tabla>`, o traslado a un `.accdb` de archivo) y borrado tras un periodo sin incidencias. El propietario borra en el legacy; el agente solo aporta la evidencia. |
 | Issue nueva de migración | Etiqueta `estrategia:coexistencia`. |
 | Issue previa cuyo alcance cambia con la coexistencia | Etiqueta `coexistencia:ajuste` y comentario que explique qué cambia, con enlace a la épica y a la D92. |
 | Issue previa que solo tenía sentido con corte único | Etiqueta `coexistencia:obsoleta` y el mismo comentario. |

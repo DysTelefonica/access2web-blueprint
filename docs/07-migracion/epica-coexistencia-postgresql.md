@@ -133,13 +133,15 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 
 ### Fase 0. Inventario
 
-**Estado:** en curso. Hecho: [`Lanzadera_Datos`](fase-0/lanzadera-datos.md) (#1560), con sus acciones aplicables en el legacy. Pendiente: el resto de backends.
+**Estado:** en curso. Hecho: [`Lanzadera_Datos`](fase-0/lanzadera-datos.md) (#1560), con sus propuestas de acción catalogadas, pendientes de revisión transversal. Pendiente: el resto de backends. Completar un inventario individual no habilita cambios en el legacy.
 
 **Objetivo.** Conocer, en solo lectura, el grafo completo de dependencias entre backends, el estado de cada tabla y los patrones de VBA que no sobrevivirían a PostgreSQL.
 
+**Base de análisis.** Si una aplicación tiene una rama RC1 con UAT pendiente, el descubrimiento se basa en esa RC1, no en `main`. Cada ficha fija rama y SHA y distingue código candidato de versión desplegada. Los inventarios previos hechos solo sobre `main` deben reconciliarse con la RC1 aplicable; las divergencias se registran, no se mezclan silenciosamente. Para el ERD se comprueba la correspondencia del binario con la base analizada.
+
 **Entregables.**
 
-- **Por backend:** las tablas vinculadas (`MSysObjects`, tipo 6), para construir el grafo de dependencias solo desde los backends (gracias a R-1).
+- **Por aplicativo:** obtener con dysflow el ERD del **front y del backend**, identificando tablas propias, tablas vinculadas y sus orígenes sin consultar tablas de sistema como `MSysObjects`. Cruzar ambos ERD con el código mediante CodeGraph para construir el grafo de dependencias. No basta con el backend: Brass tiene vínculos también en el front y R-1 presenta excepciones demostradas.
 - **Por tabla:** clave primaria, tipos problemáticos (multivalor, datos adjuntos, objeto OLE), reglas de validación, valores por defecto, macros de datos, relaciones, y datos huérfanos o duplicados.
 - **Por front:** patrones de riesgo en VBA: generadores `Max + 1` (como `DameID`), `LIKE '*…'`, literales de fecha con `#`, `Date()` en SQL, `Seek` y `dbOpenTable`, recordsets sin `dbSeeChanges` y la comparación insensible a mayúsculas de `Option Compare Database`.
 - **Clasificación de cada tabla** según el [protocolo de clasificación](#clasificación-de-tablas).
@@ -153,6 +155,8 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 **Estado:** pendiente.
 
 **Objetivo.** Mejorar la estructura de datos en el legacy, backend a backend y antes de migrar cada uno, para que la web no empiece sobre tablas con defectos inaceptables (decisión 11). Los cambios se hacen sobre `.accdb` y son reversibles.
+
+**Condición de entrada.** La fase 1 no comienza hasta terminar el descubrimiento de **todas** las herramientas dentro de alcance, incluidos sus fronts y backends y la excepción de controles conectados de Brass. Antes se reconcilian las dependencias y se revisa el catálogo conjunto de accionables con el propietario. Durante la fase 0 se catalogan propuestas, pero no se aplican cambios en el legacy: tampoco renombrados de cuarentena, borrados, movimientos, nuevas claves ni restricciones.
 
 **Reglas.**
 
@@ -283,6 +287,12 @@ Las issues abiertas se redactaron bajo el supuesto de corte único. Se propone:
 Este documento no clasifica más issues concretas; la reclasificación se hace en issues aparte.
 
 ## Cambios de rumbo
+
+### 2026-11-04. Primero descubrimiento global; después saneamiento
+
+- **Qué se creía.** Los accionables podían aplicarse backend a backend al terminar su inventario.
+- **Qué cambia.** Por decisión del propietario (#1576), se catalogan durante la fase 0, pero no se empieza a aplicar ninguno hasta terminar el descubrimiento de todas las herramientas y reconciliar las dependencias entre fronts y backends. La fase 1 tiene esa condición de entrada global.
+- **Motivo.** Evitar que una sorpresa en otro front invalide una retirada o modificación ya aplicada, especialmente con la excepción de Brass.
 
 Registro fechado. Cada entrada indica qué se creía, qué se encontró, la evidencia y qué cambia.
 
