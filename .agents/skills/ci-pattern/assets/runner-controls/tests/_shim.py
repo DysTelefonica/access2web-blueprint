@@ -149,7 +149,7 @@ def base_state() -> dict:
 
 def run_gate(root: Path, state: dict, pr_num: int = 7,
              required_check: list | None = None, check_only: bool = False,
-             extra: tuple[str, ...] = ()) -> subprocess.CompletedProcess:
+             extra: tuple[str, ...] = (), cwd: Path | None = None) -> subprocess.CompletedProcess:
     """Escribe el shim y el estado; corre el gate."""
     shim = root / "bin" / "gh"
     shim.parent.mkdir(exist_ok=True)
@@ -167,7 +167,7 @@ def run_gate(root: Path, state: dict, pr_num: int = 7,
         cmd.append("--check-only")
     cmd += list(extra)
     env = {**os.environ, "PATH": f"{root / 'bin'}{os.pathsep}{os.environ.get('PATH', '')}"}
-    return subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=60)
+    return subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=60, cwd=cwd)
 
 
 class BaseSafeMergeTest(unittest.TestCase):
