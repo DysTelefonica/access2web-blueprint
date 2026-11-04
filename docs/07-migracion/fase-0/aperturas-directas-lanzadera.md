@@ -8,7 +8,7 @@ Inventario de solo lectura de los fronts que abren `Lanzadera_Datos.accdb` sin p
 
 ## Reglas del propietario
 
-Confirmadas expresamente el 2026-11-04: no hay macros ni `AutoExec`; los formularios son desconectados y sus controles se rellenan en tiempo de ejecución; el front no tiene tablas vinculadas del backend. Los vínculos inventariados en este documento están **dentro de los backends**, no en los fronts. El análisis de código se basa en CodeGraph, trazando los procedimientos que cargan formularios y controles. No se deducen usos de datos a partir de propiedades de diseño vacías.
+Confirmadas expresamente el 2026-11-04: no hay macros ni `AutoExec`; salvo **Brass**, los formularios son desconectados, sus controles se rellenan en tiempo de ejecución y el front no tiene tablas vinculadas del backend. **Brass es la excepción:** tiene controles conectados y tablas vinculadas en su front tanto de su propio backend como del de Lanzadera. Los vínculos de la columna «Identidad vinculada en su backend» describen exclusivamente los backends: un «No» en Brass no significa que su front carezca de vínculos. El análisis de código se basa en CodeGraph; en Brass debe incluir también los orígenes de datos y vínculos del front.
 
 Estas reglas retiran el anterior pendiente de inspeccionar macros y `AutoExec`: era una suposición del análisis, no una carencia del legacy.
 
@@ -198,4 +198,5 @@ El contraste posterior con `codegraph_explore(projectPath, query)` funcionó en 
 - Las llamadas comentadas a las escrituras (AGEDYS, AGEDYS ECO, Brass) no prueban ejecución; hay que conservar las limitaciones de resolución dinámica del grafo.
 - Las rutas construidas en tiempo de ejecución se buscaron por `OpenDatabase`, `DBEngine` y `Workspaces`, no por todo SQL dinámico.
 - Los auxiliares de ID y `getEsUsuarioAutorizado` ya se inspeccionaron en `src` (ampliación anterior); sus posibles invocaciones externas al código siguen sin verificarse.
+- Brass: los vínculos de su front y los controles conectados, confirmados por el propietario, no están inventariados en esta revisión de abridores. Falta enumerar tablas y orígenes de datos, contrastar sus usos con el VBA y comprobar actualización por ODBC. No basta con adaptar `getdbLanzadera`; esta excepción requiere seguimiento antes de declarar completada su preparación.
 - No hay pruebas en ejecución: todo lo anterior es lectura de código y de vínculos.
