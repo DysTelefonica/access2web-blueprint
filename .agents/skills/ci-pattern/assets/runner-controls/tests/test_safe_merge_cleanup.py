@@ -68,6 +68,60 @@ class CleanupAfterMergeTest(BaseSafeMergeTest):
         self.assertIn(f"CLEAN: local branch '{BRANCH}' cleaned (branch tip matches pr_head)", proc.stdout)
 
 
+def run_cleanup(cwd: Path, pr_head: str) -> subprocess.CompletedProcess:
+    """`cleanup_branch` en un proceso aparte con ``cwd`` dado: sin `gh`, sin red."""
+    code = "\n".join([
+        "import importlib.util",
+        f"spec = importlib.util.spec_from_file_location('safe_merge', {str(ASSET)!r})",
+        "module = importlib.util.module_from_spec(spec)",
+        "spec.loader.exec_module(module)",
+        f"module.cleanup_branch({BRANCH!r}, 'main', {pr_head!r})",
+    ])
+    return subprocess.run([sys.executable, "-c", code], cwd=cwd, capture_output=True,
+                          text=True, encoding="utf-8", timeout=60)
+
+
+class BranchInAWorktreeTest(unittest.TestCase):
+    """#1501: la rama local vive en un worktree enlazado (layout sibling-container)."""
+
+    def setUp(self) -> None:
+        import tempfile
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.root = Path(self._tmp.name)
+        self.repo, self.tip = local_repo(self.root)
+        self.worktree = self.root / "work-worktrees" / "feature"
+        git(self.repo, "worktree", "add", "-q", str(self.worktree), BRANCH)
+
+    def test_worktree_and_branch_are_removed_when_the_tip_is_preserved(self) -> None:
+        proc = run_cleanup(self.repo, self.tip)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertFalse(self.worktree.exists())
+        self.assertEqual(git(self.repo, "branch", "--list", BRANCH), "")
+        self.assertIn(f"CLEAN: local branch '{BRANCH}' cleaned (branch tip matches pr_head)", proc.stdout)
+        self.assertIn(f"CLEAN: worktree '{self.worktree.resolve()}' removed", proc.stdout)
+
+    def test_dirty_worktree_is_kept_and_the_pending_commands_are_named(self) -> None:
+        (self.worktree / "wip.txt").write_text("sin commit", encoding="utf-8")
+        proc = run_cleanup(self.repo, self.tip)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertTrue((self.worktree / "wip.txt").exists())
+        self.assertEqual(git(self.repo, "branch", "--list", BRANCH).strip("+* "), BRANCH)
+        self.assertIn(f"KEEP: local branch '{BRANCH}' is kept: worktree '{self.worktree.resolve()}' is dirty",
+                      proc.stdout)
+        self.assertIn(f"PENDING: once the worktree is clean and its tip is preserved, run "
+                      f"`git worktree remove {self.worktree.resolve()}` and `git branch -D {BRANCH}`",
+                      proc.stdout)
+
+    def test_running_inside_the_worktree_keeps_it_and_names_the_pending_commands(self) -> None:
+        proc = run_cleanup(self.worktree, self.tip)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertTrue(self.worktree.exists())
+        self.assertIn(f"KEEP: local branch '{BRANCH}' is kept: safe-merge runs inside its worktree "
+                      f"'{self.worktree.resolve()}'", proc.stdout)
+        self.assertIn(f"`git worktree remove {self.worktree.resolve()}`", proc.stdout)
+
+
 class OutputEncodingTest(unittest.TestCase):
     def test_gh_output_is_read_as_utf8_whatever_the_locale(self) -> None:
         # El UTF-8 de este emoji lleva 0x81 y 0x8D, que cp1252 no define (#1491).
