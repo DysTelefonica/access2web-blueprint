@@ -4,7 +4,7 @@ description: "Trigger: actualizar mi rama, abrir un pull request, encadenar PRs,
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: "1.3"
+  version: "1.4"
   last_verified: 2026-11-02
   scope: ['universal', 'ops']
   auto_invoke: ['actualizar rama', 'abrir un PR', 'encadenar PRs', 'pedir merge', 'etiquetar un PR']
@@ -71,9 +71,12 @@ Antes de `gh pr create`, ejecute `ci-pattern pr preflight --draft --pr-body <cue
    *referencia: `ci-pattern`, flujo §«Pedir un merge».*
 
 3. **Las cadenas**: los intermedios llevan `chain:partial` y `Refs #N`;
-   solo la punta lleva `Closes #N`. El merge avanza de abajo arriba —
-   re-apunte del PR siguiente sobre main y empujón, porque re-apuntar por
-   sí solo no lanza el CI. — *referencia: `ci-pattern`, HR-7 y HR-54.*
+   solo la punta lleva `Closes #N`. El merge avanza de abajo arriba:
+   se re-apunta el PR siguiente sobre main y se relanza su CI, porque
+   re-apuntar por sí solo no lo lanza (dispara `edited`, que el CI no
+   escucha). Se relanza cerrando y reabriendo el PR, sin commit, o con un
+   commit vacío; nunca fusionando main en la rama (`agent-operating-rules`,
+   HR-13). — *referencia: `ci-pattern`, HR-7 y HR-54.*
 
 4. **Etiqueta `type:*` orientativa, de las que declara el contrato del
    host.** Ningún gate la exige (team-skills#1093, R1). Una etiqueta que el
