@@ -32,6 +32,7 @@ El documento es vivo: cambia cuando se descubre que una fase o una hipótesis ll
 | 9 | Este documento es vivo, con estados de fase, hipótesis marcadas y registro de cambios de rumbo. |
 | 10 | Durante la coexistencia, la web trabaja directamente sobre las tablas con forma legacy en PostgreSQL: una sola fuente de verdad, para garantizar que el legacy sigue funcionando y que la reversión es posible. No hay esquema web propio con sincronización. Cuando el legacy esté apagado por completo, el modelo se refactoriza a un esquema moderno para dejar de arrastrar la deuda técnica de las tablas legacy. Resuelve P-EXP-3 (ver [P-EXP-3](#p-exp-3)). |
 | 11 | La estructura de datos se mejora en el legacy antes de que cada backend pase a PostgreSQL, donde no cueste demasiado trabajo, para que la web nunca empiece sobre tablas con defectos inaceptables. Toda mejora estructural se hace en el backend Access (con sus fronts adaptados) antes de migrar ese backend. Durante la coexistencia, los cambios de esquema son solo aditivos (columnas nuevas que admiten nulos, tablas nuevas) y nunca cambian el significado de lo existente. Ver la [fase 1](#fase-1-saneamiento-en-access). |
+| 12 | La Lanzadera es la primera aplicación en coexistir, porque alberga el control de permisos del resto de herramientas y tiene a todos los usuarios y sus permisos (`Lanzadera_Datos`). El ensayo de la fase 3 se hace con una copia de `Lanzadera_Datos` en preproducción, no con una isla. Ver [Cambios de rumbo](#cambios-de-rumbo). |
 
 ## Modelo de coexistencia
 
@@ -126,7 +127,7 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 | 0 | Inventario | pendiente |
 | 1 | Saneamiento en Access | pendiente |
 | 2 | Unificar el acceso a datos | pendiente |
-| 3 | Ensayo con una isla | pendiente |
+| 3 | Ensayo con `Lanzadera_Datos` (antes: ensayo con una isla) | revisada |
 | 4 | `Lanzadera_Datos` y núcleos compartidos | pendiente |
 | 5 | Expedientes a web | pendiente |
 
@@ -191,21 +192,21 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 
 **Criterio de terminado.** Para cada front, el paso de `.accdb` a PostgreSQL y la vuelta se hacen cambiando solo configuración, demostrado en un entorno que no es producción.
 
-### Fase 3. Ensayo con una isla
+### Fase 3. Ensayo con `Lanzadera_Datos`
 
-**Estado:** pendiente.
+**Estado:** revisada (2026-11-04, decisión 12). El objetivo anterior, ensayar con una isla (Brass o Seguridad), queda sustituido; ver [Cambios de rumbo](#cambios-de-rumbo).
 
-**Objetivo.** Ensayar la migración completa de una isla (Brass o Seguridad) en preproducción dentro de Citrix.
+**Objetivo.** Ensayar la migración de una copia de `Lanzadera_Datos` en preproducción dentro de Citrix, con la Lanzadera Access, la Lanzadera web y al menos una aplicación Access que vincule sus tablas de identidad (por ejemplo, Expedientes con la unión entre responsables y usuarios).
 
-**Entregables.** Informe del ensayo con: conversión de tipos, tablas vinculadas actualizables (requieren clave primaria), rendimiento y reversión. Resultado de la [Hipótesis H-1](#hipótesis-abiertas).
+**Entregables.** Informe del ensayo con: conversión de tipos, tablas vinculadas actualizables (requieren clave primaria), rendimiento de las uniones mixtas `.accdb` + ODBC y reversión. Resultado de las [hipótesis H-1 y H-2](#hipótesis-abiertas).
 
-**Criterio de terminado.** La isla funciona sobre PostgreSQL en preproducción, la reversión se ha ejecutado al menos una vez y H-1 está confirmada o refutada con evidencia.
+**Criterio de terminado.** Las dos Lanzaderas funcionan sobre la copia en PostgreSQL en preproducción, la reversión se ha ejecutado al menos una vez y H-1 y H-2 están confirmadas o refutadas con evidencia.
 
 ### Fase 4. `Lanzadera_Datos` y núcleos compartidos
 
 **Estado:** pendiente.
 
-**Objetivo.** Trasladar `Lanzadera_Datos` y los núcleos compartidos (`AGEDYS_DATOS` y Registro) en un único corte conjunto, ensayado antes.
+**Objetivo.** Trasladar `Lanzadera_Datos` a PostgreSQL. Si la fase 3 refuta que las uniones mixtas sean aceptables (H-2), el traslado incluye en el mismo corte los backends que vinculan sus tablas y los núcleos compartidos (`AGEDYS_DATOS` y Registro).
 
 **Entregables.** Plan del corte conjunto, ensayo en preproducción y resultado de la [Hipótesis H-2](#hipótesis-abiertas).
 
@@ -250,7 +251,7 @@ El propietario borra en el legacy; el agente aporta la evidencia.
 | Id | Hipótesis | Se ensaya en | Estado |
 |---|---|---|---|
 | H-1 | Cómo resuelve Access la cadena de vínculos front → vínculo del backend → ODBC: si el front necesita revincularse o no. | Fase 3 | pendiente |
-| H-2 | Las uniones entre tablas deben estar en el mismo motor: una unión mixta `.accdb` + ODBC se resuelve en local dentro de Citrix, con lentitud. Por eso los backends cuyas tablas se unen entre sí se trasladan juntos, y `Lanzadera_Datos` (identidad) debe estar en PostgreSQL desde el principio, porque la comparten las dos Lanzaderas y todas las aplicaciones Access. | Fase 4 | pendiente |
+| H-2 | Las uniones entre tablas deben estar en el mismo motor: una unión mixta `.accdb` + ODBC se resuelve en local dentro de Citrix, con lentitud. Por eso los backends cuyas tablas se unen entre sí se trasladan juntos, y `Lanzadera_Datos` (identidad) debe estar en PostgreSQL desde el principio, porque la comparten las dos Lanzaderas y todas las aplicaciones Access. | Fase 3 (decide el alcance de la fase 4) | pendiente |
 
 ## P-EXP-3
 
@@ -258,7 +259,7 @@ La pregunta era si la web trabaja sobre las tablas con forma legacy en PostgreSQ
 
 El propietario la resolvió el 2026-11-04 con la decisión 10: tablas con forma legacy compartidas durante la coexistencia y refactorización a un esquema moderno tras apagar el legacy.
 
-**Pendiente:** promoverla a `docs/decisions/` como D-n, en una issue aparte. Hasta entonces, esta épica es el único registro de la decisión.
+Promovida a [D92](../decisions/2026-11-04-d92-tablas-con-forma-legacy-compartidas.md) (issue #1547), que es la fuente vinculante.
 
 ## Criterio de clasificación de issues
 
@@ -297,3 +298,10 @@ Registro fechado. Cada entrada indica qué se creía, qué se encontró, la evid
 - **Qué se encontró.** Con coexistencia progresiva y reversión por aplicación, una sola fuente de verdad garantiza que el legacy siga funcionando y que la reversión sea posible.
 - **Evidencia.** [Coexistencia de Expedientes](../03-aplicaciones/expedientes/prd/coexistencia.md), apartado 12 (costes de las opciones A, B y C); decisión 10 del propietario, que confirmó de forma expresa el 2026-11-04 que la opción A sustituye a la C.
 - **Qué cambia.** La web usa las tablas con forma legacy (opción A) hasta apagar el legacy; las issues de adaptadores y DDL pasan a «requiere ajuste».
+
+### 2026-11-04. La Lanzadera, primera en coexistir
+
+- **Qué se creía.** El primer ensayo se haría con una isla (Brass o Seguridad), y `Lanzadera_Datos` se trasladaría después, en un corte conjunto con los núcleos compartidos.
+- **Qué se encontró.** La Lanzadera alberga el control de permisos del resto de herramientas y tiene a todos los usuarios y sus permisos: ninguna aplicación web puede coexistir sin compartir esa identidad. Una isla valida la conversión de tipos, pero no las uniones mixtas ni la cadena de vínculos, que son lo que decide el orden del resto.
+- **Evidencia.** Decisión 12 del propietario; `Lanzadera_Datos` la vinculan Expedientes, HPS, Condor, No Conformidades, Gestión de Riesgos, la familia AGEDYS y Registro (ver [Evidencia de partida](#evidencia-de-partida) y la [coexistencia de Lanzadera](../03-aplicaciones/lanzadera/prd/coexistencia.md), apartado 6).
+- **Qué cambia.** La fase 3 pasa a `revisada`: el ensayo se hace con una copia de `Lanzadera_Datos` en preproducción y valida H-1 y H-2. El resultado de H-2 decide si la fase 4 traslada `Lanzadera_Datos` sola o junto con los backends que la vinculan.

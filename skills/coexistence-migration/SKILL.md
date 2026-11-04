@@ -15,13 +15,13 @@ Load this skill **before** any of:
 - Adaptadores de PostgreSQL, migraciones de Alembic o DDL.
 - Crear, redactar o triar una issue de migración.
 
-Las fuentes son la épica `docs/07-migracion/epica-coexistencia-postgresql.md` (#1545) y la D92 `docs/decisions/2026-11-04-d92-tablas-con-forma-legacy-compartidas.md` (#1547). Esta skill las resume para despachar; ante una discrepancia, prevalecen ellas.
+Las fuentes son la épica [`docs/07-migracion/epica-coexistencia-postgresql.md`](../../docs/07-migracion/epica-coexistencia-postgresql.md) (#1545) y la D92 [`docs/decisions/2026-11-04-d92-tablas-con-forma-legacy-compartidas.md`](../../docs/decisions/2026-11-04-d92-tablas-con-forma-legacy-compartidas.md) (#1547). Esta skill las resume para despachar; ante una discrepancia, prevalecen ellas.
 
 ## Hard Rules
 
 1. **Coexistencia progresiva, no corte único.** Las aplicaciones se sustituyen de una en una (strangler fig). La Lanzadera Access sigue abriendo las aplicaciones Access no apagadas; la web contiene solo las aplicaciones web nuevas. Ninguna lanza aplicaciones de la otra y ambas conviven hasta el final.
 2. **El corte es por aplicación.** Se deshabilita su botón en la Lanzadera Access y se habilita en la web. La reversión es volver a habilitar el botón de Access: los datos son compartidos.
-3. **La Lanzadera coexiste primero.** Es la autoridad de identidad: todos los usuarios y el control de permisos de cada herramienta viven en `Lanzadera_Datos`, que comparten las dos Lanzaderas y todas las aplicaciones Access.
+3. **La Lanzadera coexiste primero** (decisión 12 de la épica). Es la autoridad de identidad: todos los usuarios y el control de permisos de cada herramienta viven en `Lanzadera_Datos`, que comparten las dos Lanzaderas y todas las aplicaciones Access.
 4. **R-1 y R-2 son pendientes de verificar en la fase 0.** R-1: cada front consulta solo su backend, que contiene tablas propias y tablas vinculadas desde otros backends. R-2: una tabla vive en el backend de la aplicación que la usa. No las trate como hechos hasta que la fase 0 las confirme.
 5. **Tablas con forma legacy durante la coexistencia (D92).** La web trabaja directamente sobre las tablas con forma legacy en PostgreSQL que Access vincula por ODBC. Una sola fuente de verdad mantiene vivo el legacy y hace posible la reversión.
 6. **Cambios de esquema solo aditivos.** Columnas nuevas que admiten nulos y tablas nuevas; nunca cambie el significado, el nombre ni el tipo de lo existente: rompería los fronts Access que siguen leyendo esas tablas.
@@ -61,7 +61,7 @@ Antes de cerrar trabajo de migración:
 
 ## References
 
-- `docs/07-migracion/epica-coexistencia-postgresql.md` (#1545) — decisiones del propietario, fases, reglas del legacy, protocolo de huérfanas e hipótesis.
-- `docs/decisions/2026-11-04-d92-tablas-con-forma-legacy-compartidas.md` (#1547) — D92 y sus consecuencias.
+- [`docs/07-migracion/epica-coexistencia-postgresql.md`](../../docs/07-migracion/epica-coexistencia-postgresql.md) (#1545) — decisiones del propietario, fases, reglas del legacy, protocolo de huérfanas e hipótesis.
+- [`docs/decisions/2026-11-04-d92-tablas-con-forma-legacy-compartidas.md`](../../docs/decisions/2026-11-04-d92-tablas-con-forma-legacy-compartidas.md) (#1547) — D92 y sus consecuencias.
 - `docs/architecture.md` §Persistence — DA-7 y D82, en revisión.
 - Skill hermana `architecture-guardrails` — front-door y gestión de D-<n>.
