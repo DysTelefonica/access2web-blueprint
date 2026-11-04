@@ -32,6 +32,7 @@ Las fuentes son la épica [`docs/07-migracion/epica-coexistencia-postgresql.md`]
 
 ## Convenciones del legacy confirmadas por el propietario
 
+- Base del descubrimiento: si la aplicación tiene una rama RC1 con UAT todavía pendiente, se analiza esa RC1 en lugar de `main`, fijando su nombre y SHA. No equivale a afirmar que esté desplegada. Un inventario anterior basado solo en `main` se revisa contra la RC1 aplicable; no se mezclan versiones ni cambios locales sin identificar.
 - No hay macros ni `AutoExec`; no se bloquea un inventario esperando inspeccionarlas.
 - Salvo Brass, los formularios son desconectados: sus controles y datos se rellenan en tiempo de ejecución. Trace los procedimientos de carga y los eventos; no deduzca ausencia de uso por propiedades de diseño vacías.
 - Salvo Brass, los fronts no tienen tablas vinculadas de sus backends: los vínculos a otros aplicativos están en el backend propio. **Brass es la excepción confirmada por el propietario:** tiene controles conectados y vínculos en el front tanto a su backend como al de Lanzadera. En Brass revise también los orígenes de datos y vínculos del front; la adaptación de abridores VBA no basta por sí sola.

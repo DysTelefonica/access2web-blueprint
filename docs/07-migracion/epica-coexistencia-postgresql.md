@@ -137,6 +137,8 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 
 **Objetivo.** Conocer, en solo lectura, el grafo completo de dependencias entre backends, el estado de cada tabla y los patrones de VBA que no sobrevivirían a PostgreSQL.
 
+**Base de análisis.** Si una aplicación tiene una rama RC1 con UAT pendiente, el descubrimiento se basa en esa RC1, no en `main`. Cada ficha fija rama y SHA y distingue código candidato de versión desplegada. Los inventarios previos hechos solo sobre `main` deben reconciliarse con la RC1 aplicable; las divergencias se registran, no se mezclan silenciosamente. Para el ERD se comprueba la correspondencia del binario con la base analizada.
+
 **Entregables.**
 
 - **Por aplicativo:** obtener con dysflow el ERD del **front y del backend**, identificando tablas propias, tablas vinculadas y sus orígenes sin consultar tablas de sistema como `MSysObjects`. Cruzar ambos ERD con el código mediante CodeGraph para construir el grafo de dependencias. No basta con el backend: Brass tiene vínculos también en el front y R-1 presenta excepciones demostradas.
