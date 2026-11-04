@@ -29,6 +29,7 @@ S12. Los recuentos se verifican sobre copia reciente de producción antes de apr
 - T7 (S10, S12) docs(migracion): catálogo único de accionables proposals con evidencia, comprobación previa sobre copia de producción y reversión. Commit: pendiente.
 - T8 (S1, S10) docs(arquitectura): resolver DA-7/D82 (`DROP SCHEMA` sobre tablas legacy) antes de que la web escriba. Issue #1559. Commit: pendiente.
 - T9 (S1, S10) chore(ci): registrar la fricción de gobierno detectada en la entrega: `safe_merge` no retira el worktree ni la rama local cuando la rama vive en un worktree (team-skills #1501), falta un helper para esperar a la CI tras el push (team-skills #1502) y este repo no declara qué flujo de seguimiento rige (issue #1583). Commit: pendiente en `odd/tasks/1581-fase0-descubrimiento-global.md`.
+- T10 (S4, S8) docs(migracion): anexo de controles conectados con el SQL literal de cada control y el catálogo de consultas por tabla. General `11315f61` (PR #1615) y detalle de Brass `fc9c0c8e` (PR #1617). El detalle de Brass viaja aparte por el presupuesto de revisión de 400 líneas.
 
 Ruta: una unidad de trabajo por aplicación, documentos de inventario bajo el presupuesto de revisión. La aprobación del merge es del mantenedor; el camino gobernado es `safe_merge.py` sin `--admin`, conservando la rama remota.
 
@@ -49,3 +50,6 @@ L12. Corrección del propietario (2026-11-04): todos los binarios del ecosistema
 
 L13. Inventarios por aplicación entregados (2026-11-04): HPS `9082b9d5`, Condor `acfec44b`, Expedientes `7ed18e08`, Gestión de Riesgos `b08824d5`, No Conformidades `7a738a26`, grafo de dependencias `4d6fd3ed`. HPS rompe la premisa de la RC1: su UAT está aprobada y liberada, de modo que su base es `main` y no `main` la RC1 abandonada.
 L14. El SQL de los formularios con origen de datos se obtiene de los exports `.form.txt` (propiedad `RowSource` con su consulta literal), no de `MSysQueries`; el anexo de controles conectados lo recoge (tarea T10).
+
+L15. Corrección de una regla del propietario por medición (2026-11-04): «salvo Brass, los formularios son desconectados» queda refutada. Brass tiene 106 controles con origen de datos en 41 formularios, Registros 37 en 7 formularios y HPS 3 formularios unidos a recordset contra su caché local. No Conformidades, Condor, Expedientes y Gestión de Riesgos no tienen origen de datos en diseño, salvo casos aislados. La regla general sigue siendo la de formularios desconectados, pero cada aplicación se mide. La skill y la épica quedan corregidas.
+L16. Estado de la fase 0 al cierre de esta tanda (2026-11-04): ocho fichas de aplicación, el grafo de dependencias, el catálogo único de 84 accionables y el anexo de SQL están publicados. 71 de las 84 propuestas siguen bloqueadas por falta de la copia de producción, del SQL de 64 consultas guardadas y del inventario de cinco backends sin ficha (Correos, AGEDYS, AGEDO, Solicitudes HPS, Tareas). Nada se ha aplicado en el legacy.
