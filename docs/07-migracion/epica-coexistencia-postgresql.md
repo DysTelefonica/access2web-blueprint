@@ -148,6 +148,8 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 - **Coste de cada cambio estructural:** número de referencias en código por tabla y por columna, sumando todos los fronts. Es el criterio de coste de la fase 1.
 - **Verificación de R-1 y R-2**, con sus excepciones listadas.
 
+**Avance.** Inventarios publicados: [`Lanzadera_Datos`](fase-0/lanzadera-datos.md), [`Brass`](fase-0/brass.md) y el [grafo de dependencias entre backends](fase-0/grafo-dependencias.md). El grafo se obtuvo del ERD de cada front y cada backend, sin tablas de sistema: R-1 se confirma en los backends y se refuta en los fronts, con excepciones medidas.
+
 **Criterio de terminado.** Todo backend dentro de alcance tiene su lista de vínculos; toda tabla tiene clasificación y ficha; todo front tiene su inventario de patrones de riesgo; R-1 y R-2 constan como confirmadas o con sus excepciones.
 
 ### Fase 1. Saneamiento en Access
