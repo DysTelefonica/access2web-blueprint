@@ -30,6 +30,15 @@ Las fuentes son la épica [`docs/07-migracion/epica-coexistencia-postgresql.md`]
 9. **Las tablas que se unen comparten motor.** Una unión mixta `.accdb` + ODBC se resuelve en local dentro de Citrix, con lentitud; los backends cuyas tablas se unen entre sí se trasladan juntos.
 10. **La épica es un documento vivo.** Los cambios de rumbo se registran en su sección «Cambios de rumbo»; nunca se editan fases en silencio. Una fase equivocada se marca `descartada` con su motivo.
 
+## Convenciones del legacy confirmadas por el propietario
+
+- No hay macros ni `AutoExec`; no se bloquea un inventario esperando inspeccionarlas.
+- Salvo Brass, los formularios son desconectados: sus controles y datos se rellenan en tiempo de ejecución. Trace los procedimientos de carga y los eventos; no deduzca ausencia de uso por propiedades de diseño vacías.
+- Salvo Brass, los fronts no tienen tablas vinculadas de sus backends: los vínculos a otros aplicativos están en el backend propio. **Brass es la excepción confirmada por el propietario:** tiene controles conectados y vínculos en el front tanto a su backend como al de Lanzadera. En Brass revise también los orígenes de datos y vínculos del front; la adaptación de abridores VBA no basta por sí sola.
+- Una tabla, propia o vinculada, solo debe estar en el backend si la necesita el VBA de su propio front. Que otro front la consuma no justifica conservarla allí si el front propietario no la usa: es una tabla mal ubicada y debe asignarse al aplicativo que la necesita, adaptando sus consumidores. Si nadie la usa, es candidata a retirada. Esta regla de propiedad no autoriza borrar ni mover datos sin comprobar referencias y acordar la intervención.
+- La inicialización de CodeGraph se hace mediante Gentle AI, según su integración vigente; no ejecute `codegraph init` directamente ni invente una invocación alternativa.
+- Para revisar código utilice CodeGraph como primera herramienta. Use `projectPath` en el MCP multirrepositorio; una limitación del subagente no demuestra que CodeGraph no funcione. Declare las aristas dinámicas y cualquier fallback, sin convertir ausencia de llamadores estáticos en prueba de código muerto.
+
 ## Decision Gates
 
 | Situation | Action |
