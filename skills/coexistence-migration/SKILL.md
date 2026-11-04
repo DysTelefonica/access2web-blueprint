@@ -35,6 +35,7 @@ Las fuentes son la épica [`docs/07-migracion/epica-coexistencia-postgresql.md`]
 - No hay macros ni `AutoExec`; no se bloquea un inventario esperando inspeccionarlas.
 - Los formularios son desconectados. Sus controles y datos se rellenan en tiempo de ejecución: trace los procedimientos de carga y los eventos, no deduzca ausencia de uso por propiedades de diseño vacías.
 - Los fronts no tienen tablas vinculadas de sus backends. Las tablas vinculadas de otros aplicativos están en el backend propio; no proponga trasladar esos vínculos al front.
+- Una tabla, propia o vinculada, solo debe estar en el backend si la necesita el VBA de su propio front. Que otro front la consuma no justifica conservarla allí si el front propietario no la usa: es una tabla mal ubicada y debe asignarse al aplicativo que la necesita, adaptando sus consumidores. Si nadie la usa, es candidata a retirada. Esta regla de propiedad no autoriza borrar ni mover datos sin comprobar referencias y acordar la intervención.
 - Para revisar código utilice CodeGraph como primera herramienta. Use `projectPath` en el MCP multirrepositorio; una limitación del subagente no demuestra que CodeGraph no funcione. Declare las aristas dinámicas y cualquier fallback, sin convertir ausencia de llamadores estáticos en prueba de código muerto.
 
 ## Decision Gates
