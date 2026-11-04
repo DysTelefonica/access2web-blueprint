@@ -26,6 +26,7 @@ Tras el título, una lista con estas claves:
 | [D89](2026-08-08-d89-migracion-sin-hash-heredado.md) | adoptada | 2026-08-08 | usuario (dueño del producto) |
 | [PRs siempre contra main](2026-10-15-prs-siempre-contra-main.md) | adoptada | 2026-10-15 | dueño del repositorio |
 | [El registro de decisiones debe ser completo, sin baseline](2026-10-17-registro-de-decisiones-completo.md) | adoptada | 2026-10-17 | dueño del repositorio |
+| [D92](2026-11-04-d92-tablas-con-forma-legacy-compartidas.md) | adoptada | 2026-11-04 | usuario (dueño del producto) |
 
 ### D1–D29 migradas desde 08
 

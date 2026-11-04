@@ -14,7 +14,7 @@ Qué debe adaptarse, preservarse o decidirse para que la versión de Access de E
 | No hay cadenas `ODBC;` ni `.Connect` en `src`. | búsqueda en `src` (0 apariciones) |
 | La ruta y la clave del backend salen de una tabla local del frontend, `TbConfiguracionBackends`, con tres destinos (producción, sandbox y test) resueltos por `BackendResolver`. | `Variables Globales.bas:521`, `BackendResolver.bas:1-40`, `ModFixtureF45CacheE2E.bas:43` |
 
-**Consecuencia.** El modelo de vínculos del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) (Access sobre tablas PostgreSQL vinculadas por ODBC) puede realizarse de más de una forma y la elección es la P-EXP-3, **abierta y escalada al propietario**. Este documento no la resuelve ni recomienda: (a) sustituir `getdb()` para que devuelva `CurrentDb` con vínculos en el frontend; (b) mantener un backend `.accdb` sincronizado con PostgreSQL, que el roadmap descarta; (c) la hipótesis del propietario, que mantiene `getdb()` y vincula las tablas por ODBC dentro del backend. La vía (c) se mide en el [apartado 11](#11-p-exp-3-verificación-de-la-hipótesis-del-propietario).
+**Consecuencia.** El modelo de vínculos del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) (Access sobre tablas PostgreSQL vinculadas por ODBC) puede realizarse de más de una forma y la elección es la P-EXP-3, **resuelta por el propietario el 2026-11-04 en la [D92](../../../decisions/2026-11-04-d92-tablas-con-forma-legacy-compartidas.md)** (apartado 12). Las vías de acceso que se analizaron: (a) sustituir `getdb()` para que devuelva `CurrentDb` con vínculos en el frontend; (b) mantener un backend `.accdb` sincronizado con PostgreSQL, que el roadmap descarta; (c) la hipótesis del propietario, que mantiene `getdb()` y vincula las tablas por ODBC dentro del backend. La vía (c) se mide en el [apartado 11](#11-p-exp-3-verificación-de-la-hipótesis-del-propietario).
 
 ## 2. Qué se adapta y qué se preserva
 
@@ -111,7 +111,7 @@ El roadmap fija el orden: carga inicial, reconciliación, cambio de vínculos, a
 
 ## 11. P-EXP-3: verificación de la hipótesis del propietario
 
-Estado: **en estudio, sin recomendación**. Esta verificación mide, con lectura estática de los 135 ficheros de producción de `src` (sin los módulos `Test*`), qué usos de RC1 impedirían o encarecerían la hipótesis. No se ha ejecutado nada contra PostgreSQL ni contra un controlador ODBC: «comprobar» significa que solo una prueba real lo resuelve.
+Estado: **P-EXP-3 resuelta por la [D92](../../../decisions/2026-11-04-d92-tablas-con-forma-legacy-compartidas.md)**; la medición se conserva como análisis. Esta verificación mide, con lectura estática de los 135 ficheros de producción de `src` (sin los módulos `Test*`), qué usos de RC1 impedirían o encarecerían la hipótesis. No se ha ejecutado nada contra PostgreSQL ni contra un controlador ODBC: «comprobar» significa que solo una prueba real lo resuelve.
 
 ### Hipótesis, tal como la formula el propietario
 
@@ -184,7 +184,7 @@ Transacciones, por procedimiento (tablas citadas dentro del procedimiento; las o
 
 ## 12. P-EXP-3: opciones de arquitectura de datos
 
-Estado: **en estudio**. La opción C es la **dirección preferida del propietario**, documentada como tal y **no como decisión cerrada**; no se recomienda ninguna. Los costes son análisis técnico a partir de la medición del apartado 11; ninguno se ha probado contra PostgreSQL ni contra el controlador ODBC.
+Estado: **resuelta el 2026-11-04 con la opción A** ([D92](../../../decisions/2026-11-04-d92-tablas-con-forma-legacy-compartidas.md)): durante la coexistencia, la web trabaja sobre las tablas con forma legacy, y el modelo se refactoriza a un esquema moderno tras apagar el legacy. El propietario confirmó de forma expresa que la opción A sustituye a la C, que hasta entonces era su dirección preferida. El análisis de las tres opciones se conserva tal como se escribió. Los costes son análisis técnico a partir de la medición del apartado 11; ninguno se ha probado contra PostgreSQL ni contra el controlador ODBC.
 
 ### Dirección del propietario (opción C)
 
@@ -235,7 +235,7 @@ Un solo PostgreSQL con dos familias de esquemas: (1) esquemas modernos diseñado
 
 ## Pendientes
 
-- Resolver la P-EXP-3 (sección 1 y apartados 11 y 12); está abierta y escalada al propietario. La opción C es su dirección preferida, no una decisión cerrada.
+- P-EXP-3 (sección 1 y apartados 11 y 12): resuelta el 2026-11-04 con la opción A en la [D92](../../../decisions/2026-11-04-d92-tablas-con-forma-legacy-compartidas.md).
 - Extraer claves, índices y relaciones reales de las tablas vinculables (D-EXP-4 en el README).
 - Comprobar el comportamiento de transacciones DAO y de `Recordset` actualizables sobre tablas ODBC.
 - Aprobar la fuente única de identificadores y la política de conflictos.
