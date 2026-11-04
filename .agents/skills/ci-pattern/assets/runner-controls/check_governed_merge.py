@@ -188,7 +188,16 @@ def close_linked_issues(repo: str, pull: dict, number: object, sha: str) -> None
     propio PR mergeado. Se relee la issue y, si ya está cerrada, se trata
     como éxito. Un re-read fallido o que devuelve ``state == "open"`` se
     mantiene como fallo pendiente (exit 3) para no tragarnos defectos reales.
+
+    #1486: un intermedio de cadena (``chain:partial``) no cierra nada. GitHub
+    puede conservar en ``closingIssuesReferences`` un «Closes #N» ya borrado
+    del cuerpo (cadete #1065 cerro #826); solo la punta cierra la issue.
     """
+    if any(isinstance(label, dict) and label.get("name") == "chain:partial"
+           for label in pull.get("labels") or []):
+        print(f"NOT CLOSED: PR #{number} is a chain intermediate (chain:partial): "
+              "only the chain tip closes its issues")
+        return
     if pull["base"]["ref"] != default_branch(repo, pull):
         return
     pending = []

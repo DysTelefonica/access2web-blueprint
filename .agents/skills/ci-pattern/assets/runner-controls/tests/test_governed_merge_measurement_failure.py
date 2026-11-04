@@ -41,6 +41,7 @@ class MeasurementFailureTests(unittest.TestCase):
         """
         state = with_yaml(DISPATCH_WORKFLOW, yaml_with_inputs(["before", "after"]))
         state["closing_refs"] = [ref(305)]
+        state["pr_details"]["7"]["labels"] = [{"name": "type:bug"}]
         if measurement_fails:
             del state["commits"][_github_stub.MERGED_SHA]
         return state
