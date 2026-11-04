@@ -189,7 +189,7 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 | `getdb()` con `OpenDatabase` y clave | Lanzadera |
 | Revinculación desde `TbTablasAVincular` | Aplicaciones antiguas. No demostrada: la tabla no tiene ninguna referencia en el `src` de los 13 fronts (fase 0 de la Lanzadera) |
 | Resolvedor propio de cada aplicación | Aplicaciones modernas (por ejemplo, `BackendResolver.bas` en Expedientes) |
-| Apertura directa de `Lanzadera_Datos` con ruta escrita en el código | 10 fronts confirmados y Condor probable (todos salvo No Conformidades); se adapta en el mismo corte de la Lanzadera |
+| Apertura directa de `Lanzadera_Datos` con ruta escrita en el código | 11 fronts, incluido Condor (todos salvo No Conformidades en `main`); se adapta en el mismo corte de la Lanzadera. Inventario y alternativas: [aperturas directas de `Lanzadera_Datos`](fase-0/aperturas-directas-lanzadera.md) (#1570) |
 
 **Criterio de terminado.** Para cada front, el paso de `.accdb` a PostgreSQL y la vuelta se hacen cambiando solo configuración, demostrado en un entorno que no es producción.
 
@@ -313,3 +313,10 @@ Registro fechado. Cada entrada indica qué se creía, qué se encontró, la evid
 - **Qué se encontró.** 10 fronts (y probablemente Condor) abren `Lanzadera_Datos.accdb` directamente con la ruta escrita en el código, incluido Brass; así escriben las aperturas y las conexiones. La revinculación desde `TbTablasAVincular` no aparece en ningún `src`.
 - **Evidencia.** [Fase 0 de la Lanzadera](fase-0/lanzadera-datos.md#verificación-de-r-1-y-r-2), con `ruta:línea` por front; revisión con CodeGraph-VBA (#1567).
 - **Qué cambia.** La fase 2 suma un cuarto mecanismo de acceso, que debe adaptarse en el mismo corte que `Lanzadera_Datos`; Brass deja de ser isla; R-1 se verifica backend a backend en lugar de darse por cierta.
+
+### 2026-11-04. Aperturas directas de `Lanzadera_Datos`: alcance corregido
+
+- **Qué se creía.** 10 fronts abrían `Lanzadera_Datos.accdb` directamente, Condor probablemente, y por esa conexión escribían las aperturas y las conexiones (entrada anterior).
+- **Qué se encontró.** Condor también la abre: son 11 fronts. Todos leen las tablas de identidad; solo cinco tienen código que escribe `TbAplicacionesAperturas`, alcanzable solo en Contratos y Registros. Ningún front escribe `TbConexionesRegistro`. No Conformidades añade en su rama `release/2026-009.rc1` una apertura de solo lectura.
+- **Evidencia.** [Aperturas directas de `Lanzadera_Datos`](fase-0/aperturas-directas-lanzadera.md), con SHA y `ruta:línea` por front (#1570).
+- **Qué cambia.** El cuarto mecanismo de la fase 2 cubre 11 fronts, con 81 llamadas en 71 procedimientos; la adaptación queda pendiente de decisión entre vínculo del propio backend y conexión ODBC centralizada.
