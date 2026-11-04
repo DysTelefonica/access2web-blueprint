@@ -2,7 +2,7 @@
 
 Brass es la aplicación con más controles con origen de datos del ecosistema: 106 en 41 formularios y 72 consultas distintas. Su detalle va aparte para no empujar el anexo general por encima del presupuesto de revisión de 400 líneas.
 
-Base de análisis: rama `2026-004.rc1`, SHA `cb2795128748fa91e79b5cf0a0c2501902692e3f`, worktree `C:repos\codigo_BRASS-worktrees6-004.rc1`, con UAT pendiente y sin firma (`docs/brass/roadmap.md:53, 93`).
+Base de análisis: rama `2026-004.rc1`, SHA `cb2795128748fa91e79b5cf0a0c2501902692e3f`, worktree `00_BRASS-worktrees/2026-004.rc1`, con UAT pendiente y sin firma (`docs/brass/roadmap.md:53, 93`).
 
 El resumen por aplicación, el catálogo de SQL por tabla y los riesgos están en [`controles-conectados.md`](controles-conectados.md).
 
