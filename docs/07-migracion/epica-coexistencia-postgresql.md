@@ -124,7 +124,7 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 
 | Fase | Nombre | Estado |
 |---|---|---|
-| 0 | Inventario | pendiente |
+| 0 | Inventario | en curso |
 | 1 | Saneamiento en Access | pendiente |
 | 2 | Unificar el acceso a datos | pendiente |
 | 3 | Ensayo con `Lanzadera_Datos` (antes: ensayo con una isla) | revisada |
@@ -133,7 +133,7 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 
 ### Fase 0. Inventario
 
-**Estado:** pendiente.
+**Estado:** en curso. Hecho: [`Lanzadera_Datos`](fase-0/lanzadera-datos.md) (#1560), con sus acciones aplicables en el legacy. Pendiente: el resto de backends.
 
 **Objetivo.** Conocer, en solo lectura, el grafo completo de dependencias entre backends, el estado de cada tabla y los patrones de VBA que no sobrevivirían a PostgreSQL.
 
