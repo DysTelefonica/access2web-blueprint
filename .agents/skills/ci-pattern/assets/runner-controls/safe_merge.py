@@ -9,8 +9,9 @@ de cierre son coherentes. El CI corre una vez, en la PR: un PR atrasado
 respecto de la base solo se rechaza con ``--require-fresh`` (#1397). Si algo falla no fusiona
 y devuelve 1 con el hallazgo; un entorno insalvable o un error de la API
 falla cerrado con 2 (HR-3): nunca un 504 se toma como <<0 fallos>>. Con todo
-en verde fusiona por la API, cierra la rama remota y la local y hace
-`git worktree prune`. Runner-enforced (HR-34); lo que no pase por aqui lo
+en verde fusiona por la API, conserva la rama remota (invariante de la
+flota), borra la local solo si `safe_cleanup` la da por preservada y hace
+`git worktree prune` (#1491). Runner-enforced (HR-34); lo que no pase por aqui lo
 detecta el detective post-push (HR-49). Solo stdlib; cada llamada a
 `gh api` lleva timeout.
 """
@@ -110,7 +111,10 @@ def run_command(argv: list[str], timeout: int) -> subprocess.CompletedProcess:
     executable = shutil.which(argv[0])
     if executable is None:
         raise FileNotFoundError(argv[0])
-    return subprocess.run([executable, *argv[1:]], capture_output=True, text=True, timeout=timeout)  # fixed argv, no shell
+    # #1491: UTF-8 con cualquier locale; en Windows (cp1252) un emoji del cuerpo
+    # de la PR dejaba stdout en None.
+    return subprocess.run([executable, *argv[1:]], capture_output=True, text=True,  # fixed argv, no shell
+                          encoding="utf-8", errors="replace", timeout=timeout)
 
 
 def gh_json(path: str) -> object:
@@ -154,32 +158,29 @@ def gh_merge(repo: str, number: int, sha: str) -> str:
     return data.get("sha", "unknown")
 
 
-def cleanup_branch(repo: str, branch: str, default_branch: str) -> None:
-    """Eliminar la rama remota (si no es la default) y la local (si existe),
-    luego `git worktree prune` (solo si cwd es un worktree git)."""
-    # Rama remota.
-    if branch != default_branch:
-        try:
-            proc = run_command(
-                ["gh", "api", "-X", "DELETE", f"repos/{repo}/git/refs/heads/{branch}"],
-                GH_TIMEOUT,
-            )
-            if proc.returncode != 0:
-                print(f"WARN: remote branch delete failed: {proc.stderr.strip()[:200]}")
-            else:
-                print(f"CLEAN: remote branch '{branch}' deleted")
-        except (OSError, subprocess.TimeoutExpired) as exc:
-            print(f"WARN: could not delete remote branch '{branch}': {exc}")
-    else:
+def cleanup_branch(branch: str, default_branch: str, pr_head: str) -> None:
+    """Conservar la rama remota; borrar la local solo si esta preservada; luego
+    `git worktree prune` (solo si cwd es un worktree git).
+
+    #1491: la rama remota se conserva siempre (invariante de la flota, como
+    `safe_cleanup`). La rama local la decide `safe_cleanup.cleanup` con la
+    cabeza de la PR fusionada: si su punta no esta preservada, se deja."""
+    if branch == default_branch:
         print(f"SKIP: branch '{branch}' is the default branch, not deleting")
-    # Rama local (solo si existe).
+        return
+    print(f"KEEP: remote branch '{branch}' is kept: the fleet never deletes remote branches")
     try:
         proc = run_command(["git", "rev-parse", "--verify", "--quiet", branch], GIT_TIMEOUT)
-        if proc.returncode == 0:
-            run_command(["git", "branch", "-D", branch], GIT_TIMEOUT)
-            print(f"CLEAN: local branch '{branch}' deleted")
     except (OSError, subprocess.TimeoutExpired):
-        pass
+        proc = None
+    if proc is not None and proc.returncode == 0:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from safe_cleanup import cleanup
+        result = cleanup(Path.cwd(), branch, pr_head=pr_head)
+        if result.ok:
+            print(f"CLEAN: local branch '{branch}' {result.reason}")
+        else:
+            print(f"KEEP: local branch '{branch}' is kept: {result.reason}")
     # worktree prune (solo si cwd es un worktree git).
     try:
         proc = run_command(["git", "worktree", "prune"], GIT_TIMEOUT)
@@ -343,7 +344,7 @@ def run(args: argparse.Namespace) -> int:
         return 0
     sha = gh_merge(args.repo, args.pr, pull["head"]["sha"])
     print(f"MERGED: PR #{args.pr} merged by safe-merge as {sha}")
-    cleanup_branch(args.repo, pull["head"]["ref"], default_branch)
+    cleanup_branch(pull["head"]["ref"], default_branch, pull["head"]["sha"])
     return 0
 
 

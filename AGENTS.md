@@ -1,6 +1,6 @@
 # access2web-blueprint
 
-<!-- personal-skills:slice:access2web-blueprint @ v67b0726 -->
+<!-- personal-skills:slice:access2web-blueprint @ vc67bdbf -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -410,10 +410,11 @@ El prefijo de commit identifica la app afectada: `fix(expedientes): ...`, `docs(
 
 ## §F.7 Skills locales no distribuidas por catalog
 
-Este repo mantiene dos skills propias que **no están en el catalog** y no se sobrescriben en propagación:
+Este repo mantiene tres skills propias que **no están en el catalog** y no se sobrescriben en propagación:
 
 - `skills/architecture-guardrails/` — front-door de lectura, gates de arquitectura, D-<n> management. Se carga antes de cualquier cambio estructural.
 - `skills/documentation-alan-style/` — formato documental (Castellano peninsular, sentence case, sin emojis). El catalog tiene su propia `documentation-alan-style` que SOBREESCRIBE esta local; la divergencia histórica entre ambas se cierra tras la primera propagación exitosa.
+- `skills/coexistence-migration/` — reglas de la migración por coexistencia progresiva (épica #1545, D92). Se carga antes de cualquier trabajo de migración, de modelo de datos o de adaptadores de PostgreSQL, y antes de crear o triar una issue de migración.
 
 Si una IA llega al repo y NO ve `architecture-guardrails` cargada, está operando contra arquitectura obsoleta.
 <!-- /personal-skills:slice:access2web-blueprint -->
