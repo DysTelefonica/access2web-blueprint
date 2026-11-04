@@ -1,6 +1,6 @@
 # access2web-blueprint
 
-<!-- personal-skills:slice:access2web-blueprint @ vc67bdbf -->
+<!-- personal-skills:slice:access2web-blueprint @ vdb75524 -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -90,6 +90,23 @@ La tabla de skills del `AGENTS.md` del consumer es un subconjunto curado; el reg
 - Donde el consumer no ejecute el gate en el job de PR, la invariante la
   sostiene el revisor: una PR con UI sin evidencia ni exención justificada no
   está lista para mergear.
+
+### Auditoría del coste del test
+
+- **Cuando una comprobación cara detecta un defecto, se busca el test barato
+  que lo habría visto antes.** Son caras el E2E de navegador, la ejecución
+  full-stack y el CI posterior al merge. El agente deja registrados en la PR, o
+  en una issue: el fallo, su causa raíz y el test más barato que lo habría
+  detectado (unitario, de integración, estático o de contrato). Si solo lo puede
+  ver un navegador, lo dice con el motivo.
+- **El test barato se añade o queda en una issue.** El agente lo añade en la
+  misma PR, o abre una issue con él. El mismo tipo de defecto no debe costar otra
+  vuelta de E2E.
+- Ejemplos de cadete (2026-11-04, #1496): una spec que dependía de un markup
+  que otra PR había quitado; un overlay global que tapaba los objetivos de clic;
+  el compose de testing sin `LDAP_SECRET`; datos semilla de una PR solo de
+  migraciones que `ci-scope` no pasó por el E2E; salida impresa antes del layout.
+  La regla de detalle está en `web-tdd-philosophy` (regla 11).
 
 ### Worktree y rama remota
 
