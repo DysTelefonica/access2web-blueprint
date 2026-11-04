@@ -88,7 +88,7 @@ Tablas por backend y aplicaciones que las vinculan, según `TbTablasAVincular`:
 | 12 | `Lanzadera_Datos` | 15 | Lanzadera, Registro, AGEDYS TEC, AGEDYS ECO, AGEDO, No Conformidades |
 | 10 | Registro | 9 | AGEDYS ECO, AGEDYS TEC, AGEDO, Registro |
 | 4 | AGEDO | 65 | AGEDO, AGEDYS TEC |
-| 6 | Brass | 75 | Solo la propia aplicación (isla) |
+| 6 | Brass | 75 | Solo la propia aplicación (isla por vínculos; abre `Lanzadera_Datos` directamente, ver la [fase 0 de la Lanzadera](fase-0/lanzadera-datos.md#verificación-de-r-1-y-r-2)) |
 | 16 | Seguridad | 30 | Solo la propia aplicación (isla) |
 | 1 | Sirdee | 26 | Solo la propia aplicación (isla; fuera de alcance) |
 
@@ -182,13 +182,14 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 
 **Objetivo.** Que cada front cambie entre `.accdb` y PostgreSQL solo por configuración. Ese mismo cambio es la reversión.
 
-**Entregables.** Adaptación a ODBC sin DSN de los tres mecanismos de acceso existentes:
+**Entregables.** Adaptación a ODBC sin DSN de los cuatro mecanismos de acceso existentes:
 
 | Mecanismo | Dónde |
 |---|---|
 | `getdb()` con `OpenDatabase` y clave | Lanzadera |
-| Revinculación desde `TbTablasAVincular` | Aplicaciones antiguas |
+| Revinculación desde `TbTablasAVincular` | Aplicaciones antiguas. No demostrada: la tabla no tiene ninguna referencia en el `src` de los 13 fronts (fase 0 de la Lanzadera) |
 | Resolvedor propio de cada aplicación | Aplicaciones modernas (por ejemplo, `BackendResolver.bas` en Expedientes) |
+| Apertura directa de `Lanzadera_Datos` con ruta escrita en el código | 10 fronts confirmados y Condor probable (todos salvo No Conformidades); se adapta en el mismo corte de la Lanzadera |
 
 **Criterio de terminado.** Para cada front, el paso de `.accdb` a PostgreSQL y la vuelta se hacen cambiando solo configuración, demostrado en un entorno que no es producción.
 
@@ -305,3 +306,10 @@ Registro fechado. Cada entrada indica qué se creía, qué se encontró, la evid
 - **Qué se encontró.** La Lanzadera alberga el control de permisos del resto de herramientas y tiene a todos los usuarios y sus permisos: ninguna aplicación web puede coexistir sin compartir esa identidad. Una isla valida la conversión de tipos, pero no las uniones mixtas ni la cadena de vínculos, que son lo que decide el orden del resto.
 - **Evidencia.** Decisión 12 del propietario; `Lanzadera_Datos` la vinculan Expedientes, HPS, Condor, No Conformidades, Gestión de Riesgos, la familia AGEDYS y Registro (ver [Evidencia de partida](#evidencia-de-partida) y la [coexistencia de Lanzadera](../03-aplicaciones/lanzadera/prd/coexistencia.md), apartado 6).
 - **Qué cambia.** La fase 3 pasa a `revisada`: el ensayo se hace con una copia de `Lanzadera_Datos` en preproducción y valida H-1 y H-2. El resultado de H-2 decide si la fase 4 traslada `Lanzadera_Datos` sola o junto con los backends que la vinculan.
+
+### 2026-11-04. R-1 refutada para `Lanzadera_Datos`
+
+- **Qué se creía.** Cada front consulta solo su propio backend (R-1), y Brass era una isla.
+- **Qué se encontró.** 10 fronts (y probablemente Condor) abren `Lanzadera_Datos.accdb` directamente con la ruta escrita en el código, incluido Brass; así escriben las aperturas y las conexiones. La revinculación desde `TbTablasAVincular` no aparece en ningún `src`.
+- **Evidencia.** [Fase 0 de la Lanzadera](fase-0/lanzadera-datos.md#verificación-de-r-1-y-r-2), con `ruta:línea` por front; revisión con CodeGraph-VBA (#1567).
+- **Qué cambia.** La fase 2 suma un cuarto mecanismo de acceso, que debe adaptarse en el mismo corte que `Lanzadera_Datos`; Brass deja de ser isla; R-1 se verifica backend a backend en lugar de darse por cierta.
