@@ -19,6 +19,13 @@ def ref(number: int, state: str = "OPEN", repo: str = REPO) -> dict:
     return {"number": number, "state": state, "repository": {"nameWithOwner": repo}}
 
 
+def tip_state() -> dict:
+    """The chain tip (or a lone PR): no ``chain:partial``, so it closes its issues."""
+    state = base_state()
+    state["pr_details"]["7"]["labels"] = [{"name": "type:bug"}]
+    return state
+
+
 class GovernedMergeCloseTests(unittest.TestCase):
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
@@ -29,7 +36,7 @@ class GovernedMergeCloseTests(unittest.TestCase):
         return json.loads((self.root / "state.json").read_text(encoding="utf-8"))
 
     def test_merge_closes_the_open_linked_issue_as_completed(self) -> None:
-        state = base_state()
+        state = tip_state()
         state["closing_refs"] = [ref(305)]
         proc = run_gate(self.root, contract(), state)
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
@@ -39,8 +46,22 @@ class GovernedMergeCloseTests(unittest.TestCase):
         self.assertIn("PR #7", stored["comments"][0]["body"])
         self.assertIn("CLOSED: #305", proc.stdout)
 
-    def test_closed_foreign_and_unlinked_issues_are_left_alone(self) -> None:
+    def test_chain_intermediate_leaves_the_linked_issue_open(self) -> None:
+        # #1486: GitHub can keep a deleted "Closes #N" in closingIssuesReferences
+        # (cadete #1065 closed #826). Only the chain tip closes the issue.
         state = base_state()
+        state["closing_refs"] = [ref(305)]
+        proc = run_gate(self.root, contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        stored = self.stored()
+        self.assertTrue(stored["merges"])
+        self.assertNotIn("closed_issues", stored)
+        self.assertNotIn("comments", stored)
+        self.assertIn("NOT CLOSED: PR #7 is a chain intermediate (chain:partial): "
+                      "only the chain tip closes its issues", proc.stdout)
+
+    def test_closed_foreign_and_unlinked_issues_are_left_alone(self) -> None:
+        state = tip_state()
         state["closing_refs"] = [ref(10, "CLOSED"), ref(11, repo="DysTelefonica/otro")]
         proc = run_gate(self.root, contract(), state)
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
@@ -64,7 +85,7 @@ class GovernedMergeCloseTests(unittest.TestCase):
 
     def test_base_other_than_the_default_branch_closes_nothing(self) -> None:
         # GitHub only closes on the default branch; a chain intermediate targets another base.
-        state = base_state()
+        state = tip_state()
         state["closing_refs"] = [ref(305)]
         state["default_branch"] = "trunk"
         proc = run_gate(self.root, contract(), state)
@@ -72,7 +93,7 @@ class GovernedMergeCloseTests(unittest.TestCase):
         self.assertNotIn("closed_issues", self.stored())
 
     def test_failure_to_close_after_the_merge_is_exit_3_naming_the_issue(self) -> None:
-        state = base_state()
+        state = tip_state()
         state["closing_refs"] = [ref(305)]
         state["close_error"] = True
         proc = run_gate(self.root, contract(), state)
@@ -85,7 +106,7 @@ class GovernedMergeCloseTests(unittest.TestCase):
     def test_failed_lookup_after_the_merge_is_exit_3(self) -> None:
         for flag in ("graphql_error", "graphql_errors"):
             with self.subTest(flag=flag):
-                state = base_state()
+                state = tip_state()
                 state[flag] = True
                 proc = run_gate(self.root, contract(), state)
                 self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
@@ -97,7 +118,7 @@ class GovernedMergeCloseTests(unittest.TestCase):
         # GitHub por la palabra Closes ya cerró la issue (carrera con el PATCH
         # explícito del gate). Re-read y aceptar: la pista sobre `issues: write`
         # era engañosa. Salida: exit 0, mensaje CLOSED visible, sin exit 3.
-        state = base_state()
+        state = tip_state()
         state["closing_refs"] = [ref(305)]
         state["race_after_close"] = True
         # El re-read por defecto del stub devuelve `closed` (la carrera ya
@@ -117,7 +138,7 @@ class GovernedMergeCloseTests(unittest.TestCase):
         # es una carrera: el merge sale con exit 3 como antes y conserva la
         # pista accionable cuando aplique (no es este caso: el problema es
         # otro, no los permisos).
-        state = base_state()
+        state = tip_state()
         state["closing_refs"] = [ref(305)]
         state["race_after_close"] = True
         state["issue_states"] = {305: {"state": "open", "state_reason": None}}
