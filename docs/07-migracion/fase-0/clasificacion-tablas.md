@@ -6,7 +6,7 @@ Paso 5 de la fase 0: cada tabla de los backends de la [copia de referencia](copi
 
 - **Uso.** Se busca el nombre de cada tabla en el VBA de cada aplicación, sin líneas comentadas ni módulos de test, en los orígenes de datos de formularios e informes (`RecordSource`, `RowSource`, `ControlSource`) y en el SQL de las consultas guardadas de su front y de su backend. Seguridad elige la tabla de cada tipo de registro desde los datos (`Tb0TipoRegistros.NombreTabla`), que también cuentan como uso. El código de formularios e informes (sección `CodeBehindForm`) se lee también sin comentarios, y una tabla que la aplicación no alcanza por su front ni por su backend solo cuenta si el nombre aparece como tabla: destino de SQL (`FROM`, `JOIN`, `INTO`, `UPDATE`, `TABLE`) o nombre exacto entre comillas o corchetes. Así no cuentan como uso las palabras corrientes que coinciden con un nombre de tabla (`Nombres`, `Derivados`, `Contratos`, `Lotes`) en comentarios, mensajes o propiedades de clases (#1714).
 - **Qué tabla es.** Un nombre se resuelve en el contexto de la aplicación: tabla propia o vínculo de su front, tabla propia o vínculo de su backend y, si no está en ninguno, la tabla propia de otro backend que abre por código. Los nombres que podían referirse a dos tablas se resolvieron leyendo la conexión que abre el código (`CurrentDb`, `getdb` o `getdbXxx`); esas resoluciones están en la tabla final.
-- **AGEDO y Tareas** siguen en uso en Access (decisión 14) y su código no se analiza: los vínculos de sus backends cuentan como uso de un consumidor permanente. **Contratos** no migra pero sigue vivo: su código sí se analiza.
+- **Tareas** sigue en uso en Access (decisión 14) y su código no se analiza: los vínculos de su backend cuentan como uso de un consumidor permanente. **AGEDO ya no se usa** (decisión 27) y sus vínculos no cuentan. **Contratos** no migra pero sigue vivo: su código sí se analiza.
 - **Base de cada aplicación**: la RC1 cuando existe y no está integrada en `main`; si no, `main`.
 
 | Aplicación | Rama | Commit |
@@ -40,7 +40,7 @@ Se reproduce con `scripts/dysflow-erd/collect-usage.ps1` y `scripts/dysflow-erd/
 | `Expedientes_datos` | 23 | 15 | · | · | 9 | · | · |
 | `NoConformidades_Datos` | 19 | 2 | · | · | 15 | · | · |
 | `Seguridad_datos` | 26 | · | · | · | 10 | · | · |
-| `Lanzadera_Datos` | 9 | 4 | 2 | · | 20 | · | · |
+| `Lanzadera_Datos` | 9 | 4 | 1 | · | 21 | · | · |
 | `GestionContratos_datos` | 16 | 3 | · | · | 1 | · | · |
 | `HPST` | 10 | 4 | 1 | · | 3 | · | · |
 | `condor_datos` | 14 | · | · | · | 1 | · | · |
@@ -51,14 +51,13 @@ Se reproduce con `scripts/dysflow-erd/collect-usage.ps1` y `scripts/dysflow-erd/
 | `Tareas_datos1` | · | · | · | · | · | · | 4 |
 | `Control_Cambios_datos` | · | · | · | · | · | 3 | · |
 | `Correos_datos` | · | · | · | · | · | 1 | · |
-| **Total** | **247** | **44** | **3** | **0** | **163** | **6** | **72** |
+| **Total** | **247** | **44** | **2** | **0** | **164** | **6** | **72** |
 
 ## Tablas mal ubicadas
 
 | Backend | Tabla | Filas | Clase | La usan |
 |---|---|---:|---|---|
 | `HPST` | `TbUsuariosEntidades` | 352 | Mal ubicada | Solicitudes HPS |
-| `Lanzadera_Datos` | `tbUsuarios` | 156 | Mal ubicada | AGEDO |
 | `Lanzadera_Datos` | `TbUsuariosAplicacionesTareas` | 7 | Mal ubicada | Tareas |
 
 ## Tablas huérfanas
@@ -67,7 +66,7 @@ Ninguna aplicación del alcance, ni AGEDO ni Tareas, las usa. Entre paréntesis,
 
 - **`AGEDYS_DATOS`** (57): `TbAmbitoConsultas` (2), `TbAuxExp` (40), `TbAuxExpedientesUsuario` (0), `TbAuxExpedientesVivos` (40), `TbAuxGTV` (40), `TbAuxIDFactura` (4923), `TbAuxPilar` (56), `TbAuxPilar1` (18), `TbAuxPrado` (468), `TbAvalesAnexo` (32), `TbAvalesCancelacion` (187), `TbAvalesDatosGenerales` (1), `TbAvalesDatosGeneralesNuevos` (1), `TbAvalesFacturasClienteVinculo` (6), `TbAvalesInicio` (185), `TbAvalesInicioNuevo` (56), `TbAvalesObtencionAvalYDeposito` (132), `TbAvalesSolicitudSIADE` (151), `TbCestasTiposDocumentos` (0), `TbComunicados` (0), `TbComunicadosUsuario` (0), `TbConexiones` (24), `TbConexionesAGEDYSECO` (9), `TbConexionesAGEDYSTEC` (15), `TbConsultasOpciones` (6), `TbCorreoDiferidoNotas` (117), `TbCriteriosSuministrador` (6), `TbCSS` (1), `TbDatosEconomicosExpedientes` (91), `TbDireccionesSuministradores` (1), `TbDPDPlantillasParaCartaSolicitudDeOFerta` (9), `TbDpDPrepCartaOfAcepPrincipal` (860), `TbExpedientes_1` (463), `TbExpedientesAutorizaciones` (0), `TbExpedientesDocRequeridos` (158), `TbExpedientesProrrogas` (20), `TbFacturaInformeMatFalsicado` (0), `TbFacturasDetalleSinPedido` (2), `TbHerramientaDocAyuda` (10), `TbNPedidoAntes` (1499), `TbNPedidosHistorica` (1), `TbNuevosProductos` (407), `TbProductos_antes` (424), `TbProductosObsoletos` (25), `TbProductosParaBusqueda` (63), `TbProyectosDocumentosParaPedidoOrdinario` (0), `TbProyectosHistoricos` (2047), `TbSTGParametrosParaFormulario` (15), `TbSuministradoresDireccion` (24), `TbSuministradoresListaFavoritos` (0), `TbSuministradoresPuntuacion` (2450), `TbTareasTecnicasExplicaciones` (8), `TbTempDPDHTML` (193), `TbTiposImpositivos` (8), `TbTiposPedido` (3), `TbUsuariosEnvioTareas` (21), `TbVisadoFacturas` (1307).
 - **`Gestion_Riesgos_Datos`** (30): `TbAnexosAntigua` (2), `TbAuxSumExp` (6), `TbFelix` (47), `TbIDAccionPlanContingencia` (251), `TbIDAccionPlanMitigacion` (1074), `TbIDAnexos` (107), `TbIDBibliotecaRiesgos` (51), `TbIDCorreosEnviados` (264), `TbIDDocumentos` (27), `TbIDEdiciones` (209), `TbIDLog` (1077), `TbIDPlanContingencia` (154), `TbIDPlanMitigacion` (640), `TbIDProyectos` (71), `TbIDRiesgos` (889), `TbIDRiesgosAIntegrar` (58), `TbIDTareas` (53), `TbLog` (5817), `TbOrigenesRiesgosDetalles` (5), `TbProyectosResponsablesCalidad` (39), `TbProyectosSuministradores` (2), `TbProyectosTipo` (0), `TbRiesgosPorTipoProyecto` (0), `TbTablas` (41), `TbTareas` (36), `TbValoresPosiblesContingencia` (4), `TbValoresPosiblesEstadoRiesgo` (7), `TbValoresPosiblesMitigacion` (4), `TbValoresPosiblesPlazoCalidadCosteVulnerabilidad` (5), `TbValoresPosiblesValoracion` (4).
-- **`Lanzadera_Datos`** (20): `Tb0HerramientaDocAyuda` (4), `TbAplicacionesEdiciones` (1262), `TbAplicacionesEdicionesCambios` (1364), `TbAplicacionesEstados` (6), `TbAplicacionesParametros` (60), `TbAplicacionesPerfiles` (34), `TbAplicacionesVideos` (0), `TbConexiones` (24), `TbCuestionarioPreguntas` (0), `TbCuestionarios` (0), `TbCuestionaroRespuestas` (0), `TbDetalleVersiones` (28), `TbParametros` (53), `TbPermisos` (205), `TbTablasAVincular` (411), `TbUbicaciones` (8), `TbUsuarioAplicacionesSolicitud` (0), `TbUsuarioConfiguracion` (14), `TbUsuariosTareasDiarias` (8), `TbVideosCuestionario` (0).
+- **`Lanzadera_Datos`** (21): `Tb0HerramientaDocAyuda` (4), `TbAplicacionesEdiciones` (1262), `TbAplicacionesEdicionesCambios` (1364), `TbAplicacionesEstados` (6), `TbAplicacionesParametros` (60), `TbAplicacionesPerfiles` (34), `TbAplicacionesVideos` (0), `TbConexiones` (24), `TbCuestionarioPreguntas` (0), `TbCuestionarios` (0), `TbCuestionaroRespuestas` (0), `TbDetalleVersiones` (28), `TbParametros` (53), `TbPermisos` (205), `TbTablasAVincular` (411), `TbUbicaciones` (8), `TbUsuarioAplicacionesSolicitud` (0), `TbUsuarioConfiguracion` (14), `tbUsuarios` (156), `TbUsuariosTareasDiarias` (8), `TbVideosCuestionario` (0).
 - **`NoConformidades_Datos`** (15): `TbAnexos` (228), `TbAuditoriaLog` (0), `TbCacheIndicadoresProyectoDetalle` (0), `TbCacheIndicadoresProyectoHeader` (0), `TbCacheListadoNC` (0), `TbConexiones` (0), `TbConfiguracion` (1), `TbConsultasPorFechas` (8), `TbNCARAvisos` (432), `TbNCInformacionRAC` (2), `TbNCInformacionRACAnexos` (1), `TbNoConformidadesIngresoPorLotesDetalle` (166), `TbNoConformidadesIngresoPorLotesPrincipal` (1), `TbNoConformidadesIngresoPorLotesTemporal` (166), `TbTareasExplicaciones` (10).
 - **`Seguridad_datos`** (10): `Tb0AdjuntosIndexaciones` (1), `Tb0Conexiones` (3), `Tb0RegistrosPendientes` (2), `Tb0TipoRegistrosDescripcion` (21), `Tb0TipoRegistroUso` (0), `Tb0Vinculo` (0), `TbAuditorias` (0), `TbBuzonTEOficio` (0), `TbCarta` (0), `TbRecibosMP` (0).
 - **`Expedientes_datos`** (9): `Copia de TbExpedientes` (0), `Copia de TbExpedientesConEntidades` (365), `E2E_export_20260723_142133_lista` (89), `TbAusExpPostAGEDO` (203), `TbAuxEstadosMartina` (143), `TbAuxNemotecnico` (0), `TbExpAGEDYS1` (116), `TbExpedientesCadenaContratacion` (0), `TbJefaturas` (3).
@@ -124,7 +123,7 @@ Estos nombres podían referirse a dos tablas. Se resolvieron mirando qué conexi
      - **Lo que falta decidir.** Quedarse con la cola común sin recordatorios, o ampliar la cola común con las columnas del diseño nuevo.
 4. **`Nombres` de `Registro_Datos`**. **Resuelto (2026-11-05):** no la usa nadie. Los usos que se le atribuían eran la palabra «nombres» en comentarios, en un parámetro y en un mensaje; corregido el clasificador (#1714), es huérfana. Es una lista antigua de iniciales de personas (`Cod`, `Nombre`) con filas de prueba (`x`, `zzz`), y va a cuarentena con las demás huérfanas (`CLS-H1`).
 5. **`TbUsuariosEntidades` de `HPST`**. **Resuelto (2026-11-05):** es una copia aplanada de los usuarios y las HPS que HPS mantenía como caché y nadie leía. HPS dejó de escribirla en la versión 2026-005 ([HPS#33](https://github.com/DysTelefonica/HPS/issues/33)); sus datos están congelados desde entonces. Solicitudes HPS aún la lee desde objetos del binario no exportados (su consulta `Solicitudes_alta` la cruza con `TbSolicitudes`) y debe pasar a los datos reales de HPS ([HPS_SOLICITUDES#1](https://github.com/DysTelefonica/HPS_SOLICITUDES/issues/1)); sus dos escrituras (`ActualizaDatosLocalEmpresas`, `AsociarUsuarioHPSConSolicitud`) no tienen llamadores. Después la tabla se retira (`CLS-M1`).
-6. **`tbUsuarios` de `Lanzadera_Datos`** solo la consume AGEDO; la Lanzadera actual no la nombra. Se conserva por la decisión 14.
+6. **`tbUsuarios` de `Lanzadera_Datos`**. **Resuelto (2026-11-05, decisión 27):** solo la vinculaba AGEDO, que ya no se usa; pasa a huérfana y va a cuarentena (`CLS-H1`).
 7. **Tablas de la Lanzadera sin uso en el código actual pese a tener datos**: `TbAplicacionesEdiciones` (1 262 filas), `TbAplicacionesEdicionesCambios` (1 364), `TbPermisos` (205), `TbParametros` (53) y `TbTablasAVincular` (411), entre otras. Ningún script encontrado las escribe. ¿Se usan fuera de Access o son restos de versiones anteriores?
 
 ## Límites

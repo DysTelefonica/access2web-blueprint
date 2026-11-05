@@ -197,7 +197,7 @@ Veredicto: Tiene datos: revisar todas salvo `TbProyectosTipo` y `TbRiesgosPorTip
 
 `Lanzadera_Datos.accdb`: `TbAplicacionesEdiciones` 1262; `TbAplicacionesEdicionesCambios` 1364; `TbAplicacionesEstados` 6; `TbAplicacionesParametros` 60; `TbAplicacionesPerfiles` 34; `TbConexiones` 24; `TbDetalleVersiones` 28; `TbParametros` 53; `TbPermisos` 205; `TbUbicaciones` 8; `TbUsuarioConfiguracion` 14; `tbUsuarios` 156; `TbUsuariosTareasDiarias` 8; `TbVideosVisionados` 138; `TbUsuariosCorreosEnvio` 1042.
 
-Veredicto: Tiene datos: revisar las 15. **No poner `tbUsuarios` en cuarentena**: AGEDO la consume, conforme a la decisión 14. Las demás siguen sujetas al contraste de consumidores.
+Veredicto: Tiene datos: revisar las 15. **Sustituido por la decisión 27:** AGEDO ya no se usa y `tbUsuarios` sí va a cuarentena. Texto original: **No poner `tbUsuarios` en cuarentena**: AGEDO la consume, conforme a la decisión 14. Las demás siguen sujetas al contraste de consumidores.
 
 ### NOC-N1
 
