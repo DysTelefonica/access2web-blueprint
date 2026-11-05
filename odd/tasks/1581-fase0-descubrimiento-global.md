@@ -79,3 +79,5 @@ L27. Decisión del propietario (2026-11-05, issue #1671), verbatim: «TbExpedien
 L28. Decisión del propietario (2026-11-05, issue #1677): ante los 19 `IDCorreo` repetidos de `TbCorreosEnviados` (parejas de correos distintos por colisión de `Max + 1`), elige «Renumerar y pasar a autonumérico». Decisión 22 de la épica.
 
 L29. Decisiones del propietario (2026-11-05, issue #1680): aprueba la excepción a la regla de solo aditivos para la cuarentena, «Aprobar la excepción para la cuarentena» (decisión 23); y en los 157 pares de `TbExpedientesAnualidades` que no coinciden, «Manda la de Expedientes».
+
+L30. Decisión del propietario (2026-11-05, issue #1559, verbatim): «Dos esquemas por aplicación». D93.
