@@ -77,3 +77,5 @@ L26. Comprobaciones del grupo (a) (2026-11-05): de las 100 propuestas, 36 admite
 L27. Decisión del propietario (2026-11-05, issue #1671), verbatim: «TbExpedientesAnualidades debe vivir en el bakend de expedientes de forma única». Decisión 21 de la épica; las dos copias divergen y hay que conciliarlas antes de unificar.
 
 L28. Decisión del propietario (2026-11-05, issue #1677): ante los 19 `IDCorreo` repetidos de `TbCorreosEnviados` (parejas de correos distintos por colisión de `Max + 1`), elige «Renumerar y pasar a autonumérico». Decisión 22 de la épica.
+
+L29. Decisiones del propietario (2026-11-05, issue #1680): aprueba la excepción a la regla de solo aditivos para la cuarentena, «Aprobar la excepción para la cuarentena» (decisión 23); y en los 157 pares de `TbExpedientesAnualidades` que no coinciden, «Manda la de Expedientes».
