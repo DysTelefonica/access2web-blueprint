@@ -32,6 +32,7 @@ El documento es vivo: cambia cuando se descubre que una fase o una hipótesis ll
 | 9 | Este documento es vivo, con estados de fase, hipótesis marcadas y registro de cambios de rumbo. |
 | 10 | Durante la coexistencia, la web trabaja directamente sobre las tablas con forma legacy en PostgreSQL: una sola fuente de verdad, para garantizar que el legacy sigue funcionando y que la reversión es posible. No hay esquema web propio con sincronización. Cuando el legacy esté apagado por completo, el modelo se refactoriza a un esquema moderno para dejar de arrastrar la deuda técnica de las tablas legacy. Resuelve P-EXP-3 (ver [P-EXP-3](#p-exp-3)). |
 | 11 | La estructura de datos se mejora en el legacy antes de que cada backend pase a PostgreSQL, donde no cueste demasiado trabajo, para que la web nunca empiece sobre tablas con defectos inaceptables. Toda mejora estructural se hace en el backend Access (con sus fronts adaptados) antes de migrar ese backend. Durante la coexistencia, los cambios de esquema son solo aditivos (columnas nuevas que admiten nulos, tablas nuevas) y nunca cambian el significado de lo existente. Ver la [fase 1](#fase-1-saneamiento-en-access). |
+| 13 | AGEDYS Técnico y AGEDYS ECO se sustituyen por una sola aplicación web, **APGEDYS**, con la misma aplicación mostrando vista de técnico o de gestor económico según el usuario que entre. El alcance de la migración son las once aplicaciones del catálogo de la Lanzadera que el propietario marca: las nueve del grupo general más Seguridad y HPS. |
 | 12 | La Lanzadera es la primera aplicación en coexistir, porque alberga el control de permisos del resto de herramientas y tiene a todos los usuarios y sus permisos (`Lanzadera_Datos`). El ensayo de la fase 3 se hace con una copia de `Lanzadera_Datos` en preproducción, no con una isla. Ver [Cambios de rumbo](#cambios-de-rumbo). |
 
 ## Modelo de coexistencia
@@ -52,8 +53,17 @@ Cada aplicación está en un solo lado a la vez: su botón está habilitado en u
 
 ## Alcance
 
-- **Dentro:** las aplicaciones del catálogo `TbAplicaciones` que abre la Lanzadera Access, salvo las excluidas.
-- **Fuera:** Sirdee y AGEDO.
+El alcance lo fija el catálogo de la Lanzadera Access, con la decisión del propietario sobre qué entra de cada grupo (2026-11-04).
+
+| Grupo del catálogo | Aplicaciones | En el alcance |
+|---|---|---|
+| Fuera de la Oficina CARU | AGEDYS Técnico, AGEDYS ECO, Registro, Gestión de Riesgos, No Conformidades, Brass, Solicitudes HPS, Expedientes, Condor | las nueve |
+| Solo Oficina | Seguridad, SICA, HPS, Contratos, AGEDO | Seguridad y HPS |
+| En Pruebas | pendientes de confirmar | según la decisión del propietario |
+
+- **Dentro:** las once aplicaciones marcadas. AGEDYS Técnico y AGEDYS ECO se sustituyen por **una sola aplicación web, APGEDYS**, que muestra vista de técnico o de gestor económico según el usuario que entre (decisión 13).
+- **Fuera:** Sirdee (decisión 6), AGEDO (decisión 6 y fuera del grupo del catálogo que entra), SICA y Contratos (decisión del propietario de 2026-11-04).
+- **Backends de aplicaciones fuera del alcance:** sus tablas las consumen aplicaciones dentro del alcance, de modo que se inventarían como dependencias en la fase 0:  Correos, Registro de salida, SICA, Control de cambios, AGEDO y Tareas. No se migran como aplicaciones, pero sí hay que saber qué sobrevive y quién es su dueño.
 - **Tablas de AGEDO vinculadas por AGEDYS TEC:** AGEDYS TEC vincula 4 tablas de AGEDO. Viajan con el grupo AGEDYS o se eliminan si no se usan; lo decide la fase 0.
 
 ## Reglas del legacy
@@ -298,6 +308,12 @@ Las issues abiertas se redactaron bajo el supuesto de corte único. Se propone:
 Este documento no clasifica más issues concretas; la reclasificación se hace en issues aparte.
 
 ## Cambios de rumbo
+
+### 2026-11-04. Alcance por catálogo de la lanzadera y fusión de AGEDYS
+
+- **Qué se creía.** El alcance era el catálogo `TbAplicaciones` completo, con Sirdee y AGEDO excluidos.
+- **Qué cambia.** El propietario delimita el alcance con el catálogo visible de la Lanzadera: entran las nueve aplicaciones del grupo general más Seguridad y HPS; quedan fuera SICA y Contratos. AGEDYS Técnico y AGEDYS ECO se sustituyen por una sola aplicación web, APGEDYS, con vista según rol (decisión 13).
+- **Motivo.** El catálogo es lo que el usuario ve y abre; migrar una aplicación que no está en el catálogo no tiene destinatario. La fusión de AGEDYS evita mantener dos aplicaciones web para el mismo dato técnico y económico.
 
 ### 2026-11-04. Primero descubrimiento global; después saneamiento
 
