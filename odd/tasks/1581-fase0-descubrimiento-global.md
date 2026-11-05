@@ -37,6 +37,8 @@ S12. Los recuentos se verifican sobre copia reciente de producción antes de apr
 
 - T20 (S1, S11) docs(migracion): orden de paso de las aplicaciones a la web tras el traslado único, a partir de las cifras de las fichas. Documento `docs/07-migracion/fase-0/orden-cortes-web.md`, issue #1685.
 
+- T21 (S4, S8) docs(migracion) (issue #1694): mapa de propiedad de tablas y vínculos entre backends, y contraste de las 159 propuestas con él. Documento `docs/07-migracion/fase-0/mapa-propiedad.md`.
+
 Ruta: una unidad de trabajo por aplicación, documentos de inventario bajo el presupuesto de revisión. La aprobación del merge es del mantenedor; el camino gobernado es `safe_merge.py` sin `--admin`, conservando la rama remota.
 
 ## Log
@@ -88,3 +90,4 @@ L31. Decisión del propietario (2026-11-05): aprueba «tal cual» el orden de pa
 L32. Tablas de los fronts del grupo (a) medidas (2026-11-05, issue #1688): ninguna está vacía en el front publicado; en AGT-A3, `TbProductosObsoletos` y `TbSTGParametrosParaFormulario` son idénticas en front y backend y `TbHerramientaDocAyuda` difiere (33 filas frente a 10).
 
 L33. Pregunta del propietario (2026-11-05): «Se puede virtualizar un sistema citrix en mi equipo para pruebas locales?». Respuesta registrada en H-3 (issue #1691): prueba local con Windows Server en evaluación y RDS Session Host, y confirmación en el Citrix de preproducción; el propietario pide «sí apuntalo».
+L34. Corrección del propietario (2026-11-05, verbatim): «POnes en CON-C5 que ponga una clave primaria en una tabla que no pertenece al backend de condor. Tienes que ver en cada propuesta de este tipo si esa tabla es vinculada (por lo que habría que ir al backend de origen) o es propia del backend» y «tienes que mapear qué tabla es de qué backend y qué backend llaman a otros backends». Resultado: 535 tablas propias y 127 vínculos; 27 propuestas nombran tablas no propias de su backend, de las que 6 estaban mal colocadas (CON-C5 y NOC-N3 fusionadas en COR-C1; EXP-E2, GRI-R2, NOC-N4 y EXP-E9 corregidas) y 3 llamaban «inexistentes» a tablas de otro backend.

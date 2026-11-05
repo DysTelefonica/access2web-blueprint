@@ -7,11 +7,11 @@ Las fichas identifican las tablas y sus propietarios; los datos del front quedan
 
 | Propuesta | Tipo | Veredicto |
 |---|---|---|
-| CON-C5 | Clave primaria | Bloquea |
+| CON-C5 | Clave primaria | Fusionada en `COR-C1` |
 | COR-C1 | Clave primaria | Bloquea |
 | EXP-E2 | Clave primaria | Bloquea; una tabla no tiene candidata |
 | GRI-R2 | Clave primaria | Bloquea; hay tablas sin candidata |
-| NOC-N3 | Clave primaria | Bloquea |
+| NOC-N3 | Clave primaria | Fusionada en `COR-C1` |
 | AGE-E5 | Clave primaria | Front: 136 filas; ver [tablas de los fronts](#tablas-de-los-fronts) |
 | AGT-A1 | Clave primaria | Bloquea; hay tablas sin candidata |
 | BFA-S2 | Clave primaria | Sin candidata |
@@ -48,7 +48,7 @@ Las fichas identifican las tablas y sus propietarios; los datos del front quedan
 
 «Duplicados» es el exceso de filas no nulas sobre los valores distintos: filas − nulos − distintos. Una candidata en una tabla vacía cumple la comprobación de la foto, no garantiza unicidad futura. «Sin candidata» significa que el inventario no recoge una columna autonumérica o `ID*`; necesita una decisión de clave, posiblemente compuesta. Una clave existente no tiene candidatas medidas. Que una columna sea única en los datos no la convierte en la clave correcta: cada candidata se confirma con el significado de la tabla antes de declararla.
 
-### Correos: CON-C5, COR-C1 y NOC-N3
+### Correos: COR-C1 (absorbe CON-C5 y NOC-N3)
 
 | Backend | Tabla | Filas | Clave actual | Mejor candidata | Resultado |
 |---|---|---:|---|---|---|

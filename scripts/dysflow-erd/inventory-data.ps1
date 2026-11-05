@@ -2,9 +2,12 @@
 # Verifies every backend against the SHA-256 manifest, then works on temporary copies opened
 # with DAO in read-only mode; the reference files are never opened. Output is tab-separated:
 # one row per local table, plus one row per key candidate of tables without a primary key.
+# With -Mode Ownership it lists every table and link instead: backend, name, local or link,
+# and for a link the backend and table it points to (docs/07-migracion/fase-0/mapa-propiedad.md).
 param(
     [string]$Root = 'C:\00repos\access2web-datos',
     [string]$Manifest,
+    [ValidateSet('Data', 'Ownership')][string]$Mode = 'Data',
     [Parameter(Mandatory = $true)][string]$Out
 )
 $ErrorActionPreference = 'Stop'
@@ -25,7 +28,8 @@ foreach ($name in $expected.Keys) {
 
 $engine = New-Object -ComObject DAO.DBEngine.120
 $rows = New-Object System.Collections.Generic.List[string]
-$rows.Add("kind`tbackend`ttable`trows`tpk`tcolumn`tnulls`tdistinct")
+if ($Mode -eq 'Ownership') { $rows.Add("backend`tname`tkind`ttarget_backend`tsource_table") }
+else { $rows.Add("kind`tbackend`ttable`trows`tpk`tcolumn`tnulls`tdistinct") }
 foreach ($name in ($expected.Keys | Sort-Object)) {
     $work = Join-Path ([IO.Path]::GetTempPath()) ('inv-' + [Guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory $work | Out-Null
@@ -34,7 +38,13 @@ foreach ($name in ($expected.Keys | Sort-Object)) {
     $db = $engine.OpenDatabase($copy, $false, $true, ';PWD=' + $env:ACCDB_PASSWORD)
     try {
         foreach ($t in $db.TableDefs) {
-            if ($t.Connect -or $t.Name -like 'MSys*' -or $t.Name -like '~*') { continue }
+            if ($t.Name -like 'MSys*' -or $t.Name -like '~*') { continue }
+            if ($Mode -eq 'Ownership') {
+                if ($t.Connect -match 'DATABASE=([^;]+)') { $rows.Add("$name`t$($t.Name)`tlink`t$(Split-Path $Matches[1] -Leaf)`t$($t.SourceTableName)") }
+                else { $rows.Add("$name`t$($t.Name)`tlocal`t`t") }
+                continue
+            }
+            if ($t.Connect) { continue }
             $q = '[' + $t.Name + ']'
             $count = $db.OpenRecordset("SELECT COUNT(*) FROM $q", 4).Fields(0).Value
             $pk = ''
