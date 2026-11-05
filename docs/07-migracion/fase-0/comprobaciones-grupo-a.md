@@ -177,7 +177,7 @@ La ficha enumera 11 propias y 14 vinculadas. En las vinculadas se indica el back
 
 Veredicto: Tiene datos: revisar las tablas con recuento distinto de cero.
 
-**Duplicidad encontrada.** Hay dos tablas `TbExpedientesAnualidades` propias y distintas: 223 filas en `AGEDYS_DATOS.accdb` y 173 en `Expedientes_datos.accdb`. Cada backend vincula la del otro como `TbExpedientesAnualidades1`. Antes del traslado a PostgreSQL hay que decidir cuál es la fuente y qué hacer con la otra.
+**Duplicidad encontrada.** Hay dos tablas `TbExpedientesAnualidades` propias y distintas: 223 filas en `AGEDYS_DATOS.accdb` y 173 en `Expedientes_datos.accdb`. Cada backend vincula la del otro como `TbExpedientesAnualidades1`. El propietario decide que la tabla viva de forma única en Expedientes (decisión 21). La comparación muestra que divergen: ningún `IDAnualidad` común, 157 pares expediente y año en las dos sin ninguna fila idéntica, 66 solo en AGEDYS y 16 solo en Expedientes. Los pasos de conciliación están en el [catálogo de conflictos](catalogo-accionables-conflictos.md#qué-necesita-decidir-el-propietario).
 
 ### GRI-R3
 
