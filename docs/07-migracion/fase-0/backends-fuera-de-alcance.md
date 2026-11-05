@@ -77,6 +77,8 @@ Ninguna se aplica: la puerta de descubrimiento global sigue cerrada (#1576).
 
 ## AGEDO y Tareas siguen en uso
 
+**Actualización (decisión 27):** AGEDO ya no se usa; lo que sigue vale solo para Tareas y para las tablas de AGEDO que leen aplicaciones del alcance.
+
 El propietario confirma (2026-11-05) que AGEDO y Tareas quedan fuera del alcance de la migración pero **siguen en uso en Access**. Eso los convierte en consumidores permanentes de tablas que sí migran (decisión 14 de la épica).
 
 | Aplicación | Tablas de otros backends que consume | Backends dueños |

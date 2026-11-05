@@ -312,13 +312,11 @@ for q in queries:
             for c in cands:
                 uses[(c[0], c[1].lower())][app].add(label)
 
-# AGEDO and Tareas stay alive in Access (decision 14) but their fronts are not analysed:
-# the links of
-# their backends are the only evidence of what they consume.
+# Tareas stays alive in Access (decision 14) but its front is not analysed: the links of its
+# backend are the only evidence of what it consumes. AGEDO is no longer used (decision 27).
 for r in own:
-    if r["kind"] == "link" and S(r["backend"]) in ("AGEDO20_Datos", "Tareas_datos1"):
-        consumer = "AGEDO" if S(r["backend"]) == "AGEDO20_Datos" else "Tareas"
-        uses[(S(r["target_backend"]), r["source_table"].lower())][consumer].add(
+    if r["kind"] == "link" and S(r["backend"]) == "Tareas_datos1":
+        uses[(S(r["target_backend"]), r["source_table"].lower())]["Tareas"].add(
             "vínculo de su backend (consumidor permanente, decisión 14)"
         )
 
