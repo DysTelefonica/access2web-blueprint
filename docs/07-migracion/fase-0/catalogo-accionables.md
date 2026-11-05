@@ -1,279 +1,137 @@
-# Fase 0: catálogo único de accionables
+# Catálogo único de accionables de la fase 0
 
-> **Issue:** #1581, tarea T7 · **Épica:** [coexistencia progresiva](../epica-coexistencia-postgresql.md), fase 0 · **Fecha:** 2026-11-04
+Issue #1581, tareas T7 y T14. Épica `docs/07-migracion/epica-coexistencia-postgresql.md` (fase 0).
+Sustituye a la primera versión, que se hizo con ocho aplicaciones. Cubre las **once aplicaciones del alcance**, más los siete backends de dependencias, con **159 propuestas**.
 
-## Propósito
+## Método
 
-Este documento consolida en un solo catálogo revisable las propuestas de acción que las ocho fichas de aplicación de la fase 0 y el inventario de aperturas directas han dejado catalogadas. No ejecuta nada: cataloga, ordena por decisión y señala qué falta para decidir.
+- Fuente: las quince fichas de `docs/07-migracion/fase-0/`, una por aplicación o backend. Cada fila conserva la referencia a su ficha y a su identificador original.
+- Identificadores normalizados: prefijo de la aplicación o backend más el identificador original. Los prefijos originales chocaban entre fichas (`A` de Lanzadera y de AGEDYS Técnico, `E` de Expedientes y de AGEDYS ECO, `G` de Registros y de Seguridad, `C` de Condor y de Correos, `S` de Solicitudes HPS, SICA y Tareas, `R` de Gestión de Riesgos y de Registro de salida).
+- Recuento: 159 propuestas, ninguna ausente, ninguna de más y ningún identificador duplicado tras normalizar, comprobado por script sobre las quince fichas.
+- Tablas afectadas: extraídas del texto de cada propuesta.
+- Consumidores de cada tabla: del [grafo de dependencias](grafo-dependencias.md), que es el recuento único del ecosistema. Cuando dos fichas difieren en una cifra, manda el grafo.
+- Orden: por decisión. Primero el grupo (a), imprescindible antes de migrar; luego el (b), recomendable si es barato; luego el (c), aplazable a la refactorización final. Dentro de cada grupo, primero las propuestas que tocan tablas compartidas, por número de backends consumidores.
 
-Cada fila remite a su ficha y conserva su identificador original. El texto íntegro de la propuesta, su comprobación previa y su reversión siguen en la ficha; aquí solo se ordena, se cualifica y se cruza.
+**Nada de esto se aplica.** La puerta de descubrimiento global sigue cerrada: las propuestas se revisan en conjunto y las aplica el propietario en el legacy.
 
-## Fuentes
+## Conflicto de identificadores
 
-| Ficha | Aplicación | Backend | Identificadores | Propuestas |
+Las fichas originales usan prefijos que se repiten. La columna «ficha» de este catálogo es la referencia sin ambigüedad.
+
+## Resumen
+
+| Grupo | Propuestas | Significado |
+|---|---|---|
+| (a) | 100 | Imprescindible antes de migrar |
+| (b) | 50 | Recomendable si es barato |
+| (c) | 9 | Aplazable a la refactorización final |
+| **Total** | **159** | |
+
+Las decisiones del propietario, las pruebas que bloquean y el detalle de los conflictos están en [`catalogo-accionables-conflictos.md`](catalogo-accionables-conflictos.md).
+
+## Propuestas
+
+| Id | Aplicación o backend | Acción | Tablas afectadas | Ficha |
 |---|---|---|---|---|
-| [lanzadera-datos.md](lanzadera-datos.md) | Lanzadera | `Lanzadera_Datos` | A1–A7 | 7 |
-| [aperturas-directas-lanzadera.md](aperturas-directas-lanzadera.md) | 11 fronts | varios | P1–P4 | 4 |
-| [brass.md](brass.md) | Brass | `Gestion_Brass_Gestion_Datos` | B1–B6 | 6 |
-| [hps.md](hps.md) | HPS | `HPST` | H1–H12 | 12 |
-| [condor.md](condor.md) | Condor | `condor_datos` | C1–C9 | 9 |
-| [expedientes.md](expedientes.md) | Expedientes | `Expedientes_datos` | E1–E11 | 11 |
-| [gestion-riesgos.md](gestion-riesgos.md) | Gestión de Riesgos | `Gestion_Riesgos_Datos` | R1–R10 | 10 |
-| [no-conformidades.md](no-conformidades.md) | No Conformidades | `NoConformidades_Datos` | N1–N11 | 11 |
-| [registros.md](registros.md) | Registros | `Registro_Ent_Salida_Datos` | G1–G14 | 14 |
-| **Total** | | | | **84** |
+| BFA-S4 | SICA, Control de cambios, AGEDO y Tareas | Resolver la duplicidad de `TbCorreosEnviados`: Tareas tiene su propia (1 620 filas, sin clave) y Correos tiene otra (35 394 filas, sin clave). | `TbCorreosEnviados` | `backends-fuera-de-alcance.md` (S4) |
+| CON-C5 | Condor | Declarar clave primaria en `TbCorreosEnviados`, en `Correos_datos.accdb` (backend de la aplicación de correo, no de Condor). | `TbCorreosEnviados` | `condor.md` (C5) |
+| COR-C1 | Correos y Registro de salida | Fijar clave primaria en `TbCorreosEnviados`: hoy tiene 35 394 filas y dos índices no únicos, `IDCorreo` e `IDEdicion`. Antes hay que decidir quién es su dueño. | `TbCorreosEnviados` | `backends-compartidos.md` (C1) |
+| COR-C2 | Correos y Registro de salida | Decidir si `TbCorreosEnviados` es un servicio propio de la plataforma o sigue siendo un backend más del legacy. Hoy la escriben al menos cinco aplicaciones y la leen seis backends. | `TbCorreosEnviados` | `backends-compartidos.md` (C2) |
+| EXP-E2 | Expedientes | Declarar clave primaria en las seis tablas que no la tienen: `TbCorreosEnviados`, `TbFacturasPrincipal`, `TbExpAgedys`, `TbExpAGEDYS1`, `TbExpedientes1` y `E2E_export_20260723_142133_lista`. Tres de ellas (`TbCorreosEnviados`, `TbFacturasPrincipal` y `TbExpedientes1`) son de otros backends: la clave se declara en su backend, no en este. | `TbCorreosEnviados`, `TbExpAGEDYS1`, `TbExpAgedys`, `TbExpedientes1`, `TbFacturasPrincipal` | `expedientes.md` (E2) |
+| EXP-E3 | Expedientes | Resolver las tres escrituras del front en tablas de otro backend: `TbProyectos_Riesgos` (seis `UPDATE`), `TbNoConformidades` (dos `UPDATE`) y `TbCorreosEnviados` (un `INSERT`). Cada una necesita un dueño y una regla de escritura explícita antes de que la web coexistir. | `TbCorreosEnviados`, `TbNoConformidades`, `TbProyectos_Riesgos` | `expedientes.md` (E3) |
+| GRI-R2 | Gestion de Riesgos | Declarar clave primaria en las 5 tablas sin ella: `ProyectoRespCalidad`, `TbAuxProyectosRiesgos`, `TbCachePublicabilidadEdicion`, `TbCorreosEnviados`, `TbRiesgosValoracion`. Sin clave no se puede actualizar por ODBC en la coexistencia. | `TbAuxProyectosRiesgos`, `TbCachePublicabilidadEdicion`, `TbCorreosEnviados`, `TbRiesgosValoracion` | `gestion-riesgos.md` (R2) |
+| NOC-N3 | No Conformidades | Declarar clave primaria en `TbCorreosEnviados`, la única tabla viva sin clave que escribe esta aplicación. Sin clave no es actualizable por ODBC. | `TbCorreosEnviados` | `no-conformidades.md` (N3) |
+| NOC-N4 | No Conformidades | Sustituir el generador `MAX + 1` (`constructor.getID`, `src/modules/constructor.bas:1196-1209`) por una identidad. Afecta a 18 llamadas sobre 16 tablas: `TbNCAccionCorrectivas`, `TbNCAccionesRealizadas`, `TbNCAuditoriaAccionCorrectivas`, `TbNCAuditoriaAccionesRealizadas`, `TbAuditorias`, `TbDocumentosAuditorias`, `TbNCDocumentos`, `TbLog`, `TbLogAuditoria`, `TbNoConformidades`, `TbNoConformidadesAuditoria`, `TbReplanificacionesProyecto`, `TbReplanificacionesAuditoria`, `TbTiposNCProyectos`, `TbCorreosEnviados` y `TbRiesgosNC`. | `TbAuditorias`, `TbCorreosEnviados`, `TbDocumentosAuditorias`, `TbLog`, `TbLogAuditoria`, `TbNCAccionCorrectivas`, `TbNCAccionesRealizadas`, `TbNCAuditoriaAccionCorrectivas`, `TbNCAuditoriaAccionesRealizadas`, `TbNCDocumentos`, `TbNoConformidades`, `TbNoConformidadesAuditoria`, `TbReplanificacionesAuditoria`, `TbReplanificacionesProyecto`, `TbRiesgosNC`, `TbTiposNCProyectos` | `no-conformidades.md` (N4) |
+| NOC-N8 | No Conformidades | Registrar el dueño real de `TbRiesgosNC` (backend de Gestión de Riesgos) y de `TbCorreosEnviados` (backend de Correos): las escribe esta aplicación. En la migración, la tabla se crea en el esquema PostgreSQL de su dueño. No se mueve nada en el legacy. | `TbCorreosEnviados`, `TbRiesgosNC` | `no-conformidades.md` (N8) |
+| EXP-E6 | Expedientes | Retirar del front los cuatro vínculos que su código no usa: `Copia de TbExpedientes`, `Copia de TbExpedientesConEntidades`, `ListaPrevia` y `TbAusExpPostAGEDO`. Los cuatro apuntan al propio backend, que el front ya abre con `getdb()`, y la regla del propietario sitúa los vínculos de otras aplicaciones en el backend. | `TbAusExpPostAGEDO`, `TbExpedientes`, `TbExpedientesConEntidades` | `expedientes.md` (E6) |
+| SHO-S1 | Solicitudes HPS | Poner en cuarentena las dos tablas propias del backend sin ninguna referencia en el front: `TbLogs` (0 filas) y `Copia de TbExpedientes` (70 filas). Renombrar a `zzBAJA_<tabla>`. | `TbExpedientes`, `TbLogs` | `solicitudes-hps.md` (S1) |
+| GRI-R4 | Gestion de Riesgos | Retirar del backend los 5 vínculos que el front no usa: `TbAplicaciones`, `TbDocumentosID`, `TbDPD`, `TbResponsablesExpedientes`, `TbSuministradoresSAP`. | `TbAplicaciones`, `TbDPD`, `TbDocumentosID`, `TbResponsablesExpedientes`, `TbSuministradoresSAP` | `gestion-riesgos.md` (R4) |
+| BR-B5 | Brass | Revisar las referencias a tablas inexistentes (`TbDocumentos`, `TbIDEquipos`, `TbEquiposEquipoMedida`, `TbSellados`, `TbPlanificacionAñadida`): o se recuperan en el backend o se elimina la referencia. | `TbDocumentos`, `TbEquiposEquipoMedida`, `TbIDEquipos`, `TbPlanificacionA`, `TbSellados` | `brass.md` (B5) |
+| GRI-R5 | Gestion de Riesgos | Resolver las 13 referencias a tablas inexistentes o mal nombradas: `TbAplicacionesVersiones`, `TbVersionCambios`, `TbRACS`, `TbExpedientesRACS`, `TbProyectosJefesDeProyecto`, `TbOrganosContratacion`, `TbJuridicas`, `TbTipologia`, `TbCambioDocumentos`, `TbExpedientesConEntidades`, `TbIndicadoresRiesgos`, `TbExpedientes1` y `TbSuministradorSAP`. O la tabla existe en otro backend y se vincula, o la referencia se elimina. | `TbAplicacionesVersiones`, `TbCambioDocumentos`, `TbExpedientes1`, `TbExpedientesConEntidades`, `TbExpedientesRACS`, `TbIndicadoresRiesgos`, `TbJuridicas`, `TbOrganosContratacion`, `TbProyectosJefesDeProyecto`, `TbRACS`, `TbSuministradorSAP`, `TbTipologia`, `TbVersionCambios` | `gestion-riesgos.md` (R5) |
+| LAN-A5 | Lanzadera | Borrar los registros huérfanos de `TbConexionUltimaAppAbierta.IDUltimaAplicacionAbierta` → `TbAplicaciones` (9 huérfanos) y declarar la relación con integridad referencial. (`TbVideosVisionados`, que figuraba aquí, pasa a A4.) | `TbAplicaciones`, `TbConexionUltimaAppAbierta`, `TbVideosVisionados` | `lanzadera-datos.md` (A5) |
+| AGE-E1 | AGEDYS ECO | Unificar el acceso a `TbSalidas_RES`: el alta va por `getdb()` (que resuelve el vínculo de AGEDYS_DATOS) y el borrado por `getdbSalida()` (que abre Registro directamente), sobre la misma tabla física. Decidir un único camino y aplicarlo a los dos. | `TbSalidas_RES` | `agedys-eco.md` (E1) |
+| AGE-E10 | AGEDYS ECO | Migrar los 24 recordsets de tipo tabla a sentencias `SELECT` explícitas. | — | `agedys-eco.md` (E10) |
+| AGE-E11 | AGEDYS ECO | Mudar al backend las 7 tablas de trabajo de la función «Consultas» (`TbAuxProyectos`, `TbAuxPedidos`, `TbAuxFacturas`, `TbAuxFacturasCliente`, `TbAuxFacturasDetalleNoDYS`, `TbAuxGTVContratos`, `TbAuxExpedientesVivos`), o declararlas como temporales del front. | `TbAuxExpedientesVivos`, `TbAuxFacturas`, `TbAuxFacturasCliente`, `TbAuxFacturasDetalleNoDYS`, `TbAuxGTVContratos`, `TbAuxPedidos`, `TbAuxProyectos` | `agedys-eco.md` (E11) |
+| AGE-E2 | AGEDYS ECO | Retirar la credencial literal de las siete cadenas de apertura (`src/modules/Variables Globales.bas:458`, `:485`, `:510`, `:543`, `:577`, `:611`, `:643`) y leerla de la configuración. | — | `agedys-eco.md` (E2) |
+| AGE-E3 | AGEDYS ECO | Corregir la referencia muerta `TbDPDDocAnexada` (`src/classes/AnexoOperaciones.cls:32`): la tabla se llama `TbDpDDocAnexada`. | `TbDPDDocAnexada`, `TbDpDDocAnexada` | `agedys-eco.md` (E3) |
+| AGE-E4 | AGEDYS ECO | Corregir los dos generadores de identificador que apuntan al front: `src/classes/CestaAnexoOrdinaria.cls:35` y `src/classes/Proyecto.cls:304` pasan el argumento de base de datos vacío, y `DameID` cae a `CurrentDb()` (`src/modules/FUNCIONES UTILES.bas:531-532`). | — | `agedys-eco.md` (E4) |
+| AGE-E5 | AGEDYS ECO | Declarar la clave primaria de `TbAuxGTVContratos`, la única tabla propia del front que el código usa y que no la tiene (136 filas, 11 campos). | `TbAuxGTVContratos` | `agedys-eco.md` (E5) |
+| AGE-E6 | AGEDYS ECO | Declarar en PostgreSQL las 43 tablas que el front necesita, con el dueño que se deduce aquí: 35 en el esquema de AGEDYS, 2 en el de Expedientes, 3 en el de la Lanzadera, 2 en el de AGEDO y 1 en el de Registro. | — | `agedys-eco.md` (E6) |
+| AGE-E7 | AGEDYS ECO | Sustituir los dos generadores `Max + 1` (`src/modules/FUNCIONES UTILES.bas:534` y `src/modules/constructor.bas:2410`) por identidad o autonumérico. | — | `agedys-eco.md` (E7) |
+| AGE-E8 | AGEDYS ECO | Reescribir el SQL que no compila en PostgreSQL: 5 `DELETE * FROM`, 90 `Is Null`, 20 `Like '*'`, 4 literales de fecha con `#` y los 2 de `src/classes/ConsultaOperaciones.cls:943`, `:950`. | — | `agedys-eco.md` (E8) |
+| AGE-E9 | AGEDYS ECO | Parametrizar el SQL que concatena valores: las fechas del diálogo (`src/classes/ConsultaOperaciones.cls:943`, `:950`) y el límite de `IDEnvio` (`src/modules/constructor.bas:2410`, `:2417`). | — | `agedys-eco.md` (E9) |
+| AGT-A1 | AGEDYS Tecnico | Declarar clave primaria en las 11 tablas del backend que no la tienen: `TbAuxExp`, `TbAuxPrado`, `TbAvalesDatosGenerales`, `TbAvalesDatosGeneralesNuevos`, `TbDpDCartaSolicitudOfertaDatosFijos`, `TbDpDCartaSolicitudOfertaPlantillasSegunReqBasicos`, `TbFacturasPrincipal`, `TbLog`, `TbProductos`, `TbProductosObsoletos`, `TbProductos_antes`. | `TbAuxExp`, `TbAuxPrado`, `TbAvalesDatosGenerales`, `TbAvalesDatosGeneralesNuevos`, `TbDpDCartaSolicitudOfertaDatosFijos`, `TbDpDCartaSolicitudOfertaPlantillasSegunReqBasicos`, `TbFacturasPrincipal`, `TbLog`, `TbProductos`, `TbProductosObsoletos`, `TbProductos_antes` | `agedys-tecnico.md` (A1) |
+| AGT-A2 | AGEDYS Tecnico | Retirar la credencial literal de las ocho cadenas de apertura del front (`src/modules/Variables Globales.bas:458, 485, 510, 543, 577, 611, 643, 911`) y leerla de la configuración. | — | `agedys-tecnico.md` (A2) |
+| AGT-A3 | AGEDYS Tecnico | Dejar una sola copia de las cinco tablas que el front y el backend tienen con el mismo nombre: `TbAuxExp`, `TbHerramientaDocAyuda`, `TbProductosObsoletos`, `TbSTGParametrosParaFormulario` y `TbSuministradoresListaFavoritos`. | `TbAuxExp`, `TbHerramientaDocAyuda`, `TbProductosObsoletos`, `TbSTGParametrosParaFormulario`, `TbSuministradoresListaFavoritos` | `agedys-tecnico.md` (A3) |
+| AGT-A4 | AGEDYS Tecnico | Poner en cuarentena `Copia de TbRequisitosSTG` del front: 139 filas con los mismos 73 campos que `TbRequisitosSTG`, que sí se usa a través del vínculo. | `TbRequisitosSTG` | `agedys-tecnico.md` (A4) |
+| AGT-A5 | AGEDYS Tecnico | Poner en cuarentena `TbAuxNPedido` del front: 35 filas y cero referencias. | `TbAuxNPedido` | `agedys-tecnico.md` (A5) |
+| AGT-A6 | AGEDYS Tecnico | Corregir la referencia a `TbGTVContratos1` en `src/classes/GTVContrato.cls:81`: la tabla que existe es `TbGTVContratos`. | `TbGTVContratos`, `TbGTVContratos1` | `agedys-tecnico.md` (A6) |
+| AGT-A7 | AGEDYS Tecnico | Sustituir el generador `Max + 1` (`DameID1`, `src/modules/Funciones Generales.bas:1261-1296`) por identidad en las tablas que escribe el front. | — | `agedys-tecnico.md` (A7) |
+| AGT-A8 | AGEDYS Tecnico | Declarar en el backend las relaciones que el front ya exige por SQL: el backend tiene 2 relaciones reales para 102 tablas. | — | `agedys-tecnico.md` (A8) |
+| AGT-A9 | AGEDYS Tecnico | Retirar o reparar las 13 consultas guardadas de depuración: ocho del front y las cinco del backend. | — | `agedys-tecnico.md` (A9) |
+| BFA-S1 | SICA, Control de cambios, AGEDO y Tareas | Localizar el front de Tareas o declarar el backend como material archivado. Sin esa respuesta, sus cuatro tablas propias no se pueden clasificar. | — | `backends-fuera-de-alcance.md` (S1) |
+| BFA-S2 | SICA, Control de cambios, AGEDO y Tareas | Fijar clave primaria en `TbAperturas` (7 800 filas) y en las otras tres tablas de SICA, que no tienen ninguna. | `TbAperturas` | `backends-fuera-de-alcance.md` (S2) |
+| BFA-S3 | SICA, Control de cambios, AGEDO y Tareas | Declarar `TbUsuariosAplicacionesTareas` como tabla de Tareas: retirar el vínculo de `Lanzadera_Datos` y crearla en el backend de Tareas, o documentar la excepción. | `TbUsuariosAplicacionesTareas` | `backends-fuera-de-alcance.md` (S3) |
+| BFA-S5 | SICA, Control de cambios, AGEDO y Tareas | Fijar clave primaria en las ocho tablas sin clave de AGEDO, empezando por `Entradas` (14 125) y `Salidas` (11 609). | — | `backends-fuera-de-alcance.md` (S5) |
+| BR-B1 | Brass | Poner en cuarentena las 7 tablas del backend sin uso en el front: renombrar a `zzBAJA_<tabla>`. | — | `brass.md` (B1) |
+| BR-B2 | Brass | Las 4 tablas que viven en el front (`TbActividadesLotes`, `TbAux`, `TbAuxEventosParaInforme`, `TbAuxNombreCamposParaInforme`) incumplen la regla de que las tablas del aplicativo viven en su backend. Son tablas de trabajo e informe. Propuesta: mover las que el backend pueda sostener y declarar el resto como temporales del front. | `TbActividadesLotes`, `TbAux`, `TbAuxEventosParaInforme`, `TbAuxNombreCamposParaInforme` | `brass.md` (B2) |
+| BR-B3 | Brass | Declarar clave primaria en las 5 tablas auxiliares sin ella: `TbAuxActividad`, `TbAuxManteniminetosPreventivosCalendario`, `TbAuxMateriales`, `TbAuxPlanificacion`, `TbBuiIDEvento`. | `TbAuxActividad`, `TbAuxManteniminetosPreventivosCalendario`, `TbAuxMateriales`, `TbAuxPlanificacion`, `TbBuiIDEvento` | `brass.md` (B3) |
+| BR-B4 | Brass | Retirar la credencial literal del código del front (`Variables Globales.bas:573`) y leerla de la configuración. | — | `brass.md` (B4) |
+| BR-B6 | Brass | Revisar que el front no escriba en el share de producción desde desarrollo: los vínculos y la ruta de reserva apuntan a `\\datoste\…`. | — | `brass.md` (B6) |
+| CON-C1 | Condor | Poner en cuarentena `tbHistorialRechazos`: renombrar a `zzBAJA_tbHistorialRechazos` tras una copia de seguridad. | `tbHistorialRechazos` | `condor.md` (C1) |
+| CON-C2 | Condor | Declarar `TbConfiguracionBackends` como configuración propia del front, exenta de la regla «las tablas viven en el backend», con su motivo: se lee con `CurrentDb` antes de poder abrir ningún backend. | `TbConfiguracionBackends` | `condor.md` (C2) |
+| CON-C4 | Condor | Retirar los cuatro abridores externos sin llamadores: `getdbLanzadera`, `getdbExpedientes`, `getdbCorreo`, `getdbNoConformidades` (`src/modules/FUNCIONES UTILES.bas:63,167,187,206`). | — | `condor.md` (C4) |
+| CON-C6 | Condor | Sustituir los 9 generadores `Max + 1` por autonumérico o identidad. | — | `condor.md` (C6) |
+| COR-C3 | Correos y Registro de salida | Unificar el acceso a `TbSalidas_RES` en el front de Registros: hoy se crea por `getdb()` y se borra por `getdbSalida()`. | `TbSalidas_RES` | `backends-compartidos.md` (C3) |
+| COR-C6 | Correos y Registro de salida | Declarar explícitamente que `TbSalidas_RES` y `TbEntradas_RES` son de Registro y que AGEDYS ECO es consumidor, no propietario. | `TbEntradas_RES`, `TbSalidas_RES` | `backends-compartidos.md` (C6) |
+| EXP-E1 | Expedientes | Aislar el vínculo `TbExpedientes1`, que apunta al AGEDYS de producción desde el backend de desarrollo. Decidir si debe apuntar a la copia local o si el front debe dejar de leer esa tabla. | `TbExpedientes1` | `expedientes.md` (E1) |
+| EXP-E4 | Expedientes | Obtener el SQL de las once consultas guardadas del backend y mapear sus tablas. Es la condición previa de E5: sin ese mapa no se puede afirmar que ninguna consulta guardada usa una de las 25 tablas candidatas. | — | `expedientes.md` (E4) |
+| EXP-E5 | Expedientes | Poner en cuarentena las 25 tablas que el VBA del front no usa: renombrarlas a `zzBAJA_<tabla>`. No se borra ninguna. | — | `expedientes.md` (E5) |
+| EXP-E7 | Expedientes | Reconciliar `TbExpedientesDatosAGEDYS`: el código la cita en `src/classes/ExpedienteAGEDYS.cls:59` y `src/modules/constructor.bas:5003, 5007`, y no está en el ERD del backend. | `TbExpedientesDatosAGEDYS` | `expedientes.md` (E7) |
+| EXP-E8 | Expedientes | Sustituir el generador `DameID` (máximo más uno) por una identidad. Coste medido: una función (`src/modules/FUNCIONES UTILES.bas:2863-2891`), 30 llamadas en 30 ficheros de producción y 27 pares tabla-campo distintos, más cinco `Max` directos (`src/modules/E2EEnlacesService.bas:110`, `src/modules/E2EFamilyExportHelper.bas:303`, `src/modules/ManualE2EExport.bas:173`, `src/modules/FUNCIONES UTILES.bas:1738, 1754`). | — | `expedientes.md` (E8) |
+| GRI-R1 | Gestion de Riesgos | Sacar la contraseña del backend de la tabla del front: `TbConfiguracionBackends.PasswordBackend` la guarda en un campo de texto de 50 caracteres (`src/modules/Variables Globales.bas:1359`) y las definiciones de vínculo la repiten (`PWD=***`). Propuesta: credencial en la configuración de la aplicación o en el gestor de secretos del servidor, no en la base. | `TbConfiguracionBackends` | `gestion-riesgos.md` (R1) |
+| GRI-R3 | Gestion de Riesgos | Poner en cuarentena las 30 tablas propias sin uso en el front: renombrar a `zzBAJA_<tabla>`. | — | `gestion-riesgos.md` (R3) |
+| GRI-R6 | Gestion de Riesgos | Sustituir el generador `Max + 1` (`DameID`) por identidad en las 22 tablas listadas. | — | `gestion-riesgos.md` (R6) |
+| GRI-R8 | Gestion de Riesgos | Fijar la semántica de comparación de texto antes de migrar: 356 de 357 módulos declaran `Option Compare Database`, y PostgreSQL no hereda esa comparación insensible a mayúsculas. La web y el legacy no pueden discrepar sobre el mismo dato. | — | `gestion-riesgos.md` (R8) |
+| GRI-R9 | Gestion de Riesgos | Decidir el nivel de aislamiento de las 571 aperturas de recordset, todas sin `dbSeeChanges`, antes de que el backend pase a ODBC. | — | `gestion-riesgos.md` (R9) |
+| HPS-H1 | HPS | Poner en cuarentena las 3 tablas propias del backend sin ninguna referencia en el front: `TbAuxCursos`, `TbHPSEquivalencia` y `TbJuridicasContratacion`. Renombrar a `zzBAJA_<tabla>`. | `TbAuxCursos`, `TbHPSEquivalencia`, `TbJuridicasContratacion` | `hps.md` (H1) |
+| HPS-H10 | HPS | Sustituir los generadores `Max + 1` por autonumérico, empezando por `DameID` (`src/modules/Funciones Generales.bas:2794`) y por el identificador de texto de SICA (`src/classes/UsuarioSICA.cls:331`, `:346`). | — | `hps.md` (H10) |
+| HPS-H2 | HPS | Retirar la tabla `TbUsuariosEntidades` del backend (352 filas) y su copia `Copia de TbUsuariosEntidades` del front (99 filas). El código ya no las usa desde #33 y los tests exigen que no se creen. | `TbUsuariosEntidades` | `hps.md` (H2) |
+| HPS-H3 | HPS | Retirar del front las dos cachés de indicadores retiradas en #32: `TbDatosLocalParaIndicadores` (344 filas) y `TbUsuariosSICALocalParaIndicadores` (50 filas). | `TbDatosLocalParaIndicadores`, `TbUsuariosSICALocalParaIndicadores` | `hps.md` (H3) |
+| HPS-H6 | HPS | Retirar los 5 vínculos del front que apuntan a la ruta de producción (`\\datoste\…`): 2 a `Expedientes_datos.accdb` y 3 a `HPST.accdb`. El código no los consulta, pero un vínculo es una vía de escritura sobre producción desde el front. | — | `hps.md` (H6) |
+| HPS-H9 | HPS | Retirar la credencial literal de las cinco cadenas de conexión (`src/modules/VariablesEntorno.bas:564`, `:597`, `:633`, `:664`, `:693`) y leerla de la configuración. | — | `hps.md` (H9) |
+| LAN-A1 | Lanzadera | Corregir la ayuda: el código consulta `TbHerramientaDocAyuda` (`Funciones Genreales.bas:538`) y la tabla se llama `Tb0HerramientaDocAyuda`. Renombre la tabla a `TbHerramientaDocAyuda`, o retire la llamada si la ayuda ya no se usa. | `Tb0HerramientaDocAyuda`, `TbHerramientaDocAyuda` | `lanzadera-datos.md` (A1) |
+| LAN-A2 | Lanzadera | Poner en cuarentena las 6 tablas vacías y sin referencias: `TbAplicacionesVideos`, `TbCuestionarioPreguntas`, `TbCuestionarios`, `TbCuestionaroRespuestas`, `TbUsuarioAplicacionesSolicitud`, `TbVideosCuestionario`. Renombrar a `zzBAJA_<tabla>`. | `TbAplicacionesVideos`, `TbCuestionarioPreguntas`, `TbCuestionarios`, `TbCuestionaroRespuestas`, `TbUsuarioAplicacionesSolicitud`, `TbVideosCuestionario` | `lanzadera-datos.md` (A2) |
+| LAN-A3 | Lanzadera | Poner en cuarentena `TbTablasAVincular` (411 filas, sin clave primaria, 0 referencias en ningún `src`). Si resulta que la usa un front sin repositorio, en lugar de cuarentena añada la clave primaria (`IDBBDD`, `IDAplicacion`, `NombreTabla`). | `TbTablasAVincular` | `lanzadera-datos.md` (A3) |
+| LAN-A4 | Lanzadera | Poner en cuarentena las 15 candidatas restantes con datos: las 13 sin referencias de la ficha y `TbVideosVisionados` y `TbUsuariosCorreosEnvio`, cuyas referencias están todas en código muerto (la clase `Visionado` nunca se instancia; `Constructor.getCorreo` no tiene llamadores). Empezar por las de uso más improbable: `TbPermisos` (69 de sus 205 filas apuntan a aplicaciones inexistentes), `TbAplicacionesEdiciones`, `TbAplicacionesEdicionesCambios`, `TbDetalleVersiones`, `TbParametros` y `TbAplicacionesParametros`. | `TbAplicacionesEdiciones`, `TbAplicacionesEdicionesCambios`, `TbAplicacionesParametros`, `TbDetalleVersiones`, `TbParametros`, `TbPermisos`, `TbUsuariosCorreosEnvio`, `TbVideosVisionados` | `lanzadera-datos.md` (A4) |
+| LAN-P-P1 | Lanzadera (aperturas) | Sustituir la asignación `MAX+1` por una fuente de ID atómica, coordinando todos los escritores de aperturas | — | `aperturas-directas-lanzadera.md` (P1) |
+| LAN-P-P2 | Lanzadera (aperturas) | Extraer credenciales del código y definir cómo se proporcionan en Citrix | — | `aperturas-directas-lanzadera.md` (P2) |
+| LAN-P-P3 | Lanzadera (aperturas) | Revisar la vida de las conexiones antes de ODBC | — | `aperturas-directas-lanzadera.md` (P3) |
+| LAN-P-P4 | Lanzadera (aperturas) | Decidir qué hacer con `getEsUsuarioAutorizado` de Contratos antes de conservarla o retirarla | — | `aperturas-directas-lanzadera.md` (P4) |
+| NOC-N1 | No Conformidades | Poner en cuarentena las 15 tablas propias sin referencias del backend, renombrándolas a `zzBAJA_<tabla>`. Para `TbNCInformacionRAC` y `TbNCInformacionRACAnexos` hay que quitar antes las relaciones `TbNoConformidadesTbNCInformacionRAC` y `TbNCInformacionRACTbNCInformacionRACAnexos`. | `TbNCInformacionRAC`, `TbNCInformacionRACAnexos`, `TbNCInformacionRACTbNCInformacionRACAnexos`, `TbNoConformidadesTbNCInformacionRAC` | `no-conformidades.md` (N1) |
+| NOC-N2 | No Conformidades | Revisar `TbAnexosAuditoria` y `TbAnexosNCAuditorias`: su único lector es `Instalador.bas:126` y `:170`, un módulo de migración de una sola vez. Propuesta: ejecutarla en producción y retirarlas después. | `TbAnexosAuditoria`, `TbAnexosNCAuditorias` | `no-conformidades.md` (N2) |
+| NOC-N5 | No Conformidades | Revisar las referencias a tablas que no existen: `TbACParaLista` y `TbARParaLista` (`Funciones Generales.bas:3112-3116, 3125, 3156`) y las consultas guardadas `Consulta1` y `Consulta3` del front (`src/queries/`). Propuesta: retirar el procedimiento `RellenarTbProyectoParaLista` (`:3096`), sin llamadores, y las dos consultas, o recuperar las tablas. | `TbACParaLista`, `TbARParaLista` | `no-conformidades.md` (N5) |
+| NOC-N6 | No Conformidades | Retirar `NCProyectoOperaciones.ActualizarRiesgosNC` (`src/classes/NCProyectoOperaciones.cls:1545-1568`): escribe `IDNoConformidad` en `TbRiesgosNC`, columna que no existe en el backend de Riesgos (sus campos son `ID`, `IDRiesgo`, `IDNC`, `FechaRegistro`, `ParaNC`, `FechaDecison`), y no tiene llamadores. El camino vivo es `RiesgoServicio.ActualizarRiesgosNC` → `RiesgoRepositorio.GuardarAsociaciones` (`RiesgoRepositorio.bas:96-105`), que sí usa `IDNC`. | `TbRiesgosNC` | `no-conformidades.md` (N6) |
+| NOC-N7 | No Conformidades | Poner en cuarentena `TbTipologiaAux` del front (23 filas, cero referencias). Su equivalente en el backend es `TbTipologia` (23 filas), que sí usa el instalador (`Instalador.bas:667, 727-732`). | `TbTipologia`, `TbTipologiaAux` | `no-conformidades.md` (N7) |
+| REG-G1 | Registros | Poner en cuarentena las 5 tablas del backend propio que no usa ninguna aplicación: renombrar a `zzBAJA_<tabla>`. | — | `registros.md` (G1) |
+| REG-G2 | Registros | Sustituir los generadores `Max + 1` por autonumérico o identidad. Hay cinco: `DameID` (`Funciones Generales.bas:437`), `DameID1` (`:495`), `constructor.getID` (`constructor.bas:222`), `DameNRegistro` (`:374`) y `DameCRNuevo` (`:1957`) | — | `registros.md` (G2) |
+| REG-G3 | Registros | Declarar clave primaria en las tablas del backend propio que no la tengan, una vez se pueda leer el catálogo de índices (hoy no verificable, ver «Lo que no se pudo verificar») | — | `registros.md` (G3) |
+| REG-G4 | Registros | Reponer los dos vínculos que la matriz declara y el front no tiene: `Entradas` y `Salidas` desde `Registro_Datos.accdb`, y corregir las columnas `Año` que el código usa y el esquema no tiene | — | `registros.md` (G4) |
+| REG-G5 | Registros | Resolver las referencias que no tienen tabla: `TbSalidas` (combo de destinatarios en la salida en edición) y `tbUsuarios` (combo de interesados en el alta de entrada) | `TbSalidas`, `tbUsuarios` | `registros.md` (G5) |
+| REG-G6 | Registros | Decidir el destino de `Registro_Datos.accdb` y de sus 5 tablas: `Entradas` (14905), `Salidas` (13630), `Nombres`, `DClases` y `TbConfiguracion`, que son la aplicación «RegistroAntiguo» del catálogo | `TbConfiguracion` | `registros.md` (G6) |
+| SEG-G1 | Seguridad | Declarar clave primaria en `TbNombramientoJS` (17 registros, sin clave) y en `Tb0Vinculo` (0 registros, sin clave). | `Tb0Vinculo`, `TbNombramientoJS` | `seguridad.md` (G1) |
+| SEG-G2 | Seguridad | Poner en cuarentena las 10 tablas del backend que el front no referencia, renombrándolas a `zzBAJA_<tabla>`. Antes hay que quitar las tres relaciones que las atan: `Tb0AdjuntosTb0AdjuntosIndexaciones`, `Tb0TipoRegistrosTb0RegistrosPendientes` y `Tb0TipoRegistrosTb0TipoRegistrosDescripcion`. | `Tb0AdjuntosTb0AdjuntosIndexaciones`, `Tb0TipoRegistrosTb0RegistrosPendientes`, `Tb0TipoRegistrosTb0TipoRegistrosDescripcion` | `seguridad.md` (G2) |
+| SEG-G3 | Seguridad | Resolver las dos referencias muertas: `Tb0TipoRegistrosRelacionados`, que usan las consultas guardadas `Consulta3` y `Consulta4` del front y no existe en ninguna base; y `TbLog`, que `src/classes/Log.cls:76-77` abre contra el front cuando vive en el backend. | `Tb0TipoRegistrosRelacionados`, `TbLog` | `seguridad.md` (G3) |
+| SEG-G4 | Seguridad | Sustituir los dos generadores `Max + 1` (`src/modules/Constructor.bas:762-774` y `src/modules/Funciones Generales.bas:178-191`) por identidad o autonumérico. | — | `seguridad.md` (G4) |
+| SEG-G5 | Seguridad | Declarar la integridad referencial que el ERD no recoge: `Tb0RegistrosRelacionados.IDTipoRegistro` se une en SQL con `Tb0TipoRegistros.IDTipoRegistro` y las 21 tablas de tipo de registro se unen con su catálogo por la columna de texto `NombreID`, que no es clave foránea. | `Tb0RegistrosRelacionados`, `Tb0TipoRegistros` | `seguridad.md` (G5) |
+| SEG-G6 | Seguridad | Mudar al backend las 4 tablas de trabajo del front que alimentan los cinco formularios unidos a recordset: `Tb0FiltroRegistros`, `Tb0FiltroRegistrosConRelaciones`, `Tb0RegistrosParaRelacionar` y `Tb0RelacionesDeUnRegistro`. Sin ellas, los formularios de filtro y de relación se quedan sin origen de datos en cuanto el front desaparezca. | `Tb0FiltroRegistros`, `Tb0FiltroRegistrosConRelaciones`, `Tb0RegistrosParaRelacionar`, `Tb0RelacionesDeUnRegistro` | `seguridad.md` (G6) |
+| SEG-G7 | Seguridad | Retirar la credencial literal de las tres cadenas de conexión (`src/modules/Variables de Entorno.bas:422`, `:457`, `:484`) y leerla de la configuración. | — | `seguridad.md` (G7) |
+| SEG-G8 | Seguridad | Reescribir el SQL que no compila en PostgreSQL: 13 `DELETE * FROM`, 7 `Is Null`, 7 `Like '*'`, 2 literales de fecha con `#` y el `Between #…#` de `src/modules/Constructor.bas:341`. | — | `seguridad.md` (G8) |
+| SEG-G9 | Seguridad | Parametrizar el SQL que concatena valores: el texto del filtro de asunto y de notas (`src/modules/Constructor.bas:343`, `:348`), las fechas del filtro (`:341`), el nombre de tabla del catálogo (`:517`), el identificador del registro (`src/classes/Registro.cls:331`, `:1748`) y el correo del usuario (`src/modules/Constructor.bas:164-167`). | — | `seguridad.md` (G9) |
+| SHO-S2 | Solicitudes HPS | Retirar el vínculo roto `TbUsuarioSolicitud` y la consulta guardada `Consulta2` que lo usa con los valores fijos `1` y `1`. | `TbUsuarioSolicitud` | `solicitudes-hps.md` (S2) |
+| SHO-S3 | Solicitudes HPS | Resolver la duplicidad de `TbHPSGrado`: el backend tiene una copia de la tabla de `HPST` con las mismas 13 filas y la misma clave primaria, y además un vínculo `TbHPSGrado1` que nadie usa. Propuesta: dejar una sola fuente de verdad en `HPST` y que el front lea de allí. | `TbHPSGrado`, `TbHPSGrado1` | `solicitudes-hps.md` (S3) |
+| SHO-S4 | Solicitudes HPS | Declarar la propiedad de las cuatro tablas de `HPST` que esta aplicación escribe (`TbUsuarios`, `TbUsuariosEntidades`, `TbUsuariosHistoricos`, `TbMotivoHPS`). Hoy son de HPS y las escribe Solicitudes HPS, lo que impide cerrar H2 de la ficha de HPS. | `TbMotivoHPS`, `TbUsuarios`, `TbUsuariosEntidades`, `TbUsuariosHistoricos` | `solicitudes-hps.md` (S4) |
+| SHO-S5 | Solicitudes HPS | Retirar la credencial literal de las cinco cadenas `OpenDatabase` (`src/modules/Variables Globales.bas:449`, `:478`, `:512`, `:542`, `:599`) y leerla de la configuración. | — | `solicitudes-hps.md` (S5) |
+| SHO-S6 | Solicitudes HPS | Revisar los 10 vínculos del backend, que apuntan a la ruta de producción `\\datoste\…`: son una vía de escritura sobre producción desde el front y desde cualquier proceso que use el backend. | — | `solicitudes-hps.md` (S6) |
 
-El [grafo de dependencias](grafo-dependencias.md) no aporta propuestas: es la fuente de verdad sobre qué tablas son compartidas y cuántos backends las consumen, y se usa en la sección de conflictos.
-
-Las fichas de HPS, Condor, Expedientes, Gestión de Riesgos, No Conformidades y Registros no citan issue propia; su revisión se hace con este catálogo conjunto, como se decidió en #1576. La de la Lanzadera viene de #1560, la de aperturas directas de #1570 y la de Brass de #1574.
-
-## Reglas que gobiernan el catálogo
-
-Estas reglas vienen del propietario y condicionan cómo se lee la tabla. No son criterios de este documento.
-
-- **Nada se aplica en el legacy hasta que el propietario revise el conjunto.** La fase 0 cataloga; la puerta de descubrimiento global sigue cerrada.
-- **Una tabla debe existir en el backend solo si el VBA de su front propietario la necesita.** Si solo la usa otro front, está mal ubicada y se reasigna; si nadie la usa, es candidata a retirada. Ningún borrado automático.
-- **Los cambios de esquema durante la coexistencia son solo aditivos.** Este catálogo no aplica nada, pero deja registrado dónde una propuesta choca con esa regla.
-- **Los grupos de la fase 1** son: (a) imprescindible antes de migrar, (b) recomendable si es barato, (c) aplazar a la refactorización final tras el apagado. La clasificación por grupo es la de cada ficha, según la [tabla de clasificación de la épica](../epica-coexistencia-postgresql.md#fase-1-saneamiento-en-access).
-
-## Cómo se lee el catálogo
-
-| Columna | Qué significa |
-|---|---|
-| **Id** | Identificador normalizado: prefijo de la ficha más número. No hay identificadores nuevos ni renumeraciones. |
-| **Propuesta** | Qué se propone, en una línea. El detalle, la comprobación previa y la reversión están en la ficha. |
-| **Aplicación** | Backend al que pertenece el cambio, no la ficha de la que sale. Una propuesta que actúa sobre una tabla de otra aplicación lo dice. |
-| **Tablas afectadas** | Tablas sobre las que actúa el cambio. «—» cuando no toca ninguna tabla (credenciales, código, consultas). |
-| **Bloqueada** | «Sí» cuando la decisión no puede cerrarse con la evidencia disponible hoy: falta una prueba que hoy no se puede hacer. «No» cuando la comprobación previa está definida y es ejecutable con el material actual. La sección de pruebas da el detalle. |
-| **Ficha** | Fichero e identificador original de la propuesta. |
-
-El orden es por decisión, no por aplicación: primero el grupo (a), después el (b), después el (c). Dentro de cada grupo van primero las propuestas que tocan tablas compartidas, ordenadas por número de backends consumidores, y después las que solo tocan tablas propias. El grafo da el criterio: una tabla compartida obliga a coordinar a todos sus consumidores y su cambio de esquema afecta a varias aplicaciones a la vez.
-
-## Grupo (a): imprescindible antes de migrar
-
-54 propuestas. 12 tocan tablas compartidas y 42 solo tablas propias.
-
-### (a.1) Propuestas que tocan tablas compartidas
-
-Ordenadas por número de backends consumidores de la tabla que tocan.
-
-| Id | Propuesta | Aplicación | Tablas afectadas | Bloqueada | Ficha |
-|---|---|---|---|---|---|
-| C5 | Declarar clave primaria en `TbCorreosEnviados` | `Correos_datos` (no catalogado) | `TbCorreosEnviados` | Sí | [condor.md C5](condor.md#propuestas-para-después-del-descubrimiento-global) |
-| N3 | Declarar clave primaria en `TbCorreosEnviados`, la única tabla viva sin clave que escribe No Conformidades | `Correos_datos` (no catalogado) | `TbCorreosEnviados` | Sí | [no-conformidades.md N3](no-conformidades.md#propuestas-para-después-del-descubrimiento-global) |
-| R2 | Declarar clave primaria en las 5 tablas de Riesgos sin ella; una de ellas es de otro backend | `Gestion_Riesgos_Datos` y `Correos_datos` | `ProyectoRespCalidad`, `TbAuxProyectosRiesgos`, `TbCachePublicabilidadEdicion`, `TbRiesgosValoracion`, `TbCorreosEnviados` | Sí | [gestion-riesgos.md R2](gestion-riesgos.md#propuestas-para-después-del-descubrimiento-global) |
-| E2 | Declarar clave primaria en las 6 tablas de Expedientes sin ella; tres pertenecen a otros backends | `Expedientes_datos`, `Correos_datos`, `AGEDYS_DATOS` | `TbCorreosEnviados`, `TbFacturasPrincipal`, `TbExpedientes1`, `TbExpAgedys`, `TbExpAGEDYS1`, `E2E_export_20260723_142133_lista` | Sí | [expedientes.md E2](expedientes.md#propuestas-para-después-del-descubrimiento-global) |
-| N8 | Registrar el dueño real de `TbRiesgosNC` y de `TbCorreosEnviados`: las escribe No Conformidades | `Gestion_Riesgos_Datos` y `Correos_datos` | `TbRiesgosNC`, `TbCorreosEnviados` | Sí | [no-conformidades.md N8](no-conformidades.md#propuestas-para-después-del-descubrimiento-global) |
-| E3 | Resolver las tres escrituras del front de Expedientes en tablas de otro backend | `Expedientes_datos` y los dueños de las tres tablas | `TbProyectos_Riesgos`, `TbNoConformidades`, `TbCorreosEnviados` | Sí | [expedientes.md E3](expedientes.md#propuestas-para-después-del-descubrimiento-global) |
-| N4 | Sustituir el generador `MAX + 1` por identidad | `NoConformidades_Datos` y los dueños ajenos | 16 tablas propias, entre ellas `TbCorreosEnviados` y `TbRiesgosNC` | Sí | [no-conformidades.md N4](no-conformidades.md#propuestas-para-después-del-descubrimiento-global) |
-| R6 | Sustituir el generador `Max + 1` por identidad | `Gestion_Riesgos_Datos` y 4 dueños ajenos | 18 tablas propias, más `TbCorreosEnviados`, `TbDocumentos`, `TbExpedientesResponsables`, `TbNoConformidades` | Sí | [gestion-riesgos.md R6](gestion-riesgos.md#propuestas-para-después-del-descubrimiento-global) |
-| G2 | Sustituir los 5 generadores `Max + 1` del front | `Registro_Ent_Salida_Datos` y los dueños ajenos | `TbEntradas_RES`, `TbSalidas_RES`, `TbLog`, `TbCorreosEnviados`, `TbAplicacionesAperturas` | Sí | [registros.md G2](registros.md#propuestas-para-después-del-descubrimiento-global) |
-| E8 | Sustituir `DameID` (máximo más uno) por identidad | `Expedientes_datos` | 27 pares tabla-campo, incluido `TbCorreosEnviados` | Sí | [expedientes.md E8](expedientes.md#propuestas-para-después-del-descubrimiento-global) |
-| P1 | Sustituir el `MAX+1` por una fuente de identificador atómica, coordinando a todos los escritores de aperturas | `Lanzadera_Datos` (el mecanismo vive en 5 fronts) | `TbAplicacionesAperturas` | Sí | [aperturas-directas-lanzadera.md P1](aperturas-directas-lanzadera.md#acciones-de-preparación-derivadas) |
-| A5 | Borrar los registros huérfanos de `TbConexionUltimaAppAbierta` y declarar la relación con integridad referencial | `Lanzadera_Datos` | `TbConexionUltimaAppAbierta`, `TbAplicaciones` | Sí | [lanzadera-datos.md A5](lanzadera-datos.md#catálogo-de-propuestas-para-después-del-descubrimiento-global) |
-
-### (a.2) Propuestas sobre tablas propias
-
-| Id | Propuesta | Aplicación | Tablas afectadas | Bloqueada | Ficha |
-|---|---|---|---|---|---|
-| A1 | Renombrar `Tb0HerramientaDocAyuda` a `TbHerramientaDocAyuda`, o retirar la llamada si la ayuda ya no se usa | `Lanzadera_Datos` | `Tb0HerramientaDocAyuda` | Sí | [lanzadera-datos.md A1](lanzadera-datos.md#catálogo-de-propuestas-para-después-del-descubrimiento-global) |
-| A2 | Poner en cuarentena las 6 tablas vacías y sin referencias | `Lanzadera_Datos` | `TbAplicacionesVideos`, `TbCuestionarioPreguntas`, `TbCuestionarios`, `TbCuestionaroRespuestas`, `TbUsuarioAplicacionesSolicitud`, `TbVideosCuestionario` | Sí | [lanzadera-datos.md A2](lanzadera-datos.md#catálogo-de-propuestas-para-después-del-descubrimiento-global) |
-| A3 | Poner en cuarentena `TbTablasAVincular`, o añadirle clave primaria si la usa un front sin repositorio | `Lanzadera_Datos` | `TbTablasAVincular` | Sí | [lanzadera-datos.md A3](lanzadera-datos.md#catálogo-de-propuestas-para-después-del-descubrimiento-global) |
-| A4 | Poner en cuarentena las 15 candidatas restantes con datos, empezando por las de uso más improbable | `Lanzadera_Datos` | `TbAplicacionesEdiciones`, `TbAplicacionesEdicionesCambios`, `TbAplicacionesEstados`, `TbAplicacionesParametros`, `TbAplicacionesPerfiles`, `TbConexiones`, `TbDetalleVersiones`, `TbParametros`, `TbPermisos`, `TbUbicaciones`, `TbUsuarioConfiguracion`, `tbUsuarios`, `TbUsuariosTareasDiarias`, `TbVideosVisionados`, `TbUsuariosCorreosEnvio` | Sí | [lanzadera-datos.md A4](lanzadera-datos.md#catálogo-de-propuestas-para-después-del-descubrimiento-global) |
-| P2 | Extraer las credenciales del código y definir cómo se proporcionan en Citrix | 11 fronts | — | Sí | [aperturas-directas-lanzadera.md P2](aperturas-directas-lanzadera.md#acciones-de-preparación-derivadas) |
-| B1 | Poner en cuarentena las 7 tablas del backend sin uso en el front | `Gestion_Brass_Gestion_Datos` | `TbAuxManteniminetosPreventivosCalendario`, `TbCausaFin`, `TbGuiaConciliaciones`, `TbRepuestosTipo`, `TbResultadoVerificacion`, `TbSistema`, `TbTipoAsistencia` | Sí | [brass.md B1](brass.md#propuestas-para-después-del-descubrimiento-global) |
-| B2 | Mover al backend las 4 tablas que viven en el front, o declararlas temporales del front | front de Brass y `Gestion_Brass_Gestion_Datos` | `TbActividadesLotes`, `TbAux`, `TbAuxEventosParaInforme`, `TbAuxNombreCamposParaInforme` | Sí | [brass.md B2](brass.md#propuestas-para-después-del-descubrimiento-global) |
-| B3 | Declarar clave primaria en las 5 tablas auxiliares sin ella | `Gestion_Brass_Gestion_Datos` | `TbAuxActividad`, `TbAuxManteniminetosPreventivosCalendario`, `TbAuxMateriales`, `TbAuxPlanificacion`, `TbBuiIDEvento` | Sí | [brass.md B3](brass.md#propuestas-para-después-del-descubrimiento-global) |
-| B4 | Retirar la credencial literal del código del front | front de Brass | — | Sí | [brass.md B4](brass.md#propuestas-para-después-del-descubrimiento-global) |
-| B5 | Revisar las referencias a tablas inexistentes: o se recuperan en el backend o se elimina la referencia | front de Brass | `TbDocumentos`, `TbIDEquipos`, `TbEquiposEquipoMedida`, `TbSellados`, `TbPlanificacionAñadida` | Sí | [brass.md B5](brass.md#propuestas-para-después-del-descubrimiento-global) |
-| B6 | Evitar que el front escriba en el share de producción desde desarrollo | front de Brass | 57 vínculos del front | Sí | [brass.md B6](brass.md#propuestas-para-después-del-descubrimiento-global) |
-| H1 | Poner en cuarentena las 3 tablas propias del backend sin ninguna referencia en el front | `HPST` | `TbAuxCursos`, `TbHPSEquivalencia`, `TbJuridicasContratacion` | Sí | [hps.md H1](hps.md#propuestas-para-después-del-descubrimiento-global) |
-| H2 | Retirar `TbUsuariosEntidades` del backend y su copia del front | `HPST` y front de HPS | `TbUsuariosEntidades`, `Copia de TbUsuariosEntidades` | Sí | [hps.md H2](hps.md#propuestas-para-después-del-descubrimiento-global) |
-| H3 | Retirar del front las 2 cachés de indicadores retiradas en #32 | front de HPS | `TbDatosLocalParaIndicadores`, `TbUsuariosSICALocalParaIndicadores` | No | [hps.md H3](hps.md#propuestas-para-después-del-descubrimiento-global) |
-| H6 | Retirar del front los 5 vínculos que apuntan a la ruta de producción | front de HPS | `TbExpedientes`, `TbSuministradores`, `TbHPS`, `TbUsuariosEntidades`, `TbUsuariosHistoricos` | Sí | [hps.md H6](hps.md#propuestas-para-después-del-descubrimiento-global) |
-| H9 | Retirar la credencial literal de las cinco cadenas de conexión | front de HPS | — | Sí | [hps.md H9](hps.md#propuestas-para-después-del-descubrimiento-global) |
-| H10 | Sustituir los generadores `Max + 1` por autonumérico, empezando por `DameID` y por el identificador de texto de SICA | `HPST` | `TbUsuarios`, `TbUsuariosHistoricos`, `TbObservaciones`, `TbObservacionesHistoricas`, `TbAnexosUsuariosHPS`, `TbAnexosUsuariosHistoricos`, `TbAnexosUsuariosSICA`, `TbUsuarioAnexos` | Sí | [hps.md H10](hps.md#propuestas-para-después-del-descubrimiento-global) |
-| C1 | Poner en cuarentena `tbHistorialRechazos` | `condor_datos` | `tbHistorialRechazos` | Sí | [condor.md C1](condor.md#propuestas-para-después-del-descubrimiento-global) |
-| C2 | Declarar `TbConfiguracionBackends` como configuración propia del front, exenta de la regla «las tablas viven en el backend» | front de Condor | `TbConfiguracionBackends` | Sí | [condor.md C2](condor.md#propuestas-para-después-del-descubrimiento-global) |
-| C4 | Retirar los cuatro abridores externos sin llamadores | front de Condor | — | Sí | [condor.md C4](condor.md#propuestas-para-después-del-descubrimiento-global) |
-| C6 | Sustituir los 9 generadores `Max + 1` por autonumérico o identidad | `condor_datos` | `tbSolicitudes`, `tbDatosPCSUB`, `tbDatosPC`, `tbDatosCDCASUB`, `tbDatosCDCA`, `tbValidacionRevision`, `tbLogErrores`, `tbRechazos`, `tbAdjuntos`, `tbLogCambios`, `tbMapeoCampos`, `tbLogEstados`, `tbEstados`, `tbTransiciones` | Sí | [condor.md C6](condor.md#propuestas-para-después-del-descubrimiento-global) |
-| E1 | Aislar el vínculo `TbExpedientes1`, que apunta al AGEDYS de producción desde el backend de desarrollo | `Expedientes_datos` y `AGEDYS_DATOS` | `TbExpedientes1` | Sí | [expedientes.md E1](expedientes.md#propuestas-para-después-del-descubrimiento-global) |
-| E4 | Obtener el SQL de las once consultas guardadas del backend y mapear sus tablas | `Expedientes_datos` | — (es una lectura) | Sí | [expedientes.md E4](expedientes.md#propuestas-para-después-del-descubrimiento-global) |
-| E5 | Poner en cuarentena las 25 tablas que el VBA del front no usa | `Expedientes_datos` (11 propias) y los dueños de las 14 vinculadas | Propias: `Copia de TbExpedientes`, `Copia de TbExpedientesConEntidades`, `E2E_export_20260723_142133_lista`, `ListaPrevia`, `TbAusExpPostAGEDO`, `TbAuxEstadosMartina`, `TbAuxNemotecnico`, `TbExpAGEDYS1`, `TbExpedientes_antes`, `TbExpedientesCadenaContratacion`, `TbJefaturas`. Vinculadas: `TbComunicados`, `TbDpDInformeCondicionamiento`, `TbExpedientesAnualidades1`, `TbFacturasDetalle`, `TbFacturasPrincipal`, `TbGestionRiesgos`, `TbGTVContratos`, `TbGTVContratosExpedientes`, `TbNPedido`, `TbResponsablesExpedientes`, `TbSolicitudesOfertasPrevias`, `TbSuministradoresSAP`, `TbVisadoFacturas_Nueva`, `TbVisadosGenerales` | Sí | [expedientes.md E5](expedientes.md#propuestas-para-después-del-descubrimiento-global) |
-| E6 | Retirar del front los cuatro vínculos que su código no usa | front de Expedientes | `Copia de TbExpedientes`, `Copia de TbExpedientesConEntidades`, `ListaPrevia`, `TbAusExpPostAGEDO` | Sí | [expedientes.md E6](expedientes.md#propuestas-para-después-del-descubrimiento-global) |
-| E7 | Reconciliar `TbExpedientesDatosAGEDYS`, que el código cita y no está en el ERD del backend | `Expedientes_datos` y `AGEDYS_DATOS` | `TbExpedientesDatosAGEDYS`, `TbExpAgedys`, `TbExpAGEDYS1` | Sí | [expedientes.md E7](expedientes.md#propuestas-para-después-del-descubrimiento-global) |
-| R1 | Sacar la contraseña del backend de la tabla del front | front de Gestión de Riesgos | `TbConfiguracionBackends` | Sí | [gestion-riesgos.md R1](gestion-riesgos.md#propuestas-para-después-del-descubrimiento-global) |
-| R3 | Poner en cuarentena las 30 tablas propias sin uso en el front | `Gestion_Riesgos_Datos` | Lookups de identificador (14): `TbIDAccionPlanContingencia`, `TbIDAccionPlanMitigacion`, `TbIDAnexos`, `TbIDBibliotecaRiesgos`, `TbIDCorreosEnviados`, `TbIDDocumentos`, `TbIDEdiciones`, `TbIDLog`, `TbIDPlanContingencia`, `TbIDPlanMitigacion`, `TbIDProyectos`, `TbIDRiesgos`, `TbIDRiesgosAIntegrar`, `TbIDTareas`. Catálogos (5): `TbValoresPosiblesContingencia`, `TbValoresPosiblesEstadoRiesgo`, `TbValoresPosiblesMitigacion`, `TbValoresPosiblesPlazoCalidadCosteVulnerabilidad`, `TbValoresPosiblesValoracion`. Resto (11): `TbAnexosAntigua`, `TbAux`, `TbAuxSumExp`, `TbFelix`, `TbLog`, `TbOrigenesRiesgosDetalles`, `TbProyectosResponsablesCalidad`, `TbProyectosSuministradores`, `TbProyectosTipo`, `TbRiesgosPorTipoProyecto`, `TbTablas`. Aparte: `ProyectoRespCalidad` y `TbTareas` | Sí | [gestion-riesgos.md R3](gestion-riesgos.md#propuestas-para-después-del-descubrimiento-global) |
-| R4 | Retirar del backend los 5 vínculos que el front no usa | `Gestion_Riesgos_Datos` y los dueños de las 5 tablas | `TbAplicaciones`, `TbDocumentosID`, `TbDPD`, `TbResponsablesExpedientes`, `TbSuministradoresSAP` | Sí | [gestion-riesgos.md R4](gestion-riesgos.md#propuestas-para-después-del-descubrimiento-global) |
-| R5 | Resolver las 13 referencias a tablas inexistentes o mal nombradas: o la tabla se vincula o la referencia se elimina | `Gestion_Riesgos_Datos` y los backends que sí tienen esas tablas | `TbAplicacionesVersiones`, `TbVersionCambios`, `TbRACS`, `TbExpedientesRACS`, `TbProyectosJefesDeProyecto`, `TbOrganosContratacion`, `TbJuridicas`, `TbTipologia`, `TbCambioDocumentos`, `TbExpedientesConEntidades`, `TbIndicadoresRiesgos`, `TbExpedientes1`, `TbSuministradorSAP` | Sí | [gestion-riesgos.md R5](gestion-riesgos.md#propuestas-para-después-del-descubrimiento-global) |
-| R8 | Fijar la semántica de comparación de texto antes de migrar | `Gestion_Riesgos_Datos` | — (afecta a las consultas de 357 módulos) | Sí | [gestion-riesgos.md R8](gestion-riesgos.md#propuestas-para-después-del-descubrimiento-global) |
-| R9 | Decidir el nivel de aislamiento de las 571 aperturas de recordset antes de que el backend pase a ODBC | `Gestion_Riesgos_Datos` | — | No | [gestion-riesgos.md R9](gestion-riesgos.md#propuestas-para-después-del-descubrimiento-global) |
-| N1 | Poner en cuarentena las 15 tablas propias sin referencias del backend | `NoConformidades_Datos` | `TbAnexos`, `TbNCARAvisos`, `TbNoConformidadesIngresoPorLotesTemporal`, `TbNoConformidadesIngresoPorLotesDetalle`, `TbNoConformidadesIngresoPorLotesPrincipal`, `TbTareasExplicaciones`, `TbConsultasPorFechas`, `TbConfiguracion`, `TbNCInformacionRAC`, `TbNCInformacionRACAnexos`, `TbAuditoriaLog`, `TbCacheIndicadoresProyectoHeader`, `TbCacheIndicadoresProyectoDetalle`, `TbCacheListadoNC`, `TbConexiones` | Sí | [no-conformidades.md N1](no-conformidades.md#propuestas-para-después-del-descubrimiento-global) |
-| N2 | Ejecutar la migración de anexos en producción y retirar después `TbAnexosAuditoria` y `TbAnexosNCAuditorias` | `NoConformidades_Datos` | `TbAnexosAuditoria`, `TbAnexosNCAuditorias`, `TbDocumentosAuditorias` | Sí | [no-conformidades.md N2](no-conformidades.md#propuestas-para-después-del-descubrimiento-global) |
-| N5 | Revisar las referencias a tablas que no existen y las dos consultas del front que las citan | front de No Conformidades | `TbACParaLista`, `TbARParaLista`, `TbNCDocumentosAux` | Sí | [no-conformidades.md N5](no-conformidades.md#propuestas-para-después-del-descubrimiento-global) |
-| N6 | Retirar `NCProyectoOperaciones.ActualizarRiesgosNC`, que escribe una columna que no existe y no tiene llamadores | `NoConformidades_Datos` | `TbRiesgosNC` | Sí | [no-conformidades.md N6](no-conformidades.md#propuestas-para-después-del-descubrimiento-global) |
-| N7 | Poner en cuarentena `TbTipologiaAux` del front, copia antigua de `TbTipologia` | front de No Conformidades | `TbTipologiaAux` | No | [no-conformidades.md N7](no-conformidades.md#propuestas-para-después-del-descubrimiento-global) |
-| G1 | Poner en cuarentena las 5 tablas del backend propio que no usa ninguna aplicación | `Registro_Ent_Salida_Datos` | `TbConexiones`, `TbEntradaPersonasContacto_RES`, `TbEntradas_indexacion`, `TbEntradas_RES_Indexacion`, `TbSalidas_Indexacion` | Sí | [registros.md G1](registros.md#propuestas-para-después-del-descubrimiento-global) |
-| G3 | Declarar clave primaria en las tablas del backend propio que no la tengan | `Registro_Ent_Salida_Datos` | 11 tablas del backend propio | Sí | [registros.md G3](registros.md#propuestas-para-después-del-descubrimiento-global) |
-| G4 | Reponer los dos vínculos que el catálogo declara y el front no tiene, y corregir las columnas `Año` | front de Registros y `Registro_Datos` | `Entradas`, `Salidas`, `Entradas.Año`, `Salidas.Año` | Sí | [registros.md G4](registros.md#propuestas-para-después-del-descubrimiento-global) |
-| G5 | Resolver las referencias que no tienen tabla | front de Registros | `TbSalidas`, `tbUsuarios` | Sí | [registros.md G5](registros.md#propuestas-para-después-del-descubrimiento-global) |
-| G6 | Decidir el destino de `Registro_Datos.accdb` y de sus 5 tablas, que son la aplicación «RegistroAntiguo» | `Registro_Datos` | `Entradas`, `Salidas`, `Nombres`, `DClases`, `TbConfiguracion` | Sí | [registros.md G6](registros.md#propuestas-para-después-del-descubrimiento-global) |
-
-## Grupo (b): recomendable si es barato
-
-26 propuestas. 4 tocan tablas compartidas y 22 solo tablas propias.
-
-### (b.1) Propuestas que tocan tablas compartidas
-
-| Id | Propuesta | Aplicación | Tablas afectadas | Bloqueada | Ficha |
-|---|---|---|---|---|---|
-| E9 | Declarar la integridad referencial que falta hacia `TbUsuariosAplicaciones` | `Expedientes_datos` hacia `Lanzadera_Datos` | `TbExpedientes`, `TbUsuariosAplicaciones` | Sí | [expedientes.md E9](expedientes.md#propuestas-para-después-del-descubrimiento-global) |
-| G12 | Corregir los `RowSource` de `TbExpedientes` y `TbProyectos` y apuntar al backend dueño | front de Registros | `TbExpedientes`, `TbProyectos` | Sí | [registros.md G12](registros.md#propuestas-para-después-del-descubrimiento-global) |
-| H7 | Añadir a `HPST` el vínculo a `TbExpedientesSuministradores`, o mover esa lectura al backend | `HPST` | `TbExpedientesSuministradores` | No | [hps.md H7](hps.md#propuestas-para-después-del-descubrimiento-global) |
-| H8 | Retirar de `HPST` los 2 vínculos que ninguna aplicación usa | `HPST` y los dueños de las 2 tablas | `TbExpedientesLugaresEjecucion`, `TbSolicitudesFechas` | Sí | [hps.md H8](hps.md#propuestas-para-después-del-descubrimiento-global) |
-
-### (b.2) Propuestas sobre tablas propias
-
-| Id | Propuesta | Aplicación | Tablas afectadas | Bloqueada | Ficha |
-|---|---|---|---|---|---|
-| A6 | Declarar con integridad referencial las relaciones que ya cumplen los datos, sin borrado en cascada | `Lanzadera_Datos` | `TbAplicacionesAperturas`, `TbVideos`, `TbVideosCategorias`, `TbCategorias` | No | [lanzadera-datos.md A6](lanzadera-datos.md#catálogo-de-propuestas-para-después-del-descubrimiento-global) |
-| A7 | Borrar las consultas de prueba `Consulta1` a `Consulta4` del backend | `Lanzadera_Datos` | `Consulta1`, `Consulta2`, `Consulta3`, `Consulta4` | No | [lanzadera-datos.md A7](lanzadera-datos.md#catálogo-de-propuestas-para-después-del-descubrimiento-global) |
-| P3 | Revisar la vida de las conexiones antes de ODBC | 11 fronts | — | Sí | [aperturas-directas-lanzadera.md P3](aperturas-directas-lanzadera.md#acciones-de-preparación-derivadas) |
-| P4 | Decidir qué hacer con `getEsUsuarioAutorizado` de Contratos antes de conservarla o retirarla | front de Contratos | `TbUsuariosAplicaciones`, `TbUsuariosAplicacionesPermisos` | Sí | [aperturas-directas-lanzadera.md P4](aperturas-directas-lanzadera.md#acciones-de-preparación-derivadas) |
-| H4 | Retirar del front las 4 tablas locales sin ninguna referencia en el repositorio | front de HPS | `Copia de TbUsuariosEntidades`, `TbCursosLocal`, `tblInfo`, `tblSettings` | Sí | [hps.md H4](hps.md#propuestas-para-después-del-descubrimiento-global) |
-| H5 | Fijar por escrito el contrato de las 4 cachés vivas: origen único en el backend y regenerador declarado | front de HPS | `TbDatosLocal`, `TbUsuariosSICALocal`, `TbUsuariosHistoricosLocal`, `TbSuministradoresLocal` | Sí | [hps.md H5](hps.md#propuestas-para-después-del-descubrimiento-global) |
-| H11 | Eliminar las ramas muertas de `DameIDAnexo` | front de HPS | `TbAnexosHistoricos`, `TbUsuarioHistoricosAnexos` | Sí | [hps.md H11](hps.md#propuestas-para-después-del-descubrimiento-global) |
-| H12 | Revisar las referencias a `TbObservacionesLocal` y `TbObservacionesHistoricasLocal` | front de HPS | `TbObservacionesLocal`, `TbObservacionesHistoricasLocal` | Sí | [hps.md H12](hps.md#propuestas-para-después-del-descubrimiento-global) |
-| C3 | Poner en cuarentena `tbSandboxLog` en el front | front de Condor | `tbSandboxLog` | Sí | [condor.md C3](condor.md#propuestas-para-después-del-descubrimiento-global) |
-| C7 | Declarar las cuatro relaciones que faltan en el backend | `condor_datos` | `tbSolicitudes`, `tbDatosPCSUB`, `tbRechazos`, `tbLogEstados`, `tbValidacionRevision` | Sí | [condor.md C7](condor.md#propuestas-para-después-del-descubrimiento-global) |
-| C8 | Reescribir el filtro de usuarios de los dos combos de log sin `MSysObjects` | front de Condor | `tbLogCambios`, `tbLogErrores` | No | [condor.md C8](condor.md#propuestas-para-después-del-descubrimiento-global) |
-| C9 | Decidir el destino de la contraseña del backend | front de Condor | `TbConfiguracionBackends` | Sí | [condor.md C9](condor.md#propuestas-para-después-del-descubrimiento-global) |
-| E10 | Decidir el destino de `TbAuxEstadosMartina`, duplicada en el front y en el backend | front de Expedientes y `Expedientes_datos` | `TbAuxEstadosMartina` | Sí | [expedientes.md E10](expedientes.md#propuestas-para-después-del-descubrimiento-global) |
-| E11 | Revisar el `RowSource` residual de `Form_FormE2ECola` y las rutinas dormidas del instalador | front de Expedientes | `TbExpedientes`, `TbExpAgedys`, `TbExpedientes1` | Sí | [expedientes.md E11](expedientes.md#propuestas-para-después-del-descubrimiento-global) |
-| R7 | Decidir el tratamiento de las 35 consultas guardadas: 4 de nombre ad hoc a cuarentena, 31 de negocio a retirada tras confirmar consumidores | `Gestion_Riesgos_Datos` | 35 consultas guardadas | Sí | [gestion-riesgos.md R7](gestion-riesgos.md#propuestas-para-después-del-descubrimiento-global) |
-| R10 | Sustituir los 45 literales de fecha por parámetros o literales compatibles con ambos motores | `Gestion_Riesgos_Datos` | 8 ficheros de código | No | [gestion-riesgos.md R10](gestion-riesgos.md#propuestas-para-después-del-descubrimiento-global) |
-| N9 | Retirar o documentar como consultas de análisis las 4 consultas guardadas del backend | `NoConformidades_Datos` | `ColumnaFalta`, `Consulta1`, `NC_Estudio_Replanificacion_2026`, `Replanificaciones_2026_Max_Fecha_Fin_Prevista` | Sí | [no-conformidades.md N9](no-conformidades.md#propuestas-para-después-del-descubrimiento-global) |
-| G7 | Quitar el vínculo del front a `TbSalidas_RES_Indexacion`, que usan otras aplicaciones | front de Registros | `TbSalidas_RES_Indexacion` | Sí | [registros.md G7](registros.md#propuestas-para-después-del-descubrimiento-global) |
-| G8 | Aislar el desarrollo de la producción: los vínculos apuntan a `\\datoste` y `getdb()` resuelve siempre la ruta remota | front de Registros | 13 vínculos y 3 abridores | Sí | [registros.md G8](registros.md#propuestas-para-después-del-descubrimiento-global) |
-| G9 | Normalizar las rutas: cinco grafías distintas para cuatro backends | front de Registros | 13 vínculos | No | [registros.md G9](registros.md#propuestas-para-después-del-descubrimiento-global) |
-| G10 | Retirar la credencial literal de las tres cadenas de apertura | front de Registros | — | Sí | [registros.md G10](registros.md#propuestas-para-después-del-descubrimiento-global) |
-| G13 | Retirar la dirección de correo nominal fija escrita en el código | front de Registros | — | Sí | [registros.md G13](registros.md#propuestas-para-después-del-descubrimiento-global) |
-
-## Grupo (c): aplazar a la refactorización final tras el apagado
-
-4 propuestas.
-
-| Id | Propuesta | Aplicación | Tablas afectadas | Bloqueada | Ficha |
-|---|---|---|---|---|---|
-| G14 | Renombrar `Tb*_RES` a una nomenclatura estable | `Registro_Ent_Salida_Datos` | `TbEntradas_RES`, `TbSalidas_RES` | No | [registros.md G14](registros.md#propuestas-para-después-del-descubrimiento-global) |
-| N10 | Decidir cómo se reproduce la comparación sin distinguir mayúsculas | `NoConformidades_Datos` | 180 módulos de `src` | No | [no-conformidades.md N10](no-conformidades.md#propuestas-para-después-del-descubrimiento-global) |
-| N11 | Decidir dónde vive `TbConfiguracionBackends`, con la ruta y la clave del backend en claro | front de No Conformidades | `TbConfiguracionBackends` | No | [no-conformidades.md N11](no-conformidades.md#propuestas-para-después-del-descubrimiento-global) |
-| G11 | Mover las 3 consultas guardadas del front al backend y parametrizar el año y el SSID | front de Registros hacia `Registro_Ent_Salida_Datos` | `Consulta1`, `Consulta2`, `Consulta3` | No | [registros.md G11](registros.md#propuestas-para-después-del-descubrimiento-global) |
-
-## Conflictos y dependencias entre propuestas
-
-### Conflictos
-
-| Id | Conflicto | Propuestas implicadas | Qué pasa si no se resuelve |
-|---|---|---|---|
-| X-01 | `TbCorreosEnviados` recibe cuatro propuestas de clave primaria desde cuatro aplicaciones, y vive en `Correos_datos.accdb`, un backend que no está en el catálogo | C5, N3, R2, E2 | Cuatro declaraciones de clave sobre la misma tabla, coordinadas por escrito y con la tabla en un backend sin dueño catalogado |
-| X-02 | El dueño de `TbCorreosEnviados` y de `TbRiesgosNC` está sin registrar, y las dos las escribe una aplicación que no es su dueña | N8, N3, C5, E3, N4 | El esquema PostgreSQL de destino se crea sin dueño, que es exactamente lo que la regla de propiedad prohíbe |
-| X-03 | Cuarentena y clave primaria sobre la misma tabla | B1 y B3 (`TbAuxManteniminetosPreventivosCalendario`); R3 y R2 (`ProyectoRespCalidad`, `TbAuxProyectosRiesgos`, `TbCachePublicabilidadEdicion`, `TbRiesgosValoracion`); E5 y E2 (`TbExpAgedys`, `TbExpAGEDYS1`, `E2E_export_20260723_142133_lista`); G1 y G3, sin delimitación posible | Una tabla renombrada a `zzBAJA_` y con clave declarada a la vez; el solapamiento de G1 y G3 no se puede acotar porque los índices del backend propio no son legibles |
-| X-04 | H2 y H4 retiran la misma tabla del front | H2, H4 (`Copia de TbUsuariosEntidades`) | Dos retiradas para la misma tabla, con dos comprobaciones previas distintas |
-| X-05 | G4 repone vínculos hacia un backend que G6 propone retirar | G4, G6 | Un vínculo restaurado hacia un archivo declarado histórico |
-| X-06 | Siete propuestas cambian el mismo mecanismo, el generador `Max + 1`, y varias escriben en tablas compartidas | P1, C6, E8, H10, N4, R6, G2 | Cambios parciales incompatibles entre el front y la web durante la coexistencia, y generadores que dejan de generar el mismo identificador en tablas compartidas |
-| X-07 | La misma decisión de semántica de texto está en dos grupos y en dos aplicaciones | R8 (grupo a), N10 (grupo c) | Se decide dos veces y se aplica en dos momentos distintos: la web y el legacy discreparán sobre el mismo dato |
-| X-08 | Siete propuestas tratan las credenciales, con tres destinos distintos y tres grupos | P2, B4, H9, G10 (literales en el código); R1 (grupo a), C9 (grupo b), N11 (grupo c) | El mismo secreto sigue en el código de cuatro aplicaciones mientras su destino se decide tres veces |
-| X-09 | R5 propone resolver referencias a tablas inexistentes, pero el grafo muestra que siete de esas tablas existen en otro backend | R5 (`TbRACS`, `TbExpedientesRACS`, `TbExpedientesConEntidades`, `TbJuridicas`, `TbOrganosContratacion`, `TbTipologia`, `TbSuministradoresSAP`) | Se elimina una referencia que solo necesitaba un vínculo, y se pierde el acceso a datos que existen |
-| X-10 | E5 pone en cuarentena 14 tablas que no son de Expedientes, sino vínculos a tablas de AGEDYS y de Gestión de Riesgos | E5, E2, E3, R3 | Renombrar un vínculo en Access no retira la tabla de origen: la propuesta toca el enlace, no el dato, y no produce el efecto que su enunciado promete |
-| X-11 | Dos tablas distintas comparten el nombre `TbProyectos`, en backends distintos, y el front de Registros la consume desde `AGEDYS_DATOS` | G12, R3, R4 y la ficha de No Conformidades | En el DDL de PostgreSQL, dos tablas homónimas de backends distintos se homonimian por esquema sin que nadie lo decida |
-| X-12 | `TbHerramientaDocAyuda` existe con ese nombre en Gestión de Riesgos y en No Conformidades, y la propuesta A1 lo crea en la Lanzadera | A1 y las fichas de Gestión de Riesgos y de No Conformidades | Tres tablas homónimas en tres esquemas; el destino en PostgreSQL necesita un nombre desambiguado, y la decisión no está tomada |
-| X-13 | La regla «los cambios de esquema durante la coexistencia son solo aditivos» choca con el renombrado de cuarentena | A2, A3, A4, B1, C1, C3, E5, G1, H1, H2, H3, H4, N1, N7 | Cuarentenas que renombran tablas en el legacy durante la coexistencia, sin que el propietario haya declarado que la regla se refiere solo al esquema de destino |
-| X-14 | El inventario de aperturas mide `main`, y la ficha de Condor mide su RC1, donde los cuatro abridores externos no tienen llamadores | P1, P2, P3, P4, C4 | La superficie de adaptación se dimensiona sobre un código que en Condor ya no existe |
-
-### Dependencias
-
-| Id | Dependencia | Orden exigido |
-|---|---|---|
-| D-01 | N8 registra el dueño de `TbCorreosEnviados` y `TbRiesgosNC` | N8 antes de C5, N3, R2, E2, E3, N4 y R6: ninguna declaración de clave ni de identidad se ejecuta sobre una tabla sin dueño |
-| D-02 | E4 obtiene el SQL de las once consultas guardadas de Expedientes | E4 antes de E5: sin el mapa de tablas no se puede afirmar que ninguna consulta usa una de las 25 candidatas |
-| D-03 | E7 decide el nombre real de la tabla de AGEDYS | E7 antes de E2: la clave se declara sobre la tabla que resulte ser `TbExpAgedys` o `TbExpAGEDYS1`, no sobre las dos |
-| D-04 | A5 limpia los huérfanos de `TbConexionUltimaAppAbierta` | A5 antes de A6: la integridad referencial se declara sobre datos ya limpios |
-| D-05 | C6 cambia la generación de identificadores de las tablas de detalle | C6 antes de C7: las cuatro relaciones que faltan apuntan a `idSolicitud` |
-| D-06 | N6 retira el procedimiento que escribe una columna inexistente | N6 antes de N4: la tabla `TbRiesgosNC` solo se migra a identidad con su esquema estable |
-| D-07 | G4 restaura los vínculos y comprueba en producción si el front desplegado los tenía | G4 antes de G6: la decisión sobre `Registro_Datos.accdb` necesita saber si el frente vivo depende de él |
-| D-08 | El grafo global de vínculos (tarea T6) cruza todos los backends | T6 antes de A3, B1, E5, E6, H2, H8, N1, R3, R4, G1, G6 y C1: ninguna cuarentena se aplica sin saber quién más consume la tabla |
-| D-09 | P1 coordina a los cinco fronts que escriben aperturas | P1 se coordina con G2, que usa `DameID1` sobre `TbAplicacionesAperturas`, y con A5 y A6, que tocan la misma tabla. Ninguna de las dos partes cambia el esquema de esa tabla sin la otra |
-| D-10 | R4 retira vínculos que apuntan a tablas de AGEDYS y AGEDO | R4 después del acuerdo con el dueño de AGEDYS, que está fuera del alcance de la migración y cuyos vínculos deben seguir funcionando |
-| D-11 | E9 declara la integridad referencial hacia `TbUsuariosAplicaciones` | E9 después de fijar el tipo de `TbUsuariosAplicaciones.Id`, que la ficha de la Lanzadera deja como `Integer` de 16 bits sin cambiar |
-
-## Pruebas que bloquean
-
-Una propuesta está bloqueada cuando la decisión no puede cerrarse con la evidencia disponible hoy. De las 84 propuestas, 71 lo están. El bloqueo dominante no es el análisis de código, que está hecho, sino tres cosas: la evidencia de producción, el grafo global de vínculos y el SQL de las consultas guardadas, que no se ha podido leer con los permisos actuales.
-
-Una misma propuesta puede quedar bloqueada por más de una prueba.
-
-| Prueba | Propuestas que desbloquea | Prueba concreta |
-|---|---|---|
-| Exportar el SQL de las consultas guardadas | E4, H1, H4, R3, R7, N9, C1, A7 | Abrir una sesión de Access con permiso de lectura sobre `MSysQueries` y exportar las 64 consultas de backend (11 de Expedientes, 8 de HPS, 35 de Riesgos, 4 de No Conformidades, 2 de Condor, 4 de la Lanzadera) y la consulta del front de HPS. Es la prueba que más propuestas desbloquea por sesión |
-| Recuento de filas y de huérfanos sobre una copia reciente de producción | A2, A3, A4, A5, B1, B3, C1, C6, E2, E5, E8, G1, G2, H1, H10, N1, N2, N7, R2, R6 | Repetir sobre una copia de producción los recuentos que hoy son de desarrollo: `SELECT COUNT(*)` por tabla en cuarentena, la consulta de duplicados de `IDBBDD`/`IDAplicacion`/`NombreTabla` de A3, y las consultas de huérfanos de A5 y A6 |
-| Grafo global de vínculos de todos los backends (tarea T6) | A3, B1, E5, E6, H1, H2, H8, N1, R3, R4, G1, G6, C1 | Cruzar el grafo de vínculos de los backends del [grafo de dependencias](grafo-dependencias.md) con la búsqueda del nombre de la tabla en el `src` de los demás fronts, incluido el SQL dinámico |
-| Reproducir en runtime los recorridos afectados | A1, B2, B5, C3, C4, E7, E11, G4, G5, G12, H3, H5, H12, N4, N5, N6, P1, P4, R5 | Ejecutar en la aplicación el recorrido que la propuesta nombra: abrir la ayuda, cerrar una planificación, buscar registros antiguos, ejecutar `RellenarTbProyectoParaLista`, guardar una NC con riesgos asociados, guardar una versión, y ensayar dos inserciones simultáneas para medir el generador de identificadores |
-| Extraer los índices del backend de Registros | G3 | El volcado del que se dispone (`docs/ERD-auxiliar/`) no incluye índices y la interfaz de solo lectura no los expone. Hace falta una extracción que los incluya, para las 11 tablas del backend propio |
-| Confirmar el entorno de cada copia y los permisos de escritura en el share | B6, E1, G8, H6 | Declarar, para cada copia, si es de desarrollo o de producción, y qué permisos de escritura tiene en `\\datoste`. Ninguna de las cuatro propuestas se puede cerrar sin ese dato |
-| Acuerdo con los dueños ajenos | C2, C5, N3, N8, R2, R4, P2, B4, H9, G10, C9, H2, G13, E3, E10, E11 | Acordar con el dueño de Correos, de AGEDYS, de AGEDO, de Tareas, de HPS Solicitudes, de AGEDYS ECO y de AGEDYS TEC el registro de propiedad, la declaración de clave y el destino de las credenciales |
-| Consumidores fuera de Access | A4, E5, E6, N1, R3, R7, G1, G6 | Revisar Excel, informes y tareas programadas que puedan leer las tablas en cuarentena. Es lo que exige el [protocolo de huérfanas](../epica-coexistencia-postgresql.md#protocolo-de-huérfanas) |
-| Aislar el vínculo a producción y decidir su entorno destino | E1, y con él E2 | `TbExpedientes1` apunta a `\\datoste` desde el backend de desarrollo. Reorientarlo y comparar el conjunto de expedientes que devuelve la unión con `TbProyectos_Riesgos` antes y después del cambio |
-| Fijar la versión de referencia de cada front | P1, P2, P3, P4 | El inventario de aperturas mide `main` de cada repositorio; la ficha de Condor mide su RC1. Confirmar qué rama va a producción en cada aplicación antes de dimensionar la adaptación |
-
-## Qué necesita decidir el propietario
-
-Las decisiones van en orden: primero las de criterio, que fijan la regla con la que se pueden decidir las propuestas; después las de aplicación, que dependen de esas reglas.
-
-| Id | Decisión | Recomendación y fundamento |
-|---|---|---|
-| P-01 | Criterio general de una tabla que el front propietario no usa pero otro sí: ¿se reasigna o se retira? | Reasignar al dueño real y mantener el vínculo solo si el dueño lo pide; retirar solo tras el protocolo de huérfanas. Fundamento: R-2 no se confirma de forma general en el grafo, y las fichas H8, R4 y A3 ya apuntan en esa dirección |
-| P-02 | Dueño de `TbCorreosEnviados` y `TbRiesgosNC`, y del backend `Correos_datos` que no está catalogado | Delegar en el dueño de Correos la declaración de clave y registrar su propiedad; no aprobar cuatro declaraciones en paralelo. Fundamento: seis backends consumen `TbCorreosEnviados` y ninguno es su dueño |
-| P-03 | `TbUsuariosAplicacionesTareas`, que vive en la Lanzadera y solo la usa `Tareas_datos1`, fuera de alcance | Reasignarla a Tareas y documentarlo. No hay propuesta numerada para ella: la decisión se cierra aquí y se incorpora después como propuesta |
-| P-04 | Aplicación de la cuarentena y la retirada a las 87 candidatas de 14 propuestas | No renombrar en el legacy hasta que la regla de cambios aditivos quede aclarada (X-13) y exista el grafo global. Fundamento: el protocolo de huérfanas exige la evidencia de no uso antes del renombrado, y esa evidencia falta para casi todas |
-| P-05 | Riesgo de los vínculos a la ruta de producción `\\datoste` | Aislar antes del primer corte los vínculos de los fronts (H6, G8, B6) y el vínculo `TbExpedientes1` (E1); aceptar el riesgo solo con AGEDYS y AGEDO, que están fuera de la migración y cuyos vínculos deben seguir funcionando |
-| P-06 | Destino único de las credenciales y orden de migración de los 11 fronts con literal | Un solo destino, aplicado por el mismo mecanismo que ya existe (`TbConfiguracionBackends`) y, a medio plazo, el gestor de secretos del servidor. Fundamento: la misma credencial abre todos los binarios del ecosistema (P2) |
-| P-07 | `TbConfiguracionBackends`: exención declarada de la regla «las tablas viven en el backend» | Declarar la exención de forma transversal, con su motivo: contiene la ruta y la clave del backend, y moverla al backend es circular (C2). Aplicarla a las cuatro copias: Condor, Expedientes, Gestión de Riesgos y No Conformidades |
-| P-08 | Semántica de comparación de texto (`Option Compare Database`) | Una sola decisión, en el grupo (a), porque afecta a las consultas que se migran. Fundamento: 356 de 357 módulos en Riesgos y 178 de 180 en No Conformidades; PostgreSQL no hereda esa comparación |
-| P-09 | Identidad en lugar de `Max + 1`: ¿se genera en PostgreSQL desde el corte o se mantiene el generador actual? | Mantener el `Max + 1` en el legacy hasta el apagado y migrar a identidad, sin cambiar el legacy, coordinando las siete propuestas. Fundamento: el cambio en el legacy es un cambio de esquema no aditivo y el identificador se calcula antes de insertar la fila padre en al menos un caso (E8) |
-| P-10 | Adaptación de las 11 aperturas directas: alternativa A (vínculo ODBC en el backend) o B (conexión ODBC centralizada) | B para la lectura de identidad, que es el caso de los 11 fronts y no depende del esquema; A solo para los que escriben `TbAplicacionesAperturas` y no la vinculan (Contratos y Registros, alcanzables, más AGEDYS, AGEDYS ECO y Brass si se reactivan sus llamadas). Decidir antes de migrar `Lanzadera_Datos`. Fundamento: DAO no admite recordsets de tipo tabla, así que B hay que probarla front por front, y la alternativa A exige crear vínculos en cinco backends que hoy no los tienen, coste que no está en ninguna propuesta numerada |
-| P-11 | Consultas guardadas: retirada de las 31 de negocio de Riesgos y de las 4 de nombre ad hoc | Exportar primero el SQL; retirar solo las de nombre ad hoc; decidir las 31 de negocio por consumidor externo. Fundamento: ninguna se invoca desde el front, pero el SQL no se ha podido leer |
-| P-12 | Tablas locales del front: política única para caché, tabla de trabajo y residuo | Tres clases declaradas: caché con contrato y regenerador (H5), tabla de trabajo temporal del front (B2) y residuo retirado (H3, H4, N7, C3). Fundamento: `TbAuxPriorizacion` de Gestión de Riesgos no tiene ninguna propuesta y el patrón está repartido en seis aplicaciones |
-| P-13 | `Registro_Datos.accdb` y la aplicación «RegistroAntiguo» | Declararla archivo histórico de solo lectura. Fundamento: cero referencias vivas desde el front y tres vínculos entrantes que hay que confirmar con AGEDYS |
-| P-14 | Alcance de la fase 1: catálogo entero o por aplicación | Aprobar solo lo desbloqueable, en una sola tanda previa. Fundamento: 71 de las 84 propuestas dependen de tres pruebas que se hacen una vez: la evidencia de producción, el grafo global de vínculos y el SQL de las consultas guardadas |
-
-## Resumen por aplicación
-
-| Aplicación | Backend | Propuestas | (a) | (b) | (c) | Bloqueadas | Toca tablas de otra aplicación |
-|---|---|---|---|---|---|---|---|
-| Lanzadera | `Lanzadera_Datos` | 11 | 7 | 4 | 0 | 9 | 3 |
-| Brass | `Gestion_Brass_Gestion_Datos` | 6 | 6 | 0 | 0 | 6 | 0 |
-| HPS | `HPST` | 12 | 6 | 6 | 0 | 10 | 3 |
-| Condor | `condor_datos` | 9 | 5 | 4 | 0 | 8 | 1 |
-| Expedientes | `Expedientes_datos` | 11 | 8 | 3 | 0 | 11 | 6 |
-| Gestión de Riesgos | `Gestion_Riesgos_Datos` | 10 | 8 | 2 | 0 | 8 | 3 |
-| No Conformidades | `NoConformidades_Datos` | 11 | 8 | 1 | 2 | 8 | 3 |
-| Registros | `Registro_Ent_Salida_Datos` | 14 | 6 | 6 | 2 | 11 | 4 |
-| **Total** | | **84** | **54** | **26** | **4** | **71** | **23** |
-
-La columna «toca tablas de otra aplicación» cuenta propuestas cuyo cambio se aplica sobre una tabla propiedad de otra aplicación: una declaración de clave sobre `TbCorreosEnviados` cuenta en las cuatro aplicaciones que la proponen, y una cuarentena de tablas vinculadas cuenta donde el vínculo se retira, no donde el dato vive.
-
-R7 está en el grupo (b) para sus 4 consultas de nombre ad hoc y en el grupo (c) para las 31 de negocio. En esta tabla cuenta una sola vez, en (b).
-
-## Recuento de propuestas incorporadas
-
-El catálogo incorpora **84 propuestas** de las ocho fichas de aplicación y del inventario de aperturas directas: A1–A7 (7), P1–P4 (4), B1–B6 (6), H1–H12 (12), C1–C9 (9), E1–E11 (11), R1–R10 (10), N1–N11 (11) y G1–G14 (14). La suma es 84, y el catálogo contiene 84 filas.
-
-Por grupo: 54 en (a), 26 en (b) y 4 en (c), con R7 repartida entre (b) y (c) y contada una vez en (b).
-
-## Lo que este catálogo no cubre
-
-- **Huecos sin propuesta numerada.** Cuatro hallazgos tienen dueño claro y propuesta ausente: `TbUsuariosAplicacionesTareas` (mal ubicada, solo la usa `Tareas_datos1`), los vínculos que la alternativa A de las aperturas directas exige crear en cinco backends, los 69 huérfanos de `TbPermisos` contra `TbAplicaciones`, y `TbAuxPriorizacion` del front de Gestión de Riesgos. No se han inventado identificadores para ellos: se recogen aquí para que el propietario decida si entran en el catálogo.
-- **Backends fuera del catálogo.** `Correos_datos`, `AGEDYS_DATOS`, `AGEDO20_Datos`, `Solicitudes_HPS_datos` y `Tareas_datos1` son dueños de tablas que este catálogo propone tocar y no tienen ficha de fase 0. Sus propuestas se quedan sin ficha: no se pueden decidir mientras tanto.
-- **Aplicaciones sin ficha.** AGEDYS, AGEDYS ECO, Contratos, Seguridad, Solicitudes HPS, Tareas y Correos aparecen en el grafo y en el inventario de aperturas, pero no tienen inventario de fase 0 propio.
-- **La web.** Ninguna ficha ha inventariado los accesos de la web a estos backends. El grafo solo cubre los fronts de Access.
+Los grupos (b) y (c) están en [`catalogo-accionables-b.md`](catalogo-accionables-b.md).
