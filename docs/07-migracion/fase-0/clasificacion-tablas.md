@@ -116,7 +116,13 @@ Estos nombres podían referirse a dos tablas. Se resolvieron mirando qué conexi
 
 1. **`TbExpedientesCodigoCompras` tiene dos copias**, una en `AGEDYS_DATOS` y otra en `Expedientes_datos`. **Resuelto (2026-11-05, decisión 25):** las dos están vacías y la funcionalidad nunca se ha usado; se retira (issues [AGEDYS_ECO#11](https://github.com/DysTelefonica/AGEDYS_ECO/issues/11), [Expedientes#278](https://github.com/DysTelefonica/Expedientes/issues/278) y [AGEDYS#4](https://github.com/DysTelefonica/AGEDYS/issues/4)).
 2. **`TbExpedientesAnualidades`**: AGEDYS Técnico ya usa la de Expedientes por su vínculo; AGEDYS ECO sigue usando la copia de `AGEDYS_DATOS`. Con la decisión 21, ECO tiene que pasar a la de Expedientes.
-3. **`TbCorreosEnviados`**: además de la cola de `Correos_datos`, Contratos y Solicitudes HPS escriben cada una en su propia tabla local con ese nombre. ¿Esos correos salen? El proceso del servidor recorre la de Correos (decisión 16).
+3. **`TbCorreosEnviados`**: además de la cola de `Correos_datos`, Contratos y Solicitudes HPS tienen cada una su propia tabla local con ese nombre.
+   - **Contratos, resuelto (2026-11-05, decisión 26):** la clase `Correo` que escribe en la tabla no se instancia en ningún sitio, la tabla tiene 204 filas de 2023-2024 (184 sin enviar) y ningún proceso de Automatización abre el backend. Se retira ([CONTRATOS#2](https://github.com/DysTelefonica/CONTRATOS/issues/2)).
+   - **Solicitudes HPS, abierto:** el propietario elige la cola común, pero la local no es una copia sino un diseño distinto, y falta decidir qué pasa con lo que solo ese diseño hace.
+     - **Emisor propio en producción.** `EnviarCorreosHPS.vbs` lee la tabla local (`FechaEnvio IS NULL`), envía por SMTP y marca `FechaEnvio`; `script.vbs` de Automatización lo lanza en cada ciclo (paso 9/9). El informe diario `HPS_SOLICITUDES.vbs` también la lee.
+     - **Estructura distinta.** Solo la local tiene `FechaOrdenEnvio`, `Programado`, `Intentos`, `FechaProceso`, `NombrePlantilla`, `VersionPlantilla`, `CadenaRecursos`, `IDSolicitud`, `Accion`, `DesencadenadoPor` y `TipoCorreo`: plantillas, envíos programados, reintentos y recordatorios.
+     - **Datos.** La local tiene 9 correos de prueba (diciembre de 2025 a febrero de 2026), entre ellos los únicos recordatorios. Los avisos reales siguen saliendo por la cola común: 212 hasta mayo de 2026, ninguno recordatorio.
+     - **Lo que falta decidir.** Quedarse con la cola común sin recordatorios, o ampliar la cola común con las columnas del diseño nuevo.
 4. **`Nombres` de `Registro_Datos`** la leen Condor, Gestión de Riesgos, HPS y Solicitudes HPS, y no Registros. ¿Quién es su dueño?
 5. **`TbUsuariosEntidades` de `HPST`** solo la usa Solicitudes HPS (por R-2 sería suya; ver `HPS-H2` y `SHO-S4`).
 6. **`tbUsuarios` de `Lanzadera_Datos`** solo la consume AGEDO; la Lanzadera actual no la nombra. Se conserva por la decisión 14.
