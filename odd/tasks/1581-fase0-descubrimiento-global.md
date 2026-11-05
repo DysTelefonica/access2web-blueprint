@@ -86,3 +86,5 @@ L30. Decisión del propietario (2026-11-05, issue #1559, verbatim): «Dos esquem
 L31. Decisión del propietario (2026-11-05): aprueba «tal cual» el orden de paso a la web propuesto (decisión 24): Lanzadera web, Expedientes, Condor, Seguridad, HPS, Solicitudes HPS, Gestión de Riesgos, No Conformidades, Registros, Brass y APGEDYS.
 
 L32. Tablas de los fronts del grupo (a) medidas (2026-11-05, issue #1688): ninguna está vacía en el front publicado; en AGT-A3, `TbProductosObsoletos` y `TbSTGParametrosParaFormulario` son idénticas en front y backend y `TbHerramientaDocAyuda` difiere (33 filas frente a 10).
+
+L33. Pregunta del propietario (2026-11-05): «Se puede virtualizar un sistema citrix en mi equipo para pruebas locales?». Respuesta registrada en H-3 (issue #1691): prueba local con Windows Server en evaluación y RDS Session Host, y confirmación en el Citrix de preproducción; el propietario pide «sí apuntalo».
