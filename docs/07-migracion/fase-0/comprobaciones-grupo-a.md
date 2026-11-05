@@ -39,9 +39,9 @@ Las fichas identifican las tablas y sus propietarios; los datos del front quedan
 | SEG-G2 | Vacías | Tiene datos: revisar |
 | BFA-S4 | Duplicidad | Comparación pendiente |
 | AGT-A3 | Duplicidad | Comparación pendiente; front fuera de la foto |
-| SHO-S3 | Duplicidad | Comparación pendiente |
+| SHO-S3 | Duplicidad | Idénticas: la copia se puede sustituir por un vínculo |
 | LAN-A5 | Integridad referencial | Bloquea: 9 huérfanos |
-| SEG-G5 | Integridad referencial | Se puede aplicar en los dos tipos; falta la unión por `NombreID` |
+| SEG-G5 | Integridad referencial | Se puede aplicar |
 | AGT-A8 | Integridad referencial | Se puede aplicar en los tres pares medidos |
 
 ## Claves primarias
@@ -209,7 +209,7 @@ Veredicto: Tiene datos: revisar las diez primeras.
 |---|---|---|
 | BFA-S4 | `TbCorreosEnviados`: `Tareas_datos1.accdb` 1620; `Correos_datos.accdb` 35395 | Comparar destinatarios y fechas y determinar si registran el mismo hecho. |
 | AGT-A3 | `AGEDYS_DATOS.accdb`: `TbAuxExp` 40; `TbHerramientaDocAyuda` 10; `TbProductosObsoletos` 25; `TbSTGParametrosParaFormulario` 15; `TbSuministradoresListaFavoritos` 0. Las cinco copias del front están fuera de la foto. | Comparar contenido, esquema y recuentos con el front; comprobar sus lectores. |
-| SHO-S3 | `TbHPSGrado`: `Solicitudes_HPS_datos.accdb` 13; `HPST.accdb` 13 | Comparar contenido y decidir la fuente; el vínculo `TbHPSGrado1` no es una copia local, sino un vínculo. |
+| SHO-S3 | `TbHPSGrado`: `Solicitudes_HPS_datos.accdb` 13; `HPST.accdb` 13 | Comparada: misma estructura y las 13 filas idénticas. La copia de Solicitudes HPS se puede sustituir por un vínculo a la de `HPST.accdb` sin perder datos; el vínculo `TbHPSGrado1` no es una copia local. |
 
 ## Integridad referencial
 
@@ -227,6 +227,6 @@ Huérfano es una fila hija cuyo valor no nulo no existe en la tabla madre. Las c
 
 Correcciones a las fichas que salen de esta medición:
 
-- **SEG-G5.** `Tb0RegistrosRelacionados` no tiene `IDTipoRegistro`: tiene dos columnas de tipo, `IDTipoRegistroARelacionar` e `IDTipoRegistroRelacionado`. Falta medir la unión de las 21 tablas de tipo de registro con su catálogo por `NombreID`, que es de texto.
+- **SEG-G5.** `Tb0RegistrosRelacionados` no tiene `IDTipoRegistro`: tiene dos columnas de tipo, `IDTipoRegistroARelacionar` e `IDTipoRegistroRelacionado`. La unión con las 21 tablas de tipo de registro también está limpia: cada uno de los 266 extremos de `Tb0RegistrosRelacionados` (dos por fila) existe en la tabla que `Tb0TipoRegistros.NombreTabla` asigna a su tipo, por la columna `NombreID`; las 21 tablas se leen y no hay ningún huérfano.
 - **AGT-A8.** La unión no es por `CODPPD` en las dos tablas: el SQL del front une `TbNPedido.CODPPD` con `TbProyectos.CODPROYECTOS` en 70 sitios.
 - En sentido contrario hay 228 proyectos sin pedido y 87 facturas sin visado: son madres sin hijas, no huérfanos.
