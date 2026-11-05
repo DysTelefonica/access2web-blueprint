@@ -21,7 +21,7 @@ Fuente: tabla `TbAplicaciones` de `Lanzadera_Datos`, leída con DAO en solo lect
 | 18 | Gestión Contratos | `GestionContratos.accdb` | `ConClaTab.accdb` | Sí | No |
 | 19 | Expedientes | `Expedientes.accdb` | `Expedientes_datos.accdb` | Sí | Sí |
 | 20 | SICA | `SICA.accdb` | `SICA_Datos.accdb` | Sí | No |
-| 21 | **AGEDYS** | `AGEDYS.accdb` | `AGEDYS_DATOS.accdb` | **No** | **Sin decidir** |
+| 21 | **AGEDYS** | `AGEDYS.accdb` | `AGEDYS_DATOS.accdb` | **No** | **Residuo, fuera** |
 | 22 | Solicitudes HPS | `Solicitudes_HPS.accdb` | `Solicitudes_HPS_datos.accdb` | Sí | Sí |
 | 23 | Condor | `Condor.accdb` | `Condor_datos.accdb` | Sí | Sí |
 
@@ -39,7 +39,9 @@ Fuente: tabla `TbAplicaciones` de `Lanzadera_Datos`, leída con DAO en solo lect
 
 La fila 21 declara `AGEDYS.accdb` con backend `AGEDYS_DATOS.accdb` y `ConIconoEnLanzadera = No`: por eso no aparece en la rejilla de la lanzadera. **No se ha encontrado ningún checkout de `AGEDYS.accdb`** en `C:\00repos\codigo`, y su backend es el mismo que comparten las dos mitades de APGEDYS.
 
-Esto tiene dos lecturas y hay que resolver cuál: o es la aplicación matriz de la que cuelgan AGEDYS TÉCNICO y AGEDYS ECO, y entonces hereda las 102 tablas de `AGEDYS_DATOS`; o es un residuo retirado. **No se puede dejar sin decidir**: si existe y usa tablas, el reparto de APGEDYS que se está haciendo no la incluye.
+Esto tiene dos lecturas y hay que resolver cuál: o es la aplicación matriz de la que cuelgan AGEDYS TÉCNICO y AGEDYS ECO, y entonces hereda las 102 tablas de `AGEDYS_DATOS`; o es un residuo retirado.
+
+**Resuelto (2026-11-05, decisión 15 de la épica):** el propietario confirma que es un residuo que no se usa. No entra en la migración y el reparto de `AGEDYS_DATOS` se hace solo entre las dos mitades de APGEDYS.
 
 ### 2. «RegistroAntiguo», un segundo registro en el mismo backend
 
@@ -67,11 +69,10 @@ Las 22 filas guardan la contraseña del backend en el campo `Pass`, en claro. Es
 
 ## Consecuencia para el alcance
 
-El catálogo confirma las once aplicaciones del propietario más la lanzadera, y añade **tres puntos abiertos**: la tercera aplicación AGEDYS, el RegistroAntiguo y el backend de Condor PRUEBA. Ninguno cambia el alcance por sí solo, pero el primero cambia el reparto de las 102 tablas de `AGEDYS_DATOS`, que es una de las decisiones que el catálogo de accionables pide al propietario.
+El catálogo confirma las once aplicaciones del propietario más la lanzadera, y añade **tres puntos**: la tercera aplicación AGEDYS, el RegistroAntiguo y el backend de Condor PRUEBA. Ninguno cambia el alcance. El primero queda resuelto como residuo (decisión 15); los otros dos siguen abiertos.
 
 ## Lo que no se pudo verificar
 
-1. Si `AGEDYS.accdb` existe como aplicación en producción o es un residuo: no hay checkout y el catálogo no dice nada más.
-2. El contenido de `condor_datos_prueba.accdb`: no está en `C:\00repos\datos` ni hay checkout.
-3. Si `ConClaTab.accdb` es el backend real de Contratos o el nombre cambió: no hay checkout de ese nombre.
-4. Las ediciones desplegadas por aplicación (`TbAplicacionesEdiciones`) se leyeron pero no se inventariaron: son miles de filas de historial de publicación, útiles para el orden de corte pero no para el inventario de tablas.
+1. El contenido de `condor_datos_prueba.accdb`: no está en `C:\00repos\datos` ni hay checkout.
+2. Si `ConClaTab.accdb` es el backend real de Contratos o el nombre cambió: no hay checkout de ese nombre.
+3. Las ediciones desplegadas por aplicación (`TbAplicacionesEdiciones`) se leyeron pero no se inventariaron: son miles de filas de historial de publicación, útiles para el orden de corte pero no para el inventario de tablas.
