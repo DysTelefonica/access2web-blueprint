@@ -62,7 +62,7 @@ El alcance lo fija el catálogo de la Lanzadera Access, con la decisión del pro
 | En Pruebas | pendientes de confirmar | según la decisión del propietario |
 
 - **Dentro:** las once aplicaciones marcadas. AGEDYS Técnico y AGEDYS ECO se sustituyen por **una sola aplicación web, APGEDYS**, que muestra vista de técnico o de gestor económico según el usuario que entre (decisión 13).
-- **Fuera:** Sirdee (decisión 6), AGEDO (decisión 6 y fuera del grupo del catálogo que entra), SICA y Contratos (decisión del propietario de 2026-11-04).
+- **Fuera:** Sirdee (decisión 6), AGEDO (decisión 6, confirmada por el propietario el 2026-11-05), SICA y Contratos (decisión del propietario de 2026-11-04) y Tareas (decisión del propietario de 2026-11-05; su backend `Tareas_datos1` no tiene fila en el catálogo de la lanzadera).
 - **Backends de aplicaciones fuera del alcance:** sus tablas las consumen aplicaciones dentro del alcance, de modo que se inventarían como dependencias en la fase 0:  Correos, Registro de salida, SICA, Control de cambios, AGEDO y Tareas. No se migran como aplicaciones, pero sí hay que saber qué sobrevive y quién es su dueño.
 - **Tablas de AGEDO vinculadas por AGEDYS TEC:** AGEDYS TEC vincula 4 tablas de AGEDO. Viajan con el grupo AGEDYS o se eliminan si no se usan; lo decide la fase 0.
 
