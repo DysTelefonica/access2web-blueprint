@@ -54,6 +54,8 @@ Las fichas identifican las tablas y sus propietarios; los datos del front quedan
 |---|---|---:|---|---|---|
 | `Correos_datos.accdb` | `TbCorreosEnviados` | 35395 | Ninguna | `IDCorreo` | Bloquea: 0 nulos, 35376 distintos, 19 duplicados |
 
+Los 19 duplicados son parejas de correos distintos que recibieron el mismo `IDCorreo` porque cada aplicación lo calcula al escribir. La solución decidida es renumerar y pasar a autonumérico (decisión 22).
+
 ### EXP-E2
 
 | Backend | Tabla | Filas | Clave actual | Mejor candidata | Resultado |
