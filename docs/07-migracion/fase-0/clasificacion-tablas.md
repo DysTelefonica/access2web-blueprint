@@ -4,7 +4,7 @@ Paso 5 de la fase 0: cada tabla de los backends de la [copia de referencia](copi
 
 ## Método
 
-- **Uso.** Se busca el nombre de cada tabla en el VBA de cada aplicación, sin líneas comentadas ni módulos de test, en los orígenes de datos de formularios e informes (`RecordSource`, `RowSource`, `ControlSource`) y en el SQL de las consultas guardadas de su front y de su backend. Seguridad elige la tabla de cada tipo de registro desde los datos (`Tb0TipoRegistros.NombreTabla`), que también cuentan como uso.
+- **Uso.** Se busca el nombre de cada tabla en el VBA de cada aplicación, sin líneas comentadas ni módulos de test, en los orígenes de datos de formularios e informes (`RecordSource`, `RowSource`, `ControlSource`) y en el SQL de las consultas guardadas de su front y de su backend. Seguridad elige la tabla de cada tipo de registro desde los datos (`Tb0TipoRegistros.NombreTabla`), que también cuentan como uso. El código de formularios e informes (sección `CodeBehindForm`) se lee también sin comentarios, y una tabla que la aplicación no alcanza por su front ni por su backend solo cuenta si el nombre aparece como tabla: destino de SQL (`FROM`, `JOIN`, `INTO`, `UPDATE`, `TABLE`) o nombre exacto entre comillas o corchetes. Así no cuentan como uso las palabras corrientes que coinciden con un nombre de tabla (`Nombres`, `Derivados`, `Contratos`, `Lotes`) en comentarios, mensajes o propiedades de clases (#1714).
 - **Qué tabla es.** Un nombre se resuelve en el contexto de la aplicación: tabla propia o vínculo de su front, tabla propia o vínculo de su backend y, si no está en ninguno, la tabla propia de otro backend que abre por código. Los nombres que podían referirse a dos tablas se resolvieron leyendo la conexión que abre el código (`CurrentDb`, `getdb` o `getdbXxx`); esas resoluciones están en la tabla final.
 - **AGEDO y Tareas** siguen en uso en Access (decisión 14) y su código no se analiza: los vínculos de sus backends cuentan como uso de un consumidor permanente. **Contratos** no migra pero sigue vivo: su código sí se analiza.
 - **Base de cada aplicación**: la RC1 cuando existe y no está integrada en `main`; si no, `main`.
@@ -41,17 +41,17 @@ Se reproduce con `scripts/dysflow-erd/collect-usage.ps1` y `scripts/dysflow-erd/
 | `NoConformidades_Datos` | 19 | 2 | · | · | 15 | · | · |
 | `Seguridad_datos` | 26 | · | · | · | 10 | · | · |
 | `Lanzadera_Datos` | 9 | 4 | 2 | · | 20 | · | · |
-| `GestionContratos_datos` | 15 | 4 | · | · | 1 | · | · |
+| `GestionContratos_datos` | 16 | 3 | · | · | 1 | · | · |
 | `HPST` | 10 | 4 | 1 | · | 3 | · | · |
 | `condor_datos` | 14 | · | · | · | 1 | · | · |
 | `Registro_Ent_Salida_Datos` | 5 | 1 | · | · | 5 | · | · |
 | `Solicitudes_HPS_datos` | 8 | 1 | · | · | 2 | · | · |
-| `Registro_Datos` | 1 | 1 | · | 1 | 2 | · | · |
+| `Registro_Datos` | 1 | 1 | · | · | 3 | · | · |
 | `SICA_datos` | · | · | · | · | · | · | 4 |
 | `Tareas_datos1` | · | · | · | · | · | · | 4 |
 | `Control_Cambios_datos` | · | · | · | · | · | 3 | · |
 | `Correos_datos` | · | · | · | · | · | 1 | · |
-| **Total** | **246** | **45** | **3** | **1** | **162** | **6** | **72** |
+| **Total** | **247** | **44** | **3** | **0** | **163** | **6** | **72** |
 
 ## Tablas mal ubicadas
 
@@ -60,7 +60,6 @@ Se reproduce con `scripts/dysflow-erd/collect-usage.ps1` y `scripts/dysflow-erd/
 | `HPST` | `TbUsuariosEntidades` | 352 | Mal ubicada | Solicitudes HPS |
 | `Lanzadera_Datos` | `tbUsuarios` | 156 | Mal ubicada | AGEDO |
 | `Lanzadera_Datos` | `TbUsuariosAplicacionesTareas` | 7 | Mal ubicada | Tareas |
-| `Registro_Datos` | `Nombres` | 57 | Mal ubicada con dueño por decidir | Condor, Gestión de Riesgos, HPS, Solicitudes HPS |
 
 ## Tablas huérfanas
 
@@ -75,7 +74,7 @@ Ninguna aplicación del alcance, ni AGEDO ni Tareas, las usa. Entre paréntesis,
 - **`Gestion_Brass_Gestion_Datos`** (7): `TbAuxManteniminetosPreventivosCalendario` (93), `TbCausaFin` (4), `TbGuiaConciliaciones` (0), `TbRepuestosTipo` (3), `TbResultadoVerificacion` (3), `TbSistema` (2), `TbTipoAsistencia` (4).
 - **`Registro_Ent_Salida_Datos`** (5): `TbConexiones` (12), `TbEntradaPersonasContacto_RES` (0), `TbEntradas_indexacion` (0), `TbEntradas_RES_Indexacion` (2), `TbSalidas_RES_Indexacion` (1063).
 - **`HPST`** (3): `TbAuxCursos` (90), `TbHPSEquivalencia` (3), `TbJuridicasContratacion` (3).
-- **`Registro_Datos`** (2): `DClases` (9), `TbConfiguracion` (1).
+- **`Registro_Datos`** (3): `DClases` (9), `Nombres` (57), `TbConfiguracion` (1).
 - **`Solicitudes_HPS_datos`** (2): `Copia de TbExpedientes` (70), `TbLogs` (0).
 - **`condor_datos`** (1): `tbHistorialRechazos` (0).
 - **`GestionContratos_datos`** (1): `TbParaMarioloExpedientes` (67).
@@ -123,7 +122,7 @@ Estos nombres podían referirse a dos tablas. Se resolvieron mirando qué conexi
      - **Estructura distinta.** Solo la local tiene `FechaOrdenEnvio`, `Programado`, `Intentos`, `FechaProceso`, `NombrePlantilla`, `VersionPlantilla`, `CadenaRecursos`, `IDSolicitud`, `Accion`, `DesencadenadoPor` y `TipoCorreo`: plantillas, envíos programados, reintentos y recordatorios.
      - **Datos.** La local tiene 9 correos de prueba (diciembre de 2025 a febrero de 2026), entre ellos los únicos recordatorios. Los avisos reales siguen saliendo por la cola común: 212 hasta mayo de 2026, ninguno recordatorio.
      - **Lo que falta decidir.** Quedarse con la cola común sin recordatorios, o ampliar la cola común con las columnas del diseño nuevo.
-4. **`Nombres` de `Registro_Datos`** la leen Condor, Gestión de Riesgos, HPS y Solicitudes HPS, y no Registros. ¿Quién es su dueño?
+4. **`Nombres` de `Registro_Datos`**. **Resuelto (2026-11-05):** no la usa nadie. Los usos que se le atribuían eran la palabra «nombres» en comentarios, en un parámetro y en un mensaje; corregido el clasificador (#1714), es huérfana. Es una lista antigua de iniciales de personas (`Cod`, `Nombre`) con filas de prueba (`x`, `zzz`), y va a cuarentena con las demás huérfanas (`CLS-H1`).
 5. **`TbUsuariosEntidades` de `HPST`** solo la usa Solicitudes HPS (por R-2 sería suya; ver `HPS-H2` y `SHO-S4`).
 6. **`tbUsuarios` de `Lanzadera_Datos`** solo la consume AGEDO; la Lanzadera actual no la nombra. Se conserva por la decisión 14.
 7. **Tablas de la Lanzadera sin uso en el código actual pese a tener datos**: `TbAplicacionesEdiciones` (1 262 filas), `TbAplicacionesEdicionesCambios` (1 364), `TbPermisos` (205), `TbParametros` (53) y `TbTablasAVincular` (411), entre otras. Ningún script encontrado las escribe. ¿Se usan fuera de Access o son restos de versiones anteriores?
