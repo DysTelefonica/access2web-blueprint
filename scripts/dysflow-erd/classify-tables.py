@@ -2,7 +2,8 @@
 
 Inputs, all in one directory: ownership.tsv (inventory-data.ps1 -Mode Ownership), inventory.tsv
 (inventory-data.ps1), and fronts.tsv, queries.tsv, bases.tsv and src/<repo>/src (collect-usage.ps1).
-Output: classification.tsv (one row per table) and doubts.tsv (names that can still mean two tables).
+Output: classification.tsv (one row per table) and doubts.tsv (names that can still mean
+two tables).
 Usage: python classify-tables.py <dir> [<output dir>]
 """
 
@@ -16,13 +17,14 @@ from pathlib import Path
 D = sys.argv[1]
 OUT = sys.argv[2] if len(sys.argv) > 2 else D
 os.makedirs(OUT, exist_ok=True)
-S = lambda b: b.replace(".accdb", "")
+
+
+def S(b):
+    return b.replace(".accdb", "")
 
 
 def tsv(name):
-    return list(
-        csv.DictReader(open(os.path.join(D, name), encoding="utf-8"), delimiter="\t")
-    )
+    return list(csv.DictReader(open(os.path.join(D, name), encoding="utf-8"), delimiter="\t"))
 
 
 APP_BACKENDS = {
@@ -62,9 +64,9 @@ inv = {
 fronts = tsv("fronts.tsv")
 queries = tsv("queries.tsv")
 bases = [
-    l.split("\t")
-    for l in Path(D, "bases.tsv").read_text(encoding="utf-8").splitlines()
-    if l.strip()
+    line.split("\t")
+    for line in Path(D, "bases.tsv").read_text(encoding="utf-8").splitlines()
+    if line.strip()
 ]
 
 local = collections.defaultdict(set)  # name -> backends where it is a local table
@@ -137,11 +139,7 @@ def used_names(src_dir):
     for root, _, files in os.walk(src_dir):
         for fn in files:
             low = fn.lower()
-            if (
-                re.match(r"^(test|modbattery|battery)", low)
-                or "_test" in low
-                or "test_" in low
-            ):
+            if re.match(r"^(test|modbattery|battery)", low) or "_test" in low or "test_" in low:
                 continue
             p = os.path.join(root, fn)
             try:
@@ -150,20 +148,21 @@ def used_names(src_dir):
                 continue
             if low.endswith((".form.txt", ".report.txt")):
                 kind = "formulario"
-                lines = [l for l in text.splitlines() if not SKIP_FORM.match(l)]
+                lines = [ln for ln in text.splitlines() if not SKIP_FORM.match(ln)]
             elif low.endswith((".bas", ".cls", ".sql")):
                 kind = "código"
-                lines = [strip_vba_comment(l) for l in text.splitlines()]
+                lines = [strip_vba_comment(ln) for ln in text.splitlines()]
             else:
                 continue
-            for l in lines:
-                for k in names_in(l):
+            for ln in lines:
+                for k in names_in(ln):
                     found[k].add(kind)
     return found
 
 
 # Ambiguous references resolved by reading the code that opens them (which connection is used).
-# An empty list means the match is not a table use (text, SQL alias, or a table missing where it is opened).
+# An empty list means the match is not a table use (text, SQL alias, or a table missing
+# where it is opened).
 OVERRIDES = {
     ("Lanzadera", "tbherramientadocayuda"): (
         [],
@@ -244,7 +243,7 @@ uses = collections.defaultdict(
     lambda: collections.defaultdict(set)
 )  # (backend|front, table lower) -> app -> evidence
 doubts = []
-for app, repo, ref in bases:
+for app, repo, _ref in bases:
     src = os.path.join(D, "src", repo, "src")
     for k, kinds in used_names(src).items():
         cands, how, amb = resolve(app, k)
@@ -260,9 +259,7 @@ for app, repo, ref in bases:
                 )
             )
 
-QREF = re.compile(
-    r"(?:FROM|JOIN|INTO|UPDATE)\s+(\[[^\]]+\]|[A-Za-z0-9_]+)", re.IGNORECASE
-)
+QREF = re.compile(r"(?:FROM|JOIN|INTO|UPDATE)\s+(\[[^\]]+\]|[A-Za-z0-9_]+)", re.IGNORECASE)
 for q in queries:
     kind, who = q["owner"].split(":", 1)
     tabs = {t.strip("[]").lower() for t in QREF.findall(q["sql"])}
@@ -291,7 +288,8 @@ for q in queries:
             for c in cands:
                 uses[(c[0], c[1].lower())][app].add(label)
 
-# AGEDO and Tareas stay alive in Access (decision 14) but their fronts are not analysed: the links of
+# AGEDO and Tareas stay alive in Access (decision 14) but their fronts are not analysed:
+# the links of
 # their backends are the only evidence of what they consume.
 for r in own:
     if r["kind"] == "link" and S(r["backend"]) in ("AGEDO20_Datos", "Tareas_datos1"):
@@ -347,9 +345,7 @@ for app, t in front_tables:
         }
     )
 
-with open(
-    os.path.join(OUT, "classification.tsv"), "w", encoding="utf-8", newline=""
-) as f:
+with open(os.path.join(OUT, "classification.tsv"), "w", encoding="utf-8", newline="") as f:
     w = csv.DictWriter(f, fieldnames=list(rows[0]), delimiter="\t")
     w.writeheader()
     w.writerows(rows)
