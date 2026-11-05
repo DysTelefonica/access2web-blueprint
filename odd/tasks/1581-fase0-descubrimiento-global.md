@@ -75,3 +75,5 @@ L25. Correcciones del propietario (2026-11-05) al preparar la presentación, reg
 L26. Comprobaciones del grupo (a) (2026-11-05): de las 100 propuestas, 36 admiten comprobación de datos y 64 dependen solo del código o de una decisión. Medidas contra `C: reposccess2web-datos` con su SHA-256 verificado antes y después. Hallazgos: `TbCorreosEnviados` tiene 19 `IDCorreo` repetidos; LAN-A5 tiene 9 huérfanos; hay dos tablas `TbExpedientesAnualidades` distintas (223 filas en AGEDYS y 173 en Expedientes) que se vinculan mutuamente; las relaciones de SEG-G5 y AGT-A8 estaban mal descritas en sus fichas.
 
 L27. Decisión del propietario (2026-11-05, issue #1671), verbatim: «TbExpedientesAnualidades debe vivir en el bakend de expedientes de forma única». Decisión 21 de la épica; las dos copias divergen y hay que conciliarlas antes de unificar.
+
+L28. Decisión del propietario (2026-11-05, issue #1677): ante los 19 `IDCorreo` repetidos de `TbCorreosEnviados` (parejas de correos distintos por colisión de `Max + 1`), elige «Renumerar y pasar a autonumérico». Decisión 22 de la épica.
