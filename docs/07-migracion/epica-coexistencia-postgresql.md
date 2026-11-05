@@ -21,8 +21,8 @@ El documento es vivo: cambia cuando se descubre que una fase o una hipótesis ll
 
 | N.º | Decisión |
 |---|---|
-| 1 | La estrategia pasa de corte único (la web solo entra en servicio cuando todas las aplicaciones legacy estén migradas y probadas) a coexistencia progresiva (patrón strangler fig). |
-| 2 | La Lanzadera Access y todas las aplicaciones Access se alojan en un servidor de aplicaciones Windows publicado por Citrix. La plataforma web, en la misma máquina o en una conectada a ella. |
+| 1 | La estrategia pasa de corte único (la web solo entra en servicio cuando todas las aplicaciones legacy estén migradas y probadas) a coexistencia progresiva (patrón strangler fig). Es una propuesta en exploración: ver la decisión 18. |
+| 2 | La Lanzadera Access y todas las aplicaciones Access se alojan en un servidor de aplicaciones Windows publicado por Citrix. La plataforma web, en la misma máquina o en una conectada a ella. Concretada por la decisión 20. |
 | 3 | Todas las tablas de todos los backends `.accdb` legacy pasan a un único PostgreSQL, con esquemas por aplicación ([D14](../decisions/2026-08-04-d14-postgresql-compartido-con-esquemas-por.md)). Los backends legacy las vinculan por ODBC. |
 | 4 | La Lanzadera Access sigue abriendo las aplicaciones Access aún no apagadas; la Lanzadera web contiene solo las aplicaciones web nuevas. Ninguna lanza aplicaciones de la otra. Ambas conviven hasta el final. |
 | 5 | El corte es por aplicación: se deshabilita su botón en la Lanzadera Access y se habilita en la web. La reversión consiste en volver a habilitar el botón de Access; los datos son compartidos. |
@@ -37,23 +37,27 @@ El documento es vivo: cambia cuando se descubre que una fase o una hipótesis ll
 | 15 | La fila 21 de `TbAplicaciones` (AGEDYS, `AGEDYS.accdb`, sin icono en la lanzadera) es un residuo que no se usa. No entra en la migración ni en el reparto de `AGEDYS_DATOS`. Ver el [catálogo de aplicaciones](fase-0/catalogo-aplicaciones.md). |
 | 16 | `Correos_datos` es un backend más, no un servicio de la plataforma. Su tabla `TbCorreosEnviados` es la cola de salida: las aplicaciones la cargan y un proceso del servidor la recorre cada cinco minutos para enviar los correos con el SMTP de la empresa. Ese proceso es un consumidor más que hay que reapuntar cuando la cola pase a PostgreSQL. |
 | 17 | APGEDYS tiene un único backend común. Las 55 tablas de `AGEDYS_DATOS` que no usa ninguno de los dos fronts pasan por el [protocolo de huérfanas](#protocolo-de-huérfanas) antes de retirarse. |
-| 12 | La Lanzadera es la primera aplicación en coexistir, porque alberga el control de permisos del resto de herramientas y tiene a todos los usuarios y sus permisos (`Lanzadera_Datos`). El ensayo de la fase 3 se hace con una copia de `Lanzadera_Datos` en preproducción, no con una isla. Ver [Cambios de rumbo](#cambios-de-rumbo). |
+| 18 | La coexistencia es una prueba de viabilidad en exploración, no la estrategia aprobada. Dirección mantiene el plan de corte único: cuando la última aplicación web esté terminada, se apaga todo el legacy y se enciende lo nuevo, sin compartir nada. La propuesta se presenta a dirección como alternativa. |
+| 19 | Tras aplicar en los backends legacy los accionables de la fase 0 (fase 1), se ensaya en Citrix, en preproducción, el paso de **todos** los backends a PostgreSQL, sin ningún backend Access. Superado el ensayo, todos los datos pasan a PostgreSQL de una vez en producción. Ese traslado es **irreversible**. Desde entonces solo hay PostgreSQL: lo no migrado funciona con la Lanzadera Access y lo migrado con la web, las dos contra PostgreSQL. La única reversión que queda es la del botón de cada aplicación. Sustituye el ensayo solo con `Lanzadera_Datos` de la decisión 12 y el traslado por tandas de las fases 3 y 4. |
+| 20 | Mientras convivan, los usuarios entran a todo por Citrix: la Lanzadera Access y sus aplicaciones se ejecutan en el servidor de aplicaciones Windows, y la web nueva se abre con un navegador publicado en Citrix. La web nueva y PostgreSQL común están en otra máquina de la misma red. Al terminar la convivencia, la web, ya en contenedores, se lleva a OpenShift, como cadete. |
+| 12 | La Lanzadera es la primera aplicación en coexistir, porque alberga el control de permisos del resto de herramientas y tiene a todos los usuarios y sus permisos (`Lanzadera_Datos`). El ensayo de la fase 3 se hace con una copia de `Lanzadera_Datos` en preproducción, no con una isla. Ver [Cambios de rumbo](#cambios-de-rumbo). El alcance del ensayo queda sustituido por la decisión 19. |
 
 ## Modelo de coexistencia
 
 ```text
-Servidor de aplicaciones Windows (Citrix)          Plataforma web (misma máquina o conectada)
-  Lanzadera Access                                   Lanzadera web
-    └── aplicaciones Access no apagadas                └── aplicaciones web nuevas
-          │                                                  │
-          ▼                                                  │
-    backends .accdb (tablas vinculadas por ODBC)             │
-          │                                                  │
-          └──────────────► PostgreSQL ◄──────────────────────┘
-                     (un esquema por aplicación, D14)
+Puesto del usuario: solo el cliente Citrix
+        │
+        ▼
+Servidor de aplicaciones Windows (Citrix)          Máquina web (misma red)
+  Navegador publicado ─────────────────────────────► Lanzadera web
+  Lanzadera Access                                     └── aplicaciones web nuevas
+    └── aplicaciones Access no apagadas                        │
+          │ (tablas vinculadas por ODBC)                       │
+          └──────────────────────────────────────────► PostgreSQL común
+                                                       (un esquema por aplicación, D14)
 ```
 
-Cada aplicación está en un solo lado a la vez: su botón está habilitado en una Lanzadera y deshabilitado en la otra. Los datos no se duplican ni se sincronizan entre copias: la web usa las mismas tablas con forma legacy (decisión 10).
+Cada aplicación está en un solo lado a la vez: su botón está habilitado en una Lanzadera y deshabilitado en la otra. Los datos no se duplican ni se sincronizan entre copias: la web usa las mismas tablas con forma legacy (decisión 10). Tras el traslado único de la fase 4 no queda ningún backend `.accdb` (decisión 19).
 
 ## Alcance
 
@@ -141,8 +145,8 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 | 0 | Inventario | en curso |
 | 1 | Saneamiento en Access | pendiente |
 | 2 | Unificar el acceso a datos | pendiente |
-| 3 | Ensayo con `Lanzadera_Datos` (antes: ensayo con una isla) | revisada |
-| 4 | `Lanzadera_Datos` y núcleos compartidos | pendiente |
+| 3 | Ensayo en Citrix con todos los backends (antes: con `Lanzadera_Datos`; antes aún: con una isla) | revisada |
+| 4 | Traslado único de todos los datos a PostgreSQL | pendiente |
 | 5 | Expedientes a web | pendiente |
 
 ### Fase 0. Inventario
@@ -211,7 +215,7 @@ R-1 se confirma en los backends y se refuta en los fronts, con las excepciones m
 
 **Estado:** pendiente.
 
-**Objetivo.** Que cada front cambie entre `.accdb` y PostgreSQL solo por configuración. Ese mismo cambio es la reversión.
+**Objetivo.** Que cada front cambie entre `.accdb` y PostgreSQL solo por configuración. Ese cambio permite el ensayo de la fase 3; tras el traslado único de la fase 4 ya no hay vuelta a `.accdb` (decisión 19).
 
 **Entregables.** Adaptación a ODBC sin DSN de los cuatro mecanismos de acceso existentes:
 
@@ -224,25 +228,25 @@ R-1 se confirma en los backends y se refuta en los fronts, con las excepciones m
 
 **Criterio de terminado.** Para cada front, el paso de `.accdb` a PostgreSQL y la vuelta se hacen cambiando solo configuración, demostrado en un entorno que no es producción.
 
-### Fase 3. Ensayo con `Lanzadera_Datos`
+### Fase 3. Ensayo en Citrix con todos los backends
 
-**Estado:** revisada (2026-11-04, decisión 12). El objetivo anterior, ensayar con una isla (Brass o Seguridad), queda sustituido; ver [Cambios de rumbo](#cambios-de-rumbo).
+**Estado:** revisada (2026-11-05, decisión 19). Sustituye al ensayo solo con `Lanzadera_Datos` (decisión 12), que a su vez sustituyó al ensayo con una isla; ver [Cambios de rumbo](#cambios-de-rumbo).
 
-**Objetivo.** Ensayar la migración de una copia de `Lanzadera_Datos` en preproducción dentro de Citrix, con la Lanzadera Access, la Lanzadera web y al menos una aplicación Access que vincule sus tablas de identidad (por ejemplo, Expedientes con la unión entre responsables y usuarios).
+**Objetivo.** Ensayar en preproducción, dentro de Citrix, el paso de **todos** los backends ya saneados a PostgreSQL, sin ningún backend Access, con la Lanzadera Access y todas las aplicaciones Access funcionando contra él.
 
-**Entregables.** Informe del ensayo con: conversión de tipos, tablas vinculadas actualizables (requieren clave primaria), rendimiento de las uniones mixtas `.accdb` + ODBC y reversión. Resultado de las [hipótesis H-1 y H-2](#hipótesis-abiertas).
+**Entregables.** Informe del ensayo con: conversión de tipos, tablas vinculadas actualizables (requieren clave primaria), funcionamiento de cada aplicación, rendimiento en Citrix y resultado de las [hipótesis H-1, H-3 y H-4](#hipótesis-abiertas).
 
-**Criterio de terminado.** Las dos Lanzaderas funcionan sobre la copia en PostgreSQL en preproducción, la reversión se ha ejecutado al menos una vez y H-1 y H-2 están confirmadas o refutadas con evidencia.
+**Criterio de terminado.** Todas las aplicaciones Access funcionan en preproducción sobre PostgreSQL con un rendimiento aceptable, y H-1, H-3 y H-4 están confirmadas o refutadas con evidencia.
 
-### Fase 4. `Lanzadera_Datos` y núcleos compartidos
+### Fase 4. Traslado único de todos los datos
 
 **Estado:** pendiente.
 
-**Objetivo.** Trasladar `Lanzadera_Datos` a PostgreSQL. Si la fase 3 refuta que las uniones mixtas sean aceptables (H-2), el traslado incluye en el mismo corte los backends que vinculan sus tablas y los núcleos compartidos (`AGEDYS_DATOS` y Registro).
+**Objetivo.** Trasladar en producción, de una vez, todos los backends a PostgreSQL. Los ficheros `.accdb` de datos dejan de usarse. Es el **único paso sin vuelta atrás** del plan (decisión 19).
 
-**Entregables.** Plan del corte conjunto, ensayo en preproducción y resultado de la [Hipótesis H-2](#hipótesis-abiertas).
+**Entregables.** Plan del traslado, repetición del ensayo de la fase 3 con una copia reciente de producción y reapuntado de los consumidores que no migran (AGEDO, Tareas y el proceso de envío de correos del servidor, decisiones 14 y 16). Los despliegues de prueba (`CONDOR Prueba`, `EXPEDIENTES PRUEBA`, `HPS PRUEBA`, `No Conformidades Prueba`, `00_datos_prueba`) comparten la unidad de red con producción: el plan debe decir qué se hace con cada uno.
 
-**Criterio de terminado.** Las dos Lanzaderas y todas las aplicaciones Access operan sobre estos backends en PostgreSQL, y la reversión del corte conjunto se ha ensayado.
+**Criterio de terminado.** Todas las aplicaciones Access trabajan en producción sobre PostgreSQL y no queda ningún backend `.accdb` en uso.
 
 ### Fase 5. Expedientes a web
 
@@ -283,7 +287,9 @@ El propietario borra en el legacy; el agente aporta la evidencia.
 | Id | Hipótesis | Se ensaya en | Estado |
 |---|---|---|---|
 | H-1 | Cómo resuelve Access la cadena de vínculos front → vínculo del backend → ODBC: si el front necesita revincularse o no. | Fase 3 | pendiente |
-| H-2 | Las uniones entre tablas deben estar en el mismo motor: una unión mixta `.accdb` + ODBC se resuelve en local dentro de Citrix, con lentitud. Por eso los backends cuyas tablas se unen entre sí se trasladan juntos, y `Lanzadera_Datos` (identidad) debe estar en PostgreSQL desde el principio, porque la comparten las dos Lanzaderas y todas las aplicaciones Access. | Fase 3 (decide el alcance de la fase 4) | pendiente |
+| H-2 | Las uniones entre tablas deben estar en el mismo motor: una unión mixta `.accdb` + ODBC se resuelve en local dentro de Citrix, con lentitud. Por eso los backends cuyas tablas se unen entre sí se trasladan juntos, y `Lanzadera_Datos` (identidad) debe estar en PostgreSQL desde el principio, porque la comparten las dos Lanzaderas y todas las aplicaciones Access. | — | sin objeto: con el traslado único (decisión 19) no hay uniones mixtas |
+| H-3 | La copia del front por usuario que ya hace la Lanzadera (`%APPDATA%\Aplicaciones DYSN\`, `Aplicacion.cls:305` y `:668`) funciona en Citrix sin cambios. Falta confirmar la sincronización de perfiles itinerantes (copiar `.accde` a `%APPDATA%` alarga los inicios de sesión; valorar `%LOCALAPPDATA%`), la ruta de arranque (hoy un acceso directo a una carpeta sincronizada en el perfil), las instalaciones del servidor (Access o Access Runtime con la arquitectura de los fronts y el driver ODBC de PostgreSQL) y cuántas sesiones simultáneas soporta. | Fase 3 | pendiente |
+| H-4 | Los documentos adjuntos viven como ficheros en la carpeta `ANEXOS` de cada aplicación en la unidad de red. La web tiene que acceder a esa carpeta o hay que decidir dónde guarda los documentos. | Fase 3 | pendiente |
 
 ## P-EXP-3
 
@@ -314,6 +320,12 @@ Las issues abiertas se redactaron bajo el supuesto de corte único. Se propone:
 Este documento no clasifica más issues concretas; la reclasificación se hace en issues aparte.
 
 ## Cambios de rumbo
+
+### 2026-11-05. Traslado único de los datos y acceso por Citrix
+
+- **Qué se creía.** Los backends pasaban a PostgreSQL por tandas: primero `Lanzadera_Datos` y los núcleos compartidos, y los demás a medida que sus aplicaciones migraban, con backends `.accdb` conviviendo con PostgreSQL. La coexistencia figuraba como estrategia adoptada.
+- **Qué cambia.** Tras el saneamiento, se ensaya en Citrix el paso de todos los backends y después se trasladan todos de una vez; es el único paso irreversible (decisión 19). Los usuarios entran a todo por Citrix mientras convivan, y la web irá después a OpenShift (decisión 20). Ante dirección, la coexistencia es una propuesta en exploración frente al corte único (decisión 18).
+- **Motivo.** El propietario lo aclara el 2026-11-05 al preparar la presentación para dirección. Con un solo motor desaparecen las uniones mixtas (H-2) y la convivencia de dos formatos de datos.
 
 ### 2026-11-04. Alcance por catálogo de la lanzadera y fusión de AGEDYS
 
