@@ -134,8 +134,18 @@ SKIP_FORM = re.compile(
 )
 
 
+def table_like(line, k):
+    """True when `k` appears as a table in the line: a SQL target or an exact quoted name."""
+    e = re.escape(k)
+    return bool(
+        re.search(r"\b(?:from|join|into|update|table)\s+\[?" + e + r"\b", line)
+        or re.search(r"[\"\[]" + e + r"[\"\]]", line)
+    )
+
+
 def used_names(src_dir):
     found = collections.defaultdict(set)  # name -> {'código', 'formulario'}
+    as_table = set()  # names seen at least once in a table-like position
     for root, _, files in os.walk(src_dir):
         for fn in files:
             low = fn.lower()
@@ -148,7 +158,14 @@ def used_names(src_dir):
                 continue
             if low.endswith((".form.txt", ".report.txt")):
                 kind = "formulario"
-                lines = [ln for ln in text.splitlines() if not SKIP_FORM.match(ln)]
+                lines, in_code = [], False
+                for ln in text.splitlines():
+                    if ln.strip().startswith(("CodeBehindForm", "CodeBehindReport")):
+                        in_code = True
+                    if in_code:
+                        lines.append(strip_vba_comment(ln))
+                    elif not SKIP_FORM.match(ln):
+                        lines.append(ln)
             elif low.endswith((".bas", ".cls", ".sql")):
                 kind = "código"
                 lines = [strip_vba_comment(ln) for ln in text.splitlines()]
@@ -157,7 +174,9 @@ def used_names(src_dir):
             for ln in lines:
                 for k in names_in(ln):
                     found[k].add(kind)
-    return found
+                    if table_like(ln.lower(), k):
+                        as_table.add(k)
+    return found, as_table
 
 
 # Ambiguous references resolved by reading the code that opens them (which connection is used).
@@ -245,8 +264,13 @@ uses = collections.defaultdict(
 doubts = []
 for app, repo, _ref in bases:
     src = os.path.join(D, "src", repo, "src")
-    for k, kinds in used_names(src).items():
+    found, as_table = used_names(src)
+    for k, kinds in found.items():
         cands, how, amb = resolve(app, k)
+        # A table the application does not reach through its own backends or links counts only
+        # when the name is used as a table (a bare word, variable or message text does not).
+        if how == "apertura directa" and k not in as_table:
+            continue
         for c in cands:
             uses[(c[0], c[1].lower())][app] |= {f"{x} ({how})" for x in kinds}
         if amb:
