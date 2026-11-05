@@ -26,14 +26,16 @@ S12. Los recuentos se verifican sobre copia reciente de producción antes de apr
 - T4 (S5, S6, S9) docs(brass): inventario de vínculos y controles conectados de Brass y veredicto de propiedad de sus tablas. Issue #1574. Commit `881bf210` (docs/07-migracion/fase-0/brass.md).
 - T5 (S8, S9, S12) docs(migracion): ficha de fase 0 de cada aplicación del alcance. Las ocho primeras: Lanzadera `83431bbb`, Brass `ce97281c`, HPS `9082b9d5`, Condor `acfec44b`, Expedientes `7ed18e08`, Gestión de Riesgos `b08824d5`, No Conformidades `7a738a26`, Registros `9227d3f4`. Las cuatro nuevas del alcance ampliado: Seguridad `8c567a5e`, AGEDYS Técnico `8dd95902`, AGEDYS ECO `4192678b`, Solicitudes HPS `1c52bf08`.
 - T6 (S8, S11) docs(migracion): grafo de dependencias entre backends a partir de los vínculos, con confirmación o refutación de R-1 y R-2 y sus excepciones. Commit `4d6fd3ed` (docs/07-migracion/fase-0/grafo-dependencias.md).
-- T7 (S10, S12) docs(migracion): catálogo único de accionables proposals con evidencia, comprobación previa sobre copia de producción y reversión. Commit: pendiente.
-- T8 (S1, S10) docs(arquitectura): resolver DA-7/D82 (`DROP SCHEMA` sobre tablas legacy) antes de que la web escriba. Issue #1559. Commit: pendiente.
-- T9 (S1, S10) chore(ci): registrar la fricción de gobierno detectada en la entrega: `safe_merge` no retira el worktree ni la rama local cuando la rama vive en un worktree (team-skills #1501), falta un helper para esperar a la CI tras el push (team-skills #1502) y este repo no declara qué flujo de seguimiento rige (issue #1583). Commit: pendiente en `odd/tasks/1581-fase0-descubrimiento-global.md`.
+- T7 (S10, S12) docs(migracion): catálogo único de accionables proposals con evidencia, comprobación previa sobre copia de producción y reversión. Sustituida por T15, que rehízo el catálogo con las 159 propuestas (PR #1644).
+- T8 (S1, S10) docs(arquitectura): resolver DA-7/D82 (`DROP SCHEMA` sobre tablas legacy) antes de que la web escriba. Issue #1559. Resuelta con D93, dos esquemas por aplicación (PR #1683, merge `c459c7e9`).
+- T9 (S1, S10) chore(ci): registrar la fricción de gobierno detectada en la entrega: `safe_merge` no retira el worktree ni la rama local cuando la rama vive en un worktree (team-skills #1501), falta un helper para esperar a la CI tras el push (team-skills #1502) y este repo no declara qué flujo de seguimiento rige (issue #1583). Registrada en L10; no lleva commit propio.
 - T10 (S4, S8) docs(migracion): anexo de controles conectados con el SQL literal de cada control y el catálogo de consultas por tabla. General `11315f61` (PR #1615) y detalle de Brass `fc9c0c8e` (PR #1617). El detalle de Brass viaja aparte por el presupuesto de revisión de 400 líneas.
 
-- T18 (S1) docs(migracion): presentación interactiva (issue #1661) del plan para dirección, implementada desde `design/plan-migracion-jefes/03-coexistencia-interactiva.html` (elegida; 01 y 02 quedan como alternativas) en `docs/07-migracion/presentacion/plan-coexistencia.html`, con `docs/uat/assets/style-base.css`. Commit: pendiente.
+- T18 (S1) docs(migracion): presentación interactiva (issue #1661) del plan para dirección, implementada desde `design/plan-migracion-jefes/03-coexistencia-interactiva.html` (elegida; 01 y 02 quedan como alternativas) en `docs/07-migracion/presentacion/plan-coexistencia.html`, con `docs/uat/assets/style-base.css`. PRs #1662, #1663 y #1664 (merge `a310e9ee`).
 
-- T19 (S10, S12) docs(migracion) (issue #1668): comprobaciones de datos de las 36 propuestas del grupo (a) que admiten medición (clave primaria, tablas vacías, duplicidades e integridad referencial) contra la copia de referencia, con el script `scripts/dysflow-erd/inventory-data.ps1`. Commit: pendiente.
+- T19 (S10, S12) docs(migracion) (issue #1668): comprobaciones de datos de las 36 propuestas del grupo (a) que admiten medición (clave primaria, tablas vacías, duplicidades e integridad referencial) contra la copia de referencia, con el script `scripts/dysflow-erd/inventory-data.ps1`. PR #1669 (merge `c6948827`), completada en #1675.
+
+- T20 (S1, S11) docs(migracion): orden de paso de las aplicaciones a la web tras el traslado único, a partir de las cifras de las fichas. Documento `docs/07-migracion/fase-0/orden-cortes-web.md`, issue #1685.
 
 Ruta: una unidad de trabajo por aplicación, documentos de inventario bajo el presupuesto de revisión. La aprobación del merge es del mantenedor; el camino gobernado es `safe_merge.py` sin `--admin`, conservando la rama remota.
 
@@ -81,3 +83,4 @@ L28. Decisión del propietario (2026-11-05, issue #1677): ante los 19 `IDCorreo`
 L29. Decisiones del propietario (2026-11-05, issue #1680): aprueba la excepción a la regla de solo aditivos para la cuarentena, «Aprobar la excepción para la cuarentena» (decisión 23); y en los 157 pares de `TbExpedientesAnualidades` que no coinciden, «Manda la de Expedientes».
 
 L30. Decisión del propietario (2026-11-05, issue #1559, verbatim): «Dos esquemas por aplicación». D93.
+L31. Decisión del propietario (2026-11-05): aprueba «tal cual» el orden de paso a la web propuesto (decisión 24): Lanzadera web, Expedientes, Condor, Seguridad, HPS, Solicitudes HPS, Gestión de Riesgos, No Conformidades, Registros, Brass y APGEDYS.
