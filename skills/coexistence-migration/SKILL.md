@@ -26,7 +26,7 @@ Las fuentes son la épica [`docs/07-migracion/epica-coexistencia-postgresql.md`]
 5. **Tablas con forma legacy durante la coexistencia (D92).** La web trabaja directamente sobre las tablas con forma legacy en PostgreSQL que Access vincula por ODBC. Una sola fuente de verdad mantiene vivo el legacy y hace posible la reversión.
 6. **Cambios de esquema solo aditivos.** Columnas nuevas que admiten nulos y tablas nuevas; nunca cambie el significado, el nombre ni el tipo de lo existente: rompería los fronts Access que siguen leyendo esas tablas.
 7. **Primero descubrimiento global; después mejoras en Access.** Durante la fase 0 solo se catalogan accionables. No se aplica ninguno hasta terminar el descubrimiento de todas las herramientas, reconciliar dependencias y revisar el catálogo conjunto con el propietario. Esto incluye renombrados de cuarentena, borrados, movimientos y nuevas claves o restricciones. Las mejoras aprobadas se aplican en el backend `.accdb`, con sus fronts adaptados, antes de migrar ese backend. La refactorización a un esquema moderno llega solo tras el apagado completo del legacy.
-8. **Nunca `DROP SCHEMA` como reversión** sobre esquemas con tablas con forma legacy: destruiría datos que Access sigue usando. DA-7 y D82 de `docs/architecture.md` están pendientes de revisión por este motivo.
+8. **Reversión solo del esquema web (D93).** `DROP SCHEMA <app> CASCADE;` se aplica solo al esquema web, nunca a `<app>_legacy`, donde viven las tablas compartidas con Access. Los objetos legacy no deben depender de objetos del esquema web: `CASCADE` también elimina dependencias externas.
 9. **Las tablas que se unen comparten motor.** Una unión mixta `.accdb` + ODBC se resuelve en local dentro de Citrix, con lentitud; los backends cuyas tablas se unen entre sí se trasladan juntos.
 10. **La épica es un documento vivo.** Los cambios de rumbo se registran en su sección «Cambios de rumbo»; nunca se editan fases en silencio. Una fase equivocada se marca `descartada` con su motivo.
 
@@ -74,5 +74,5 @@ Antes de cerrar trabajo de migración:
 
 - [`docs/07-migracion/epica-coexistencia-postgresql.md`](../../docs/07-migracion/epica-coexistencia-postgresql.md) (#1545) — decisiones del propietario, fases, reglas del legacy, protocolo de huérfanas e hipótesis.
 - [`docs/decisions/2026-11-04-d92-tablas-con-forma-legacy-compartidas.md`](../../docs/decisions/2026-11-04-d92-tablas-con-forma-legacy-compartidas.md) (#1547) — D92 y sus consecuencias.
-- `docs/architecture.md` §Persistence — DA-7 y D82, en revisión.
+- `docs/architecture.md` §Persistence — DA-7, D82 y D93.
 - Skill hermana `architecture-guardrails` — front-door y gestión de D-<n>.

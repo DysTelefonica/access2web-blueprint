@@ -121,7 +121,7 @@ Las DA-<n> extienden las D-<n> dentro del change `openspec/changes/lanzadera-mvp
 | DA-4 | Reset tokens atómicos, expiración 24 h, supersession. |
 | DA-5 | CLI `gentle-ai platform user set-password` exclusivo para bootstrap. |
 | DA-6 | `BootstrapAdapter` idempotente desde `GLOBAL_ADMIN_EMAILS`. |
-| DA-7 | Alembic 0001..0006 aditivas. Rollback = `DROP SCHEMA lanzadera CASCADE;` (legacy intacto). |
+| DA-7 | Alembic 0001..0006 aditivas. Rollback = `DROP SCHEMA lanzadera CASCADE;` solo sobre el esquema web, nunca sobre `lanzadera_legacy` (D93). |
 | DA-8 | `CachePort` con `TTLCache`. NO se cachean counters ni métricas. |
 | DA-9 | `LocationPort` con `assume_in_office` MVP (stub). |
 | DA-10 | Notificación cola-por-tabla; SMTP real abierto. |
@@ -312,10 +312,10 @@ Las capas son las capas hexagonales de cada aplicación: una capa agrupa la carp
 - **Reset**: tokens one-time, 24 h, atómicos. `issue_reset_token` y `consume_reset_token` ambos `CRITICAL_HELPERS`.
 - **Audit**: `auth.bootstrap.set_password`, `auth.login.success`, `auth.login.failure` van en **misma transacción** que la mutación (DA-11).
 
-## Persistence (D14, D82)
+## Persistence (D14, D82, D93)
 
-- Una base de datos PostgreSQL compartida. Cada módulo tiene su propio schema (`lanzadera`, próximos: `expedientes`, etc.).
-- Alembic con `expand_and_contract` (D82): cada release es aditiva. Rollback = `DROP SCHEMA <módulo> CASCADE;` (legacy intacto).
+- Una base de datos PostgreSQL compartida. Cada aplicación tiene un esquema web `<app>` y otro `<app>_legacy` para las tablas compartidas con Access (D93).
+- Alembic con `expand_and_contract` (D82): cada release es aditiva. Rollback = `DROP SCHEMA <app> CASCADE;` solo sobre el esquema web, nunca sobre `<app>_legacy` (D93). Los objetos legacy no deben depender de objetos del esquema web, pues `CASCADE` también elimina dependencias externas.
 - Migraciones `0001..0006` son la línea base del MVP. Cada futura app tiene su propia serie numerada.
 
 ### Adapters Postgres (DA-1, W01..W06)
@@ -431,7 +431,7 @@ Estos gaps están aquí hasta que se cierren. No se disimulan; se documentan par
 
 - **Hexagonalidad verificable, no discutida**: cada capa (`domain/`, `ports/`, `application/`, `adapters/`, `di/`, `delivery/`) tiene reglas de importación que el job `docs-architecture` enforza desde el bloque `architecture` (`.importlinter` se deriva de él). `tests/test_architecture_doc.py` pinea contra drift que `independent`, `pure` y `covered_roots` sigan declarados.
 - **D-<n> vigentes son vinculantes**: las decisiones de `docs/decisions/` con estado `adoptada` son contrato. Modificarlas exige PR al `design.md` del change correspondiente (vía SDD) o un issue que las reemplace por una decisión nueva; el doc nunca se edita a mano para «relajar» una regla.
-- **Expand and Contract en cada release (D82)**: toda migración Alembic es aditiva. Rollback = `DROP SCHEMA <módulo> CASCADE;` con el legacy intacto. Las migraciones 0001..0006 son la línea base del MVP; cada futura app abre su propia serie.
+- **Expand and Contract en cada release (D82)**: toda migración Alembic es aditiva. Rollback = `DROP SCHEMA <app> CASCADE;` solo sobre el esquema web, nunca sobre `<app>_legacy` (D93); los objetos legacy no deben depender del esquema web. Las migraciones 0001..0006 son la línea base del MVP; cada futura app abre su propia serie.
 - **Audit en la misma transacción que la mutación auth (DA-11)**: los eventos canónicos (`auth.bootstrap.set_password`, `auth.login.success`, `auth.login.failure`, `app.open`, `global_admins.bootstrap`) se persisten atómicamente con la mutación. Si el insert de audit falla, la mutación hace rollback.
 - **Sin telemetría sensible (D55)**: nunca se persiste `ssid`, `bssid`, `coordinates`, `machine_name`, `ip_address` en logs estructurados ni en argumentos CLI. El check AST `scripts/check_legacy_hashes.py` pinea este invariante.
 - **Pin de hashes legacy eliminado (D88+D89)**: la columna `legacy_hash` no existe; los passwords migrados van con `password_hash = NULL`. `scripts/check_legacy_hashes.py` rechaza los símbolos `legacy_hash`, `sha256`, `migrate_password` en código nuevo (DA-13).
@@ -443,7 +443,7 @@ Estos gaps están aquí hasta que se cierren. No se disimulan; se documentan par
 - [ ] El cambio de código respeta las 6 reglas de §Core invariants; el `ci / quality` check pasa verde.
 - [ ] El pin AST de `check_legacy_hashes.py` se mantiene verde (no se reintroducen `legacy_hash`, `sha256` ni `migrate_password`).
 - [ ] Si la decisión toca un puerto (`CachePort`, `AuditLogPort`, `SecretManagerPort`, `LocationPort`, `NotificationDeliveryPort`), el adapter mantiene la signatura del puerto y el dominio no importa el framework concreto.
-- [ ] Si la decisión introduce una migración Alembic, sigue `expand_and_contract` (D82): añadir columnas nullable o tablas nuevas, sin `DROP` ni `ALTER` destructivos en la misma release.
+- [ ] Si la decisión introduce una migración Alembic, sigue `expand_and_contract` (D82): añadir columnas nullable o tablas nuevas, sin `DROP` ni `ALTER` destructivos en la misma release. La reversión con `DROP SCHEMA <app> CASCADE;` afecta solo al esquema web, nunca a `<app>_legacy`; los objetos legacy no dependen del esquema web (D93).
 - [ ] El PR es ≤ 400 líneas (`additions + deletions`); si no, partir por unidad de trabajo o encadenar.
 - [ ] Se actualiza el registro `docs/decisions/` y §Gaps conocidos si corresponde.
 

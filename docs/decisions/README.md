@@ -27,6 +27,7 @@ Tras el título, una lista con estas claves:
 | [PRs siempre contra main](2026-10-15-prs-siempre-contra-main.md) | adoptada | 2026-10-15 | dueño del repositorio |
 | [El registro de decisiones debe ser completo, sin baseline](2026-10-17-registro-de-decisiones-completo.md) | adoptada | 2026-10-17 | dueño del repositorio |
 | [D92](2026-11-04-d92-tablas-con-forma-legacy-compartidas.md) | adoptada | 2026-11-04 | usuario (dueño del producto) |
+| [D93](2026-11-05-d93-dos-esquemas-por-aplicacion.md) | adoptada | 2026-11-05 | usuario (dueño del producto) |
 
 ### D1–D29 migradas desde 08
 
