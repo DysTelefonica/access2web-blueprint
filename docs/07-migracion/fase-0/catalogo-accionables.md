@@ -1,7 +1,7 @@
 # Catálogo único de accionables de la fase 0
 
 Issue #1581, tareas T7 y T14. Épica `docs/07-migracion/epica-coexistencia-postgresql.md` (fase 0).
-Sustituye a la primera versión, que se hizo con ocho aplicaciones. Cubre las **once aplicaciones del alcance**, más los siete backends de dependencias, con **159 propuestas** de las fichas y **4 más** que nacen de decisiones del propietario y de la clasificación de tablas.
+Sustituye a la primera versión, que se hizo con ocho aplicaciones. Cubre las **once aplicaciones del alcance**, más los siete backends de dependencias, con **159 propuestas** de las fichas y **5 más** que nacen de decisiones del propietario y de la clasificación de tablas.
 
 ## Método
 
@@ -12,7 +12,7 @@ Sustituye a la primera versión, que se hizo con ocho aplicaciones. Cubre las **
 - Consumidores de cada tabla: del [grafo de dependencias](grafo-dependencias.md), que es el recuento único del ecosistema. Cuando dos fichas difieren en una cifra, manda el grafo.
 - Orden: por decisión. Primero el grupo (a), imprescindible antes de migrar; luego el (b), recomendable si es barato; luego el (c), aplazable a la refactorización final. Dentro de cada grupo, primero las propuestas que tocan tablas compartidas, por número de backends consumidores.
 - Issue: la issue de la fase 1 que aplica la propuesta en el repositorio de su aplicación; «—» si aún no existe. Una propuesta está aplicada cuando su issue se cierra con la PR fusionada y la versión publicada.
-- Propuestas que no vienen de una ficha: `DEC-<n>` nace de la decisión `<n>` de la épica, y `CLS-H1`, de la [clasificación de tablas](clasificacion-tablas.md).
+- Propuestas que no vienen de una ficha: `DEC-<n>` nace de la decisión `<n>` de la épica, y `CLS-<id>`, de la [clasificación de tablas](clasificacion-tablas.md).
 
 **Nada de esto se aplica.** La puerta de descubrimiento global sigue cerrada: las propuestas se revisan en conjunto y las aplica el propietario en el legacy.
 
@@ -24,10 +24,10 @@ Las fichas originales usan prefijos que se repiten. La columna «ficha» de este
 
 | Grupo | Propuestas | Significado |
 |---|---|---|
-| (a) | 104 | Imprescindible antes de migrar |
+| (a) | 105 | Imprescindible antes de migrar |
 | (b) | 50 | Recomendable si es barato |
 | (c) | 9 | Aplazable a la refactorización final |
-| **Total** | **163** | |
+| **Total** | **164** | |
 
 Las decisiones del propietario, las pruebas que bloquean y el detalle de los conflictos están en [`catalogo-accionables-conflictos.md`](catalogo-accionables-conflictos.md).
 
@@ -132,12 +132,13 @@ Las decisiones del propietario, las pruebas que bloquean y el detalle de los con
 | SEG-G9 | Seguridad | Parametrizar el SQL que concatena valores: el texto del filtro de asunto y de notas (`src/modules/Constructor.bas:343`, `:348`), las fechas del filtro (`:341`), el nombre de tabla del catálogo (`:517`), el identificador del registro (`src/classes/Registro.cls:331`, `:1748`) y el correo del usuario (`src/modules/Constructor.bas:164-167`). | — | `seguridad.md` (G9) | — |
 | SHO-S2 | Solicitudes HPS | Retirar el vínculo roto `TbUsuarioSolicitud` y la consulta guardada `Consulta2` que lo usa con los valores fijos `1` y `1`. | `TbUsuarioSolicitud` | `solicitudes-hps.md` (S2) | — |
 | SHO-S3 | Solicitudes HPS | Resolver la duplicidad de `TbHPSGrado`: el backend tiene una copia de la tabla de `HPST` con las mismas 13 filas y la misma clave primaria, y además un vínculo `TbHPSGrado1` que nadie usa. Propuesta: dejar una sola fuente de verdad en `HPST` y que el front lea de allí. | `TbHPSGrado`, `TbHPSGrado1` | `solicitudes-hps.md` (S3) | — |
-| SHO-S4 | Solicitudes HPS | Declarar la propiedad de las cuatro tablas de `HPST` que esta aplicación escribe (`TbUsuarios`, `TbUsuariosEntidades`, `TbUsuariosHistoricos`, `TbMotivoHPS`). Hoy son de HPS y las escribe Solicitudes HPS, lo que impide cerrar H2 de la ficha de HPS. | `TbMotivoHPS`, `TbUsuarios`, `TbUsuariosEntidades`, `TbUsuariosHistoricos` | `solicitudes-hps.md` (S4) | — |
+| SHO-S4 | Solicitudes HPS | Declarar la propiedad de las cuatro tablas de `HPST` que esta aplicación escribe (`TbUsuarios`, `TbUsuariosEntidades`, `TbUsuariosHistoricos`, `TbMotivoHPS`). **Nota (2026-11-05):** `TbUsuariosEntidades` no cuenta: sus escrituras en Solicitudes HPS no tienen llamadores y la tabla se retira (`CLS-M1`). Hoy son de HPS y las escribe Solicitudes HPS, lo que impide cerrar H2 de la ficha de HPS. | `TbMotivoHPS`, `TbUsuarios`, `TbUsuariosEntidades`, `TbUsuariosHistoricos` | `solicitudes-hps.md` (S4) | — |
 | SHO-S5 | Solicitudes HPS | Retirar la credencial literal de las cinco cadenas `OpenDatabase` (`src/modules/Variables Globales.bas:449`, `:478`, `:512`, `:542`, `:599`) y leerla de la configuración. | — | `solicitudes-hps.md` (S5) | — |
 | SHO-S6 | Solicitudes HPS | Revisar los 10 vínculos del backend, que apuntan a la ruta de producción `\\datoste\…`: son una vía de escritura sobre producción desde el front y desde cualquier proceso que use el backend. | — | `solicitudes-hps.md` (S6) | — |
 | DEC-21 | Expedientes | Dejar `TbExpedientesAnualidades` única en `Expedientes_datos` (decisión 21). AGEDYS Técnico y AGEDYS ECO pasan a vincularla y se retira la copia de `AGEDYS_DATOS`; las dos copias divergen y, al conciliarlas, manda Expedientes (decisión 23). | `TbExpedientesAnualidades` | `epica-coexistencia-postgresql.md` (decisión 21) | — |
 | DEC-25 | AGEDYS ECO, Expedientes y AGEDYS Tecnico | Retirar la funcionalidad de códigos de compras de expediente, que nunca se ha usado, y poner en cuarentena las dos copias vacías de la tabla (decisión 25). | `TbExpedientesCodigoCompras` | `epica-coexistencia-postgresql.md` (decisión 25) | [AGEDYS_ECO#11](https://github.com/DysTelefonica/AGEDYS_ECO/issues/11), [Expedientes#278](https://github.com/DysTelefonica/Expedientes/issues/278), [AGEDYS#4](https://github.com/DysTelefonica/AGEDYS/issues/4) |
 | DEC-26 | Contratos | Retirar la cola local de correo: la clase `Correo`, que no se instancia en ningún sitio, y la tabla local `TbCorreosEnviados` de `GestionContratos_datos` (204 filas de 2023-2024, 184 sin enviar), que pasa a cuarentena (decisión 26). | `TbCorreosEnviados` | `epica-coexistencia-postgresql.md` (decisión 26) | [CONTRATOS#2](https://github.com/DysTelefonica/CONTRATOS/issues/2) |
 | CLS-H1 | Todos los backends del alcance | Poner en cuarentena las 163 tablas que la clasificación marca como huérfanas, cada backend en su issue: `AGEDYS_DATOS` 57, `Gestion_Riesgos_Datos` 30, `Lanzadera_Datos` 20, `NoConformidades_Datos` 15, `Seguridad_datos` 10, `Expedientes_datos` 9, `Gestion_Brass_Gestion_Datos` 7, `Registro_Ent_Salida_Datos` 5, `HPST` 3, `Solicitudes_HPS_datos` 2, `Registro_Datos` 3, `condor_datos` 1 y `GestionContratos_datos` 1. | Las de la clasificación | `clasificacion-tablas.md` | — |
+| CLS-M1 | Solicitudes HPS y HPS | Retirar `TbUsuariosEntidades` de `HPST`, caché aplanada que HPS ya no escribe desde la versión 2026-005: Solicitudes HPS pasa a leer los datos reales de HPS y retira sus dos escrituras sin llamadores; después la tabla pasa a cuarentena. | `TbUsuariosEntidades` | `clasificacion-tablas.md` (punto 5) | [HPS_SOLICITUDES#1](https://github.com/DysTelefonica/HPS_SOLICITUDES/issues/1), [HPS#33](https://github.com/DysTelefonica/HPS/issues/33) |
 
 Los grupos (b) y (c) están en [`catalogo-accionables-b.md`](catalogo-accionables-b.md).
