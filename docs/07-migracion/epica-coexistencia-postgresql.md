@@ -175,6 +175,7 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 - El [grafo de dependencias entre backends](fase-0/grafo-dependencias.md) en su versión transversal: 17 backends con un único método de recuento.
 - El [catálogo de aplicaciones de la lanzadera](fase-0/catalogo-aplicaciones.md): las 22 filas de `TbAplicaciones`, que confirman el alcance y destapan la tercera aplicación AGEDYS, el RegistroAntiguo y el backend de Condor PRUEBA.
 - La [copia de producción de referencia](fase-0/copia-referencia.md): la foto fija de los 18 backends, con su SHA-256, contra la que se hacen todas las comprobaciones de datos.
+- Las [comprobaciones de datos del grupo (a)](fase-0/comprobaciones-grupo-a.md): las 36 propuestas imprescindibles que admiten medición, con su veredicto contra la copia de referencia.
 - El [anexo de controles conectados](fase-0/controles-conectados.md): el SQL literal de cada control con origen de datos y el catálogo de consultas que sobrevivirán a PostgreSQL. La medición refuta la regla «salvo Brass, los formularios son desconectados»: Registros tiene 37 controles conectados y HPS 3 formularios unidos a recordset.
 
 R-1 se confirma en los backends y se refuta en los fronts, con las excepciones medidas. La base de análisis de cada aplicación es su RC1 pendiente de UAT cuando existe; HPS queda en `main` porque su UAT ya está aprobada y liberada.
