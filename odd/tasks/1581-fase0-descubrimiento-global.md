@@ -39,6 +39,8 @@ S12. Los recuentos se verifican sobre copia reciente de producción antes de apr
 
 - T21 (S4, S8) docs(migracion) (issue #1694): mapa de propiedad de tablas y vínculos entre backends, y contraste de las 159 propuestas con él. Documento `docs/07-migracion/fase-0/mapa-propiedad.md`.
 
+- T22 (S8, S12) docs(migracion) (issue #1697): clasificación de cada tabla de la copia de referencia (paso 5 de la fase 0), con los scripts `collect-usage.ps1` y `classify-tables.py`. Documento `docs/07-migracion/fase-0/clasificacion-tablas.md`.
+
 Ruta: una unidad de trabajo por aplicación, documentos de inventario bajo el presupuesto de revisión. La aprobación del merge es del mantenedor; el camino gobernado es `safe_merge.py` sin `--admin`, conservando la rama remota.
 
 ## Log
@@ -91,3 +93,4 @@ L32. Tablas de los fronts del grupo (a) medidas (2026-11-05, issue #1688): ningu
 
 L33. Pregunta del propietario (2026-11-05): «Se puede virtualizar un sistema citrix en mi equipo para pruebas locales?». Respuesta registrada en H-3 (issue #1691): prueba local con Windows Server en evaluación y RDS Session Host, y confirmación en el Citrix de preproducción; el propietario pide «sí apuntalo».
 L34. Corrección del propietario (2026-11-05, verbatim): «POnes en CON-C5 que ponga una clave primaria en una tabla que no pertenece al backend de condor. Tienes que ver en cada propuesta de este tipo si esa tabla es vinculada (por lo que habría que ir al backend de origen) o es propia del backend» y «tienes que mapear qué tabla es de qué backend y qué backend llaman a otros backends». Resultado: 535 tablas propias y 127 vínculos; 27 propuestas nombran tablas no propias de su backend, de las que 6 estaban mal colocadas (CON-C5 y NOC-N3 fusionadas en COR-C1; EXP-E2, GRI-R2, NOC-N4 y EXP-E9 corregidas) y 3 llamaban «inexistentes» a tablas de otro backend.
+L35. Encargo del propietario (2026-11-05, verbatim): «La clasificacion la puedes hacer tú mirando con codegraph el codigo a ver si las usa el front y también mirando el .form.txt si algún control tiene como origen de datos alguna tabla de front [...] a mi me dejas las dudas de las cosas que están en dos sitios» y «si hay un rc1 que va a ser la nueva versión siempre el rc1 si no el de main». Resultado: de 535 tablas de backend, 246 propias, 45 propias y compartidas, 4 mal ubicadas, 162 huérfanas y 78 de backends fuera del alcance; 10 nombres ambiguos resueltos leyendo el código; 7 decisiones para el propietario.

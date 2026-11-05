@@ -181,6 +181,7 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 - La [copia de producción de referencia](fase-0/copia-referencia.md): la foto fija de los 18 backends, con su SHA-256, contra la que se hacen todas las comprobaciones de datos.
 - El [orden de paso de las aplicaciones a la web](fase-0/orden-cortes-web.md) (decisión 24).
 - El [mapa de propiedad](fase-0/mapa-propiedad.md): qué tabla es propia de qué backend, qué backend vincula a cuál y las propuestas que estaban en el backend equivocado.
+- La [clasificación de las tablas](fase-0/clasificacion-tablas.md): las 535 tablas de los backends y las 50 de los fronts, según qué aplicación las usa de verdad.
 - Las [comprobaciones de datos del grupo (a)](fase-0/comprobaciones-grupo-a.md): las 36 propuestas imprescindibles que admiten medición, con su veredicto contra la copia de referencia.
 - El [anexo de controles conectados](fase-0/controles-conectados.md): el SQL literal de cada control con origen de datos y el catálogo de consultas que sobrevivirán a PostgreSQL. La medición refuta la regla «salvo Brass, los formularios son desconectados»: Registros tiene 37 controles conectados y HPS 3 formularios unidos a recordset.
 
