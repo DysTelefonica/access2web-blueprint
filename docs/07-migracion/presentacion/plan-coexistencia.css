@@ -1,0 +1,88 @@
+/* Components of plan-coexistencia.html. Tokens come from docs/uat/assets/style-base.css. */
+.arch { display: grid; gap: var(--space-3); }
+.node {
+  border: 1px solid var(--color-border); border-radius: var(--radius-card);
+  background: var(--color-background); padding: var(--space-4);
+}
+section.card .node h3 { margin: 0; font-size: 15px; color: var(--color-brand-dark); }
+section.card .node .where { margin: var(--space-1) 0 0; font-size: 13px; color: var(--color-text-secondary); }
+section.card .node p:last-child { margin-bottom: 0; }
+.views { display: inline-flex; border: 1px solid var(--color-border); border-radius: var(--radius-chip); padding: var(--space-1); margin-bottom: var(--space-4); background: var(--color-surface); }
+.views button { font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; border: 0; border-radius: var(--radius-chip); padding: var(--space-2) var(--space-4); background: transparent; color: var(--color-text-secondary); }
+.views button[aria-selected="true"] { background: var(--color-brand); color: #fff; }
+.views button:focus-visible { outline: 3px solid var(--color-brand-dark); outline-offset: 2px; }
+.steps { list-style: none; counter-reset: step; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+section.card .steps li { counter-increment: step; display: grid; grid-template-columns: 28px 1fr; gap: var(--space-3); align-items: start; margin: 0; font-size: 14px; }
+.steps li::before { content: counter(step); width: 28px; height: 28px; border-radius: 50%; background: var(--color-grey); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.schema { margin: 0 0 var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface); padding: var(--space-4); }
+.schema svg { display: block; width: 100%; height: auto; font-family: inherit; }
+.schema figcaption { font-size: 13px; color: var(--color-text-secondary); margin-top: var(--space-2); text-align: center; }
+.ways { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); margin-bottom: var(--space-4); }
+.ways .node { display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start; }
+.way-now { border: 2px solid var(--color-grey); }
+.way-new { border: 2px solid var(--color-violet); }
+section.card .ways ul { margin: 0; font-size: 14px; }
+section.card .ways li { margin-bottom: var(--space-1); }
+.today { display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--space-5); align-items: stretch; }
+.today .pc { border: 2px solid var(--color-grey); display: flex; flex-direction: column; gap: var(--space-3); }
+.shares { display: grid; gap: var(--space-3); align-content: start; }
+.share { border-style: dashed; }
+.share .arrow { font-size: 13px; font-weight: 600; color: var(--color-brand-dark); margin-top: var(--space-2); }
+.users { text-align: center; background: var(--color-surface); }
+section.card .apps, section.card .steps { padding-left: 0; margin-bottom: 0; }
+section.card .apps li { margin: 0; }
+.paths { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); text-align: center; font-size: 13px; font-weight: 600; color: var(--color-brand-dark); }
+.paths span::before, .down span::before { content: "↓ "; color: var(--color-brand); }
+.network {
+  border: 2px dashed var(--color-border); border-radius: var(--radius-card);
+  padding: var(--space-4); display: grid; gap: var(--space-3);
+}
+.network > .tag { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--color-text-secondary); }
+.machines { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+.machine { min-height: 280px; display: flex; flex-direction: column; gap: var(--space-3); }
+.machine.web { border: 2px solid var(--color-brand); }
+.machine.citrix { border: 2px solid var(--color-grey); }
+.launcher { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); font-size: 14px; font-weight: 700; }
+.apps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+.apps button {
+  width: 100%; display: flex; justify-content: space-between; align-items: center; gap: var(--space-2);
+  font: inherit; font-size: 14px; text-align: left; cursor: pointer;
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-input);
+  border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text-primary);
+}
+.web .apps button { background: var(--color-surface-strong); border-color: var(--color-brand); color: var(--color-brand-dark); font-weight: 600; }
+.apps button:hover { border-color: var(--color-brand); }
+.apps button:focus-visible, .actions button:focus-visible, summary:focus-visible { outline: 3px solid var(--color-brand-dark); outline-offset: 2px; }
+.apps .act { font-size: 12px; font-weight: 600; color: var(--color-brand); white-space: nowrap; }
+.web .apps .act { color: var(--color-text-secondary); }
+.empty { font-size: 14px; color: var(--color-text-secondary); font-style: italic; }
+.permanent { margin-top: auto; font-size: 13px; color: var(--color-text-secondary); border-top: 1px solid var(--color-border); padding-top: var(--space-2); }
+.link { display: flex; align-items: center; gap: var(--space-2); font-size: 13px; font-weight: 600; color: var(--color-brand-dark); background: var(--color-surface); border-radius: var(--radius-input); padding: var(--space-2) var(--space-3); }
+.link::after { content: "→"; margin-left: auto; font-size: 18px; color: var(--color-brand); }
+.db { margin-top: auto; background: var(--color-brand-dark); border-color: var(--color-brand-dark); color: #fff; text-align: center; }
+section.card .db h3 { color: #fff; font-size: 17px; }
+section.card .db .where { color: #fff; opacity: .9; }
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+.actions button {
+  font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+  padding: var(--space-2) var(--space-4); border-radius: var(--radius-input);
+  border: 1px solid var(--color-border); background: var(--color-background); color: var(--color-brand-dark);
+}
+.phase { border: 1px solid var(--color-border); border-radius: var(--radius-input); margin-bottom: var(--space-2); background: var(--color-background); }
+.phase[open] { border-color: var(--color-brand); }
+.phase summary { cursor: pointer; list-style: none; display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); }
+.phase summary::-webkit-details-marker { display: none; }
+.num { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; border: 2px solid var(--color-grey); color: var(--color-grey); }
+.phase.now .num { background: var(--color-brand); border-color: var(--color-brand); color: #fff; }
+.phase summary strong { font-size: 16px; }
+.phase summary small { display: block; color: var(--color-text-secondary); font-size: 14px; }
+.phase .body { padding: 0 var(--space-4) var(--space-4) 76px; font-size: 15px; }
+.phase .body p { margin: 0 0 var(--space-2); }
+.phase .body b { color: var(--color-brand-dark); }
+/* style-base.css amber text on its amber background is below 4.5:1; darken it for the "in progress" pill. */
+.rag-amber { color: #A84B00; }
+@media (max-width: 860px) {
+  .paths, .machines, .apps, .today, .ways { grid-template-columns: 1fr; }
+  .link::after { content: "↓"; }
+  .phase .body { padding-left: var(--space-4); }
+}
