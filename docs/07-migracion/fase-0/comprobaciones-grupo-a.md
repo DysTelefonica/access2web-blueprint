@@ -12,7 +12,7 @@ Las fichas identifican las tablas y sus propietarios; los datos del front quedan
 | EXP-E2 | Clave primaria | Bloquea; una tabla no tiene candidata |
 | GRI-R2 | Clave primaria | Bloquea; hay tablas sin candidata |
 | NOC-N3 | Clave primaria | Bloquea |
-| AGE-E5 | Clave primaria | Fuera de la foto (front) |
+| AGE-E5 | Clave primaria | Front: 136 filas; ver [tablas de los fronts](#tablas-de-los-fronts) |
 | AGT-A1 | Clave primaria | Bloquea; hay tablas sin candidata |
 | BFA-S2 | Clave primaria | Sin candidata |
 | BFA-S5 | Clave primaria | Bloquea; hay tablas sin candidata |
@@ -20,25 +20,25 @@ Las fichas identifican las tablas y sus propietarios; los datos del front quedan
 | REG-G3 | Clave primaria | Se puede aplicar: todas tienen clave |
 | SEG-G1 | Clave primaria | Se puede aplicar |
 | SHO-S1 | Vacías | Tiene datos: revisar |
-| AGT-A4 | Vacías | Fuera de la foto (front) |
-| AGT-A5 | Vacías | Fuera de la foto (front) |
+| AGT-A4 | Vacías | Front: 139 filas; revisar |
+| AGT-A5 | Vacías | Front: 35 filas; revisar |
 | BR-B1 | Vacías | Tiene datos: revisar |
 | CON-C1 | Vacías | Vacías |
 | EXP-E5 | Vacías | Tiene datos: revisar; `TbExpedientesAnualidades` está duplicada |
 | GRI-R3 | Vacías | Tiene datos: revisar |
 | HPS-H1 | Vacías | Tiene datos: revisar |
-| HPS-H2 | Vacías | Tiene datos: revisar; front fuera de la foto |
-| HPS-H3 | Vacías | Fuera de la foto (front) |
+| HPS-H2 | Vacías | Tiene datos: revisar; la copia del front tiene 99 filas |
+| HPS-H3 | Vacías | Front: 344 y 50 filas; revisar |
 | LAN-A2 | Vacías | Vacías |
 | LAN-A3 | Vacías | Tiene datos: revisar |
 | LAN-A4 | Vacías | Tiene datos: revisar; excluir `tbUsuarios` |
 | NOC-N1 | Vacías | Tiene datos: revisar |
 | NOC-N2 | Vacías | Tiene datos: revisar |
-| NOC-N7 | Vacías | Fuera de la foto (front) |
+| NOC-N7 | Vacías | Front: 23 filas; revisar |
 | REG-G1 | Vacías | Tiene datos: revisar |
 | SEG-G2 | Vacías | Tiene datos: revisar |
 | BFA-S4 | Duplicidad | Comparación pendiente |
-| AGT-A3 | Duplicidad | Comparación pendiente; front fuera de la foto |
+| AGT-A3 | Duplicidad | Dos copias idénticas sobran; `TbHerramientaDocAyuda` difiere |
 | SHO-S3 | Duplicidad | Idénticas: la copia se puede sustituir por un vínculo |
 | LAN-A5 | Integridad referencial | Bloquea: 9 huérfanos |
 | SEG-G5 | Integridad referencial | Se puede aplicar |
@@ -232,3 +232,29 @@ Correcciones a las fichas que salen de esta medición:
 - **SEG-G5.** `Tb0RegistrosRelacionados` no tiene `IDTipoRegistro`: tiene dos columnas de tipo, `IDTipoRegistroARelacionar` e `IDTipoRegistroRelacionado`. La unión con las 21 tablas de tipo de registro también está limpia: cada uno de los 266 extremos de `Tb0RegistrosRelacionados` (dos por fila) existe en la tabla que `Tb0TipoRegistros.NombreTabla` asigna a su tipo, por la columna `NombreID`; las 21 tablas se leen y no hay ningún huérfano.
 - **AGT-A8.** La unión no es por `CODPPD` en las dos tablas: el SQL del front une `TbNPedido.CODPPD` con `TbProyectos.CODPROYECTOS` en 70 sitios.
 - En sentido contrario hay 228 proyectos sin pedido y 87 facturas sin visado: son madres sin hijas, no huérfanos.
+
+## Tablas de los fronts
+
+Las tablas propias de un front no están en la copia de referencia, que solo contiene backends. Se midieron en los fronts de los repositorios, sobre copias temporales: AGEDYS Técnico (`00_AGEDYS`, `350896d`), AGEDYS ECO (`00_AGEDYS_ECO`, `a263ead`), HPS (`00_HPS`, `dc194f4`) y No Conformidades (`00_NO_CONFORMIDADES`, `d834997`). Es el contenido del front publicado, con el que arranca cada usuario: en producción cada usuario trabaja sobre su propia copia del front, y sus filas pueden diferir.
+
+| Propuesta | Front | Tabla | Filas |
+|---|---|---|---:|
+| AGE-E5 | AGEDYS ECO | `TbAuxGTVContratos` | 136 |
+| AGT-A4 | AGEDYS Técnico | `Copia de TbRequisitosSTG` | 139 |
+| AGT-A5 | AGEDYS Técnico | `TbAuxNPedido` | 35 |
+| HPS-H2 | HPS | `Copia de TbUsuariosEntidades` | 99 |
+| HPS-H3 | HPS | `TbDatosLocalParaIndicadores` | 344 |
+| HPS-H3 | HPS | `TbUsuariosSICALocalParaIndicadores` | 50 |
+| NOC-N7 | No Conformidades | `TbTipologiaAux` | 23 |
+
+Ninguna está vacía en el front publicado: todas necesitan revisar su uso antes de retirarse.
+
+AGT-A3 compara las cinco tablas que existen a la vez en el front de AGEDYS Técnico y en `AGEDYS_DATOS.accdb`:
+
+| Tabla | Front | Backend | Filas idénticas | Lectura |
+|---|---:|---:|---:|---|
+| `TbProductosObsoletos` | 25 | 25 | 25 | Idénticas: la copia del front sobra |
+| `TbSTGParametrosParaFormulario` | 15 | 15 | 15 | Idénticas: la copia del front sobra |
+| `TbHerramientaDocAyuda` | 33 | 10 | 0 | Difieren: el front tiene más filas; hay que decidir cuál vale |
+| `TbAuxExp` | 0 | 40 | 0 | Tabla de trabajo: vacía en el front publicado |
+| `TbSuministradoresListaFavoritos` | 0 | 0 | 0 | Vacías en los dos |

@@ -84,3 +84,5 @@ L29. Decisiones del propietario (2026-11-05, issue #1680): aprueba la excepción
 
 L30. Decisión del propietario (2026-11-05, issue #1559, verbatim): «Dos esquemas por aplicación». D93.
 L31. Decisión del propietario (2026-11-05): aprueba «tal cual» el orden de paso a la web propuesto (decisión 24): Lanzadera web, Expedientes, Condor, Seguridad, HPS, Solicitudes HPS, Gestión de Riesgos, No Conformidades, Registros, Brass y APGEDYS.
+
+L32. Tablas de los fronts del grupo (a) medidas (2026-11-05, issue #1688): ninguna está vacía en el front publicado; en AGT-A3, `TbProductosObsoletos` y `TbSTGParametrosParaFormulario` son idénticas en front y backend y `TbHerramientaDocAyuda` difiere (33 filas frente a 10).
