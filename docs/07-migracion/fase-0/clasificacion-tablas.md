@@ -114,7 +114,7 @@ Estos nombres podían referirse a dos tablas. Se resolvieron mirando qué conexi
 
 ## Para decidir por el propietario
 
-1. **`TbExpedientesCodigoCompras` tiene dos copias vivas**: la de `AGEDYS_DATOS` la usan AGEDYS Técnico y AGEDYS ECO; la de `Expedientes_datos`, Expedientes. Es el mismo caso que `TbExpedientesAnualidades` (decisión 21): ¿cuál es la fuente?
+1. **`TbExpedientesCodigoCompras` tiene dos copias**, una en `AGEDYS_DATOS` y otra en `Expedientes_datos`. **Resuelto (2026-11-05, decisión 25):** las dos están vacías y la funcionalidad nunca se ha usado; se retira (issues [AGEDYS_ECO#11](https://github.com/DysTelefonica/AGEDYS_ECO/issues/11), [Expedientes#278](https://github.com/DysTelefonica/Expedientes/issues/278) y [AGEDYS#4](https://github.com/DysTelefonica/AGEDYS/issues/4)).
 2. **`TbExpedientesAnualidades`**: AGEDYS Técnico ya usa la de Expedientes por su vínculo; AGEDYS ECO sigue usando la copia de `AGEDYS_DATOS`. Con la decisión 21, ECO tiene que pasar a la de Expedientes.
 3. **`TbCorreosEnviados`**: además de la cola de `Correos_datos`, Contratos y Solicitudes HPS escriben cada una en su propia tabla local con ese nombre. ¿Esos correos salen? El proceso del servidor recorre la de Correos (decisión 16).
 4. **`Nombres` de `Registro_Datos`** la leen Condor, Gestión de Riesgos, HPS y Solicitudes HPS, y no Registros. ¿Quién es su dueño?
