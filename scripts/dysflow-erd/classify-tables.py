@@ -2,8 +2,9 @@
 
 Inputs, all in one directory: ownership.tsv (inventory-data.ps1 -Mode Ownership), inventory.tsv
 (inventory-data.ps1), and fronts.tsv, queries.tsv, bases.tsv and src/<repo>/src (collect-usage.ps1).
-Output: classification.tsv (one row per table) and doubts.tsv (names that can still mean
-two tables).
+Output: classification.tsv (one row per table), doubts.tsv (names that can still mean
+two tables) and resolved.tsv (the physical table each name used in an application's code means,
+which table-cost.py reads).
 Usage: python classify-tables.py <dir> [<output dir>]
 """
 
@@ -262,6 +263,7 @@ uses = collections.defaultdict(
     lambda: collections.defaultdict(set)
 )  # (backend|front, table lower) -> app -> evidence
 doubts = []
+resolved = set()  # (application, name used in its code, backend, table)
 for app, repo, _ref in bases:
     src = os.path.join(D, "src", repo, "src")
     found, as_table = used_names(src)
@@ -273,6 +275,7 @@ for app, repo, _ref in bases:
             continue
         for c in cands:
             uses[(c[0], c[1].lower())][app] |= {f"{x} ({how})" for x in kinds}
+            resolved.add((app, k, c[0], c[1]))
         if amb:
             doubts.append(
                 (
@@ -371,6 +374,10 @@ with open(os.path.join(OUT, "classification.tsv"), "w", encoding="utf-8", newlin
     w = csv.DictWriter(f, fieldnames=list(rows[0]), delimiter="\t")
     w.writeheader()
     w.writerows(rows)
+with open(os.path.join(OUT, "resolved.tsv"), "w", encoding="utf-8", newline="") as f:
+    f.write("aplicacion\tnombre\tbackend\ttabla\n")
+    for r in sorted(resolved):
+        f.write("\t".join(r) + "\n")
 seen = set()
 with open(os.path.join(OUT, "doubts.tsv"), "w", encoding="utf-8", newline="") as f:
     f.write("aplicacion\tnombre\tmotivo\n")
