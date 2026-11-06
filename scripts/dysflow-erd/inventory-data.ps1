@@ -4,10 +4,13 @@
 # one row per local table, plus one row per key candidate of tables without a primary key.
 # With -Mode Ownership it lists every table and link instead: backend, name, local or link,
 # and for a link the backend and table it points to (docs/07-migracion/fase-0/mapa-propiedad.md).
+# With -Mode Columns it lists every column of every local table: DAO type, size, attributes,
+# whether it is a complex (multivalue or attachment) field, required, validation rule and default
+# value (docs/07-migracion/fase-0/coste-cambios.md).
 param(
     [string]$Root = 'C:\00repos\access2web-datos',
     [string]$Manifest,
-    [ValidateSet('Data', 'Ownership')][string]$Mode = 'Data',
+    [ValidateSet('Data', 'Ownership', 'Columns')][string]$Mode = 'Data',
     [Parameter(Mandatory = $true)][string]$Out
 )
 $ErrorActionPreference = 'Stop'
@@ -29,6 +32,7 @@ foreach ($name in $expected.Keys) {
 $engine = New-Object -ComObject DAO.DBEngine.120
 $rows = New-Object System.Collections.Generic.List[string]
 if ($Mode -eq 'Ownership') { $rows.Add("backend`tname`tkind`ttarget_backend`tsource_table") }
+elseif ($Mode -eq 'Columns') { $rows.Add("backend`ttable`tcolumn`ttype`tsize`tattributes`tcomplex`trequired`tvalidation`tdefault") }
 else { $rows.Add("kind`tbackend`ttable`trows`tpk`tcolumn`tnulls`tdistinct") }
 foreach ($name in ($expected.Keys | Sort-Object)) {
     $work = Join-Path ([IO.Path]::GetTempPath()) ('inv-' + [Guid]::NewGuid().ToString('N'))
@@ -45,6 +49,16 @@ foreach ($name in ($expected.Keys | Sort-Object)) {
                 continue
             }
             if ($t.Connect) { continue }
+            if ($Mode -eq 'Columns') {
+                foreach ($fld in $t.Fields) {
+                    $complex = $false
+                    try { $complex = [bool]$fld.IsComplex } catch { $complex = $false }
+                    $rule = ($fld.ValidationRule -replace '[\t\r\n]', ' ')
+                    $default = ($fld.DefaultValue -replace '[\t\r\n]', ' ')
+                    $rows.Add("$name`t$($t.Name)`t$($fld.Name)`t$($fld.Type)`t$($fld.Size)`t$($fld.Attributes)`t$complex`t$($fld.Required)`t$rule`t$default")
+                }
+                continue
+            }
             $q = '[' + $t.Name + ']'
             $count = $db.OpenRecordset("SELECT COUNT(*) FROM $q", 4).Fields(0).Value
             $pk = ''
