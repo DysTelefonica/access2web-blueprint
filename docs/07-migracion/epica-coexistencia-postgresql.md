@@ -149,7 +149,7 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 
 | Fase | Nombre | Estado |
 |---|---|---|
-| 0 | Inventario | en curso |
+| 0 | Inventario | hecha |
 | 1 | Saneamiento en Access | pendiente |
 | 2 | Unificar el acceso a datos | pendiente |
 | 3 | Ensayo en Citrix con todos los backends (antes: con `Lanzadera_Datos`; antes aún: con una isla) | revisada |
@@ -158,7 +158,7 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 
 ### Fase 0. Inventario
 
-**Estado:** en curso. Hecho: [`Lanzadera_Datos`](fase-0/lanzadera-datos.md) (#1560) y [`Brass`](fase-0/brass.md) (#1574), con sus propuestas de acción catalogadas, pendientes de revisión transversal. Pendiente: el resto de backends. Completar un inventario individual no habilita cambios en el legacy.
+**Estado:** hecha (2026-11-06). El criterio de terminado se cumple con evidencia: ver el [cierre de la fase 0](fase-0/cierre.md), con lo que queda abierto y en qué fase se resuelve. Pasa a `revisada` cuando el propietario valide la evidencia; hasta entonces no se aplica nada en el legacy.
 
 **Objetivo.** Conocer, en solo lectura, el grafo completo de dependencias entre backends, el estado de cada tabla y los patrones de VBA que no sobrevivirían a PostgreSQL.
 
@@ -184,6 +184,8 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 - La [copia de producción de referencia](fase-0/copia-referencia.md): la foto fija de los 18 backends, con su SHA-256, contra la que se hacen todas las comprobaciones de datos.
 - El [orden de paso de las aplicaciones a la web](fase-0/orden-cortes-web.md) (decisión 24).
 - El [mapa de propiedad](fase-0/mapa-propiedad.md): qué tabla es propia de qué backend, qué backend vincula a cuál y las propuestas que estaban en el backend equivocado.
+- Los [patrones de riesgo del VBA](fase-0/patrones-riesgo.md) de las trece aplicaciones, con un solo método.
+- El [coste de los cambios](fase-0/coste-cambios.md) por tabla y por columna, y los tipos, reglas y valores por defecto de cada columna.
 - La [clasificación de las tablas](fase-0/clasificacion-tablas.md): las 535 tablas de los backends y las 50 de los fronts, según qué aplicación las usa de verdad.
 - Las [comprobaciones de datos del grupo (a)](fase-0/comprobaciones-grupo-a.md): las 36 propuestas imprescindibles que admiten medición, con su veredicto contra la copia de referencia.
 - El [anexo de controles conectados](fase-0/controles-conectados.md): el SQL literal de cada control con origen de datos y el catálogo de consultas que sobrevivirán a PostgreSQL. La medición refuta la regla «salvo Brass, los formularios son desconectados»: Registros tiene 37 controles conectados y HPS 3 formularios unidos a recordset.
