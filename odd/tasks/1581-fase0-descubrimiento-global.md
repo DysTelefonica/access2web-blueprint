@@ -41,6 +41,8 @@ S12. Los recuentos se verifican sobre copia reciente de producción antes de apr
 
 - T22 (S8, S12) docs(migracion) (issue #1697): clasificación de cada tabla de la copia de referencia (paso 5 de la fase 0), con los scripts `collect-usage.ps1` y `classify-tables.py`. Documento `docs/07-migracion/fase-0/clasificacion-tablas.md`.
 
+- T23 (S8, S12) docs(migracion) (issue #1729): inventario de patrones de riesgo del VBA de las trece aplicaciones con un solo método (`scripts/dysflow-erd/risk-patterns.py`), documento `fase-0/patrones-riesgo.md`. Cubre el entregable «por front» que faltaba en seis fichas.
+
 Ruta: una unidad de trabajo por aplicación, documentos de inventario bajo el presupuesto de revisión. La aprobación del merge es del mantenedor; el camino gobernado es `safe_merge.py` sin `--admin`, conservando la rama remota.
 
 ## Log
@@ -102,3 +104,4 @@ L40. Punto 5 de la clasificación (2026-11-05, issue #1717): el propietario resp
 L41. Decisión del propietario (2026-11-05, issue #1720), sobre el punto 6 (`tbUsuarios` de la Lanzadera, solo vinculada por AGEDO): «esa tabla va fuera ya que agedo no se usa ahora ya». Decisión 27: AGEDO deja de ser consumidor permanente (sustituye esa parte de la decisión 14); `tbUsuarios` pasa a huérfana (164). Las tablas de AGEDO20_Datos que leen aplicaciones del alcance siguen llegando a PostgreSQL; Tareas sigue en uso.
 L42. Decisión del propietario (2026-11-05, issue #1723), sobre el punto 7 (tablas de la Lanzadera con datos y sin uso: `TbAplicacionesEdiciones`, `TbAplicacionesEdicionesCambios`, `TbPermisos`, `TbParametros`, `TbTablasAVincular`): «esas van fuera». Ya son huérfanas: van a cuarentena con `CLS-H1`; LAN-A3 y LAN-A4 quedan decididas.
 L43. Decisión del propietario (2026-11-05, issue #1725): «pero hay que hacer una issue en lanzadera para quitar los botones de ayuda y todo lo que lo alimenta». Los botones y `AbrirArchivoAyuda` ya estaban en Lanzadera#24; la configuración `NombreDirectorioAyuda` y las propiedades `URLDirectorioAyuda*`, sin llamadores, van en Lanzadera#26. LAN-A1 enlaza las dos.
+L44. Cierre de la fase 0 (2026-11-06): ante «¿Preparo el cierre?», el propietario responde «sí»; la comprobación del criterio de terminado muestra que faltan los patrones de riesgo de seis fronts y el coste por tabla y columna, y el propietario elige «Completar los huecos y luego cerrar». #1581 y #1545, cerradas solas el 2026-11-04 por un «Closes», se reabren. T23 (issue #1729): 37 generadores `Max + 1`, 562 recordsets que editan sin `dbSeeChanges`, 162 fechas con `#`, 88 funciones de fecha en SQL, 368 `LIKE` con `*`, ningún `Seek`.
