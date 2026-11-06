@@ -46,6 +46,8 @@ Las fichas identifican las tablas y sus propietarios; los datos del front quedan
 
 ## Claves primarias
 
+Cada tabla aparece solo en la propuesta de su backend dueño: las aplicaciones que la vinculan no tocan su clave.
+
 «Duplicados» es el exceso de filas no nulas sobre los valores distintos: filas − nulos − distintos. Una candidata en una tabla vacía cumple la comprobación de la foto, no garantiza unicidad futura. «Sin candidata» significa que el inventario no recoge una columna autonumérica o `ID*`; necesita una decisión de clave, posiblemente compuesta. Una clave existente no tiene candidatas medidas. Que una columna sea única en los datos no la convierte en la clave correcta: cada candidata se confirma con el significado de la tabla antes de declararla.
 
 ### Correos: COR-C1 (absorbe CON-C5 y NOC-N3)
@@ -60,11 +62,8 @@ Los 19 duplicados son parejas de correos distintos que recibieron el mismo `IDCo
 
 | Backend | Tabla | Filas | Clave actual | Mejor candidata | Resultado |
 |---|---|---:|---|---|---|
-| `Correos_datos.accdb` | `TbCorreosEnviados` | 35395 | Ninguna | `IDCorreo` | Bloquea: 0 nulos, 35376 distintos, 19 duplicados |
-| `AGEDYS_DATOS.accdb` | `TbFacturasPrincipal` | 2706 | Ninguna | — | Sin candidata |
 | `Expedientes_datos.accdb` | `TbExpAgedys` | 116 | Ninguna | `IdExpediente` | Se puede aplicar: 0 nulos, 116 distintos |
 | `Expedientes_datos.accdb` | `TbExpAGEDYS1` | 116 | Ninguna | `IdExpediente` | Se puede aplicar: 0 nulos, 116 distintos |
-| `Expedientes_datos.accdb` | `TbExpedientes1` | — | — | — | No es una tabla: era un vínculo residual de Expedientes que apuntaba a otro vínculo de `AGEDYS_DATOS` y volvía a `TbExpedientes`. El propietario lo mandó retirar de la copia el 2026-11-05; en producción sigue, sin uso salvo una rutina sin llamadores de `Instalador.bas` |
 | `Expedientes_datos.accdb` | `E2E_export_20260723_142133_lista` | 89 | Ninguna | `IDExpediente` | Bloquea: 1 nulo, 88 distintos, 0 duplicados |
 
 ### GRI-R2
@@ -74,7 +73,6 @@ Los 19 duplicados son parejas de correos distintos que recibieron el mismo `IDCo
 | `Gestion_Riesgos_Datos.accdb` | `ProyectoRespCalidad` | 16 | Ninguna | — | Sin candidata |
 | `Gestion_Riesgos_Datos.accdb` | `TbAuxProyectosRiesgos` | 242 | Ninguna | `IDProyecto` | Bloquea: 0 nulos, 18 distintos, 224 duplicados |
 | `Gestion_Riesgos_Datos.accdb` | `TbCachePublicabilidadEdicion` | 0 | Ninguna | `IDEdicion` o `IDRiesgo` | Se puede aplicar: 0 nulos, 0 distintos; solo en la foto |
-| `Correos_datos.accdb` | `TbCorreosEnviados` | 35395 | Ninguna | `IDCorreo` | Bloquea: 0 nulos, 35376 distintos, 19 duplicados |
 | `Gestion_Riesgos_Datos.accdb` | `TbRiesgosValoracion` | 25 | Ninguna | — | Sin candidata |
 
 ### AGE-E5
