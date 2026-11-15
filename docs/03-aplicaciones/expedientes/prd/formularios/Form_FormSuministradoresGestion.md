@@ -56,7 +56,7 @@ Sin ID limpia la selección; si cambia el ID relee con `getSuministrador` (`:339
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Ya se ve: comprobación de uso y `DELETE` sin transacción; la integridad con `TbExpedientesSuministradores` la aplica el código (a confirmar en `../erd-origen.md`).
+Pendiente de `../coexistencia.md`. Ya se ve: comprobación de uso y `DELETE` sin transacción; la integridad con `TbExpedientesSuministradores` la aplica el código (a confirmar en el origen del modelo, que no está en el repositorio).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

@@ -15,9 +15,27 @@ devuelve 1 con el hallazgo; el entorno insalvable falla cerrado con 2
 ejecuta el workflow, cierra las issues enlazadas por palabras de cierre y devuelve 0.
 El merge con ``GITHUB_TOKEN`` no dispara el cierre implicito de GitHub (0 de 13, #800):
 el cierre es explicito, exige ``issues: write`` y, si falla con el merge ya hecho,
-devuelve 3 («fusionado, issue sin cerrar»), nunca el 2. Un PR atrasado respecto de su base se bloquea antes (1): el arbol a fusionar
-no seria el que reviso el CI (#787) y, si ambos lados cambiaron el mismo fichero
-de ``.github/workflows/``, ``GITHUB_TOKEN`` no tiene el permiso ``workflows`` (#783).
+devuelve 3 («fusionado, issue sin cerrar»), nunca el 2. Si ambos lados cambiaron
+el mismo fichero de ``.github/workflows/``, un PR atrasado se bloquea siempre (1):
+``GITHUB_TOKEN`` no tiene el permiso ``workflows`` (#783). Fuera de ese caso, el
+atraso respecto de la base solo bloquea con ``merge_freshness: "required"`` en el
+contrato (#787), o si el contrato no declara ``post_merge_dispatch`` ni
+``post_merge_verify``: el CI corre una vez, en la PR, y la red de seguridad es el
+CI post-merge (#1397). Los workflows de ``post_merge_verify`` verifican el arbol
+integrado y solo se despachan si la PR iba atrasada (#1440).
+Tras el merge, el job mide el arbol integrado y publica el veredicto (#1265):
+compara el arbol del commit de merge con el del head verificado (leidos de
+``commit.tree.sha``, con el lector compartido del detective post-push) y lo
+escribe en stdout y en ``$GITHUB_STEP_SUMMARY``. Arboles iguales: 0. Arboles
+distintos: 5 con ``merge_freshness: "required"`` (el merge no se deshace; el rojo
+dice que el arbol integrado no es el que reviso el CI); sin ella, 0, y el
+veredicto dice que lo verifica el CI post-merge de la base (#1397). Si la medicion no se puede hacer, falla cerrado con 2
+nombrando la causa: un commit ilegible nunca se reporta como coincidencia.
+Esa medicion no interrumpe el trabajo posterior al merge (#1279): si falla, el
+resumen dice ``not measured: <causa>``, el cierre de las issues enlazadas y el
+dispatch post-merge se ejecutan igual, y el 2 sale al final con la causa.
+La operacion completa, con los codigos de salida y que hacer con el rojo, esta
+en ``references/integrated-tree-evidence.md`` (raiz del skill).
 Runner-enforced (HR-34); lo que no pase
 por aqui lo detecta el detective post-push (HR-49). Solo stdlib; cada
 llamada a ``gh api`` lleva timeout.
@@ -25,16 +43,20 @@ llamada a ``gh api`` lleva timeout.
 import argparse
 import base64
 import json
+import os
 import re
 import sys
 import time
+from pathlib import Path
 from typing import NamedTuple
 
 from check_push_compliance import (
     SHA_RE,
     FailClosedError,
     check_verdict,
+    commit_tree_sha,
     fail,
+    fetch_check_runs,
     gh_json,
     load_json,
     protected_branches,
@@ -49,6 +71,23 @@ RACE_CLOSED = 422  # PATCH devolvio 422 = carrera con el cierre auto por `Closes
 WAITABLE = (": missing", ": pending")  # el CI aun no publico o no termino; un fallo no se espera
 DEFAULT_WAIT, DEFAULT_POLL = 300.0, 10.0
 POST_DISPATCH_FAILED = 4  # merged, post-dispatch failed (no rollback, #817)
+# #1265: merged, the integrated tree is NOT the tree CI reviewed (no rollback).
+INTEGRATED_TREE_DRIFT = 5
+# #1265: el texto del veredicto. Va al resumen del job y al log; el drift se
+# dice con un NOT explicito para que nadie lo lea como un match.
+VERDICT_MATCH = "the integrated tree is the tree CI reviewed"
+VERDICT_DRIFT = "the integrated tree is NOT the tree CI reviewed"
+# #1397: con la frescura apagada el drift es la base que avanzo; no es rojo.
+VERDICT_BASE_MOVED = ("the integrated tree includes base commits the PR did not carry; "
+                      "the post-merge CI on '{base}' verifies it")
+# #1397: el CI corre una vez, en la PR; exigir la base al dia es opcion del consumer.
+FRESHNESS_KEY = "merge_freshness"
+FRESHNESS_OFF, FRESHNESS_REQUIRED = "off", "required"
+# #1440: workflows que verifican el arbol integrado; solo se despachan si la PR iba atrasada.
+DISPATCH_KEY, VERIFY_KEY = "post_merge_dispatch", "post_merge_verify"
+# #1279: como se dice que la medicion no se pudo hacer. Va al resumen del job
+# con la causa al lado: el resumen no afirma una coincidencia que no se midio.
+NOT_MEASURED = "not measured"
 WORKFLOWS_HINT = ("the token lacks the 'workflows' permission, which GITHUB_TOKEN cannot "
                   "have: GitHub refuses a merge that creates new workflow-file content; "
                   "update the PR branch onto its base or merge it as the maintainer")
@@ -149,7 +188,16 @@ def close_linked_issues(repo: str, pull: dict, number: object, sha: str) -> None
     propio PR mergeado. Se relee la issue y, si ya está cerrada, se trata
     como éxito. Un re-read fallido o que devuelve ``state == "open"`` se
     mantiene como fallo pendiente (exit 3) para no tragarnos defectos reales.
+
+    #1486: un intermedio de cadena (``chain:partial``) no cierra nada. GitHub
+    puede conservar en ``closingIssuesReferences`` un «Closes #N» ya borrado
+    del cuerpo (cadete #1065 cerro #826); solo la punta cierra la issue.
     """
+    if any(isinstance(label, dict) and label.get("name") == "chain:partial"
+           for label in pull.get("labels") or []):
+        print(f"NOT CLOSED: PR #{number} is a chain intermediate (chain:partial): "
+              "only the chain tip closes its issues")
+        return
     if pull["base"]["ref"] != default_branch(repo, pull):
         return
     pending = []
@@ -318,9 +366,190 @@ def _range_inputs(name: str, yaml_text: str) -> tuple[str | None, bool]:
     return None, range_inputs == {"before", "after"}
 
 
-def _validate_one_workflow(repo: str, name: str,
-                           by_basename: dict[str, str]) -> tuple[str | None, bool]:
-    """Valida un nombre declarado en ``post_merge_dispatch``.
+# #1440: un job requerido de ``post_merge_verify`` tiene que correr en el dispatch. Regla
+# conservadora: si su ``if:`` de job filtra por ``github.event_name``, tiene que nombrar
+# ``workflow_dispatch`` y no negarlo; si no filtra por evento, se acepta. #1454: tambien
+# se acepta si una disyuncion de nivel superior es solo un filtro de evento que admite el
+# dispatch (``!= '<otro evento>'`` o ``== 'workflow_dispatch'``), porque entonces el
+# ``if:`` entero es verdadero en el dispatch.
+_EVENT_NAME = "github.event_name"
+_DISPATCH_EVENT = "workflow_dispatch"
+_NEGATES_DISPATCH = re.compile(
+    r"!=\s*['\"]workflow_dispatch['\"]"          # github.event_name != 'workflow_dispatch'
+    r"|['\"]workflow_dispatch['\"]\s*!="          # 'workflow_dispatch' != github.event_name
+    r"|!\s*\w*\s*\([^)]*workflow_dispatch")       # !(... 'workflow_dispatch') / !contains(...)
+_TRAILING_COMMENT = re.compile(r"\s+#.*$")
+_EVENT_OPERAND = r"github\.event_name"
+# GitHub solo admite literales entre comillas simples.
+_LITERAL = r"'(\w+)'"
+_EVENT_TEST = re.compile(
+    rf"^(?:{_EVENT_OPERAND}\s*(==|!=)\s*{_LITERAL}|{_LITERAL}\s*(==|!=)\s*{_EVENT_OPERAND})$")
+_BLOCK_INDICATOR = re.compile(r"^[>|][-+]?\s+")
+POLICY_PATH = ".github/required-jobs-policy.json"
+
+
+def _indent(line: str) -> int:
+    return len(line) - len(line.lstrip())
+
+
+def _jobs_lines(yaml_text: str) -> list[str]:
+    """Las lineas con contenido bajo ``jobs:`` (columna 0), sin comentarios ni blancos."""
+    lines: list[str] = []
+    in_jobs = False
+    for line in yaml_text.splitlines():
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        if _indent(line) == 0:
+            in_jobs = line.startswith("jobs:")
+        elif in_jobs:
+            lines.append(_TRAILING_COMMENT.sub("", line.rstrip()))
+    return lines
+
+
+def _job_conditions(yaml_text: str) -> dict[str, str]:
+    """#1440: el ``if:`` de cada job, con sus lineas de bloque (``>-``, ``|``).
+
+    Las sangrias se leen del fichero: la del job es la de la primera clave bajo
+    ``jobs:`` y la de sus claves, la de la primera linea mas sangrada de ese job.
+    Un ``if:`` de un step (mas sangrado) no es el del job. El nombre del job se
+    devuelve sin comillas.
+    """
+    lines = _jobs_lines(yaml_text)
+    job_indent = _indent(lines[0]) if lines else 0
+    conditions: dict[str, str] = {}
+    job, key_indent, collecting = "", 0, False
+    for line in lines:
+        indent, stripped = _indent(line), line.strip()
+        if collecting and indent > key_indent:
+            conditions[job] += " " + stripped
+            continue
+        collecting = False
+        if indent == job_indent:
+            job, key_indent = stripped.rstrip(":").strip("'\""), 0
+        elif indent > job_indent:
+            key_indent = key_indent or indent
+            if indent == key_indent and stripped.startswith("if:"):
+                conditions[job], collecting = stripped[len("if:"):].strip(), True
+    return conditions
+
+
+def _bare_expression(condition: str) -> str:
+    """El ``if:`` sin indicador de bloque (``>-``) ni envoltorio ``${{ }}``."""
+    text = _BLOCK_INDICATOR.sub("", condition.strip()).strip()
+    if text.startswith("${{") and text.endswith("}}"):
+        text = text[3:-2].strip()
+    return text
+
+
+def _top_level_disjuncts(expression: str) -> list[str]:
+    """Los operandos de ``||`` fuera de parentesis y de literales."""
+    parts, depth, quote, start = [], 0, "", 0
+    index = 0
+    while index < len(expression):
+        char = expression[index]
+        if quote:
+            quote = "" if char == quote else quote
+        elif char in "'\"":
+            quote = char
+        elif char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+        elif depth == 0 and expression.startswith("||", index):
+            parts.append(expression[start:index].strip())
+            start, index = index + 2, index + 2
+            continue
+        index += 1
+    parts.append(expression[start:].strip())
+    return parts
+
+
+def _admits_dispatch(term: str) -> bool:
+    """#1454: el operando es solo un filtro de evento verdadero en ``workflow_dispatch``."""
+    match = _EVENT_TEST.match(term)
+    if match is None:
+        return False
+    operator = match.group(1) or match.group(4)
+    # GitHub compara cadenas sin distinguir mayusculas (verificador #1454, B1).
+    is_dispatch = (match.group(2) or match.group(3)).lower() == _DISPATCH_EVENT
+    return not is_dispatch if operator == "!=" else is_dispatch
+
+
+def _skips_dispatch(condition: str) -> bool:
+    """Un ``if:`` que filtra por evento sin admitir ``workflow_dispatch`` lo salta."""
+    if _EVENT_NAME not in condition:
+        return False
+    terms = _top_level_disjuncts(_bare_expression(condition))
+    # Un operando vacio es una expresion que GitHub rechaza: no se lee como filtro.
+    if all(terms) and any(_admits_dispatch(term) for term in terms):
+        return False
+    return _DISPATCH_EVENT not in condition or bool(_NEGATES_DISPATCH.search(condition))
+
+
+def dispatch_skipped_jobs(yaml_text: str, required_jobs: frozenset[str]) -> list[str]:
+    """#1440: jobs de ``required_jobs`` cuyo ``if:`` los salta en ``workflow_dispatch``."""
+    return [job for job, condition in _job_conditions(yaml_text).items()
+            if job in required_jobs and _skips_dispatch(condition)]
+
+
+def _verify_finding(name: str, yaml_text: str, required_jobs: frozenset[str]) -> str | None:
+    """#1440: un workflow de ``post_merge_verify`` tiene que correr sus jobs requeridos."""
+    skipped = dispatch_skipped_jobs(yaml_text, required_jobs)
+    if not skipped:
+        return None
+    return (f"post_merge_verify workflow '{name}' skips the required job '{skipped[0]}' on "
+            "workflow_dispatch: the post-merge verification would not run it (#1440); "
+            f"skipped jobs: {skipped}; a job-level 'if:' that filters on github.event_name "
+            "must admit 'workflow_dispatch'")
+
+
+def _dispatch_accepted_skips(policy: dict, base: str) -> frozenset[str]:
+    """#1454: los saltos que la politica acepta en ``workflow_dispatch``; mal formados = 2."""
+    events = policy.get("events", {})
+    spec = events.get(_DISPATCH_EVENT, {}) if isinstance(events, dict) else None
+    skips = spec.get("accepted_skips", []) if isinstance(spec, dict) else None
+    if not isinstance(skips, list) or not all(isinstance(j, str) and j for j in skips):
+        fail(f"{POLICY_PATH} on '{base}': events.{_DISPATCH_EVENT}.accepted_skips must be a "
+             "list of job names (#1454)")
+    return frozenset(skips)
+
+
+def required_jobs_policy(repo: str, base: str) -> frozenset[str]:
+    """#1440: los jobs requeridos que tienen que correr en el dispatch; ilegible = 2.
+
+    Es el mismo fichero que lee ``check_required_jobs.py``. Se lee por la API de
+    contenidos, como los workflows, y solo si hay ``post_merge_verify``. Los saltos
+    que el consumer acepta en ``workflow_dispatch`` (``events.workflow_dispatch
+    .accepted_skips``, la lista que ya respeta el agregador) no cuentan (#1454).
+    """
+    try:
+        contents = get_json(f"repos/{repo}/contents/{POLICY_PATH}?ref={base}")
+        policy = json.loads(base64.b64decode(contents["content"]).decode("utf-8"))
+        jobs = policy["required_jobs"]
+    except (GitHubApiError, TypeError, KeyError, ValueError) as exc:
+        fail(f"could not read required_jobs from {POLICY_PATH} on '{base}' to validate "
+             f"post_merge_verify (fail closed, #1440): {exc!r}")
+    if not isinstance(jobs, list) or not jobs or not all(isinstance(j, str) and j for j in jobs):
+        fail(f"{POLICY_PATH} on '{base}': required_jobs must be a non-empty list of "
+             "non-empty strings (#1440)")
+    demanded = frozenset(jobs) - _dispatch_accepted_skips(policy, base)
+    if not demanded:
+        fail(f"{POLICY_PATH} on '{base}': events.{_DISPATCH_EVENT}.accepted_skips leaves no "
+             "required job to run on the post-merge verification (#1454)")
+    return demanded
+
+
+def _dispatchable_inputs(name: str, yaml_text: str, key: str,
+                        required_jobs: frozenset[str]) -> tuple[str | None, bool]:
+    """El rango del dispatch (#933) y, en ``post_merge_verify``, que no salte jobs (#1440)."""
+    finding = _verify_finding(name, yaml_text, required_jobs) if key == VERIFY_KEY else None
+    return (finding, False) if finding is not None else _range_inputs(name, yaml_text)
+
+
+def _validate_one_workflow(repo: str, name: str, by_basename: dict[str, str],
+                           key: str = "post_merge_dispatch",
+                           required_jobs: frozenset[str] = frozenset()) -> tuple[str | None, bool]:
+    """Valida un nombre declarado en ``post_merge_dispatch`` o en ``post_merge_verify``.
 
     Devuelve ``(hallazgo, con_rango)``. El hallazgo es ``None`` cuando el workflow
     declara ``on: workflow_dispatch:``; en otro caso es el texto que el caller añade
@@ -328,10 +557,11 @@ def _validate_one_workflow(repo: str, name: str,
     ``after`` como entradas (#933) y recibe el rango en el dispatch. Las verificaciones
     viven aquí para que el motor de ``validate_post_merge_dispatch`` quede por debajo
     del umbral de C901/PLR0912 del ratchet shrink-only de ruff extendido (#817).
+    Un workflow de ``post_merge_verify`` ademas no puede saltar jobs en el dispatch (#1440).
     """
     path = by_basename.get(name)
     if not isinstance(path, str):
-        return (f"post_merge_dispatch entry '{name}' is not a workflow in this repo "
+        return (f"{key} entry '{name}' is not a workflow in this repo "
                 f"(available: {sorted(by_basename)})"), False
     try:
         contents = get_json(f"repos/{repo}/contents/{path}")
@@ -349,8 +579,8 @@ def _validate_one_workflow(repo: str, name: str,
     if not declares_workflow_dispatch(yaml_text):
         return (f"workflow '{name}' does not declare 'workflow_dispatch': the dispatch "
                 "step would 404; add 'on: workflow_dispatch:' to its YAML before listing "
-                "it in post_merge_dispatch (#817)"), False
-    return _range_inputs(name, yaml_text)
+                f"it in {key} (#817)"), False
+    return _dispatchable_inputs(name, yaml_text, key, required_jobs)
 
 
 WORKFLOWS_PER_PAGE = 100  # el maximo que acepta el listado; el defecto (30) da falsos negativos (#966)
@@ -412,7 +642,9 @@ class DispatchTarget(NamedTuple):
     with_range: bool
 
 
-def validate_post_merge_dispatch(repo: str, names: list[str]) -> tuple[dict[str, DispatchTarget], list[str]]:
+def validate_post_merge_dispatch(repo: str, names: list[str], key: str = "post_merge_dispatch",
+                                  required_jobs: frozenset[str] = frozenset(),
+                                  ) -> tuple[dict[str, DispatchTarget], list[str]]:
     """Each name in ``names`` must exist as a workflow in this repo and declare
     ``workflow_dispatch``. Returns ``(resolved, findings)``; non-empty
     ``findings`` blocks the merge (exit 1, no API call is fired).
@@ -421,18 +653,19 @@ def validate_post_merge_dispatch(repo: str, names: list[str]) -> tuple[dict[str,
     identifier the API accepts (the workflow FILE NAME, ``ci.yml``; #1086) and
     whether it takes the ``before``/``after`` range inputs (#933). Order matches
     ``sorted(set(names))`` so the listing is stable across rounds even when the user
-    reorders the contract.
+    reorders the contract. ``key`` names the contract list in the findings: the same
+    validation serves ``post_merge_verify`` (#1440).
     """
     findings: list[str] = []
     if len(names) != len(set(names)):
         findings.append(
-            f"post_merge_dispatch has duplicates ({sorted(set(names))}); each entry must "
+            f"{key} has duplicates ({sorted(set(names))}); each entry must "
             "appear once in the contract")
     seen = sorted(set(names))
     try:
         workflows = list_workflows(repo)
     except (GitHubApiError, WorkflowsListingError) as exc:
-        return {}, [f"could not list the workflows to validate post_merge_dispatch: {exc}"]
+        return {}, [f"could not list the workflows to validate {key}: {exc}"]
     by_basename: dict[str, str] = {}
     for item in workflows:
         if not isinstance(item, dict):
@@ -442,7 +675,8 @@ def validate_post_merge_dispatch(repo: str, names: list[str]) -> tuple[dict[str,
             by_basename[_workflow_basename(path)] = path
     resolved: dict[str, DispatchTarget] = {}
     for name in seen:
-        finding, with_range = _validate_one_workflow(repo, name, by_basename)
+        finding, with_range = _validate_one_workflow(repo, name, by_basename, key,
+                                                     required_jobs)
         if finding is not None:
             findings.append(finding)
             continue
@@ -520,14 +754,43 @@ def paths_of(data: dict) -> set[str]:
             if isinstance(name, str)}
 
 
-def freshness_findings(args: argparse.Namespace, pull: dict) -> list[str]:
-    """La rama debe estar al dia con su base: el arbol a fusionar es el que reviso el CI.
+def merge_freshness(contract: dict) -> str:
+    """``merge_freshness`` del contrato: ausente = ``off`` (#1397); otro valor falla cerrado."""
+    value = contract.get(FRESHNESS_KEY, FRESHNESS_OFF)
+    if value not in (FRESHNESS_OFF, FRESHNESS_REQUIRED) or not isinstance(value, str):
+        fail(f"{FRESHNESS_KEY} must be '{FRESHNESS_OFF}' or '{FRESHNESS_REQUIRED}', "
+             f"got {value!r}")
+    return value
 
-    Con la base movida (`behind_by` > 0) el merge produce un arbol que ninguna
-    ejecucion de CI vio, y el deploy lo rechaza («main moved»): se bloquea antes,
-    con la accion a tomar (#787). Si ademas ambos lados cambiaron el mismo
-    workflow, el merge crearia contenido de workflow nuevo y GITHUB_TOKEN no
-    puede (sin permiso `workflows`, #783): GitHub respondería 403 al PUT.
+
+def freshness_reason(contract: dict, dispatch_names: list[str],
+                     verify_names: list[str] | None = None) -> str | None:
+    """Por que un PR atrasado no se fusiona, o None si el atraso se acepta (#1397).
+
+    El CI corre una vez, en la PR: un PR atrasado se fusiona y el arbol
+    integrado lo verifica el CI post-merge despachado. El atraso bloquea si el
+    consumer lo pide (su deploy compara el arbol fusionado con el revisado,
+    #426) o si no hay CI post-merge que verifique el arbol fusionado: ni
+    ``post_merge_dispatch`` ni ``post_merge_verify`` (#1440).
+    """
+    if merge_freshness(contract) == FRESHNESS_REQUIRED:
+        return f"the contract sets {FRESHNESS_KEY} to '{FRESHNESS_REQUIRED}'"
+    if not dispatch_names and not verify_names:
+        return "the contract declares no post_merge_dispatch to verify it after the merge"
+    return None
+
+
+def freshness_findings(args: argparse.Namespace, pull: dict,
+                       reason: str | None) -> tuple[list[str], int]:
+    """Hallazgos de una rama atrasada respecto de su base, y cuantos commits va atrasada.
+
+    El atraso es el dato que decide si se despacha ``post_merge_verify`` (#1440):
+    se devuelve para no leer el compare dos veces.
+
+    Si ambos lados cambiaron el mismo workflow, el merge crearia contenido de
+    workflow nuevo y GITHUB_TOKEN no puede (sin permiso `workflows`, #783):
+    GitHub respondería 403 al PUT. Se bloquea siempre: es un limite de la
+    plataforma. El resto del atraso solo bloquea con `reason` (#787, #1397).
     """
     base, head = pull["base"]["ref"], pull["head"]["sha"]
     ahead = compare(args.repo, base, head)
@@ -535,16 +798,65 @@ def freshness_findings(args: argparse.Namespace, pull: dict) -> list[str]:
     if not isinstance(behind, int) or isinstance(behind, bool) or behind < 0:
         fail(f"compare {base}...{head} has no valid 'behind_by'")
     if behind == 0:
-        return []
+        return [], 0
     mine = {name for name in paths_of(ahead) if name.startswith(WORKFLOWS_DIR)}
     shared = sorted(mine & paths_of(compare(args.repo, head, base))) if mine else []
     action = f"update the PR branch onto '{base}', let CI go green and run the governed merge again"
     if shared:
         return [f"PR #{args.pr} and '{base}' both changed {', '.join(shared)}: merging would create "
                 "new workflow content, which the workflow token cannot do (no 'workflows' permission); "
-                + action]
+                + action], behind
+    if reason is None:
+        return [], behind
     return [f"PR #{args.pr} is behind '{base}' by {behind} commit(s): the merged tree would differ "
-            "from the tree CI reviewed and the deploy evidence refuses it; " + action]
+            f"from the tree CI reviewed and {reason}; " + action], behind
+
+
+def base_changed_after(repo: str, number: object, runs: list) -> str | None:
+    """Cuando cambio la base de la PR por ultima vez, si fue despues de todos sus runs (#1495).
+
+    Redirigir la base dispara `edited`, que el CI no escucha: la cabeza no tiene
+    ningun run contra la base actual. Sin timeline legible se devuelve None y
+    queda la pista de siempre: el gate bloquea igual, solo cambia el consejo.
+    """
+    try:
+        events = get_json(f"repos/{repo}/issues/{number}/timeline?per_page=100")
+    except (GitHubApiError, json.JSONDecodeError):
+        return None
+    if not isinstance(events, list):
+        return None
+    changes = [event["created_at"] for event in events
+               if isinstance(event, dict) and event.get("event") == "base_ref_changed"
+               and isinstance(event.get("created_at"), str)]
+    started = [run.get("started_at") for run in runs if isinstance(run.get("started_at"), str)]
+    if not changes or not started or max(changes) <= max(started):
+        return None
+    return max(changes)
+
+
+def absent_from_completed_run(findings: list[str], runs: list, sha: str,
+                              repo: str = "", number: object = None) -> list[str]:
+    """Un `missing` que ya no va a aparecer deja de ser esperable (fase 0, 0.4).
+
+    Si el commit tiene check-runs y todos han terminado, el requerido que falta
+    no se va a publicar: suele ser un run relanzado solo en sus jobs fallidos,
+    que no vuelve a correr el rollup (cadete#992). Esperar el techo solo
+    retrasaba el mismo `missing`; se dice que hay que relanzar el run entero.
+    Si la base cambio despues de esos runs, relanzarlos no sirve (#1495).
+    """
+    if not runs or any(not isinstance(run, dict) or run.get("status") != "completed" for run in runs):
+        return findings
+    if not any(item.endswith(": missing") for item in findings):
+        return findings
+    changed = base_changed_after(repo, number, runs) if repo else None
+    if changed is not None:
+        hint = (f"no check run of {sha[:12]} started after the PR's base was changed ({changed}), "
+                "and a base change does not start CI: close and reopen the PR, or push a commit "
+                "(never a merge of the base, HR-13), then merge again")
+    else:
+        hint = (f"every check run of {sha[:12]} is completed, so it will not appear: "
+                "re-run the whole workflow run (not only its failed jobs) and merge again")
+    return [f"{item}; {hint}" if item.endswith(": missing") else item for item in findings]
 
 
 def verdict_findings(args: argparse.Namespace, sha: str, required: list[str]) -> list[str]:
@@ -556,7 +868,9 @@ def verdict_findings(args: argparse.Namespace, sha: str, required: list[str]) ->
     """
     deadline = time.monotonic() + args.wait_seconds
     while True:
-        findings = check_verdict(args.repo, args.pr, sha, required)
+        runs = fetch_check_runs(args.repo, args.pr, sha)
+        findings = absent_from_completed_run(check_verdict(args.repo, args.pr, sha, required, runs),
+                                             runs, sha, args.repo, args.pr)
         waiting = [item for item in findings if item.endswith(WAITABLE)]
         if not waiting or len(waiting) != len(findings) or time.monotonic() >= deadline:
             return findings
@@ -565,7 +879,8 @@ def verdict_findings(args: argparse.Namespace, sha: str, required: list[str]) ->
 
 
 def gate_findings(args: argparse.Namespace, pull: dict, contract: dict,
-                  required: list[str]) -> list[str]:
+                  required: list[str], stale_reason: str | None) -> tuple[list[str], int]:
+    """Hallazgos del gate y el atraso de la PR (0 si no se llego a medir, #1440)."""
     body = pull.get("body") if isinstance(pull.get("body"), str) else ""
     labels = {label.get("name") for label in pull["labels"]
               if isinstance(label, dict) and isinstance(label.get("name"), str)}
@@ -581,9 +896,9 @@ def gate_findings(args: argparse.Namespace, pull: dict, contract: dict,
     if base_ref not in protected_branches(contract, None) and "chain:partial" not in labels:
         findings.append(f"PR #{args.pr} targets '{base_ref}': not a branch protected by the "
                         "contract and the PR is not a chain intermediate (chain:partial)")
-    if not findings:
-        findings += freshness_findings(args, pull)
-    return findings
+    if findings:
+        return findings, 0
+    return freshness_findings(args, pull, stale_reason)
 
 
 def _validate_cli_args(args: argparse.Namespace) -> None:
@@ -622,9 +937,7 @@ def _resolve_post_merge_dispatch_names(contract: dict) -> list[str]:
             print("WARNING: post_merge_dispatch is an empty list; post-merge dispatch "
                   "skipped (#817).", file=sys.stderr)
             return []
-        if not all(isinstance(item, str) and item for item in raw):
-            fail("post_merge_dispatch must be a list of non-empty strings")
-        return [item for item in raw if isinstance(item, str)]
+        return _workflow_names(raw, DISPATCH_KEY)
     if "post_merge_dispatch" in contract:
         fail("post_merge_dispatch must be a list of non-empty strings when declared")
     print("WARNING: post_merge_dispatch is not declared; post-merge dispatch "
@@ -634,28 +947,229 @@ def _resolve_post_merge_dispatch_names(contract: dict) -> list[str]:
     return []
 
 
+def _workflow_names(raw: list, key: str) -> list[str]:
+    """Los basenames de una lista del contrato; un item que no sea cadena no vacia falla cerrado."""
+    if not all(isinstance(item, str) and item for item in raw):
+        fail(f"{key} must be a list of non-empty strings")
+    return [item for item in raw if isinstance(item, str)]
 
+
+def _resolve_post_merge_verify_names(contract: dict) -> list[str]:
+    """``contract["post_merge_verify"]`` (#1440): ausente o vacia es ``[]``, sin warning.
+
+    Es opcional: un consumer que no la declara sigue con ``post_merge_dispatch``
+    como hoy. Mal tipada falla cerrado (2) antes de cualquier llamada a la API.
+    """
+    raw = contract.get(VERIFY_KEY, [])
+    if not isinstance(raw, list):
+        fail(f"{VERIFY_KEY} must be a list of non-empty strings")
+    return _workflow_names(raw, VERIFY_KEY)
+
+
+def _validate_post_merge_lists(repo: str, base: str, dispatch_names: list[str],
+                               verify_names: list[str]) -> tuple[dict[str, DispatchTarget], dict[str, DispatchTarget],
+                                          list[str]]:
+    """Valida las dos listas antes del merge; un workflow no puede estar en las dos (#1440)."""
+    findings = [f"'{name}' is in both {DISPATCH_KEY} and {VERIFY_KEY}: a detector is "
+                f"dispatched after every merge, a verification only when the PR was behind"
+                for name in sorted(set(dispatch_names) & set(verify_names))]
+    resolved: dict[str, DispatchTarget] = {}
+    verify: dict[str, DispatchTarget] = {}
+    if dispatch_names:
+        resolved, more = validate_post_merge_dispatch(repo, dispatch_names)
+        findings += more
+    if verify_names:
+        verify, more = validate_post_merge_dispatch(repo, verify_names, VERIFY_KEY,
+                                                    required_jobs_policy(repo, base))
+        findings += more
+    return resolved, verify, findings
+
+
+
+
+
+def read_commit_tree(repo: str, sha: str) -> str:
+    """Arbol de un commit por la API; falla cerrado si la forma no vale (#1265).
+
+    Lee ``commit.tree.sha`` (la forma real de la API, #928) con el lector
+    compartido de ``check_push_compliance``: una sola implementacion de «el
+    arbol de un commit». Si la API falla, ``gh_json`` ya falla cerrado; si la
+    forma no trae el arbol, tambien: un commit ilegible nunca se reporta como
+    coincidencia.
+    """
+    commit = gh_json(f"repos/{repo}/commits/{sha}")
+    tree = commit_tree_sha(commit)
+    if tree is None:
+        fail(f"the commit {sha} does not expose 'commit.tree.sha': the integrated tree "
+             "cannot be measured (fail closed)")
+    return tree
+
+
+def _verdict_text(drift: bool, base_ref: str | None) -> str:
+    """El veredicto: coincide, NO coincide (rojo) o la base avanzo (``base_ref``, #1397)."""
+    if not drift:
+        return VERDICT_MATCH
+    return VERDICT_DRIFT if base_ref is None else VERDICT_BASE_MOVED.format(base=base_ref)
+
+
+def _verdict_summary(merge_sha: str, merge_tree: str, head_sha: str, head_tree: str,
+                     verdict: str) -> str:
+    """El veredicto en markdown para el resumen del job (#1265)."""
+    return ("## Integrated tree evidence\n"
+            "\n"
+            f"- merge commit: `{merge_sha}`\n"
+            f"- merge tree: `{merge_tree}`\n"
+            f"- verified head: `{head_sha}`\n"
+            f"- head tree: `{head_tree}`\n"
+            f"- verdict: {verdict}\n")
+
+
+def _not_measured_summary(cause: str) -> str:
+    """El resumen del job cuando la medicion no se pudo hacer (#1279).
+
+    Publica la causa en vez de callarse: el resumen no afirma que el arbol
+    coincide —no se ha medido— pero dice por que no se pudo medir.
+    """
+    return ("## Integrated tree evidence\n"
+            "\n"
+            f"- verdict: {NOT_MEASURED}: {cause}\n")
+
+
+def _write_step_summary(text: str) -> None:
+    """Publica el veredicto en ``$GITHUB_STEP_SUMMARY`` (#1265).
+
+    Sin la variable (corridas locales, tests) el veredicto queda solo en
+    stdout: no es un fallo. Con la variable definida, si la escritura falla el
+    job falla cerrado (2): no se puede afirmar que se publico la evidencia.
+    """
+    path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not path:
+        return
+    try:
+        with Path(path).open("a", encoding="utf-8") as handle:
+            handle.write(text)
+    except OSError as exc:
+        fail(f"the integrated-tree verdict could not be written to GITHUB_STEP_SUMMARY: {exc}",
+             exc)
+
+
+def _publish_not_measured(cause: str) -> None:
+    """Publica la causa de una medicion fallida (#1279).
+
+    Si ni esta escritura puede, no hay mas que hacer: la causa queda en
+    stdout y el job sale en rojo al final. Esto nunca interrumpe el trabajo
+    post-merge.
+    """
+    try:
+        _write_step_summary(_not_measured_summary(cause))
+    except FailClosedError as exc:
+        print(f"INTEGRATED TREE: the cause could not be published to the job summary: {exc}",
+              file=sys.stderr)
+
+
+def integrated_tree_verdict(repo: str, merge_sha: str, head_sha: str,
+                            moved_base: str | None) -> tuple[bool, str | None]:
+    """Mide el arbol integrado y publica lo que pueda; devuelve (drift, causa).
+
+    Con ``moved_base`` (frescura apagada, #1397) un drift es la base que avanzo:
+    el veredicto lo dice, nombra la rama cuyo CI post-merge lo verifica, y el
+    drift devuelto es False (no pone el job en rojo).
+
+    La causa no es None cuando la medicion no se pudo hacer o su veredicto no
+    se pudo publicar. Esta funcion NO falla cerrado: el merge ya esta hecho
+    (#1265) y un fallo de medicion no puede impedir cerrar las issues ni
+    despachar los workflows post-merge (#1279). El job sale en rojo al final,
+    con 2, nombrando la causa.
+
+    Se mide INMEDIATAMENTE despues del merge: la evidencia se publica aunque
+    un paso posterior (cerrar la issue, despachar) falle. Compara ARBOLES y no
+    commits: con la base contenida en el head, merge, squash y rebase dan el
+    mismo arbol, asi que el control no depende del metodo de merge por defecto
+    del host.
+
+    El veredicto nombra los dos commits y los dos arboles: lo que se lee en el
+    log es la misma evidencia que queda en el resumen del job. No se crea ni
+    muta ningun check-run: nada en la cabeza del PR parece una segunda
+    evaluacion del mismo trabajo.
+    """
+    try:
+        merge_tree = read_commit_tree(repo, merge_sha)
+        head_tree = read_commit_tree(repo, head_sha)
+    except FailClosedError as exc:
+        cause = str(exc)
+        print(f"INTEGRATED TREE: {NOT_MEASURED}: {cause}")
+        _publish_not_measured(cause)
+        return False, cause
+    drift = merge_tree != head_tree
+    verdict = _verdict_text(drift, moved_base)
+    print(f"INTEGRATED TREE: merge commit {merge_sha} tree {merge_tree} | "
+          f"verified head {head_sha} tree {head_tree} | verdict: {verdict}")
+    red = drift and moved_base is None
+    try:
+        _write_step_summary(_verdict_summary(merge_sha, merge_tree, head_sha, head_tree, verdict))
+    except FailClosedError as exc:
+        return red, str(exc)
+    return red, None
+
+
+def _verdict_code(drift: bool, measure_error: str | None) -> int:
+    """El codigo final tras el cierre y el dispatch: 2, 5 o 0 (#1279).
+
+    La precedencia es 3 (cierre fallido) y 4 (dispatch fallido), que se
+    devuelven antes de llegar aqui; despues 2 por medicion no hecha y
+    despues 5 por drift. Un fallo de medicion no puede esconder un drift
+    que ya se midio: el veredicto queda en la linea de stdout.
+    """
+    if measure_error is not None:
+        print(f"MERGED but the integrated tree was not measured: {measure_error}", file=sys.stderr)
+        return 2
+    if drift:
+        print("MERGED but not the tested tree: the integrated tree is NOT the tree CI reviewed",
+              file=sys.stderr)
+        return INTEGRATED_TREE_DRIFT
+    return 0
+
+
+def _with_verification(resolved: dict[str, DispatchTarget], verify: dict[str, DispatchTarget],
+                       behind: int, base: str) -> dict[str, DispatchTarget]:
+    """Los workflows a despachar: los detectores siempre, la verificacion si iba atrasada.
+
+    #1440: si la PR iba al dia, el arbol integrado es el que verifico su CI y la
+    verificacion post-merge no aporta nada; se dice en el log y no se lanza.
+    """
+    if behind > 0:
+        return {**resolved, **verify}
+    for name in verify:
+        print(f"NOT DISPATCHED: {name} ({VERIFY_KEY}): the PR was up to date with '{base}', "
+              "so the integrated tree is the tree CI verified (#1440)")
+    return resolved
 
 
 def _merge_close_and_dispatch(args: argparse.Namespace, pull: dict, contract: dict,
                               required: list[str], dispatch_names: list[str]) -> int:
-    """Gate -> merge -> close linked issues -> post-merge dispatch (#817).
+    """Gate -> merge -> evidencia del arbol -> close -> post-merge dispatch.
 
-    Devuelve el código de salida: 1 (gate bloquea), 2 (fail closed), 3
-    (close failed), 4 (dispatch failed) o 0 (success). El merge ya
-    hecho no se deshace en ninguno de los caminos 3 y 4 (idempotencia
-    hacia atrás, HR-34).
+    Devuelve el código de salida: 1 (gate bloquea), 2 (fail closed o
+    medición no hecha, #1279), 3
+    (close failed), 4 (dispatch failed), 5 (el arbol integrado no es el del
+    head verificado, #1265) o 0 (success). El merge ya
+    hecho no se deshace en ninguno de los caminos 2, 3, 4 y 5 (idempotencia
+    hacia atrás, HR-34). Un fallo de la medición del arbol no salta el cierre
+    ni el dispatch: la causa se guarda y se devuelve al final (#1279).
+    ``post_merge_verify`` se despacha solo si la PR iba atrasada (#1440).
     """
-    findings = gate_findings(args, pull, contract, required)
-    resolved: dict[str, DispatchTarget] = {}
-    if dispatch_names:
-        resolved, dispatch_findings = validate_post_merge_dispatch(args.repo, dispatch_names)
-        findings.extend(dispatch_findings)
+    verify_names = _resolve_post_merge_verify_names(contract)
+    stale_reason = freshness_reason(contract, dispatch_names, verify_names)
+    findings, behind = gate_findings(args, pull, contract, required, stale_reason)
+    resolved, verify, list_findings = _validate_post_merge_lists(
+        args.repo, pull["base"]["ref"], dispatch_names, verify_names)
+    findings += list_findings
     if findings:
         for finding in findings:
             print(f"  BLOCKED  {finding}")
         print(f"VERDICT: PR #{args.pr} not merged: contract not satisfied")
         return 1
+    resolved = _with_verification(resolved, verify, behind, pull["base"]["ref"])
     # #933: el `before` del rango es la punta de la base antes del merge. Solo
     # se lee si algun workflow lo recibe: `DispatchTarget` es una tupla y
     # `any(resolved.values())` seria siempre cierto (#1086).
@@ -663,6 +1177,14 @@ def _merge_close_and_dispatch(args: argparse.Namespace, pull: dict, contract: di
               if any(target.with_range for target in resolved.values()) else None)
     sha = gh_merge(args.repo, args.pr, pull["head"]["sha"])
     print(f"MERGED: PR #{args.pr} merged by the governed path as {sha}")
+    # #1265: el veredicto del arbol integrado se mide y se publica INMEDIATAMENTE
+    # despues del merge, antes de cerrar y antes del dispatch: la evidencia sale
+    # aunque un paso posterior falle.
+    # #1279: un fallo de la medicion no interrumpe ese trabajo: la causa se
+    # guarda y se devuelve al final, con 2. El merge ya esta hecho.
+    # #1397: sin frescura exigida, la base que avanzo no es rojo; la verifica el CI post-merge.
+    moved_base = pull["base"]["ref"] if stale_reason is None else None
+    drift, measure_error = integrated_tree_verdict(args.repo, sha, pull["head"]["sha"], moved_base)
     try:
         close_linked_issues(args.repo, pull, args.pr, sha)
     except (MergedNotClosedError, FailClosedError) as exc:
@@ -677,7 +1199,7 @@ def _merge_close_and_dispatch(args: argparse.Namespace, pull: dict, contract: di
         except PostDispatchFailedError as exc:
             print(f"MERGED but not dispatched: {exc}", file=sys.stderr)
             return POST_DISPATCH_FAILED
-    return 0
+    return _verdict_code(drift, measure_error)
 
 
 def run(args: argparse.Namespace) -> int:
@@ -693,6 +1215,8 @@ def run(args: argparse.Namespace) -> int:
         fail("contract must be a JSON object")
     required = required_checks(contract)
     dispatch_names = _resolve_post_merge_dispatch_names(contract)
+    _resolve_post_merge_verify_names(contract)  # #1440: mal tipada falla cerrado antes de la API
+    merge_freshness(contract)  # #1397: un valor desconocido falla cerrado antes de la API
     pull = gh_json(f"repos/{args.repo}/pulls/{args.pr}")
     if not is_pull_shape(pull):
         fail(f"PR #{args.pr} is not the API pull shape")

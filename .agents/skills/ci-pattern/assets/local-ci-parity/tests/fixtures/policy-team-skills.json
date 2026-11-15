@@ -11,6 +11,9 @@
     {"command": "python3 personal/ardelperal/ci-pattern/assets/workflow-policy/check_workflow_policy.py*", "side": "ci",
      "reason": "dogfooding #192: el gate de política de workflows se ejecuta sobre este repo en CI; su suite corre en el punto de entrada local vía el bucle de tests de assets"},
     {"command": "bash -n*", "side": "any",
-     "reason": "la validación de sintaxis de todos los .sh rastreados la ejecuta el job smoke en CI; el punto de entrada la replica para que un run local sin CI no dependa de haber pasado smoke"}
+     "reason": "la validación de sintaxis de todos los .sh rastreados la ejecuta el job smoke en CI; el punto de entrada la replica para que un run local sin CI no dependa de haber pasado smoke"},
+    {"command": "bash skills/oracle-vps-github-runners/assets/runner-resource-preflight.sh", "side": "ci",
+     "requires": ["runner"],
+     "reason": "medición del runner (#1213): el preflight lee la memoria, el disco y los zombies del propio runner self-hosted. El entorno local no es un runner, y medirlo allí mediría el portátil de quien desarrolla, no el runner que murió (HR-4)"}
   ]
 }

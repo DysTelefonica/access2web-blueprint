@@ -80,8 +80,11 @@ Este PR NO toca `LanzaderaContainer`. La integración del middleware en el `main
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
+
 class AuthMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, *, jwt_signer: JwtSignerPort, now: Callable[[], int] | None = None) -> None:
+    def __init__(
+        self, app, *, jwt_signer: JwtSignerPort, now: Callable[[], int] | None = None
+    ) -> None:
         super().__init__(app)
         self._signer = jwt_signer
         self._now = now or (lambda: int(time.time()))

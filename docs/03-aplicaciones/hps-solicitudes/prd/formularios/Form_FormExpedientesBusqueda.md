@@ -91,7 +91,7 @@ Sin escrituras en base de datos ni en el sistema de ficheros.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Ya se ve: la búsqueda es «cargar todo y filtrar en el cliente» (`constructor.bas:3872-3873`, `:3888-3894`), patrón que en PostgreSQL se sustituye por `ILIKE '%…%'` con índices; el paso de datos al contenedor es un evento VBA con un objeto de sesión, no una respuesta de petición (`:94`); y la selección se comunica por una global mutada antes de abrir otra ventana (`:149`, `Form_FormExpedienteDetalle.cls:49`).
+Pendiente de la coexistencia (documento aún no redactado). Ya se ve: la búsqueda es «cargar todo y filtrar en el cliente» (`constructor.bas:3872-3873`, `:3888-3894`), patrón que en PostgreSQL se sustituye por `ILIKE '%…%'` con índices; el paso de datos al contenedor es un evento VBA con un objeto de sesión, no una respuesta de petición (`:94`); y la selección se comunica por una global mutada antes de abrir otra ventana (`:149`, `Form_FormExpedienteDetalle.cls:49`).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

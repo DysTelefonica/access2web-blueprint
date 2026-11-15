@@ -92,7 +92,7 @@ Todos los manejadores repiten: `Err.Number <> 1000` ⇒ anexar descripción, `Co
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. El patrón dominante es el **estado global**: el usuario en curso, la copia de inicio y hasta el retorno de los `MsgBox` son variables públicas de módulo (`VariablesEntorno.bas:226`, `:246`, `:220`), no parámetros. En web serían un identificador en la ruta y un retorno de la llamada. `DoCmd.Hourglass` aparece en cinco procedimientos (`:281`, `:333`, `:634`, `:764`, `:839`) y no tiene equivalente directo.
+Pendiente de la coexistencia (documento aún no redactado). El patrón dominante es el **estado global**: el usuario en curso, la copia de inicio y hasta el retorno de los `MsgBox` son variables públicas de módulo (`VariablesEntorno.bas:226`, `:246`, `:220`), no parámetros. En web serían un identificador en la ruta y un retorno de la llamada. `DoCmd.Hourglass` aparece en cinco procedimientos (`:281`, `:333`, `:634`, `:764`, `:839`) y no tiene equivalente directo.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

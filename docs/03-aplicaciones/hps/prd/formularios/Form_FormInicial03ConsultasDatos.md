@@ -63,7 +63,7 @@ No hay `INSERT`/`UPDATE`/`DELETE` en este `.cls` (`:1-34`).
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Ya se ve: SQL concatenado en `getUsuarioHPS` (`Constructor.bas:760-762`); literales de Access `acForm`/`acSaveNo` en el padre (`Form_FormInicial02ConsultasPrincipal.cls:27, 55, 147, 220`); comparaciones contra globales de Access (`Application.TempVars`, `Form_FormInicial02ConsultasPrincipal.cls:180`).
+Pendiente de la coexistencia (documento aún no redactado). Ya se ve: SQL concatenado en `getUsuarioHPS` (`Constructor.bas:760-762`); literales de Access `acForm`/`acSaveNo` en el padre (`Form_FormInicial02ConsultasPrincipal.cls:27, 55, 147, 220`); comparaciones contra globales de Access (`Application.TempVars`, `Form_FormInicial02ConsultasPrincipal.cls:180`).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

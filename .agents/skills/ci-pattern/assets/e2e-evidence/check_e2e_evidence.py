@@ -13,6 +13,10 @@ Parametros del consumer:
   (default: ``app/**``, ``web/**``, ``src/**``, ``pages/**``,
   ``components/**``, ``views/**``, ``templates/**``). Repetirlo reemplaza
   la lista default.
+- ``P59_e2e_ui_globs`` en el ``ci-pattern.yaml`` de la raíz del consumer: la
+  misma lista, declarada en su contrato (fase 0, 0.6; la UI de cadete vive en
+  ``www/**``). ``--ui-glob`` manda sobre ella; sin el fichero o sin la clave
+  rigen los defaults. Un valor que no es una lista de cadenas es exit 2.
 - ``--non-ui-prefix <prefix>``: prefix de paths que NO son UI
   (default: ``.atl/,.codegraph/,.github/,.pi/,docs/,git-hooks/,migration/,odd/,openspec/,scripts/,skills/,tests/,.dockerignore,.env.example,.gitignore,AGENTS.md,CHANGELOG.md,CODEOWNERS,CONTRIBUTING.md,README.md,SECURITY.md,pyproject.toml,uv.lock,Dockerfile,docker-compose.yml,Makefile``). Repetirlo reemplaza la lista default.
 - ``--e2e-dir <path>``: directorio de flujos e2e relativo a la raiz
@@ -35,11 +39,56 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
+import importlib.util
 import re
 import subprocess
 import sys
 import unicodedata
 from pathlib import Path
+
+# Lector estructural del canon, importado por ruta (sin PyYAML), el mismo que
+# usa el gate de imágenes para leer el ci-pattern.yaml del consumer.
+_WP_PATH = Path(__file__).resolve().parents[1] / "workflow-policy" / "check_workflow_policy.py"
+_spec = importlib.util.spec_from_file_location("check_workflow_policy", _WP_PATH)
+WP = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(WP)
+
+UI_GLOBS_PARAM = "P59_e2e_ui_globs"
+
+
+class ParamsError(ValueError):
+    """El ``ci-pattern.yaml`` del consumer no se puede leer o declara mal P59.
+
+    Los mensajes viven en la clase y no en el ``raise`` (TRY003)."""
+
+    UNREADABLE = "ci-pattern.yaml ilegible ({path}): {detail}"
+    NOT_A_MAP = "se esperaba un mapa"
+    BAD_GLOBS = UI_GLOBS_PARAM + " debe ser una lista no vacía de globs ({path})"
+
+    def __init__(self, template: str, path: Path, detail: object = "") -> None:
+        super().__init__(template.format(path=path, detail=detail))
+
+
+def consumer_ui_globs(repo: Path) -> list[str] | None:
+    """Los globs de UI del contrato del consumer, o ``None`` si no los declara."""
+    path = repo / "ci-pattern.yaml"
+    if not path.is_file():
+        return None
+    try:
+        lines = WP.read_lines(path.read_text(encoding="utf-8"))
+        doc, index = WP.parse_node(lines, 0, lines[0].indent) if lines else ({}, 0)
+    except (WP.InvalidInput, OSError, UnicodeDecodeError) as exc:
+        raise ParamsError(ParamsError.UNREADABLE, path, exc) from exc
+    if index < len(lines) or not isinstance(doc, dict):
+        raise ParamsError(ParamsError.UNREADABLE, path, ParamsError.NOT_A_MAP)
+    if UI_GLOBS_PARAM not in doc:
+        return None
+    globs = doc[UI_GLOBS_PARAM]
+    if not isinstance(globs, list) or not globs \
+            or not all(isinstance(g, str) and g.strip() for g in globs):
+        raise ParamsError(ParamsError.BAD_GLOBS, path)
+    return globs
+
 
 DEFAULT_UI_GLOBS = ["app/**", "web/**", "src/**", "pages/**",
                     "components/**", "views/**", "templates/**"]
@@ -197,7 +246,11 @@ def main(argv: list[str]) -> int:
         print(f"FAIL: {repo} no es un repo git", file=sys.stderr)
         return 2
 
-    ui_globs = args.ui_glob or DEFAULT_UI_GLOBS
+    try:
+        ui_globs = args.ui_glob or consumer_ui_globs(repo) or DEFAULT_UI_GLOBS
+    except ParamsError as exc:
+        print(f"FAIL: {exc}", file=sys.stderr)
+        return 2
     non_ui_prefixes = args.non_ui_prefix or DEFAULT_NON_UI
 
     try:

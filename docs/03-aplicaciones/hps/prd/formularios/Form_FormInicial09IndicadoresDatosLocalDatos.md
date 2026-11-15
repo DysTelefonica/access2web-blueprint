@@ -78,7 +78,7 @@ Sin `INSERT`/`UPDATE`/`DELETE` propios en este `.cls` (`:1-42`).
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. El patrón de replicación es el de la familia: tablas físicas regeneradas con `DELETE *` + `INSERT INTO … SELECT` (`FG.bas:3032-3046`), siete `WHERE` literales distintos (`FG.bas:3085-3131`), y un semáforo que viaja por el formulario lateral en vez de por la hoja. El lado favorable: ninguno de esos `WHERE` interpola valores, a diferencia de la concatenación que hace el filtro de consultas.
+Pendiente de la coexistencia (documento aún no redactado). El patrón de replicación es el de la familia: tablas físicas regeneradas con `DELETE *` + `INSERT INTO … SELECT` (`FG.bas:3032-3046`), siete `WHERE` literales distintos (`FG.bas:3085-3131`), y un semáforo que viaja por el formulario lateral en vez de por la hoja. El lado favorable: ninguno de esos `WHERE` interpola valores, a diferencia de la concatenación que hace el filtro de consultas.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

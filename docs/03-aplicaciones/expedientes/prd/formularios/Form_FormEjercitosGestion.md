@@ -67,7 +67,7 @@ Altas y ediciones: ver [Form_FormEjercito](Form_FormEjercito.md#lecturas-y-escri
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Ya se ve: la comprobación de uso y el `DELETE` no comparten transacción; la integridad referencial con `TbExpedientes` la aplica el código, no consta como relación (a confirmar en `../erd-origen.md`).
+Pendiente de `../coexistencia.md`. Ya se ve: la comprobación de uso y el `DELETE` no comparten transacción; la integridad referencial con `TbExpedientes` la aplica el código, no consta como relación (a confirmar en el origen del modelo, que no está en el repositorio).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

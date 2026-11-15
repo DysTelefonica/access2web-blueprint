@@ -45,6 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
@@ -126,6 +127,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
       # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.

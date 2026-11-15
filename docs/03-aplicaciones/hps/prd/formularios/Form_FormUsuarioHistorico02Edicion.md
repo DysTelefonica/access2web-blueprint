@@ -90,7 +90,7 @@ Sin escrituras propias: el formulario es un visor. La escritura ocurre en el for
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Lo concreto: el volcado por `DatosDelObjetoAlFormulario` es reflexión de nombres de control a propiedades del dominio; en web desaparece y pasa a ser un contrato de serialización explícito, donde la lista de campos deja de depender de que el control y la propiedad se llamen igual. El `For Each ctl In Me.Controls` con `TypeOf` es la manera de Access de declarar «esto es solo lectura» y no tiene equivalente: en web es una ruta sin `POST` o un campo `disabled` por definición de permisos. `DoCmd.OpenForm … OpenArgs:=` es un paso de estado por cadena, sin equivalente directo; el patrón moderno es parámetro de ruta. `Lock` y `Enabled` son atributos de presentación, no de autorización: un cliente web puede ignorar ambos.
+Pendiente de la coexistencia (documento aún no redactado). Lo concreto: el volcado por `DatosDelObjetoAlFormulario` es reflexión de nombres de control a propiedades del dominio; en web desaparece y pasa a ser un contrato de serialización explícito, donde la lista de campos deja de depender de que el control y la propiedad se llamen igual. El `For Each ctl In Me.Controls` con `TypeOf` es la manera de Access de declarar «esto es solo lectura» y no tiene equivalente: en web es una ruta sin `POST` o un campo `disabled` por definición de permisos. `DoCmd.OpenForm … OpenArgs:=` es un paso de estado por cadena, sin equivalente directo; el patrón moderno es parámetro de ruta. `Lock` y `Enabled` son atributos de presentación, no de autorización: un cliente web puede ignorar ambos.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

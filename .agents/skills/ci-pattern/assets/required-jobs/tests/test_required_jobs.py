@@ -26,7 +26,8 @@ POLICY_JOBS = ["lint", "compile", "smoke", "unit", "full"]
 def run_gate(policy: dict, needs: dict | None = None, event: str = "pull_request",
              stdin_text: str | None = None, needs_file: str | None = None,
              policy_bytes: bytes | None = None,
-             stdin_bytes: bytes | None = None) -> subprocess.CompletedProcess:
+             stdin_bytes: bytes | None = None,
+             extra_args: list[str] | None = None) -> subprocess.CompletedProcess:
     """Run the gate as CI does. ``policy_bytes`` and ``stdin_bytes`` feed raw
     bytes, for the inputs that no JSON or text value can express."""
     with tempfile.TemporaryDirectory() as tmp:
@@ -35,6 +36,8 @@ def run_gate(policy: dict, needs: dict | None = None, event: str = "pull_request
             policy_bytes = json.dumps(policy).encode("utf-8")
         policy_path.write_bytes(policy_bytes)
         argv = [sys.executable, str(SCRIPT), "--policy", str(policy_path), "--event", event]
+        if extra_args:
+            argv += extra_args
         if needs_file is not None:
             argv += ["--needs-file", needs_file]
         elif stdin_bytes is None:
@@ -321,6 +324,33 @@ class NeedsShapeTests(unittest.TestCase):
                 self.assertNotIn("Traceback", proc.stderr)
 
 
+class StateDependentGatesDeclarationTests(unittest.TestCase):
+    """HR-39: la declaracion vive en el MISMO policy file que este gate valida.
+
+    El gate de politica de workflows (HR-39) lee `state_dependent_gates` del
+    fichero que recibe por `--required-jobs`. Si este gate lo rechazara por
+    clave desconocida, ningun consumer podria declarar HR-39 sin romperse el
+    job `required` en rojo.
+    """
+
+    def test_a_policy_that_declares_state_dependent_gates_is_accepted(self) -> None:
+        policy = {**base_policy(), "state_dependent_gates": [{
+            "name": "pip-audit",
+            "command": "pip-audit",
+            "pr_workflow": "ci.yml",
+            "pr_job": "pip-audit",
+            "manifests": ["uv.lock"],
+            "scheduled_workflow": "ci.yml",
+            "alert_command": "gh issue create",
+        }]}
+        proc = run_gate(policy, all_success())
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_an_empty_declaration_is_also_accepted(self) -> None:
+        proc = run_gate({**base_policy(), "state_dependent_gates": []}, all_success())
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+
 class PolicyValidationTests(unittest.TestCase):
     """A malformed policy is a fail-closed message, never a traceback."""
 
@@ -454,6 +484,58 @@ class RelaxationIdentityTests(unittest.TestCase):
              "relaxation": {"reason": "dropped", "reference": "doc"}},
             needs=real_shape(all_success()))
         self.assertNotEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+
+class ExitCodeContractTests(unittest.TestCase):
+    """#1219 (aviso 2): los codigos de salida que el gate produce son los que
+    el README declara. Un ``--run-attempt`` no numerico es un error de uso
+    (argparse, exit 2); un entero no positivo es una duda (exit 1)."""
+
+    def test_non_numeric_run_attempt_is_a_usage_error(self) -> None:
+        proc = run_gate(base_policy(), all_success(), extra_args=["--run-attempt", "abc"])
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("--run-attempt", proc.stderr)
+
+    def test_non_positive_run_attempt_is_a_doubt(self) -> None:
+        proc = run_gate(base_policy(), all_success(), extra_args=["--run-attempt", "0"])
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("run attempt must be a positive integer", proc.stderr)
+
+    def test_readme_documents_the_three_exit_codes(self) -> None:
+        readme = (ASSET / "README.md").read_text(encoding="utf-8")
+        self.assertIn("exit 0", readme)
+        self.assertIn("exit 1", readme)
+        self.assertIn("exit 2", readme)
+
+
+class ExternalJobsTests(unittest.TestCase):
+    """`external_jobs` (DysTelefonica/team-skills#1313, G1): a required job whose
+    verdict is enforced by the host check, not by this aggregator's `needs`."""
+
+    POLICY = {"required_jobs": ["lint", "governance-seals"],
+              "events": {"pull_request": {"accepted_skips": []}},
+              "external_jobs": {"governance-seals": "pr-gates.yml"}}
+
+    def test_external_job_absent_from_needs_passes(self) -> None:
+        result = run_gate(self.POLICY, {"lint": {"result": "success"}})
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_external_job_in_needs_exits_nonzero(self) -> None:
+        needs = {"lint": {"result": "success"}, "governance-seals": {"result": "success"}}
+        result = run_gate(self.POLICY, needs)
+        self.assertNotEqual(result.returncode, 0)
+
+    def test_external_job_outside_required_jobs_exits_nonzero(self) -> None:
+        policy = dict(self.POLICY, external_jobs={"ghost": "pr-gates.yml"})
+        result = run_gate(policy, {"lint": {"result": "success"}})
+        self.assertNotEqual(result.returncode, 0)
+
+    def test_external_job_without_a_workflow_name_exits_nonzero(self) -> None:
+        for bad in ({"governance-seals": ""}, {"governance-seals": 3}, ["governance-seals"]):
+            with self.subTest(external_jobs=bad):
+                policy = dict(self.POLICY, external_jobs=bad)
+                result = run_gate(policy, {"lint": {"result": "success"}})
+                self.assertNotEqual(result.returncode, 0)
 
 
 if __name__ == "__main__":

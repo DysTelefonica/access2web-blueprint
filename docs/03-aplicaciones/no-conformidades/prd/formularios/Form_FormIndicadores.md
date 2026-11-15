@@ -78,7 +78,7 @@ Solo lectura de datos. Sin transacciones.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Ya se ve: literales de fecha Jet `#mm/dd/yyyy#` (`IR.bas:15, 27, 37-38, 56-57`), `Borrado = False` sobre campo Sí/No (`IR.bas:14`), subconsulta en `FROM` con alias obligatorio (`IS.cls:59`) y `Max` en `HAVING` (`IR.bas:56-57`); en PostgreSQL vinculado conviene parametrizar fechas y comprobar la traducción de booleanos.
+Pendiente de la coexistencia (documento aún no redactado). Ya se ve: literales de fecha Jet `#mm/dd/yyyy#` (`IR.bas:15, 27, 37-38, 56-57`), `Borrado = False` sobre campo Sí/No (`IR.bas:14`), subconsulta en `FROM` con alias obligatorio (`IS.cls:59`) y `Max` en `HAVING` (`IR.bas:56-57`); en PostgreSQL vinculado conviene parametrizar fechas y comprobar la traducción de booleanos.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

@@ -100,7 +100,7 @@ Ambos handlers son simétricos salvo en la fuente del identificador: `getIDUsuar
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Lo concreto: `Application.FileDialog`, `DoCmd.Hourglass`, `DoCmd.Close` y `Application.TempVars` son APIs de Access sin equivalente directo; los ocho `DoCmd.Hourglass True` / `DoCmd.Hourglass False` que envuelven cada operación (`:48-50, 64-66`, entre otros) son ruido imperceptible en web. `fso` (`VariablesEntorno.bas:218`) y `Ejecutar` (`VariablesEntorno.bas:5`) no se traducen: el anexo debe ser un recurso del servidor. El trasvase de datos por `Tag` (`FG.bas:4132`) es un patrón de reflexión que en web debe reemplazarse por un formulario con binding declarado. La edición de empresa («Editar», `.form.txt:1529`) no tiene handler propio en este `.cls`: se resuelve en otro formulario, a verificar.
+Pendiente de la coexistencia (documento aún no redactado). Lo concreto: `Application.FileDialog`, `DoCmd.Hourglass`, `DoCmd.Close` y `Application.TempVars` son APIs de Access sin equivalente directo; los ocho `DoCmd.Hourglass True` / `DoCmd.Hourglass False` que envuelven cada operación (`:48-50, 64-66`, entre otros) son ruido imperceptible en web. `fso` (`VariablesEntorno.bas:218`) y `Ejecutar` (`VariablesEntorno.bas:5`) no se traducen: el anexo debe ser un recurso del servidor. El trasvase de datos por `Tag` (`FG.bas:4132`) es un patrón de reflexión que en web debe reemplazarse por un formulario con binding declarado. La edición de empresa («Editar», `.form.txt:1529`) no tiene handler propio en este `.cls`: se resuelve en otro formulario, a verificar.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

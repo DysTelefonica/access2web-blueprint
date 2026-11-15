@@ -1,0 +1,3 @@
+type: minor
+
+HR-39 (#1192): el gate `state_dependent_gates` acepta un `if:` con marcador como equivalente a `paths:` en el `pr_job`. El `if:` debe comparar `needs.<gate>.outputs.<marcador>` con `!= 'false'` o `== 'true'`, donde `<gate>` es un job de primer nivel que publica ese marcador, en `outputs:` del job o en `workflow_call.outputs` del workflow reutilizable local que llama. Un workflow sin `paths:` y sin marcador sigue dando el hallazgo. Motivo: `paths:` a nivel de workflow dejaría el agregador `required` sin ejecutar en los PR que no tocan el lockfile (BP#1414, BP#1344, BP#1364). Queda fuera de este cambio que la comprobación de comando no siga `uses:` reutilizable.

@@ -70,7 +70,7 @@ Sin transacciones: cada operación hace su `Edit/Update` y registra el log despu
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. A adaptar: el `WHERE ID=` concatenado (`NCaUDITORIAOperaciones.cls:528`), el uso de `Edit/Update` de DAO sobre recordsets abiertos con `SELECT *`, y los valores `Null` escritos por DAO (`NCaUDITORIAOperaciones.cls:691-693`) frente a PostgreSQL vinculado. Las fechas viajan como texto vía `Nz(..., "")` (`:122-126`); la comparación por cadena no equivale a comparar fechas.
+Pendiente de la coexistencia (documento aún no redactado). A adaptar: el `WHERE ID=` concatenado (`NCaUDITORIAOperaciones.cls:528`), el uso de `Edit/Update` de DAO sobre recordsets abiertos con `SELECT *`, y los valores `Null` escritos por DAO (`NCaUDITORIAOperaciones.cls:691-693`) frente a PostgreSQL vinculado. Las fechas viajan como texto vía `Nz(..., "")` (`:122-126`); la comparación por cadena no equivale a comparar fechas.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

@@ -69,7 +69,7 @@ No hay forma de cerrar la ventana desde la interfaz: el `.form.txt` no declara n
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Lo relevante para la conversión: el contrato es **«generar HTML a fichero local y proyectarlo»**, no una consulta a la base de datos. La conversión a PostgreSQL no toca este formulario, pero sí a su dependencia: `GenerarHTML`/`HTMLLog` resuelven plantillas y datos con las reglas de `Entorno` (`m_ObjEntorno.URLPlantillasHTML*`, `URLDirectorioLocal`). En web, el equivalente natural es renderizar la plantilla en servidor y devolver una respuesta, sin escribir en el disco del cliente ni depender del registro de Windows.
+Pendiente de la coexistencia (documento aún no redactado). Lo relevante para la conversión: el contrato es **«generar HTML a fichero local y proyectarlo»**, no una consulta a la base de datos. La conversión a PostgreSQL no toca este formulario, pero sí a su dependencia: `GenerarHTML`/`HTMLLog` resuelven plantillas y datos con las reglas de `Entorno` (`m_ObjEntorno.URLPlantillasHTML*`, `URLDirectorioLocal`). En web, el equivalente natural es renderizar la plantilla en servidor y devolver una respuesta, sin escribir en el disco del cliente ni depender del registro de Windows.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

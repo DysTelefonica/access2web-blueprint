@@ -3,13 +3,17 @@
   "closes_pattern": "Closes|Fixes|Resolves",
   "review_budget_lines": 400,
   "size_exception_label": "size:exception",
-  "conventional_commit_pattern": "^(feat|fix|docs|chore|ci|test|perf|refactor|revert)(\\([^)]+\\))?!?: ",
+  "conventional_commit_pattern": "^(feat|fix|docs|chore|ci|test|perf|refactor|revert|build|style)(\\([^)]+\\))?!?: ",
   "ai_attribution_patterns": [
     "Co-Authored-By:",
     "Generated-by:",
     "Generated with"
   ],
   "chain_partial_label": "chain:partial",
+  "commit_identity": {
+    "mode": "advise",
+    "allowed_bots": []
+  },
   "checks": {
     "closes": true,
     "chain_context": true,
@@ -18,6 +22,7 @@
     "docs_evidence": true,
     "budget": true,
     "commits": true,
-    "ai_disclosure": true
+    "ai_disclosure": true,
+    "commit_identity": true
   }
 }

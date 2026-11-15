@@ -23,7 +23,7 @@ Closes #
 
 ## Acceptance evidence
 
-<!-- Map each issue acceptance criterion to concrete evidence. Do not claim unverified outcomes. -->
+<!-- One row per acceptance criterion of the issue. Evidence is concrete: a test name with its green output, a command with its real output, a screenshot for UI, a query or log for data. A criterion without evidence is not done, and the PR goes back to its author (ci-pattern HR-87). -->
 
 | Acceptance criterion | Evidence |
 |---|---|

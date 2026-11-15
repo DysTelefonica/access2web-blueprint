@@ -1,0 +1,139 @@
+# El gate H1 del pull request (BP #1461).
+#
+# El workflow que corre en `pull_request` es el de la CABEZA del pull request,
+# así que el token del catálogo no puede estar en un job que ejecuta el código
+# del PR. Este workflow corre en `pull_request_target`: lo que corre es el
+# workflow de la BASE, el job `canon` resuelve el catálogo en el sello
+# declarado en `.team-skills.yaml` y lo publica como artefacto, y el job del
+# gate consume ese artefacto, no tiene ningún secreto y lee la cabeza del PR
+# como datos.
+#
+# El veredicto se publica como check run sobre la CABEZA del PR: un run de
+# `pull_request_target` se atribuye a la base y su check run no bloquea el
+# merge.
+name: pr-gate
+
+on:
+  pull_request_target:
+    types: [opened, edited, labeled, unlabeled, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  canon:
+    name: canon
+    # El ÚNICO job que puede leer el token del catálogo (#1461). No ejecuta
+    # código del PR: el checkout es de la BASE, de donde salen la acción y el
+    # sello, así que el PR no puede tocar la una ni elegir el commit que se
+    # mide. El catálogo se publica como artefacto para el job del gate.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    concurrency:
+      group: pr-gate-canon-${{ github.event.pull_request.number }}
+      # Solo un commit nuevo cancela una corrida (#978): `edited` y `labeled`
+      # disparan sobre la misma cabeza y dejarían un check cancelado que
+      # bloquea el merge.
+      cancel-in-progress: ${{ github.event.action == 'synchronize' }}
+    steps:
+      - name: Check out the base (trusted action and seal)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          persist-credentials: false
+
+      # La acción y el sello son los de la base. El token vive SOLO en este paso.
+      - name: Resolve the canon at the seal
+        uses: ./.github/actions/pattern-at-pin
+        with:
+          token: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
+
+      # El catálogo viaja como tarball: un artefacto no conserva el bit de
+      # ejecución, y el catálogo lo necesita (`assets/bin/ci-pattern`).
+      - name: Pack the canon
+        run: |
+          set -euo pipefail
+          tar -czf "$RUNNER_TEMP/canon.tar.gz" -C "$PATTERN_DIR" .
+
+      - name: Publish the canon
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: canon
+          path: ${{ runner.temp }}/canon.tar.gz
+          if-no-files-found: error
+
+  pr-gate:
+    name: pr-gate
+    needs: canon
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      # `issues: read` deja al gate del issue-spec leer la issue enlazada por
+      # el cuerpo del PR; `pull-requests: read` deja al gate del tamaño leer
+      # el desglose por fichero (#918). Los dos son de solo lectura.
+      issues: read
+      pull-requests: read
+      # `checks: write` publica el veredicto como check run sobre la cabeza.
+      checks: write
+    concurrency:
+      group: pr-gate-verdict-${{ github.event.pull_request.number }}
+      cancel-in-progress: ${{ github.event.action == 'synchronize' }}
+    env:
+      # El catálogo publicado por el job `canon`.
+      PATTERN_DIR: .canon
+    steps:
+      # No hay checkout ni de la base ni de la cabeza del PR: la política y los
+      # scripts del gate salen del catálogo que publica `canon`, y el PR se lee
+      # por la API. Un PR no puede reescribir lo que lo mide ni hay árbol suyo
+      # en disco que el job pueda ejecutar.
+
+      - name: Get the canon
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: canon
+          path: .canon
+
+      - name: Unpack the canon
+        run: |
+          set -euo pipefail
+          tar -xzf .canon/canon.tar.gz -C .canon
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12.11"
+
+      # Los scripts salen del catálogo publicado por `canon`, nunca del árbol
+      # del PR: el gate mide el PR sin ejecutar su código.
+      - name: pr size
+        env:
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 "$PATTERN_DIR/assets/pr-size/check_pr_size.py" --event "$GITHUB_EVENT_PATH"
+
+      - name: issue spec
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 "$PATTERN_DIR/assets/issue-spec/check_issue_spec.py" pr-event "$GITHUB_EVENT_PATH"
+
+      # Un run de `pull_request_target` se atribuye a la BASE: su check run no
+      # aparece en el PR ni satisface un check requerido. El veredicto se
+      # publica como CHECK RUN sobre la CABEZA del PR, que es lo que bloquea el
+      # merge (`checks: write`).
+      # El NOMBRE del check run es el que exige el contrato del host: con otro
+      # nombre, el check requerido no aparece en la cabeza del PR y el gate no
+      # bloquea el merge.
+      - name: Publish the verdict as a check run on the pull request head
+        if: always()
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          GH_TOKEN: ${{ github.token }}
+          CONTEXT: "pr-gate"
+        run: |
+          set -euo pipefail
+          if [ "${{ job.status }}" = "success" ]; then conclusion=success; else conclusion=failure; fi
+          printf '{"head_sha": "%s", "name": "%s", "status": "completed", "conclusion": "%s"}' \
+            "$HEAD_SHA" "$CONTEXT" "$conclusion" > "$RUNNER_TEMP/check-run.json"
+          gh api --method POST "repos/$GITHUB_REPOSITORY/check-runs" --input "$RUNNER_TEMP/check-run.json"

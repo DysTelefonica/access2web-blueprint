@@ -149,6 +149,17 @@ class ReferenceFormTests(unittest.TestCase):
         p = run_local("Closes team/skills#12\n", "--repository", "Team/Skills")
         self.assertEqual(p.returncode, 0, p.stderr)
 
+    def test_refs_to_another_repository_is_ignored_next_to_a_closing_reference(self):
+        # #1093: un Refs a otro repositorio no cierra nada; el gate valida solo el enlace que cierra.
+        p = run_local("Closes #12\n\nRefs other/repo#9\n", "--repository", "team/skills")
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertNotIn("otro repositorio", p.stderr)
+
+    def test_only_a_refs_to_another_repository_is_not_a_link_to_this_repository(self):
+        p = run_local("Refs other/repo#9\n", "--repository", "team/skills")
+        self.assertEqual(p.returncode, 1)
+        self.assertIn("depends-on", p.stderr)
+
     def test_stdin_body_is_read(self):
         p = run_local("Refs #12\n", stdin=True)
         self.assertEqual(p.returncode, 0, p.stderr)
@@ -205,6 +216,16 @@ class RemoteRuleTests(unittest.TestCase):
             fetched.append(number)
             return plain_issue()
         validate_remote("`Refs #7`\n\nCloses #8\n", "team/skills", fetch)
+        self.assertEqual(fetched, [8])
+
+    def test_refs_to_another_repository_is_ignored_and_not_fetched(self):
+        fetched = []
+
+        def fetch(number):
+            fetched.append(number)
+            return plain_issue()
+        violations = validate_remote("Closes #8\n\nRefs other/repo#9\n", "team/skills", fetch)
+        self.assertEqual(violations, [])
         self.assertEqual(fetched, [8])
 
     def test_foreign_reference_is_not_fetched_from_this_repository(self):

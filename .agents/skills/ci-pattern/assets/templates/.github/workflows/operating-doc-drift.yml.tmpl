@@ -49,6 +49,8 @@ env:
   CATALOG_CLI: catalog/personal/ardelperal/ci-pattern/assets/bin/ci-pattern
   # 5. Fichero de parámetros del patrón en el consumer.
   CI_PATTERN_PARAMS: ci-pattern.yaml
+  # 6. API del catálogo: solo para expandir un sello abreviado (#1157).
+  CATALOG_API: https://api.github.com
 
 jobs:
   drift:
@@ -96,9 +98,26 @@ jobs:
               exit 1
               ;;
           esac
-          if [ "${#commit}" -ne 40 ]; then
-            echo "el sello de $CATALOG_MANIFEST trae un commit de ${#commit} caracteres, no de 40: '$commit' (HR-3)." >&2
+          if [ "${#commit}" -lt 7 ] || [ "${#commit}" -gt 40 ]; then
+            echo "el sello de $CATALOG_MANIFEST trae un commit de ${#commit} caracteres, no entre 7 y 40: '$commit' (HR-3)." >&2
             exit 1
+          fi
+          if [ "${#commit}" -lt 40 ]; then
+            # #1157: el sello que ya está en el campo es abreviado (`git rev-parse --short`).
+            # La API del catálogo resuelve el prefijo a su oid completo; sin ese oid el
+            # `ref:` del checkout no tiene nada que pedir.
+            full=$(curl -fsS -H "Authorization: Bearer ${CATALOG_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "${CATALOG_API}/repos/${CATALOG_REPO}/commits/${commit}" \
+              | python3 -c 'import json, sys; print(json.load(sys.stdin)["sha"])') || {
+              echo "no se pudo resolver el sello abreviado '$commit' contra ${CATALOG_REPO} (HR-3)." >&2
+              exit 1
+            }
+            if [ "${#full}" -ne 40 ] || [ "${full#"$commit"}" = "$full" ]; then
+              echo "la API devolvió '$full' para el sello '$commit': no es el commit completo de ese prefijo (HR-3)." >&2
+              exit 1
+            fi
+            commit=$full
           fi
           echo "commit=$commit" >> "$GITHUB_OUTPUT"
           echo "commit del catálogo leído del sello de $CATALOG_MANIFEST: $commit"

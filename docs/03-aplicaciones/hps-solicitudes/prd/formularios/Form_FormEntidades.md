@@ -69,7 +69,7 @@ Sin escrituras.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Ya se ve: el catálogo de entidades está codificado en el literal de `Entorno.cls` en lugar de en tabla, así que dar de alta un módulo nuevo exige recompilar (`:21-23`); la navegación es abrir/cerrar formularios con `DoCmd`, patrón que no tiene equivalente directo; y el título de la ventana se toma de una etiqueta en tiempo de ejecución (`:112`) en lugar de declararse en el formulario.
+Pendiente de la coexistencia (documento aún no redactado). Ya se ve: el catálogo de entidades está codificado en el literal de `Entorno.cls` en lugar de en tabla, así que dar de alta un módulo nuevo exige recompilar (`:21-23`); la navegación es abrir/cerrar formularios con `DoCmd`, patrón que no tiene equivalente directo; y el título de la ventana se toma de una etiqueta en tiempo de ejecución (`:112`) en lugar de declararse en el formulario.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

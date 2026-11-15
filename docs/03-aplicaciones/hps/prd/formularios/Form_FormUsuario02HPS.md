@@ -83,7 +83,7 @@ Repiten `Err.Number <> 1000` ⇒ anexar descripción, `CorreoAlAdministrador` y 
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Aquí el problema no es el SQL sino la **repetición**: cuatro bloques de campos con la misma forma, comparados y volcados por reflexión uno a uno. En web eso es un array de cuatro objetos con un único render y un único guardado. `DoCmd.Hourglass` aparece en cinco procedimientos (`:574`, `:830`, `:981` y dos más) sin equivalente directo, y el patrón de `Nz(<comparación>)` de `:632` no debe trasladarse tal cual a una condición de plantilla.
+Pendiente de la coexistencia (documento aún no redactado). Aquí el problema no es el SQL sino la **repetición**: cuatro bloques de campos con la misma forma, comparados y volcados por reflexión uno a uno. En web eso es un array de cuatro objetos con un único render y un único guardado. `DoCmd.Hourglass` aparece en cinco procedimientos (`:574`, `:830`, `:981` y dos más) sin equivalente directo, y el patrón de `Nz(<comparación>)` de `:632` no debe trasladarse tal cual a una condición de plantilla.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

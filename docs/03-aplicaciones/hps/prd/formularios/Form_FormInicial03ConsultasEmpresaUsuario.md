@@ -82,7 +82,7 @@ Sin escrituras, sin transacciones: el formulario solo lee y compone un `RecordSo
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Es el único de la tanda que **cruza dos bases de datos** en el mismo `Form_Load` (`:131` y `:155`), cada una abierta por su propia clave de configuración, y el que concatena el `p_ID` del proveedor en el SQL sin comillas (`Constructor.bas:40-41`). Convive con las otras formas que escriben el mismo global: `FormInicial03ConsultasContratistas` escribe `"Estado"` y `"CadenaContratistas"` (`Form_FormInicial03ConsultasContratistas.cls:56-57`). Los errores llegan al usuario como `MsgBox` y el cierre es un `DoCmd.Close` (`:116`).
+Pendiente de la coexistencia (documento aún no redactado). Es el único de la tanda que **cruza dos bases de datos** en el mismo `Form_Load` (`:131` y `:155`), cada una abierta por su propia clave de configuración, y el que concatena el `p_ID` del proveedor en el SQL sin comillas (`Constructor.bas:40-41`). Convive con las otras formas que escriben el mismo global: `FormInicial03ConsultasContratistas` escribe `"Estado"` y `"CadenaContratistas"` (`Form_FormInicial03ConsultasContratistas.cls:56-57`). Los errores llegan al usuario como `MsgBox` y el cierre es un `DoCmd.Close` (`:116`).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

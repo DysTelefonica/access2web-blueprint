@@ -285,5 +285,58 @@ class MissingSiblingTests(unittest.TestCase):
         self.assertNotIn("Traceback", proc.stderr)
 
 
+class ExternalJobsTests(unittest.TestCase):
+    """`external_jobs` (DysTelefonica/team-skills#1313, G1): a required job whose
+    wiring lives in a sibling workflow. The aggregator's `needs` must not name it;
+    the parity check must find it defined in the workflow the policy names."""
+
+    AGGREGATOR_WF = textwrap.dedent("""\
+        jobs:
+          lint:
+            runs-on: ubuntu-latest
+          required:
+            needs: lint
+            runs-on: ubuntu-latest
+        """)
+    SIBLING_WF = "jobs:\n  governance-seals:\n    runs-on: ubuntu-latest\n"
+    POLICY = {"required_jobs": ["lint", "governance-seals"],
+              "events": {"push": {"accepted_skips": []}},
+              "external_jobs": {"governance-seals": "pr-gates.yml"}}
+
+    def run_with(self, aggregator_yaml: str, sibling_yaml: str | None) -> subprocess.CompletedProcess:
+        with tempfile.TemporaryDirectory() as tmp:
+            wf_dir = Path(tmp)
+            (wf_dir / "ci.yml").write_text(aggregator_yaml, encoding="utf-8")
+            if sibling_yaml is not None:
+                (wf_dir / "pr-gates.yml").write_text(sibling_yaml, encoding="utf-8")
+            policy_path = wf_dir / "policy.json"
+            policy_path.write_text(json.dumps(self.POLICY), encoding="utf-8")
+            return subprocess.run(
+                [sys.executable, str(SCRIPT), "--workflow", str(wf_dir / "ci.yml"),
+                 "--aggregator", AGGREGATOR, "--policy", str(policy_path)],
+                capture_output=True, text=True,
+            )
+
+    def test_external_job_defined_in_its_workflow_is_not_needed_by_the_aggregator(self) -> None:
+        result = self.run_with(self.AGGREGATOR_WF, self.SIBLING_WF)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_external_job_missing_from_its_named_workflow_exits_nonzero(self) -> None:
+        result = self.run_with(self.AGGREGATOR_WF, "jobs:\n  other:\n    runs-on: ubuntu-latest\n")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("governance-seals", result.stdout + result.stderr)
+
+    def test_external_workflow_file_absent_exits_nonzero(self) -> None:
+        result = self.run_with(self.AGGREGATOR_WF, None)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("pr-gates.yml", result.stdout + result.stderr)
+
+    def test_external_job_wired_into_the_aggregator_needs_exits_nonzero(self) -> None:
+        wired = self.AGGREGATOR_WF.replace("needs: lint", "needs: [lint, governance-seals]")
+        result = self.run_with(wired, self.SIBLING_WF)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("governance-seals", result.stdout + result.stderr)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

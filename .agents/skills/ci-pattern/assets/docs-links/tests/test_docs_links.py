@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # test_docs_links.py — enlaces locales de la documentación (HR-66, #712)
-"""Enlaces locales, anclas, navegación hub<->spokes, retirados y baseline
-shrink-only. Solo stdlib."""
+"""Enlaces locales, anclas, navegación hub<->spokes, retirados, baseline
+shrink-only y alcanzabilidad de la documentación (HR-80, #1379). Solo stdlib."""
 
 import contextlib
 import importlib.machinery
@@ -192,6 +192,126 @@ class DocsLinksTests(unittest.TestCase):
         with tmp:
             found = CLI._check_docs_links(repo, {"docs_links": dict(CONFIG, job="docs-links")})
         self.assertFalse(any("segunda fuente" in f for f in found), found)
+
+
+HUB_LINKS = ("# Guía\n\n## Páginas\n\n[Mapa](codebase/map.md)\n"
+             "[Decisión](adr/001-decision.md)\n")
+REACH_FILES = {
+    "README.md": "# P\n\nVea la [guía](docs/CODEBASE-GUIDE.md#páginas).\n",
+    HUB: HUB_LINKS,
+    "docs/codebase/map.md": "# Mapa\n\n[Volver](../CODEBASE-GUIDE.md)\n",
+    "docs/adr/001-decision.md": ("# Decisión\n\n[Transitiva](002-transitiva.md)\n"
+                                 "[Volver](../CODEBASE-GUIDE.md)\n"),
+    "docs/adr/002-transitiva.md": "# Transitiva\n\n[Volver](../CODEBASE-GUIDE.md)\n",
+    "docs/adr/003-huerfano.md": "# Huérfano\n\n[Volver](../CODEBASE-GUIDE.md)\n",
+}
+REACH = {"from": [HUB], "scope": ["docs"]}
+
+
+def _reach_findings(files=None, config=None, declaration=None):
+    """Hallazgos del gate con la declaración `reachable` activa."""
+    with tempfile.TemporaryDirectory() as d:
+        for rel, text in {**REACH_FILES, **(files or {})}.items():
+            path = Path(d) / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+        reachable = dict(REACH, **(config or {})) if declaration is None else declaration
+        return GATE.check(Path(d), {**CONFIG, "reachable": reachable})
+
+
+class DocsLinksReachableTests(unittest.TestCase):
+    """HR-80 (#1379): todo .md del alcance declarado tiene que ser alcanzable
+    desde los puntos de entrada siguiendo enlaces markdown."""
+
+    def test_huerfano_falla_nombrando_el_fichero(self):
+        found = _reach_findings()
+        self.assertTrue(any("docs/adr/003-huerfano.md" in f for f in found), found)
+
+    def test_enlazado_directamente_pasa(self):
+        hub = HUB_LINKS + "[Huérfano](adr/003-huerfano.md)\n"
+        found = _reach_findings({HUB: hub})
+        self.assertEqual([f for f in found if "003-huerfano" in f], [])
+
+    def test_enlazado_transitivamente_pasa(self):
+        """El hub no enlaza la segunda decisión: la primera la lleva."""
+        found = _reach_findings()
+        self.assertFalse(any("002-transitiva" in f for f in found), found)
+
+    def test_excepcion_declarada_por_fichero_pasa(self):
+        found = _reach_findings(config={"exceptions": ["docs/adr/003-huerfano.md"]})
+        self.assertEqual([f for f in found if "003-huerfano" in f], [])
+
+    def test_excepcion_declarada_por_directorio_pasa(self):
+        found = _reach_findings(config={"exceptions": ["docs/adr/"]})
+        self.assertEqual([f for f in found if "003-huerfano" in f], [])
+
+    def test_excepcion_declarada_por_glob_pasa(self):
+        found = _reach_findings(config={"exceptions": ["docs/adr/*.md"]})
+        self.assertEqual([f for f in found if "003-huerfano" in f], [])
+
+    def test_sin_declaracion_no_cambia_nada(self):
+        """Sin `reachable` el gate mide lo que medía: el huérfano no se ve."""
+        with tempfile.TemporaryDirectory() as d:
+            for rel, text in REACH_FILES.items():
+                path = Path(d) / rel
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(text, encoding="utf-8")
+            self.assertEqual(GATE.check(Path(d), CONFIG), [])
+
+    def test_enlace_roto_lo_sigue_cazando_el_gate_que_ya_lo_cazaba(self):
+        found = _reach_findings({"README.md": "# P\n\n[x](docs/ghost.md)\n"})
+        self.assertTrue(any("ghost.md" in f for f in found), found)
+        self.assertTrue(any("003-huerfano" in f for f in found), found)
+
+    def test_declaracion_incompleta_falla_nombrando_la_clave(self):
+        found = _reach_findings(declaration={})
+        self.assertTrue(any("from" in f for f in found), found)
+
+    def test_declaracion_que_no_es_objeto_falla(self):
+        found = _reach_findings(declaration=[])
+        self.assertTrue(any("reachable" in f for f in found), found)
+
+    def test_punto_de_entrada_inexistente_falla(self):
+        found = _reach_findings(declaration={"from": ["docs/no-existe.md"], "scope": ["docs"]})
+        self.assertTrue(any("no-existe.md" in f for f in found), found)
+
+    def test_alcance_que_no_existe_falla_cerrado(self):
+        found = _reach_findings(config={"scope": ["docs/no-existe"]})
+        self.assertTrue(any("no-existe" in f for f in found), found)
+
+    def test_alcance_fuera_del_repositorio_falla(self):
+        found = _reach_findings(config={"scope": ["/etc"]})
+        self.assertTrue(any("/etc" in f for f in found), found)
+
+    def test_el_alcance_por_defecto_es_docs(self):
+        found = _reach_findings(declaration={"from": [HUB]})
+        self.assertTrue(any("003-huerfano" in f for f in found), found)
+
+    def test_un_fichero_fuera_del_alcance_no_se_exige(self):
+        files = {"notas/004-fuera.md": "# Fuera\n"}
+        found = _reach_findings(files)
+        self.assertFalse(any("004-fuera" in f for f in found), found)
+
+    def test_un_fichero_que_no_es_markdown_no_se_exige(self):
+        files = {"docs/datos.txt": "texto\n"}
+        found = _reach_findings(files)
+        self.assertFalse(any("datos.txt" in f for f in found), found)
+
+    def test_los_hallazgos_salen_ordenados_por_ruta(self):
+        files = {"docs/aaa-huerfano.md": "# A\n", "docs/zzz-huerfano.md": "# Z\n"}
+        found = [f for f in _reach_findings(files) if "huérfano" in f]
+        self.assertEqual(len(found), 3, found)
+        self.assertTrue(found[0].split()[1] < found[1].split()[1] < found[2].split()[1], found)
+
+    def test_la_cli_acepta_la_clave_reachable(self):
+        with tempfile.TemporaryDirectory() as d:
+            for rel, text in REACH_FILES.items():
+                path = Path(d) / rel
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(text, encoding="utf-8")
+            found = CLI._check_docs_links(Path(d), {"docs_links": {**CONFIG, "reachable": REACH}})
+        self.assertFalse(any("clave desconocida" in f for f in found), found)
+        self.assertTrue(any("003-huerfano" in f for f in found), found)
 
 
 if __name__ == "__main__":

@@ -35,6 +35,18 @@ Rules (PR1 core):
   ``--base-baseline`` the output declares the comparison NOT performed —
   never silently skipped.
 
+- Comparison against the base-branch FINDINGS (#1172): with
+  ``--base-findings`` the gate compares what the PR adds, not the total.
+  A finding the base already carried is NOT this PR's: it is reported as
+  an advisory and does not block — a PR that adds no violation can never
+  go red on a ratchet. A finding the base did not carry and the baseline
+  does not admit still blocks (HR-15). A baseline identity the PR
+  eliminated still has to be shrunk out of the baseline to lock the
+  improvement in; a baseline identity that neither the base nor the PR
+  has is a stale entry (advisory, not the PR's to fix). Without
+  ``--base-findings`` the comparison is declared NOT performed and the
+  behaviour is the one above.
+
 Exit codes: 0 clean · 1 findings · 2 invalid input or empty subject.
 """
 
@@ -158,6 +170,46 @@ def _pin_output_encoding() -> None:
         sys.stderr.reconfigure(encoding="utf-8")
 
 
+def entry_identity(entry):
+    """(rule, path, fingerprint) de una entrada de la baseline."""
+    return tuple(entry["identity"][k] for k in ("rule", "path", "fingerprint"))
+
+
+def compare_findings(findings_ids, baseline_ids, base_findings_ids):
+    """Comparación de los hallazgos contra la baseline (HR-15, #1172).
+
+    Devuelve (hallazgos, avisos). Con la base del PR delante, un hallazgo que
+    la base ya tenía avisa y no bloquea: este PR no lo añade (#1172). Sin base,
+    todo hallazgo que la baseline no admite bloquea, como siempre.
+    """
+    report = []
+    advisories = []
+    for ident in sorted(findings_ids - set(baseline_ids)):
+        if base_findings_ids is not None and ident in base_findings_ids:
+            # #1172: el hallazgo ya estaba en la base del PR. Este PR no lo
+            # añade, así que avisa y no bloquea.
+            advisories.append(
+                f"HR-15 el hallazgo ya estaba en la base del PR y este PR no lo añade "
+                f"(rule={ident[0]!r}, path={ident[1]!r}, fingerprint={ident[2]!r}); "
+                "la baseline no lo admite")
+            continue
+        report.append(f"HR-15 new finding identity not in baseline "
+                      f"(rule={ident[0]!r}, path={ident[1]!r}, fingerprint={ident[2]!r})")
+    for ident in sorted(set(baseline_ids) - findings_ids):
+        if base_findings_ids is not None and ident not in base_findings_ids:
+            # #1172: la entrada de la baseline no la tiene ni la base ni el PR:
+            # es una entrada vieja, no algo que este PR haya quitado.
+            advisories.append(
+                f"HR-15 la baseline declara un hallazgo que ni la base del PR tiene "
+                f"(rule={ident[0]!r}, path={ident[1]!r}, fingerprint={ident[2]!r}); "
+                "entrada vieja, no la quita este PR")
+            continue
+        report.append(f"HR-15 identity eliminated from findings but still baselined — shrink "
+                      f"the baseline to lock it in (rule={ident[0]!r}, path={ident[1]!r}, "
+                      f"fingerprint={ident[2]!r})")
+    return report, advisories
+
+
 def main(argv):
     _pin_output_encoding()
     ap = argparse.ArgumentParser(description="Ratchet gate (HR-15 core, HR-16).")
@@ -166,6 +218,8 @@ def main(argv):
     ap.add_argument("--today", default=None, help="ISO date for target_date expiry (default: today)")
     ap.add_argument("--base-baseline", default=None,
                     help="baseline copy on the base branch (shrink-only comparison, HR-15)")
+    ap.add_argument("--base-findings", default=None,
+                    help="findings measured on the base branch (compare what the PR adds, #1172)")
     args = ap.parse_args(argv)
     today = date.fromisoformat(args.today) if args.today else date.today()
     try:
@@ -173,22 +227,16 @@ def main(argv):
         baseline_doc = load_baseline(args.baseline)
         baseline = baseline_doc["entries"]
         base_baseline = load_baseline(args.base_baseline) if args.base_baseline else None
+        base_findings = load_findings(args.base_findings) if args.base_findings else None
     except InvalidInput as exc:
         print(f"RATCHET ERROR: {exc}", file=sys.stderr)
         return 2
-    baseline_ids = {tuple(e["identity"][k] for k in ("rule", "path", "fingerprint")): e
-                    for e in baseline}
+    baseline_ids = {entry_identity(e): e for e in baseline}
     findings_ids = set(findings)
-    report = []
-    for ident in sorted(findings_ids - set(baseline_ids)):
-        report.append(f"HR-15 new finding identity not in baseline "
-                      f"(rule={ident[0]!r}, path={ident[1]!r}, fingerprint={ident[2]!r})")
-    for ident in sorted(set(baseline_ids) - findings_ids):
-        report.append(f"HR-15 identity eliminated from findings but still baselined — shrink "
-                      f"the baseline to lock it in (rule={ident[0]!r}, path={ident[1]!r}, "
-                      f"fingerprint={ident[2]!r})")
+    base_findings_ids = set(base_findings) if base_findings is not None else None
+    report, advisories = compare_findings(findings_ids, baseline_ids, base_findings_ids)
     for entry in baseline:
-        ident = tuple(entry["identity"][k] for k in ("rule", "path", "fingerprint"))
+        ident = entry_identity(entry)
         if ident in findings_ids and date.fromisoformat(entry["target_date"]) < today:
             report.append(f"HR-15 baseline target_date {entry['target_date']} expired "
                           f"(rule={ident[0]!r}, path={ident[1]!r}, "
@@ -218,6 +266,15 @@ def main(argv):
         if shrunk:
             print(f"base comparison: performed — baseline shrunk by {len(shrunk)} "
                   "identity(ies) against the base branch (allowed without relaxation)")
+    if base_findings_ids is None:
+        print("base findings comparison: NOT performed (--base-findings absent; the "
+              "caller supplies the findings measured on the base branch when it exists)")
+    else:
+        print(f"base findings comparison: performed — {len(findings_ids & base_findings_ids)} "
+              f"finding(s) already in the base branch, "
+              f"{len(findings_ids - base_findings_ids)} added by this change")
+    for advisory in advisories:
+        print(f"RATCHET AVISO (no bloquea): {advisory}")
     if report:
         print(f"RATCHET FAIL: {len(report)} finding(s)")
         for line in report:

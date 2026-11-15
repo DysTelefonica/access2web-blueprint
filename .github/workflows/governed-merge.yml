@@ -1,0 +1,109 @@
+name: Governed merge
+
+# Merge gobernado (HR-50, camino runner-enforced), adoptado de DysTelefonica/cadete
+# (#1359): SIEMPRE manual (workflow_dispatch), nunca automático.
+# El asset canónico `check_governed_merge.py` verifica el contrato del PR —los checks
+# requeridos del host-contract (`required`, `pr-gate`) en verde sobre su cabeza y las
+# palabras de cierre solo en la punta de cadena— y, si lo cumple, lo fusiona por la API;
+# si no lo cumple no fusiona y falla con el hallazgo (exit 1), y un entorno insalvable
+# falla cerrado (exit 2).
+#
+# Opción A (decisión del mantenedor, 2026-10-29): el merge se hace con un token de
+# instalación de la GitHub App `dys-orquestador`, NUNCA con GITHUB_TOKEN. El ruleset activo
+# `main-maintainers-and-admins-merge` (regla `update` sobre main) solo deja actualizar main
+# a administradores, mantenedores y a la integración de esa App; un merge con GITHUB_TOKEN
+# sería rechazado. Si faltan los secretos de la App el workflow falla cerrado y no recurre
+# a ningún otro token. Un merge hecho con el token de la App sí dispara el `push` de
+# ci.yml, que es la red de seguridad post-merge: no hace falta post_merge_dispatch.
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Número del PR que se va a mergear"
+        required: true
+        type: string
+
+# Una sola cola: dos merges en vuelo no compiten por la base ni por el cierre de issues
+# enlazadas; `cancel-in-progress: false` para no abortar un merge a mitad de cierre
+# (DysTelefonica/team-skills#800).
+concurrency:
+  group: governed-merge
+  cancel-in-progress: false
+
+# El GITHUB_TOKEN del workflow solo hace el checkout: todo lo que escribe lo hace el token
+# de la App, con los permisos que pide el paso que lo emite.
+permissions:
+  contents: read
+
+jobs:
+  governed-merge:
+    name: governed merge
+    # Solo desde main: un dispatch de otra rama ejecutaría el verificador y el token de
+    # escritura con código no revisado (cadete#542).
+    if: github.ref == 'refs/heads/main'
+    # Mismo runner alojado que los jobs de ci.yml: efímero, sin estado entre jobs.
+    runs-on: ubuntu-24.04
+    # sin ejecuciones medidas; ajustar al primer p95 (cadete#339)
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Falla cerrado antes de emitir nada: sin los secretos de la App no hay merge, y no se
+      # recurre a GITHUB_TOKEN, que el ruleset de main rechazaría. Los valores no se imprimen.
+      - name: Require the dys-orquestador App secrets
+        env:
+          APP_ID: ${{ secrets.DYS_ORQUESTADOR_APP_ID }}
+          PRIVATE_KEY: ${{ secrets.DYS_ORQUESTADOR_PRIVATE_KEY }}
+        run: |
+          missing=0
+          if [ -z "$APP_ID" ]; then
+            echo "::error::DYS_ORQUESTADOR_APP_ID is not set: a maintainer must add the dys-orquestador App ID as a repository secret. The governed merge never falls back to GITHUB_TOKEN." >&2
+            missing=1
+          fi
+          if [ -z "$PRIVATE_KEY" ]; then
+            echo "::error::DYS_ORQUESTADOR_PRIVATE_KEY is not set: a maintainer must add the dys-orquestador App private key as a repository secret. The governed merge never falls back to GITHUB_TOKEN." >&2
+            missing=1
+          fi
+          if [ "$missing" -ne 0 ]; then
+            exit 2
+          fi
+
+      # Token de instalación de la App limitado a este repositorio y a lo que el merge
+      # necesita: fusionar (contents, workflows para PR que tocan .github/workflows/),
+      # cerrar las issues enlazadas (issues) y leer el PR y sus check-runs.
+      - name: Mint the dys-orquestador installation token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.DYS_ORQUESTADOR_APP_ID }}
+          private-key: ${{ secrets.DYS_ORQUESTADOR_PRIVATE_KEY }}
+          permission-contents: write
+          permission-workflows: write
+          permission-issues: write
+          permission-pull-requests: read
+          permission-checks: read
+
+      # El asset canónico vendorizado lee el token de GITHUB_TOKEN o GH_TOKEN; ambos llevan el
+      # de la App. NO se usa `python3 -I`: `check_governed_merge.py` importa módulos hermanos
+      # de `assets/runner-controls/` y `sys.path[0]` debe seguir siendo su directorio.
+      - name: Verify the contract and merge through the governed path
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          # El input entra por env, no interpolado en el script (cadete#542).
+          PR_ID: ${{ inputs.pr }}
+        run: |
+          # Solo pasa la forma canónica de un entero positivo; el valor no se imprime.
+          case "$PR_ID" in
+            ''|*[!0-9]*|0*)
+              echo "::error::PR_ID must be the canonical number of a pull request (positive integer, no leading zeros)." >&2
+              exit 2
+              ;;
+          esac
+          python3 .agents/skills/ci-pattern/assets/runner-controls/check_governed_merge.py \
+            --repo "$GITHUB_REPOSITORY" \
+            --pr "$PR_ID" \
+            --contract .github/host-contract.json

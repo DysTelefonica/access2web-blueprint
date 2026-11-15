@@ -79,7 +79,7 @@ Sin escrituras, sin transacciones.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. El valor del expediente se concatena en el SQL **sin comillas y sin comillas dobles** (`Filtro.bas:140-141`), lo que solo es válido mientras la columna sea numérica y el combo aporte el identificador y no el texto visible. La lista se arma con dos consultas casi idénticas duplicadas en el propio `.cls` (`:122-146` y `:153-176`), y `RellenarCombo` colisiona en nombre con la función de propósito general de `FG.bas:1285`. Los errores llegan al usuario como `MsgBox` y el cierre es un `DoCmd.Close` (`:101`).
+Pendiente de la coexistencia (documento aún no redactado). El valor del expediente se concatena en el SQL **sin comillas y sin comillas dobles** (`Filtro.bas:140-141`), lo que solo es válido mientras la columna sea numérica y el combo aporte el identificador y no el texto visible. La lista se arma con dos consultas casi idénticas duplicadas en el propio `.cls` (`:122-146` y `:153-176`), y `RellenarCombo` colisiona en nombre con la función de propósito general de `FG.bas:1285`. Los errores llegan al usuario como `MsgBox` y el cierre es un `DoCmd.Close` (`:101`).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

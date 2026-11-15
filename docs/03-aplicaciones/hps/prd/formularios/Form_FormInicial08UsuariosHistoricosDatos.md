@@ -66,7 +66,7 @@ Sin escrituras propias: el `.cls` solo lee y reasigna el `RecordSource`. La escr
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Se ve ya la separación de bases: la vista se sirve desde la caché local y el objeto que se publica al padre se relee del backend (`Constructor.bas:1225`), de modo que una caché desalineada muestra una fila y construye otra. La dependencia del bus de indicadores (`modules/modIndicadores.bas:8`) acopla la hoja al ciclo de vida completo, y el `DoCmd.Hourglass False` incondicional (`:24`) comparte estado de interfaz con el resto de la aplicación.
+Pendiente de la coexistencia (documento aún no redactado). Se ve ya la separación de bases: la vista se sirve desde la caché local y el objeto que se publica al padre se relee del backend (`Constructor.bas:1225`), de modo que una caché desalineada muestra una fila y construye otra. La dependencia del bus de indicadores (`modules/modIndicadores.bas:8`) acopla la hoja al ciclo de vida completo, y el `DoCmd.Hourglass False` incondicional (`:24`) comparte estado de interfaz con el resto de la aplicación.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

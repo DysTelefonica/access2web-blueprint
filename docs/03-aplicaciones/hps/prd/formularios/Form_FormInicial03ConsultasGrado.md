@@ -89,7 +89,7 @@ Sin escrituras, sin transacciones.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Lo concreto: el filtro se propaga por un global compartido (`VariablesEntorno.bas:256`) que todos los formularios de consulta sobrescriben, así que abrir este filtro y otro a la vez interfiere. `getWhereGrado` es la única función de `Filtro.bas` que exige un conjunto fijo de claves, lo que ata este formulario a la forma del diccionario: cualquier filtro nuevo debe respetar el mismo contrato o ramificar antes de la llamada. El `DoCmd.Close` del manejador (`:251`), el `MsgBox` y el `DoCmd.Hourglass` no tienen equivalente directo en web; la comparación `Or`/`And` entre líneas HPS es una regla de negocio que en web conviene modelar como parámetro estructurado y no como SQL.
+Pendiente de la coexistencia (documento aún no redactado). Lo concreto: el filtro se propaga por un global compartido (`VariablesEntorno.bas:256`) que todos los formularios de consulta sobrescriben, así que abrir este filtro y otro a la vez interfiere. `getWhereGrado` es la única función de `Filtro.bas` que exige un conjunto fijo de claves, lo que ata este formulario a la forma del diccionario: cualquier filtro nuevo debe respetar el mismo contrato o ramificar antes de la llamada. El `DoCmd.Close` del manejador (`:251`), el `MsgBox` y el `DoCmd.Hourglass` no tienen equivalente directo en web; la comparación `Or`/`And` entre líneas HPS es una regla de negocio que en web conviene modelar como parámetro estructurado y no como SQL.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

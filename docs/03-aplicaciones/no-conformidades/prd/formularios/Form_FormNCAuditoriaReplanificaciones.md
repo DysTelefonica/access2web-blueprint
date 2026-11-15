@@ -56,7 +56,7 @@ Solo lecturas; sin transacciones.
 
 ## Coexistencia
 
-Consultas `SELECT *` por clave numérica sin dialecto Jet propio (`constructor.bas:2943-2945, 3053-3055`); válidas con PostgreSQL vinculado. Las fechas se concatenan como texto en la lista (`:96-97`): el formato depende de la configuración regional. Pendiente de `../coexistencia.md`.
+Consultas `SELECT *` por clave numérica sin dialecto Jet propio (`constructor.bas:2943-2945, 3053-3055`); válidas con PostgreSQL vinculado. Las fechas se concatenan como texto en la lista (`:96-97`): el formato depende de la configuración regional. Pendiente de la coexistencia (documento aún no redactado).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

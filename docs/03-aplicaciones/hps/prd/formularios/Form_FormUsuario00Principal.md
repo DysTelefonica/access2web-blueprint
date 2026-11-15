@@ -69,7 +69,7 @@ Sin `RecordSource`, sin `INSERT`/`UPDATE`/`DELETE`. Las escrituras reales las ha
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Cosas que ya se ven: el formulario no declara `PopUp = True` ni `Modal = True`, así que en web se traducirá a una ruta con navegación explícita; la distinción «EDICIÓN» / «DETALLE» se basa en `AllowEdits`, no en una propiedad separada; `SourceObject = "FormUsuario01Lateral"` está escrito como literal y duplica una cadena que también aparece en `Form_FormUsuarioHistorico00Principal.cls:78` (mismo patrón, otro prefijo).
+Pendiente de la coexistencia (documento aún no redactado). Cosas que ya se ven: el formulario no declara `PopUp = True` ni `Modal = True`, así que en web se traducirá a una ruta con navegación explícita; la distinción «EDICIÓN» / «DETALLE» se basa en `AllowEdits`, no en una propiedad separada; `SourceObject = "FormUsuario01Lateral"` está escrito como literal y duplica una cadena que también aparece en `Form_FormUsuarioHistorico00Principal.cls:78` (mismo patrón, otro prefijo).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

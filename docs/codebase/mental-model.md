@@ -50,8 +50,7 @@ Este repo es el **monorepo de la plataforma + blueprint del refactor** de las 8 
 │  │                       di,delivery}                              │
 │  ├── src/shared/                  ← cross-cutting (cache, audit)  │
 │  ├── migrations/versions/         ← Alembic 0001..0006 (D82)       │
-│  ├── tests/                       ← unit + integration            │
-│  └── pytest_plugin/               ← coverage_gate, etc.           │
+│  └── tests/                       ← unit + integration            │
 │                                                                   │
 │  openspec/changes/<change>/{proposal,design,specs/<capability>/spec,tasks}.md    │
 │  scripts/check_*.py               ← quality gates (ver docs/gates.md)│

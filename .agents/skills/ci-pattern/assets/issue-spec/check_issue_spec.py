@@ -6,7 +6,8 @@ Reglas:
 
 1. El cuerpo lleva `Closes|Fixes|Resolves|Refs #N` fuera de código.
 2. La referencia resuelve a una issue, nunca a una pull request.
-5. La referencia apunta al repositorio del PR.
+5. La referencia que cierra apunta al repositorio del PR. Un `Refs` a otro
+   repositorio no cierra nada y no se valida (DysTelefonica/team-skills#1093).
 
 Retirado por decisión del dueño (DysTelefonica/team-skills#1093, R1 y R2): la
 etiqueta `status:approved` de la issue y su comprobación de quién la puso (la
@@ -135,9 +136,23 @@ def rule_same_repository(refs: tuple[Reference, ...], repository: str) -> list[s
     ]
 
 
+def judged_references(body: str, repository: str = "") -> tuple[Reference, ...]:
+    """Las referencias que el gate juzga: un `Refs` a otro repositorio se ignora (#1093).
+
+    Sin repositorio conocido no hay con qué comparar, así que se juzga todo igual.
+    """
+    refs = references(body)
+    if not repository:
+        return refs
+    return tuple(
+        ref for ref in refs
+        if not (ref.kind == "refs" and ref.repo and ref.repo.lower() != repository.lower())
+    )
+
+
 def validate_body(body: str, repository: str = "") -> list[str]:
     """Modo local: forma del cuerpo, sin tocar la red."""
-    refs = references(body)
+    refs = judged_references(body, repository)
     violation = rule_has_reference(refs)
     if violation:
         return [violation]
@@ -174,7 +189,7 @@ def validate_remote(
     consultar una issue es hallazgo, no verde silencioso (regla 6, fail-closed).
     """
     violations = validate_body(body, repository)
-    refs = references(body)
+    refs = judged_references(body, repository)
     if not refs:
         return violations
     same_repo_refs = tuple(
