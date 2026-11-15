@@ -74,7 +74,7 @@ Sin transacciones: la fila se inserta antes de copiar el fichero (`DocumentoAudi
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. A adaptar: `DELETE *` y títulos concatenados entre comillas simples (`DocumentoAuditoriaOperaciones.cls:186, 238, 278`; un título con apóstrofo rompe la consulta en cualquier dialecto), `IDDocumento` calculado en código (`DocumentoAuditoriaOperaciones.cls:60`) en lugar de secuencia, y el almacenamiento de ficheros en una ruta de red configurada con `FileSystemObject`, sin equivalente directo en web (almacén de objetos o similar).
+Pendiente de la coexistencia (documento aún no redactado). A adaptar: `DELETE *` y títulos concatenados entre comillas simples (`DocumentoAuditoriaOperaciones.cls:186, 238, 278`; un título con apóstrofo rompe la consulta en cualquier dialecto), `IDDocumento` calculado en código (`DocumentoAuditoriaOperaciones.cls:60`) en lugar de secuencia, y el almacenamiento de ficheros en una ruta de red configurada con `FileSystemObject`, sin equivalente directo en web (almacén de objetos o similar).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

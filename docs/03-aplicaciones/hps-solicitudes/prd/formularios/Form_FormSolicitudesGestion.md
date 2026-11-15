@@ -104,7 +104,7 @@ Todos los handlers usan `Err.Raise 1000` como error interno controlado: el mensa
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Ya se ve: el filtro se hace en memoria sobre colecciones traídas enteras del servidor (`constructor.bas:2036-2053`), no en SQL; todos los `constructor` arman la consulta concatenando parámetros (`constructor.bas:2054-2056`, `constructor.bas:492-497`), patrón que en PostgreSQL exige parametrización; `DoCmd.OpenForm`/`DoCmd.Close` como mecanismo de navegación (`Form_Form0BDOpciones.cls:195-196`); el estado vive en una columna de texto con dos diccionarios de traducción que deben mantenerse sincronizados (`Entorno.cls:1703-1740`, `Entorno.cls:1742-1778`); y la exportación depende de automatización de Excel y de `Shell` (`FU.bas:2161`; `Form_FormSolicitudesGestion.cls:668`).
+Pendiente de la coexistencia (documento aún no redactado). Ya se ve: el filtro se hace en memoria sobre colecciones traídas enteras del servidor (`constructor.bas:2036-2053`), no en SQL; todos los `constructor` arman la consulta concatenando parámetros (`constructor.bas:2054-2056`, `constructor.bas:492-497`), patrón que en PostgreSQL exige parametrización; `DoCmd.OpenForm`/`DoCmd.Close` como mecanismo de navegación (`Form_Form0BDOpciones.cls:195-196`); el estado vive en una columna de texto con dos diccionarios de traducción que deben mantenerse sincronizados (`Entorno.cls:1703-1740`, `Entorno.cls:1742-1778`); y la exportación depende de automatización de Excel y de `Shell` (`FU.bas:2161`; `Form_FormSolicitudesGestion.cls:668`).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

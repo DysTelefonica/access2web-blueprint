@@ -69,7 +69,7 @@ Sin escrituras: ni en base de datos ni en el sistema de ficheros.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Ya se ve: el paso de datos es una global mutable compartida por tres formularios que la escriben (`Form_FormExpedientesBusqueda.cls:149`, `Form_FormSolicitudRenovacionDatos.cls:195`, `Form_FormSolicitudesAltaTraspasoDatos.cls:169`) en lugar de un identificador por parámetro; la coexistencia entre la ficha y el expediente abierto depende del orden de cierre y reapertura (`Form_FormExpedientesBusqueda.cls:150-153`); y el formulario hereda el patrón de ventana modal por `MsgBox` y reloj de arena.
+Pendiente de la coexistencia (documento aún no redactado). Ya se ve: el paso de datos es una global mutable compartida por tres formularios que la escriben (`Form_FormExpedientesBusqueda.cls:149`, `Form_FormSolicitudRenovacionDatos.cls:195`, `Form_FormSolicitudesAltaTraspasoDatos.cls:169`) en lugar de un identificador por parámetro; la coexistencia entre la ficha y el expediente abierto depende del orden de cierre y reapertura (`Form_FormExpedientesBusqueda.cls:150-153`); y el formulario hereda el patrón de ventana modal por `MsgBox` y reloj de arena.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

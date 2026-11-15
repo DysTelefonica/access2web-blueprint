@@ -83,7 +83,7 @@ Sin transacciones. El origen de los combos (`FG.bas:1877, 3075, 3137`) no se det
 
 ## Coexistencia
 
-Adaptar a PostgreSQL vinculado: `Like '*…*'` con comodín de Jet (`constructor.bas:5823-5875`), `DISTINCT … .*` con `INNER JOIN` entre paréntesis (`constructor.bas:1938-1975`), `Borrado=False`, comparación de booleanos, y `Edit/Update` sobre `SELECT *` (`Ops:321`). El filtrado y el orden se hacen en VBA, no en base de datos; en una web debe pasar a consultas parametrizadas. Pendiente de `../coexistencia.md`.
+Adaptar a PostgreSQL vinculado: `Like '*…*'` con comodín de Jet (`constructor.bas:5823-5875`), `DISTINCT … .*` con `INNER JOIN` entre paréntesis (`constructor.bas:1938-1975`), `Borrado=False`, comparación de booleanos, y `Edit/Update` sobre `SELECT *` (`Ops:321`). El filtrado y el orden se hacen en VBA, no en base de datos; en una web debe pasar a consultas parametrizadas. Pendiente de la coexistencia (documento aún no redactado).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

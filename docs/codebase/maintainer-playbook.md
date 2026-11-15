@@ -21,9 +21,9 @@ Use esta página antes de revisar o hacer un cambio. Convierte el mapa del repos
 ## Cómo navegar como mantenedor
 
 1. Lea primero la doc de usuario (`README.md`, `DOCS.md`).
-3. Encuentre el paquete que owns el cambio en [Mapa del repositorio](repository-map.md).
-4. Inspeccione los tests cercanos antes de cambiar código.
-5. Actualice la página de doc más pequeña y relevante.
+2. Encuentre el paquete que owns el cambio en [Mapa del repositorio](repository-map.md).
+3. Inspeccione los tests cercanos antes de cambiar código.
+4. Actualice la página de doc más pequeña y relevante.
 
 ## Guardrails
 

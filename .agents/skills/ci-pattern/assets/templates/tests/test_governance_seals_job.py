@@ -73,45 +73,24 @@ LITERAL_PIN = "bc915526af7920e459afd2532e93e96e0479c0e6"
 # Esqueleto mínimo de un `ci.yml` de consumer con el agregador `required`: el
 # fragmento del porting-guide se inyecta como job más, con su entrada en el
 # `needs` del agregador, que es como lo cablea un adopter.
-SKELETON_HEAD = """name: ci
-on:
-  pull_request:
-  push:
-    branches: [main]
-concurrency:
-  group: wf-${{ github.ref }}
-jobs:
-"""
-SKELETON_TAIL = """  required:
-    name: required
-    needs: [unit, JOB_NAME]
-    if: always()
-    timeout-minutes: 5
-    steps:
-      - run: echo gate
-"""
 
 
 def canonical_job() -> str:
-    """El fragmento que publica el porting-guide, extraído del documento.
+    """El workflow que publica el porting-guide, extraído del documento.
 
-    Se busca el bloque cercado que empieza con la clave `governance-seals:`: si
-    el documento deja de.publisharlo, esta función revienta y el fallo nombra
-    el documento, no una constante copiada que nadie lee.
+    Desde #1270 el bloque es un workflow completo en `pull_request_target`; desde
+    #1396 su único job es `governance-seals`, que toma el patrón de la copia
+    vendorizada en la BASE. Se busca el
+    bloque cercado que contiene la clave `governance-seals:`: si el documento
+    deja de publicarlo, esta función reventa y el fallo nombra el documento.
     """
     text = PORTING_GUIDE.read_text(encoding="utf-8")
     for block in re.findall(r"```yaml\n(.*?)```", text, re.S):
         if f"{JOB}:" in block:
-            # El bloque vive dentro de una lista numerada del documento, con la
-            # sangria de esa lista encima; sin `dedent` el fragmento no seria un
-            # workflow valido. `dedent` se lleva tambien los dos espacios del
-            # nivel `jobs:`, asi que se devuelven: la linea del job tiene que
-            # quedar en `  governance-seals:` o el parser ve contenido suelto.
-            flat = textwrap.dedent(block).rstrip("\n")
-            return "".join("  " + line + "\n" if line.strip() else line + "\n"
-                           for line in flat.splitlines())
+            # El bloque vive dentro de una lista numerada: `dedent` le quita su sangria.
+            return textwrap.dedent(block).rstrip("\n")
     raise AssertionError(
-        f"el porting-guide ya no publica el fragmento del job `{JOB}`: "
+        f"el porting-guide ya no publica el workflow con el job `{JOB}`: "
         f"la forma canónica de HR-72 desapareció de {PORTING_GUIDE}"
     )
 
@@ -124,21 +103,50 @@ def hand_written_shas(text: str) -> list[str]:
 
 
 def consumer_workflow() -> str:
-    return (SKELETON_HEAD + canonical_job()
-            + SKELETON_TAIL.replace("JOB_NAME", JOB))
+    """El workflow publicado, tal cual lo pega el consumer."""
+    return canonical_job()
+
+
+PR_CONTRACT_TEMPLATE = SKILL_ROOT / "assets" / "templates" / ".github" / "workflows" / "pr-contract.yml.tmpl"
+TRIGGER_TYPES = re.compile(r"^\s*types:\s*\[(.*?)\]", re.M)
+CONCURRENCY_GROUP = re.compile(r"^\s*group:\s*(\S+)", re.M)
+
+
+def trigger_types(workflow: str) -> list[str]:
+    """Los `types` del disparador de PR de un workflow."""
+    match = TRIGGER_TYPES.search(workflow)
+    assert match, "el workflow no declara `types` en su disparador"
+    return [t.strip() for t in match.group(1).split(",")]
+
+
+def concurrency_group(workflow: str) -> str:
+    match = CONCURRENCY_GROUP.search(workflow)
+    assert match, "el workflow no declara grupo de `concurrency`"
+    return match.group(1)
+
+
+class TreeOnlyTriggerTests(unittest.TestCase):
+    """#1440 (C2): un job que solo mide el arbol no corre al editar el cuerpo o las etiquetas."""
+
+    def test_the_fragment_runs_only_when_the_tree_can_change(self):
+        self.assertEqual(trigger_types(consumer_workflow()), ["opened", "synchronize", "reopened"])
+
+    def test_the_fragment_does_not_share_the_pr_contract_queue(self):
+        template = PR_CONTRACT_TEMPLATE.read_text(encoding="utf-8")
+        self.assertNotEqual(concurrency_group(consumer_workflow()), concurrency_group(template))
 
 
 class CanonicalJobTests(unittest.TestCase):
     def test_fragment_passes_the_workflow_policy_gate(self):
-        """La forma publicada pasa el gate de política con la política real."""
+        """La forma publicada pasa el gate de política."""
         with tempfile.TemporaryDirectory() as tmp:
-            rendered = Path(tmp) / "ci.yml"
+            rendered = Path(tmp) / "wf.yml"
             rendered.write_text(consumer_workflow(), encoding="utf-8")
-            cmd = [sys.executable, str(GATE), "--required-jobs", str(WORKFLOW_POLICY),
-                   "--base-branch", "main", "--workflow", str(rendered)]
-            for w in (REPO / ".github" / "workflows").glob("*.yml"):
-                cmd += ["--workflow", str(w)]
-            proc = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO)
+            policy = Path(tmp) / "policy.json"
+            policy.write_text(json.dumps({"required_jobs": [JOB]}), encoding="utf-8")
+            proc = subprocess.run([sys.executable, str(GATE), "--workflow", str(rendered),
+                                   "--required-jobs", str(policy), "--base-branch", "main"],
+                                  capture_output=True, text=True, cwd=REPO)
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
         self.assertIn("WORKFLOW-POLICY OK", proc.stdout)
 
@@ -168,13 +176,10 @@ class CanonicalJobTests(unittest.TestCase):
             self.assertEqual(CLI._check_governance_seals(repo, {}), [])
 
     def test_job_publishes_its_check_only_from_pull_request(self):
-        """HR-30: el nombre se publica solo desde el evento que evalúa el PR."""
-        tree = policy_gate.parse_workflow(consumer_workflow(), "ci.yml")
-        job = tree["jobs"][JOB]
-        cond = str(job.get("if") or "")
-        self.assertIn("pull_request", cond, cond)
-        for event in ("schedule", "workflow_dispatch"):
-            self.assertNotIn(event, cond, cond)
+        """HR-30: el workflow evalúa el PR y solo en ese evento."""
+        workflow = consumer_workflow()
+        events = policy_gate.workflow_events(policy_gate.parse_workflow(workflow, "wf.yml"))
+        self.assertEqual(sorted(events), ["pull_request_target"], events)
 
     def test_job_invokes_the_cli_as_a_top_level_command(self):
         """HR-46: la CLI es el comando del paso, no el argumento de otro gate."""
@@ -211,16 +216,72 @@ class CanonicalJobTests(unittest.TestCase):
         self.assertTrue(found[0].endswith(LITERAL_PIN), found)
 
     def test_fragment_reads_the_commit_from_the_manifest_seal(self):
-        """El `ref:` del checkout del catálogo es el output del paso que lee el sello."""
+        """El commit del catálogo es el de la copia vendorizada en la base (#1062, #1396)."""
         tree = policy_gate.parse_workflow(consumer_workflow(), "ci.yml")
         steps = [s for s in tree["jobs"][JOB]["steps"] if "GITHUB_OUTPUT" in str(s.get("run") or "")]
-        self.assertEqual(len(steps), 1, "el job no resuelve el sello del manifiesto a ningun output")
-        step_id = steps[0].get("id")
-        self.assertTrue(step_id, "el paso que resuelve el sello necesita `id:`")
-        refs = [str((s.get("with") or {}).get("ref") or "")
-                for s in tree["jobs"][JOB]["steps"]
-                if isinstance(s.get("with"), dict) and (s.get("with") or {}).get("ref")]
-        self.assertEqual(refs, [f"${{{{ steps.{step_id}.outputs.commit }}}}"], refs)
+        self.assertEqual(steps, [], "el job no resuelve el sello: lo fija la propagación en la base")
+        self.assertEqual(tree["jobs"][JOB]["env"]["PATTERN_DIR"], "base/.agents/skills/ci-pattern")
+
+    # --- #1396: un solo job, sin token, sin artefacto de entrada; el espejo se queda ---
+
+    def test_the_fragment_has_no_canon_job_nor_token(self):
+        tree = policy_gate.parse_workflow(consumer_workflow(), "ci.yml")
+        self.assertEqual(list(tree["jobs"]), [JOB])
+        self.assertNotIn("needs", tree["jobs"][JOB])
+        self.assertNotIn("TEAM_SKILLS", consumer_workflow())
+        self.assertNotIn("pattern-at-pin", consumer_workflow())
+
+    def test_the_verdict_does_not_depend_on_an_artifact(self):
+        """Una cuota de artefactos no salta el check requerido (cadete#752)."""
+        self.assertNotIn("download-artifact", consumer_workflow())
+
+    def test_the_verdict_is_mirrored_on_the_pr_head_with_the_github_token(self):
+        """El check run nativo de `pull_request_target` queda en la base; el merge
+        gobernado lee la cabeza, así que el espejo se queda y su motivo está escrito (#1396, S9)."""
+        tree = policy_gate.parse_workflow(consumer_workflow(), "ci.yml")
+        mirror = [s for s in tree["jobs"][JOB]["steps"] if "check-runs" in str(s.get("run") or "")]
+        self.assertEqual(len(mirror), 1)
+        self.assertEqual(mirror[0]["env"]["CONTEXT"], "governance-seals")
+        self.assertEqual(mirror[0]["env"]["HEAD_SHA"], "${{ github.event.pull_request.head.sha }}")
+        self.assertEqual(mirror[0]["env"]["GH_TOKEN"], "${{ github.token }}")
+        guide = " ".join(PORTING_GUIDE.read_text(encoding="utf-8").split())
+        self.assertIn("Por qué el gate aparece dos veces entre los checks del PR (#1396)", guide)
+
+    # --- #1172: el manifiesto re-sellado como artefacto, sin push ---
+
+    def test_the_fragment_reseals_the_manifest_without_pushing(self):
+        """El job deja el manifiesto re-sellado como artefacto; nada se empuja."""
+        tree = policy_gate.parse_workflow(consumer_workflow(), "ci.yml")
+        commands = "\n".join(
+            str(step.get("run") or "") for step in tree["jobs"][JOB]["steps"])
+        self.assertIn("manifest seal pr-head", commands)
+        self.assertIn("--out", commands)
+        # Re-sellar es escribir el manifiesto: el job no lo commitea ni lo empuja.
+        for forbidden in ("git commit", "git push", "git add"):
+            self.assertNotIn(forbidden, commands)
+
+    def test_the_reseal_steps_only_run_when_the_gate_failed(self):
+        """`if: failure()`: el artefacto se publica cuando el sello no coincide."""
+        tree = policy_gate.parse_workflow(consumer_workflow(), "ci.yml")
+        steps = tree["jobs"][JOB]["steps"]
+        reseal = [s for s in steps if "manifest seal" in str(s.get("run") or "")]
+        self.assertEqual(len(reseal), 1, "el job no re-sella el manifiesto")
+        self.assertIn("failure()", str(reseal[0].get("if") or ""))
+        upload = [s for s in steps
+                  if "upload-artifact" in str(s.get("uses") or "")]
+        self.assertEqual(len(upload), 1, "el job no publica el manifiesto re-sellado")
+        self.assertIn("failure()", str(upload[0].get("if") or ""))
+        # HR-26: la acción va pineada a un sha de 40 hex.
+        self.assertRegex(str(upload[0].get("uses")), r"@[0-9a-f]{40}$")
+
+    def test_the_reseal_steps_do_not_swallow_the_verdict(self):
+        """Ni `|| true` ni `continue-on-error`: el rojo del gate sigue siendo rojo."""
+        tree = policy_gate.parse_workflow(consumer_workflow(), "ci.yml")
+        for step in tree["jobs"][JOB]["steps"]:
+            command = str(step.get("run") or "")
+            self.assertNotIn("|| true", command)
+            self.assertNotIn("|| exit 0", command)
+            self.assertNotIn("continue-on-error", str(step.get("continue-on-error") or ""))
 
 
 if __name__ == "__main__":

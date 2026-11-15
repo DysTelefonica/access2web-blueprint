@@ -4,7 +4,7 @@ description: "Trigger: CI/CD audit, pipeline quality, issue policy, PR policy, l
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: "1.2"
+  version: "1.3"
   last_verified: 2026-10-15
   scope: ['universal', 'ops']
   auto_invoke: ['auditing repository delivery governance', 'bootstrapping issue and pull request templates', 'configuring branch protection or deployment policy']

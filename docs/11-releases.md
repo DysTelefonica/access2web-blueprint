@@ -35,8 +35,13 @@ corta y fusionadas a `main` mediante PR. Y `release/vX.Y.x`, que existe
    entra desactivado, nunca acumulado en una rama paralela.
 2. **Se corta la candidata.** `git tag -a v1.4.0-rc.1` sobre el commit exacto de
    `main`. Ese es el congelamiento. `main` continúa; la candidata no.
-3. **Se construye y firma una vez.** El workflow `release` publica la imagen y
-   firma su digest con la identidad OIDC del propio workflow.
+3. **Se construye una vez y se identifica por digest.** El job `stage` del
+   workflow `release` construye la imagen y la empuja **sin la etiqueta de
+   release**, resuelve su digest y lo expone como output del job. El smoke
+   `e2e` descarga y arranca `nombre@sha256`: los mismos bytes, sin una etiqueta
+   que se pueda mover. El job `publish` promueve ese mismo digest bajo la
+   etiqueta de release —sin recompilar— y lo firma con la identidad OIDC del
+   propio workflow.
 4. **Se verifica antes de aceptar.** Cosign exige la identidad exacta del
    workflow y el emisor OIDC de GitHub antes de descargar el digest.
 5. **Aceptación sobre esa imagen.** El alcance se obtiene con
@@ -83,7 +88,7 @@ con código distinto de cero, no.
 
 | Gate | Dónde | Rechaza |
 |---|---|---|
-| `scripts/release-preflight.sh` | Local y workflow `release` | Tag sin anotar, versión no canónica, o commit que no es el `origin/main` actual. |
+| `scripts/release-preflight.sh` | Local y workflow `release` | Tag sin anotar, versión no canónica, o commit que no es el `origin/main` actual. Si el tag ya está en `origin`, su tipo se lee allí y no en el ref local, que `actions/checkout` deja como tag ligero en un push de tag (#1541). |
 | `scripts/require-ci-success.sh` | Workflow `release` | Tag sobre un commit cuyo workflow `ci` no está en verde con evento `push` o `schedule` sobre ese SHA (decisión final de #857, sobre el código de #864). |
 | `cosign verify` | Workflow `release` | Digest sin firma válida del workflow y tag exactos. |
 | `pre-push` (`gentleai.gatedTags`) | Máquina local | Publicación de un tag estable. Es una barrera, no un cerrojo. |
@@ -101,6 +106,12 @@ https://github.com/DysTelefonica/access2web-blueprint/.github/workflows/release.
 
 También exige el emisor `https://token.actions.githubusercontent.com`. Verifique
 siempre el digest, nunca sólo una etiqueta mutable.
+
+En el workflow `release` eso es literal: `stage` empuja la imagen sin la
+etiqueta de release y resuelve su digest; `e2e` consume `nombre@sha256`; y
+`publish` reetiqueta ese mismo digest —sin recompilar— cuando el smoke está en
+verde, comprobando que el registro publica exactamente ese digest. La etiqueta
+de release es un alias del digest, no su identidad.
 
 ### La regla de identidad
 

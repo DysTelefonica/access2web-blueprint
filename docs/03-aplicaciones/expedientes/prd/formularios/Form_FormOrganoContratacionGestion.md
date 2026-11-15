@@ -45,7 +45,7 @@ Abre `FormOrganoContratacion` en alta (`:74-82`) o edición (`:225-233`) y escuc
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. La integridad con `TbExpedientes.IDOrganoContratacion` (columna que escribe `ExpedienteOperaciones.cls:197-200`) no la garantiza el código (ver defectos); a confirmar si existe relación declarada en `../erd-origen.md`.
+Pendiente de `../coexistencia.md`. La integridad con `TbExpedientes.IDOrganoContratacion` (columna que escribe `ExpedienteOperaciones.cls:197-200`) no la garantiza el código (ver defectos); a confirmar si existe relación declarada en el origen del modelo, que no está en el repositorio.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

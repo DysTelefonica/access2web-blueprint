@@ -30,6 +30,13 @@ RUN apt-get update \
         libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Source of truth for the versions this image runs: app/uv.lock. requirements.lock is
+# its runtime export (`uv export --frozen --no-emit-project --no-dev`), and the e2e-smoke
+# job installs the same file before it runs the migrations, so the schema and the app
+# use one set of versions (BP #1456). Never install the ranges of pyproject.toml here:
+# that resolves versions the job never validated.
+COPY requirements.lock ./
+
 # Copy the package definition and the README the metadata reads, plus the package
 # source hatchling ships. `readme = "README.md"` in pyproject.toml is a file the
 # backend opens while generating metadata: without it the build dies with
@@ -37,10 +44,12 @@ RUN apt-get update \
 COPY pyproject.toml README.md ./
 COPY src/ ./src/
 
-# Install the project and its runtime dependencies into a virtualenv at /opt/venv.
+# Install the locked runtime set (hash-verified), then the project itself without
+# resolving its dependencies again, into a virtualenv at /opt/venv.
 RUN python -m venv /opt/venv \
     && /opt/venv/bin/pip install --upgrade pip==24.2 \
-    && /opt/venv/bin/pip install --no-cache-dir .
+    && /opt/venv/bin/pip install --require-hashes --requirement requirements.lock \
+    && /opt/venv/bin/pip install --no-cache-dir --no-deps .
 
 # ---------------------------------------------------------------------------
 # Stage 2 — runtime: copy only the venv and the source. No build tooling, no

@@ -3,8 +3,9 @@
 """Validaciones de estado y CI del gate safe-merge.
 
 Cubre los criterios del issue #426 sobre el estado del PR antes del
-merge: PR abierto, base == default_branch, behind_by == 0, checks
-verdes y required-checks presentes. Los tests de chain/closing y
+merge: PR abierto, base == default_branch, checks verdes y
+required-checks presentes. El atraso respecto de la base solo se rechaza
+con ``--require-fresh``: el CI corre una vez, en la PR (#1397). Los tests de chain/closing y
 API errors viven en test_safe_merge_chain.py para mantener este
 archivo bajo el presupuesto de revision.
 
@@ -27,13 +28,24 @@ from _shim import (
 class ValidationsTest(BaseSafeMergeTest):
     """#426 parte 1: el gate verifica el estado del PR antes del merge."""
 
-    def test_pr_behind_is_denied(self) -> None:
+    def test_pr_behind_is_denied_with_require_fresh(self) -> None:
+        state = base_state()
+        state["compare"]["behind_by"] = 3
+        proc = run_gate(self.root, state, extra=("--require-fresh",))
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assert_merged(proc, False)
+        self.assertIn("DENIED: PR #7 is behind by 3 commit(s) against 'main'; run `git fetch "
+                      "origin && git merge origin/main`, wait for CI green, then retry.", proc.stdout)
+
+    def test_pr_behind_with_green_checks_merges_by_default(self) -> None:
+        # #1397: sin --require-fresh, un PR atrasado y en verde se fusiona.
         state = base_state()
         state["compare"]["behind_by"] = 3
         proc = run_gate(self.root, state)
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
-        self.assert_merged(proc, False)
-        self.assertIn("behind", proc.stdout)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assert_merged(proc, True)
+        self.assertNotIn("DENIED", proc.stdout)
+        self.assertIn("MERGED: PR #7 merged by safe-merge as", proc.stdout)
 
     def test_red_check_is_denied(self) -> None:
         state = base_state()
@@ -56,11 +68,11 @@ class ValidationsTest(BaseSafeMergeTest):
         proc = run_gate(self.root, base_state())
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
         self.assert_merged(proc, True)
-        # Cleanup: la rama remota se borra.
+        # #1491: la rama remota se conserva siempre (invariante de la flota).
         state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
-        self.assertTrue(any("git/refs/heads/chore/test" in c
-                            for c in state["deleted_branches"]),
-                        state["deleted_branches"])
+        self.assertEqual(state["deleted_branches"], [])
+        self.assertIn("KEEP: remote branch 'chore/test' is kept: the fleet never deletes "
+                      "remote branches", proc.stdout)
 
     def test_check_only_exits_zero(self) -> None:
         proc = run_gate(self.root, base_state(), check_only=True)

@@ -52,7 +52,7 @@ Sin transacciones. El formulario no lee datos propios.
 
 ## Coexistencia
 
-El motivo se concatena en la sentencia sin escapar comillas (`Ops:820-821`): con comillas simples en el texto falla en Jet y sería inyectable en PostgreSQL; debe pasar a parámetro. Fuera de eso, `UPDATE … WHERE ID=` es compatible. Pendiente de `../coexistencia.md`.
+El motivo se concatena en la sentencia sin escapar comillas (`Ops:820-821`): con comillas simples en el texto falla en Jet y sería inyectable en PostgreSQL; debe pasar a parámetro. Fuera de eso, `UPDATE … WHERE ID=` es compatible. Pendiente de la coexistencia (documento aún no redactado).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

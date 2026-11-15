@@ -77,7 +77,7 @@ Solo lectura en el flujo funcional. Sin transacciones.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Ya se ve: `SELECT *` de toda `TbExpedientes` con filtro de texto en VBA (`constructor.bas:2415-2416, 2433-2436`), que en PostgreSQL vinculado conviene empujar al servidor; la semántica de mayúsculas de `InStr` bajo `Option Compare Database` no equivale a `LIKE` de PostgreSQL (sensible a mayúsculas) sin `ILIKE` o collation; identificadores concatenados en el SQL (`constructor.bas:2261, 2413`).
+Pendiente de la coexistencia (documento aún no redactado). Ya se ve: `SELECT *` de toda `TbExpedientes` con filtro de texto en VBA (`constructor.bas:2415-2416, 2433-2436`), que en PostgreSQL vinculado conviene empujar al servidor; la semántica de mayúsculas de `InStr` bajo `Option Compare Database` no equivale a `LIKE` de PostgreSQL (sensible a mayúsculas) sin `ILIKE` o collation; identificadores concatenados en el SQL (`constructor.bas:2261, 2413`).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

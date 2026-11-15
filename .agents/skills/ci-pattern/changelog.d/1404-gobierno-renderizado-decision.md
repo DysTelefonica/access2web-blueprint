@@ -1,0 +1,3 @@
+type: patch
+
+La fricción D13 (`references/fricciones.md`) registra que su sustitución está decidida (decisión del dueño, 2026-10-28; DysTelefonica/team-skills#1404): el gobierno de un consumer web se renderizará desde el canon con `ci-pattern render` y llegará por propagación, y el workflow de aplicación (tests, build, E2E) seguirá siendo del consumer. Solo es documentación: ningún gate ni plantilla cambia, y hasta que #1404 se implemente el cableado de los workflows de gobierno sigue siendo a mano. El diseño completo está en `docs/DISTRIBUTION-MODEL.md`, sección «Gobierno renderizado por tipo de repositorio», del catálogo.

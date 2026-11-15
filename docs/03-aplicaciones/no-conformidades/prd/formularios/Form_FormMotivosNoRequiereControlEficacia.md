@@ -44,7 +44,7 @@ Ninguna con base de datos. Únicamente el llamante asigna `MotivoNoRequiereContr
 
 ## Coexistencia
 
-Sin SQL ni DAO propios, no requiere adaptación a PostgreSQL. Lo único a trasladar es el campo de texto del motivo en la tabla de NC, cuyo tipo y longitud se resuelven en `../coexistencia.md`.
+Sin SQL ni DAO propios, no requiere adaptación a PostgreSQL. Lo único a trasladar es el campo de texto del motivo en la tabla de NC, cuyo tipo y longitud se resuelven en la coexistencia (documento aún no redactado).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 
@@ -72,5 +72,5 @@ Propuestos, no aprobados:
 
 ## Pendientes
 
-- Tipo y longitud del campo de motivo en la tabla de NC: pendiente de `../erd-origen.md`.
+- Tipo y longitud del campo de motivo en la tabla de NC: pendiente de el origen del modelo, que no está en el repositorio.
 - Persistencia efectiva del motivo en el llamante: ver fichas de `Form_FormNCAuditoriaGeneral` y `Form_FormNCProyectoGeneral`.

@@ -1,0 +1,3 @@
+type: minor
+
+Skill nueva `agent-operating-rules`: reúne en el catálogo las reglas de trabajo que el dueño fijó para los agentes en sus máquinas compartidas (oracle, rosa), que hasta ahora solo vivían en Engram. Recoge el scratch con `mktemp -d` y sin `rm -rf`, el venv privado, los checkouts solo con `agent-wt.sh`, ningún secreto en la línea de comandos, la identidad `dys-agentes` y qué hacer ante un 403, la entrega por rama y SHA de los cambios en `.github/workflows/`, los tests focalizados con `nice`, los 120 s entre consultas a `gh`, `ruff` antes de cada commit, `gh pr close` y la regla de que un worker trabaja solo con MiniMax y se aparca al agotarse. Lo que ya cubren `github-roles` y `governed-delivery` se cita, no se repite. Refs #1461.

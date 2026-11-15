@@ -58,6 +58,32 @@ SIN_EJECUCION = {"cli_name": "herramienta-ausente", "cli_command": ["herramienta
                  "executed_verbs": [], "dry_run_flag": ""}
 DOC_SIN_EJECUCION = ("# Tool\n\nPara compilar: `herramienta-ausente build`.\n\n```sh\n"
                      "herramienta-ausente test | tee salida.txt\n```\n")
+# --- Capa de existencia ---------------------------------------------------
+#
+# El caso vivo (DysTelefonica/access2web-blueprint#1374): la documentacion cita
+# `make test` con `--cov` y da el `Makefile` como fuente, pero el target `test`
+# dejo de medir cobertura. El gate validaba el comando en su forma (`pytest
+# --help` sale 0 sin mirar el resto) y no miraba la existencia.
+MAKEFILE = ("PYTEST ?= $(PYTHON) -m pytest\n\n.PHONY: test\n\n"
+            "test:\n\t$(PYTEST) -c app/pyproject.toml --rootdir=app -m \"not integration\"{extra}\n")
+SIN_COBERTURA = MAKEFILE.format(extra="")
+CON_COBERTURA = MAKEFILE.format(extra=" --cov --cov-fail-under=69")
+FAKE_PYTEST = "import sys\nprint('uso: pytest [opciones]')\n"
+BP_CONFIG = {"cli_name": "pytest", "cli_command": ["python3", "fake_pytest.py"],
+             "executed_verbs": [], "dry_run_flag": "--help",
+             "existence": {"makefile": "Makefile"}}
+# Documentos con la CLI (para que el gate tenga algo que extraer) y la cita que
+# se mide, en la misma linea.
+DOC_BP = ("| Medición local | `make test` (`pytest -c app/pyproject.toml --rootdir=app "
+          "-m \"not integration\" --cov --cov-fail-under=69`) | `Makefile` |\n")
+DOC_MAKE = "Mida con `pytest app/tests` y luego `make {target}`.\n"
+DOC_SCRIPT = "Prepare el repo con `pytest app/tests` y luego `./scripts/{script}`.\n"
+DOC_PATH = "Prepare el repo con `pytest app/tests` y luego `{tool}`.\n"
+DOC_OTRO = "Mida con `pytest app/tests`, `make test` y revise `ruff check --fix`.\n"
+# Una cita con ruta, en un documento que NO esta en la raiz del repo (#1385).
+DOC_CITA = "Mida con `pytest app/tests` y lea `{cita}`.\n"
+
+
 
 
 def _run(files=None, config=None):
@@ -319,7 +345,8 @@ class DocsCommandsTests(unittest.TestCase):
         with tmp:
             code, out, _ = _job(repo)
         self.assertEqual(code, 0, out)
-        self.assertEqual(_counts(out), {"executed": "1", "parse-only": "1", "presence-only": "1"})
+        self.assertEqual(_counts(out), {"executed": "1", "parse-only": "1",
+                                        "presence-only": "1"})
 
     def test_el_contrato_manda_y_no_el_fichero_de_la_raiz(self):
         # El fichero de raíz declara otra CLI: si el job lo leyera, no extraería nada.
@@ -328,14 +355,16 @@ class DocsCommandsTests(unittest.TestCase):
         with tmp:
             code, out, _ = _job(repo)
         self.assertEqual(code, 0, out)
-        self.assertEqual(_counts(out), {"executed": "1", "parse-only": "1", "presence-only": "1"})
+        self.assertEqual(_counts(out), {"executed": "1", "parse-only": "1",
+                                        "presence-only": "1"})
 
     def test_config_obsoleto_aun_funciona_y_avisa_por_stderr(self):
         tmp, repo = _job_repo(files={"viejo.json": json.dumps(CONFIG)})
         with tmp:
             code, out, err = _job(repo, "--config", "viejo.json")
         self.assertEqual(code, 0, out)
-        self.assertEqual(_counts(out), {"executed": "1", "parse-only": "1", "presence-only": "1"})
+        self.assertEqual(_counts(out), {"executed": "1", "parse-only": "1",
+                                        "presence-only": "1"})
         self.assertIn("obsoleto", err)
 
     def test_config_obsoleto_inexistente_o_malformado_sale_2(self):
@@ -385,6 +414,161 @@ class DocsCommandsTests(unittest.TestCase):
         with tmp:
             found = CLI._check_docs_commands(repo, {"docs_commands": dict(CONFIG, job="docs-commands")})
         self.assertFalse(any("segunda fuente" in f for f in found), found)
+
+
+class ExistenceTests(unittest.TestCase):
+    """La capa de existencia: lo que el comando documentado invoca tiene que existir.
+
+    Los tres niveles de ejecucion prueban la FORMA del comando; esta capa prueba la
+    EXISTENCIA de lo que invoca. Es la que caza el caso vivo de BP: la documentacion
+    cita `make test` con `--cov` y el target ya no lo mide (#1374)."""
+
+    def _bp(self, doc=DOC_BP, makefile=SIN_COBERTURA, files=None, config=None):
+        return _run({"docs/adopcion-fase-2-aislamiento.md": doc, "Makefile": makefile,
+                     "fake_pytest.py": FAKE_PYTEST, **(files or {})},
+                    {**BP_CONFIG, **(config or {})})
+
+    def test_el_flag_que_el_target_deja_de_ejecutar_es_rojo(self):
+        # Caso vivo de BP: la documentacion dice que `make test` mide con `--cov` y
+        # el target dejo de medirlo. La forma la aprueba el parser (`pytest --help`
+        # sale 0 sin mirar el resto); la existencia, no.
+        findings, _ = self._bp()
+        self.assertTrue(any("adopcion-fase-2-aislamiento.md:" in f and "--cov" in f for f in findings), findings)
+
+    def test_el_hallazgo_nombra_el_flag_que_falta_y_dice_que_hacer(self):
+        findings, _ = self._bp()
+        (hallazgo,) = [f for f in findings if "--cov" in f]
+        self.assertIn("--cov-fail-under=69", hallazgo)
+        self.assertIn("no hace lo que la documentacion dice", hallazgo)
+        self.assertIn("corrija", hallazgo)
+        self.assertIn("Makefile", hallazgo)
+
+    def test_el_flag_que_el_target_si_ejecuta_no_es_hallazgo(self):
+        findings, _ = self._bp(makefile=CON_COBERTURA)
+        self.assertEqual(findings, [])
+
+    def test_un_target_de_make_inexistente_es_rojo(self):
+        findings, _ = self._bp(doc=DOC_MAKE.format(target="no-existe"))
+        self.assertTrue(any("no esta en el Makefile" in f and "no-existe" in f for f in findings), findings)
+
+    def test_un_target_de_make_que_existe_no_es_hallazgo(self):
+        findings, _ = self._bp(doc=DOC_MAKE.format(target="test"))
+        self.assertEqual(findings, [])
+
+    def test_un_script_local_inexistente_es_rojo(self):
+        findings, _ = self._bp(doc=DOC_SCRIPT.format(script="no-existe.sh"))
+        self.assertTrue(any("no tiene el script" in f and "scripts/no-existe.sh" in f for f in findings), findings)
+
+    def test_un_script_local_que_existe_no_es_hallazgo(self):
+        # La cita se resuelve contra el directorio del documento que la escribe
+        # (#1385): este documento vive en `docs/`, asi que `./scripts/x.sh` es
+        # `docs/scripts/x.sh`.
+        findings, _ = self._bp(doc=DOC_SCRIPT.format(script="preflight.sh"),
+                               files={"docs/scripts/preflight.sh": "#!/bin/sh\n"})
+        self.assertEqual(findings, [])
+
+    def test_un_documento_en_la_raiz_sigue_resolviendo_desde_la_raiz(self):
+        # El documento esta en la raiz: su directorio es la raiz del repo, y la
+        # cita se resuelve igual que antes (#1385).
+        findings, _ = _run({"README.md": README + "\nPrepare con `./scripts/preflight.sh`.\n",
+                            "scripts/preflight.sh": "#!/bin/sh\n"},
+                           {**CONFIG, "existence": {"makefile": "Makefile"}})
+        self.assertFalse(any("no tiene el script" in f for f in findings), findings)
+
+    def test_un_ejecutable_del_path_que_no_resuelve_es_rojo(self):
+        findings, _ = self._bp(doc=DOC_PATH.format(tool="herramienta-ficticia-xyz"),
+                               config={"existence": {"path_executables":
+                                                     ["herramienta-ficticia-xyz"]}})
+        self.assertTrue(any("no se resuelve" in f and "herramienta-ficticia-xyz" in f for f in findings), findings)
+
+    def test_un_ejecutable_del_path_que_resuelve_no_es_hallazgo(self):
+        findings, _ = self._bp(doc=DOC_PATH.format(tool="python3 tool.py"),
+                               config={"existence": {"path_executables": ["python3"]}})
+        self.assertEqual(findings, [])
+
+    def test_sin_declarar_existence_la_capa_no_mide_nada(self):
+        # La capa la activa la declaracion: un consumer que no la declara no cambia.
+        findings, _ = self._bp(doc=DOC_SCRIPT.format(script="no-existe.sh"),
+                               config={"existence": None})
+        self.assertFalse(any("no tiene el script" in f for f in findings), findings)
+
+    def test_la_capa_de_existencia_no_depende_de_la_cli_en_el_runner(self):
+        # La capa no ejecuta nada: mide lo que el comando invoca aunque la CLI falte.
+        findings, _ = self._bp(doc=DOC_SCRIPT.format(script="no-existe.sh"),
+                               config={"cli_command": ["python3", "no-existe.py"]})
+        self.assertTrue(any("no tiene el script" in f for f in findings), findings)
+
+    def test_el_exclude_exime_un_comando_de_existencia(self):
+        findings, _ = self._bp(doc=DOC_SCRIPT.format(script="no-existe.sh"),
+                               config={"exclude": ["./scripts/no-existe.sh"]})
+        self.assertFalse(any("no tiene el script" in f for f in findings), findings)
+        self.assertFalse(any("STALE" in f for f in findings), findings)
+
+    # --- La cita se resuelve contra el documento que la cita (#1385) ----------
+    #
+    # El caso vivo de BP: `docs/03-aplicaciones/brass/prd/capacidades.md` cita
+    # `../capacidades.md` y el fichero esta en el directorio de ese documento,
+    # no en la raiz del repo. La capa lo buscaba desde la raiz y daba 234 rojos
+    # falsos. Los enlaces markdown ya se resuelven contra el directorio de su
+    # fichero; la capa de existencia se iguala a ellos.
+
+    def _cita(self, cita, doc="docs/prd/guia.md", files=None, config=None):
+        return _run({doc: DOC_CITA.format(cita=cita),
+                     "fake_pytest.py": FAKE_PYTEST, **(files or {})},
+                    {**BP_CONFIG, **(config or {})})
+
+    def test_el_script_se_busca_junto_al_documento_que_lo_cita(self):
+        findings, _ = self._cita("../capacidades.md",
+                                  files={"docs/capacidades.md": "# capacidades\n"})
+        self.assertEqual(findings, [], findings)
+
+    def test_una_cita_que_sale_del_repositorio_es_rojo(self):
+        findings, _ = self._cita("../../../fuera.sh")
+        self.assertTrue(any("fuera del repositorio" in f for f in findings), findings)
+
+    def test_una_ruta_sin_punto_guion_sigue_resolviendose_en_el_path(self):
+        # La capa solo mide scripts con `./` o `../`. Una ruta desnuda se
+        # resuelve en el PATH, como antes: el defecto no la cambia.
+        findings, _ = self._cita("guia.sh", files={"docs/prd/guia.sh": "#!/bin/sh\n"},
+                                  config={"existence": {"makefile": "Makefile",
+                                                       "path_executables": ["guia.sh"]}})
+        self.assertTrue(any("no se resuelve" in f and "guia.sh" in f for f in findings), findings)
+        self.assertFalse(any("no tiene el script" in f for f in findings), findings)
+
+    def test_una_cita_que_es_un_directorio_no_es_un_script(self):
+        findings, _ = self._cita("../prd", files={"docs/prd/guia.sh": "#!/bin/sh\n"})
+        self.assertTrue(any("no es un script" in f for f in findings), findings)
+
+    # --- Una cita vale si existe contra el documento O contra la raiz (#1385) ---
+    #
+    # Un comando entre comillas invertidas se ejecuta desde la raiz del repo, no
+    # desde la carpeta del documento que lo muestra: `docs/guia.md` que dice
+    # «ejecute `./scripts/check.sh`» apunta a `scripts/check.sh`. La regla nueva
+    # acepta la cita si el fichero existe resuelto contra el documento O contra
+    # la raiz; si sale del repo por las dos vias, sigue en rojo.
+
+    def test_una_cita_de_la_raiz_desde_un_documento_anidado_es_valida(self):
+        findings, _ = self._cita("./scripts/check.sh", doc="docs/guia.md",
+                                  files={"scripts/check.sh": "#!/bin/sh\n"})
+        self.assertEqual(findings, [], findings)
+
+    def test_una_cita_que_no_existe_ni_en_el_documento_ni_en_la_raiz_es_rojo(self):
+        findings, _ = self._cita("./scripts/check.sh", doc="docs/guia.md")
+        self.assertTrue(any("no tiene el script" in f and "docs/scripts/check.sh" in f
+                            and "scripts/check.sh" in f for f in findings), findings)
+
+    def test_una_cita_que_sale_del_repo_por_las_dos_vias_sigue_en_rojo(self):
+        findings, _ = self._cita("../../../fuera.sh", doc="docs/prd/guia.md")
+        self.assertTrue(any("fuera del repositorio" in f for f in findings), findings)
+
+    def test_clave_desconocida_en_existence_es_hallazgo(self):
+        findings, _ = self._bp(config={"existence": {"inventada": "x"}})
+        self.assertTrue(any("clave desconocida" in f and "inventada" in f for f in findings), findings)
+
+    def test_la_existencia_no_se_cruza_con_un_comando_que_no_es_la_cli(self):
+        # La atribucion de flags es de la misma linea y solo con la CLI declarada.
+        findings, _ = self._bp(doc=DOC_OTRO)
+        self.assertEqual(findings, [])
 
 
 if __name__ == "__main__":

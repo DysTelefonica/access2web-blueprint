@@ -103,7 +103,7 @@ Sin escrituras en este formulario: el menú solo dispara acciones.
 
 ## Coexistencia
 
-La apertura de subformularios no comparte datos persistentes con este menú (los subformularios tienen su propio `RecordSource` cuando enlazan). La coexistencia se centra en cómo cada subformulario se conecta al backend; queda para `../coexistencia.md`.
+La apertura de subformularios no comparte datos persistentes con este menú (los subformularios tienen su propio `RecordSource` cuando enlazan). La coexistencia se centra en cómo cada subformulario se conecta al backend; queda para la coexistencia (documento aún no redactado).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

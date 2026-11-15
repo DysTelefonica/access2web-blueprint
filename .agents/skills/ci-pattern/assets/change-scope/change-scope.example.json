@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "suites": {
+    "phpunit": ["www/**", "tests/**", "composer.*", "phpunit.xml*"],
+    "e2e": ["www/**", "e2e/**", "package.json", "package-lock.json", "playwright.config.*"]
+  },
+  "always": [".github/workflows/**", ".github/required-jobs-policy.json"]
+}

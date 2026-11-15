@@ -73,7 +73,7 @@ No abre ningún formulario.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Lo que ya se ve: la frontera de la copia es el sistema de archivos con una herramienta externa del sistema operativo y el modificador `/MIR`, cuyo borrado no es transaccional ni auditable desde la aplicación (`FG.bas:2371-2392`); el régimen se decide por inspección de IP (`FG.bas:2811-2816`); y la condición de habilitación comprueba una cadena de ruta del sistema operativo, `AppData\Roaming` (`:63`).
+Pendiente de la coexistencia (documento aún no redactado). Lo que ya se ve: la frontera de la copia es el sistema de archivos con una herramienta externa del sistema operativo y el modificador `/MIR`, cuyo borrado no es transaccional ni auditable desde la aplicación (`FG.bas:2371-2392`); el régimen se decide por inspección de IP (`FG.bas:2811-2816`); y la condición de habilitación comprueba una cadena de ruta del sistema operativo, `AppData\Roaming` (`:63`).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

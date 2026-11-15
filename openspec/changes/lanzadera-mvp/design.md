@@ -449,7 +449,13 @@ from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 
 
-PHC_PARAMS = {"memory_cost": 65536, "time_cost": 3, "parallelism": 4, "hash_len": 32, "salt_len": 16}
+PHC_PARAMS = {
+    "memory_cost": 65536,
+    "time_cost": 3,
+    "parallelism": 4,
+    "hash_len": 32,
+    "salt_len": 16,
+}
 
 
 def _hasher() -> PasswordHasher:
@@ -479,6 +485,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from app.src.modules.lanzadera.ports.audit_log import AuditLogPort
+
 # OBSOLETO: el import de la función libre se retiró en W07.
 from app.src.modules.lanzadera.ports.reset_token_repository import ResetTokenRepositoryPort
 from app.src.modules.lanzadera.ports.user_repository import UserRepositoryPort
@@ -497,13 +504,17 @@ async def issue_reset_token(
     audit: AuditLogPort,
 ) -> str:
     """Issue a one-time token; supersedes prior unconsumed tokens. D90."""
-    if not await global_admins.is_there_any() and not await _first_admin_already_set(user_id, audit):
+    if not await global_admins.is_there_any() and not await _first_admin_already_set(
+        user_id, audit
+    ):
         raise NoGlobalAdminError("cannot issue reset before bootstrap")
     raw_token = secrets.token_urlsafe(32)
     token_hash = _sha256(raw_token)
     now = datetime.now(timezone.utc)
     await reset_tokens.mark_superseded_for(user_id=user_id, at=now)
-    await reset_tokens.insert(user_id=user_id, token_hash=token_hash, expires_at=now + timedelta(hours=24))
+    await reset_tokens.insert(
+        user_id=user_id, token_hash=token_hash, expires_at=now + timedelta(hours=24)
+    )
     await notifications.send(to=..., subject="Reset", body=f"Use this token: {raw_token}")
     await audit.append(event_type="auth.reset.issued", actor_id=user_id)
     return raw_token

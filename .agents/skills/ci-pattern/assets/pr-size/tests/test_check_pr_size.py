@@ -84,6 +84,16 @@ def _commit_file(repo: Path, path: str, content: str, msg: str) -> None:
     _git("commit", "-qm", msg, cwd=repo)
 
 
+def _commit_files(repo: Path, files: dict[str, str], msg: str) -> None:
+    """Varios ficheros en el MISMO commit: un bump mueve el lockfile y el manifiesto."""
+    for path, content in files.items():
+        target = repo / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+    _git("add", "-A", cwd=repo)
+    _git("commit", "-qm", msg, cwd=repo)
+
+
 def _rename_and_modify(repo: Path, src: str, dst: str, new_content: str, msg: str) -> None:
     dst_p = repo / dst
     dst_p.parent.mkdir(parents=True, exist_ok=True)
@@ -180,6 +190,24 @@ class TestCountsToBudgetRule(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # Tests de integración sobre un repo git real
 # ---------------------------------------------------------------------------
+
+
+class TestGeneratedLockfileRule(unittest.TestCase):
+    """RED (#1177): el gate publica la regla de lockfile generado."""
+
+    def test_the_gate_exposes_the_lockfile_rule(self) -> None:
+        gate = _load_gate()
+        self.assertTrue(gate.is_generated_lockfile("uv.lock"))
+        self.assertTrue(gate.is_generated_lockfile("app/requirements-dev.lock"))
+        self.assertFalse(gate.is_generated_lockfile("app/requirements.txt"))
+
+    def test_the_documented_patterns_are_the_ones_in_the_gate(self) -> None:
+        gate = _load_gate()
+        self.assertEqual(
+            gate.LOCKFILE_PATTERNS,
+            ("uv.lock", "package-lock.json", "pnpm-lock.yaml", "poetry.lock",
+             "requirements*.lock"),
+        )
 
 
 class TestChangedLinesIntegration(unittest.TestCase):
@@ -454,10 +482,10 @@ class TestLabelOverride(unittest.TestCase):
     def tearDown(self) -> None:
         self._tmp.cleanup()
 
-    def test_over_budget_without_label_fails_and_names_the_maintainer(self) -> None:
+    def test_over_budget_without_label_fails_and_names_the_coordinator(self) -> None:
         result = _run_cli(self.repo)
         self.assertEqual(result.returncode, 1, result.stdout)
-        self.assertIn("maintainer", result.stdout)
+        self.assertIn("coordinator", result.stdout)
         self.assertIn("size:exception", result.stdout)
 
     def test_label_flag_overrides(self) -> None:
@@ -487,14 +515,143 @@ class TestLabelOverride(unittest.TestCase):
         self.assertEqual(envelope["status"], "pass")
 
 
-class TestNothingElseIsExcluded(unittest.TestCase):
-    def test_a_lockfile_counts_toward_the_budget(self) -> None:
+class TestGeneratedLockfilesAreExcluded(unittest.TestCase):
+    """RED (#1177): un lockfile generado no es trabajo de revision y no cuenta.
+
+    El lockfile lo escribe el gestor de paquetes a partir del manifiesto
+    (``ardelperal/APAP_WEB#2424``: 444 de las 448 lineas del diff eran
+    ``uv.lock`` y la PR solo pudo entrar con la etiqueta ``size:exception``).
+    """
+
+    def test_a_lockfile_does_not_count_toward_the_budget(self) -> None:
         import tempfile
         with tempfile.TemporaryDirectory() as tmp:
             repo = _over_budget_repo(Path(tmp), "uv.lock")
             result = _run_cli(repo)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_a_lockfile_is_reported_apart_from_the_vendored_lines(self) -> None:
+        """La cifra excluida se dice por separado: no es arbol vendorizado."""
+        import json
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _over_budget_repo(Path(tmp), "uv.lock")
+            result = _run_cli(repo, "--json")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            env = json.loads(result.stdout)
+            self.assertEqual(env["status"], "pass")
+            self.assertEqual(env["indicators"]["changed_lines"], 0)
+            self.assertEqual(env["indicators"]["generated_lines"], 500)
+            self.assertEqual(env["indicators"]["vendored_lines"], 0)
+
+    def test_the_lockfile_is_named_in_the_text_output(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _over_budget_repo(Path(tmp), "uv.lock")
+            result = _run_cli(repo)
+            self.assertIn("500 generated line(s) excluded", result.stdout)
+
+    def test_authored_code_still_fails(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _over_budget_repo(Path(tmp), "app/x.py")
+            result = _run_cli(repo)
             self.assertEqual(result.returncode, 1, result.stdout)
-            self.assertIn("uv.lock", result.stdout)
+            self.assertIn("coordinator", result.stdout)
+
+    def test_requirements_txt_still_counts(self) -> None:
+        """Solo la extension ``.lock`` queda fuera: ``requirements.txt`` es de autoria."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _over_budget_repo(Path(tmp), "app/requirements.txt")
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_requirements_lock_is_excluded(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _over_budget_repo(Path(tmp), "app/requirements-dev.lock")
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+
+class TestGeneratedFilesFromTheBase(unittest.TestCase):
+    """#1440: lo que el ``.gitattributes`` de la BASE marca generado no cuenta."""
+
+    INVENTORY = "\n".join(f"<li>{i}</li>" for i in range(500)) + "\n"
+    ATTRS = "docs/inventory.html linguist-generated\n"
+
+    def test_a_file_marked_generated_in_the_base_does_not_count(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            _commit_file(repo, ".gitattributes", self.ATTRS, "chore: mark generated")
+            _commit_file(repo, "docs/inventory.html", self.INVENTORY, "docs: regenerate")
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("500 generated line(s) excluded", result.stdout)
+
+    def test_a_pr_cannot_mark_its_own_lines_generated(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            _commit_files(repo, {".gitattributes": self.ATTRS,
+                                 "docs/inventory.html": self.INVENTORY}, "docs: hide it")
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+
+    def test_handwritten_docs_still_count(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            _commit_file(repo, ".gitattributes", self.ATTRS, "chore: mark generated")
+            _commit_file(repo, "docs/guide.md", self.INVENTORY, "docs: write a guide")
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+
+
+class TestLockfileBumpRealCase(unittest.TestCase):
+    """El caso real de APAP_WEB#2424: un bump que mueve 444 líneas de ``uv.lock``
+    y 4 de ``pyproject.toml`` (448 en crudo). El presupuesto cuenta 4, no 448
+    (#1177): el lockfile lo escribió el gestor de paquetes, no quien abre la PR.
+    """
+
+    def _bump_repo(self, tmp: Path) -> Path:
+        repo = _make_repo(tmp)
+        lock = "\n".join(f"# lock {i}" for i in range(222)) + "\n"
+        manifest = "\n".join(f"# dep {i}" for i in range(2)) + "\n"
+        _commit_files(repo, {"uv.lock": lock, "pyproject.toml": manifest},
+                      "chore: bump")
+        # El bump: el lockfile se reescribe entero (222 altas + 222 bajas) y el
+        # manifiesto cambia dos líneas (2 altas + 2 bajas). Los dos ficheros
+        # entran en el MISMO commit: es un commit, no dos.
+        _commit_files(repo,
+                      {"uv.lock": "\n".join(f"# lock {i} v2" for i in range(222)) + "\n",
+                       "pyproject.toml": "\n".join(f"# dep {i} v2" for i in range(2)) + "\n"},
+                      "chore: bump v2")
+        return repo
+
+    def test_the_budget_counts_the_manifest_and_not_the_lockfile(self) -> None:
+        import json
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._bump_repo(Path(tmp))
+            result = _run_cli(repo, "--json")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            env = json.loads(result.stdout)
+            self.assertEqual(env["status"], "pass")
+            self.assertEqual(env["indicators"]["changed_lines"], 4)
+            self.assertEqual(env["indicators"]["generated_lines"], 444)
+            self.assertEqual(env["indicators"]["vendored_lines"], 0)
+
+    def test_the_text_output_says_what_it_left_out(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._bump_repo(Path(tmp))
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("OK    4 changed line(s)", result.stdout)
+            self.assertIn("444 generated line(s) excluded", result.stdout)
 
 
 def _file(name: str, added: int, deleted: int = 0, previous: str | None = None) -> dict:
@@ -527,13 +684,17 @@ class _Api:
     - ``listings``: secuencia de listados de ficheros; cada primera página toma el
       siguiente listado y las siguientes páginas siguen el mismo.
     - ``paths``: cada petición de la API, en orden (la sonda ajena no cuenta).
+    - ``live_labels``: etiquetas que devuelve ``GET issues/N/labels`` (#1359).
+    - ``labels_status``: código de respuesta de ``GET issues/N/labels`` (#1359).
     """
 
     def __init__(self, files: list[dict], status: int = 200, pulls: list | None = None,
-                 listings: list | None = None) -> None:
+                 listings: list | None = None, live_labels: list | None = None,
+                 labels_status: int = 200) -> None:
         import threading
         from http.server import HTTPServer
         self.files, self.status, self.auth, self.paths = files, status, [], []
+        self.live_labels, self.labels_status = list(live_labels or []), labels_status
         self.pulls = _Seq(pulls if pulls is not None
                           else [{"head": {"sha": "HEAD1"}, "changed_files": len(files)}])
         self.listings = _Seq(listings if listings is not None else [files])
@@ -577,6 +738,14 @@ def _make_handler(api: _Api):
             if api.status != 200:
                 self._send(api.status, {"message": "error"})
                 return
+            if _re.search(r"/issues/\d+/labels$", url.path):
+                if api.labels_status != 200:
+                    self._send(api.labels_status, {"message": "error"})
+                    return
+                per_i = int(query.get("per_page", ["100"])[0])
+                page_i = int(query.get("page", ["1"])[0])
+                self._send(200, [{"name": name} for name in api.live_labels][(page_i - 1) * per_i:page_i * per_i])
+                return
             if _re.search(r"/pulls/\d+$", url.path):
                 self._send(200, api.pulls.take())
                 return
@@ -610,9 +779,13 @@ class TestApiMode(unittest.TestCase):
         self._tmp.cleanup()
 
     def run_api(self, files, labels=(), changed=None, token="tok", status=200, url=None, extra=(),
-                head="HEAD1", pulls=None, listings=None):
+                head="HEAD1", pulls=None, listings=None, live_labels=None, labels_status=200):
         import json
-        api = _Api(files, status, pulls=pulls, listings=listings)
+        # Por defecto las etiquetas vivas son las del payload; un caso de etiqueta añadida
+        # o quitada tras el evento pasa `live_labels` distinto (#1359).
+        api = _Api(files, status, pulls=pulls, listings=listings,
+                   live_labels=labels if live_labels is None else live_labels,
+                   labels_status=labels_status)
         self.apis.append(api)
         event = self.tmp / "event.json"
         event.write_text(json.dumps({
@@ -657,14 +830,76 @@ class TestApiMode(unittest.TestCase):
         result, _ = self.run_api([_file(".agents/skills/x/a.py", 500, previous="app/a.py")])
         self.assertEqual(result.returncode, 1, result.stdout)
 
-    def test_lockfile_counts(self) -> None:
+    def test_lockfile_does_not_count(self) -> None:
+        """RED (#1177): en modo API el lockfile generado tampoco cuenta."""
         result, _ = self.run_api([_file("uv.lock", 500)])
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("500 generated line(s) excluded", result.stdout)
+
+    def test_a_rename_from_authored_into_a_lockfile_still_counts(self) -> None:
+        result, _ = self.run_api([_file("uv.lock", 500, previous="app/a.py")])
         self.assertEqual(result.returncode, 1, result.stdout)
 
-    def test_label_in_the_payload_overrides(self) -> None:
+    def test_a_generated_file_from_the_gitattributes_file_does_not_count(self) -> None:
+        """#1440: en modo API el workflow pasa el ``.gitattributes`` de la base."""
+        attrs = self.tmp / "base.gitattributes"
+        attrs.write_text("docs/inventory.html linguist-generated\n", encoding="utf-8")
+        result, _ = self.run_api([_file("docs/inventory.html", 500)],
+                                 extra=("--gitattributes-file", str(attrs)))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("500 generated line(s) excluded", result.stdout)
+
+    def test_an_unreadable_gitattributes_file_fails_with_an_envelope(self) -> None:
+        import json
+        attrs = self.tmp / "bad.gitattributes"
+        attrs.write_bytes(b"docs/\xff linguist-generated\n")
+        result, _ = self.run_api([_file("docs/inventory.html", 500)],
+                                 extra=("--gitattributes-file", str(attrs), "--json"))
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertEqual(json.loads(result.stdout)["status"], "error")
+
+    def test_without_the_gitattributes_file_a_generated_path_counts(self) -> None:
+        result, _ = self.run_api([_file("docs/inventory.html", 500)])
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_a_lockfile_bump_counts_only_the_manifest(self) -> None:
+        """APAP_WEB#2424: 444 líneas de ``uv.lock`` y 4 de ``pyproject.toml`` → 4."""
+        result, _ = self.run_api([_file("uv.lock", 222, 222),
+                                  _file("pyproject.toml", 2, 2)])
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("4 changed line(s)", result.stdout)
+        self.assertIn("444 generated line(s) excluded", result.stdout)
+
+    def test_label_overrides(self) -> None:
         result, _ = self.run_api([_file("app/a.py", 900)], labels=("size:exception",))
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("overridden", result.stdout)
+
+    def test_label_added_after_the_event_overrides(self) -> None:
+        """RED (#1359): el payload del `opened` no trae la etiqueta; la API ya la tiene.
+
+        cadete#715: `size:exception` se puso 7 s después de abrir el PR. El run del
+        `opened` leyó el snapshot del payload, sin etiqueta, y falló; el run siguiente
+        pasó. El gate lee las etiquetas en vivo, no del snapshot del evento.
+        """
+        result, api = self.run_api([_file("app/a.py", 900)], labels=(),
+                                   live_labels=("size:exception",))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("overridden", result.stdout)
+        self.assertTrue(any("/issues/7/labels" in path for path in api.paths))
+
+    def test_a_label_removed_after_the_event_does_not_override(self) -> None:
+        """RED (#1359): la etiqueta del payload ya no está en la API: no exime."""
+        result, _ = self.run_api([_file("app/a.py", 900)], labels=("size:exception",),
+                                 live_labels=())
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+
+    def test_labels_api_failure_fails_closed(self) -> None:
+        """RED (#1359): sin etiquetas vivas no hay veredicto: falla cerrado, aunque quepa."""
+        result, _ = self.run_api([_file("app/a.py", 10)], labels_status=500)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("labels", result.stdout + result.stderr)
 
     def test_a_foreign_probe_is_not_counted(self) -> None:
         """RED (#941): un `GET /` ajeno al gate (sin Authorization) no entra en ``auth``."""

@@ -136,19 +136,24 @@ CONFIGURATION.BASELINE ───────────────────
 @dataclass(frozen=True)
 class Coverage:
     """Cobertura declarada por un gate estructural ya cableado."""
-    gate: str                      # nombre de script en scripts/, presente en quality_report.GATES
+
+    gate: str  # nombre de script en scripts/, presente en quality_report.GATES
     reason: str
-    asserts: dict[str, object] = field(default_factory=dict)   # constante de módulo -> valor esperado
+    asserts: dict[str, object] = field(
+        default_factory=dict
+    )  # constante de módulo -> valor esperado
+
 
 @dataclass(frozen=True)
 class BaselineEntry:
-    count: int          # 1 mientras la decisión siga descubierta
-    target: int         # 0
-    target_date: str    # ISO-8601, obligatoria
+    count: int  # 1 mientras la decisión siga descubierta
+    target: int  # 0
+    target_date: str  # ISO-8601, obligatoria
+
 
 COVERED_BY: dict[str, Coverage] = {...}
 BASELINE: dict[str, BaselineEntry] = {...}
-UNGOVERNED_DESIGNS: dict[str, str] = {}   # design.md sin tabla, cada uno con su motivo
+UNGOVERNED_DESIGNS: dict[str, str] = {}  # design.md sin tabla, cada uno con su motivo
 ```
 
 Envelope: `{"gate": "decision_guards", "status": ..., "indicators": {"decisions_total", "decisions_uncovered", "guards_total", "orphan_guards", "designs_scanned", "designs_ungoverned"}, "ceilings": {"decisions_uncovered": 0, "orphan_guards": 0, "designs_ungoverned": 0}, "findings": [...]}`.

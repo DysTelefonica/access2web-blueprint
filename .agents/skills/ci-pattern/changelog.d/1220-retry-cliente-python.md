@@ -1,0 +1,3 @@
+type: patch
+
+El cliente Python de la API (`assets/runner-controls/github_rest.py`) reintenta las lecturas como el helper bash: un fallo de llamada y un JSON malformado se reintentan (`GH_API_RETRY_INTENTOS`, 3 por defecto, con `GH_API_RETRY_ESPERA_S` entre intentos) y una respuesta válida —incluida una lista vacía— no se reintenta nunca. Agotados los intentos, el fallo conserva el mensaje del último error y su código HTTP y se propaga al gate, que sigue fallando cerrado. La regla vive en una tabla de casos compartida, `assets/gh-api-retry/casos.tsv`, que recorren las suites de las dos implementaciones (#1220).

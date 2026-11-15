@@ -75,7 +75,7 @@ Sin escrituras, sin transacciones.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Este es el único formulario de la tanda que **lee de la base durante el filtrado**: `Constructor.getSuministrador` abre un recordset nuevo por cada cambio de combo (`:18`). En web, resolver el nombre en el cliente o en un endpoint de referencia evita el N+1 por interacción. El identificador concatenado sin comillas (`Constructor.bas:40-41`) depende de que llegue siempre como número.
+Pendiente de la coexistencia (documento aún no redactado). Este es el único formulario de la tanda que **lee de la base durante el filtrado**: `Constructor.getSuministrador` abre un recordset nuevo por cada cambio de combo (`:18`). En web, resolver el nombre en el cliente o en un endpoint de referencia evita el N+1 por interacción. El identificador concatenado sin comillas (`Constructor.bas:40-41`) depende de que llegue siempre como número.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

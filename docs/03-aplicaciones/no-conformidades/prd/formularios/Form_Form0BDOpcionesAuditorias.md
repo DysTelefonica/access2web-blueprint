@@ -79,7 +79,7 @@ Sin transacciones.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Ya se ve: `Date()` de Jet en los filtros (`constructor.bas:3597, 4427`); comparaciones con el literal `'Sí'` en campos de texto (`constructor.bas:4289, 4356`); identificador de correo `Max + 1` (`constructor.bas:1165`).
+Pendiente de la coexistencia (documento aún no redactado). Ya se ve: `Date()` de Jet en los filtros (`constructor.bas:3597, 4427`); comparaciones con el literal `'Sí'` en campos de texto (`constructor.bas:4289, 4356`); identificador de correo `Max + 1` (`constructor.bas:1165`).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

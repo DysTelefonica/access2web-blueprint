@@ -58,7 +58,7 @@ Sin transacciones.
 
 ## Coexistencia
 
-La nota se concatena sin escapar comillas (`Ops:740-741`): falla con comillas simples y exige parámetros en PostgreSQL. El campo es de texto largo; revisar longitud y tipo en el vínculo. Pendiente de `../coexistencia.md`.
+La nota se concatena sin escapar comillas (`Ops:740-741`): falla con comillas simples y exige parámetros en PostgreSQL. El campo es de texto largo; revisar longitud y tipo en el vínculo. Pendiente de la coexistencia (documento aún no redactado).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

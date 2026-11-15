@@ -1,0 +1,3 @@
+type: minor
+
+La plantilla canónica de notas de release (`assets/templates/RELEASE-NOTES.md.tmpl`) adopta la estructura del informe de Cadete v1.0.1: Resumen, Procedencia (con el run de CI, la salida del gate `check_release_tag.py` y las PR incluidas), Qué se corrige (tres líneas fijas por PR o issue), Cambios incompatibles, Cómo actualizar / desplegar (con el rollback), Cifras y Registro de cierres con sus cinco categorías. El test de la plantilla falla si se quita o renombra una sección o si cambia su orden. La ruta de las notas sigue siendo `RELEASE-<TAG>.md`, la que lee el workflow. Closes #1148.

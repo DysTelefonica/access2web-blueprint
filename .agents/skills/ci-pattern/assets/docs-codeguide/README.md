@@ -126,6 +126,12 @@ Markdown `` | `path` | ... | `` se extraen igual que en prosa; una
 misma ruta citada varias veces en una página colapsa a una sola
 entrada.
 
+No son rutas del repo, y el sentido adelante no las evalúa (#1359): `owner/repo#N`
+(referencia a otro repo), `owner/repo@ref` (acción versionada) y un `owner/name`
+desnudo, sin barra final ni extensión, cuyo primer segmento no existe en la raíz del
+repo (`actions/checkout`). Un directorio muerto con barra final, o bajo un árbol que
+sí existe, sigue siendo enlace muerto.
+
 Los bloques de código cercados (tres o más comillas invertidas o `~~~`) no
 cuentan como citas: se descartan enteros antes de extraer, así que un ejemplo
 con barras no se toma por ruta ni invierte el emparejamiento del código en
@@ -166,7 +172,7 @@ del code-root (módulos carpeta).
 
 ### Varias raíces (#727)
 
-Repita `--code-root` y `--code-glob` por pares, en el mismo orden:
+No hay raíces por defecto (#1166): el gate no asume el árbol de ningún repo. Sin `--code-root` y su `--code-glob` sale con código 2 y nombra el flag. Repita `--code-root` y `--code-glob` por pares, en el mismo orden:
 
 ```bash
 python3 check_docs_codeguide.py . \

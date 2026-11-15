@@ -69,7 +69,7 @@ Los cuatro handlers acumulan el texto en `m_Error`, envían `CorreoAlAdministrad
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Lo que ya se ve: el formulario solo navega; no aporta reglas de datos que trasladar. La comparación de `OpenArgs` con cadenas literales en lugar de `EnumTipo` (`VG.bas:166-171`) y la apertura de ventanas apiladas en lugar de navegación con subformulario condicionan el diseño de rutas de la versión web.
+Pendiente de la coexistencia (documento aún no redactado). Lo que ya se ve: el formulario solo navega; no aporta reglas de datos que trasladar. La comparación de `OpenArgs` con cadenas literales en lugar de `EnumTipo` (`VG.bas:166-171`) y la apertura de ventanas apiladas en lugar de navegación con subformulario condicionan el diseño de rutas de la versión web.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

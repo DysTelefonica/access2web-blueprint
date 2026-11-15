@@ -71,7 +71,7 @@ Sin escrituras, sin transacciones. Los dos `SELECT` de lectura son `DISTINCT` so
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. A diferencia del resto de la tanda, este filtro **sí concatena texto del usuario dentro del SQL** (`Filtro.bas:136-137, 144`) sin comillas de escape, y solo el estado se traduce a literales fijos. Convive con las otras formas que escriben el mismo global: `FormInicial07UsuariosSICA` escribe `"Nombre"` (`Form_FormInicial07UsuariosSICA.cls:89`) y `FormInicial03ConsultasContratistas` escribe `"Estado"` y `"CadenaContratistas"` (`Form_FormInicial03ConsultasContratistas.cls:56-57`). Los errores llegan al usuario como `MsgBox` y el cierre es un `DoCmd.Close` (`:123`).
+Pendiente de la coexistencia (documento aún no redactado). A diferencia del resto de la tanda, este filtro **sí concatena texto del usuario dentro del SQL** (`Filtro.bas:136-137, 144`) sin comillas de escape, y solo el estado se traduce a literales fijos. Convive con las otras formas que escriben el mismo global: `FormInicial07UsuariosSICA` escribe `"Nombre"` (`Form_FormInicial07UsuariosSICA.cls:89`) y `FormInicial03ConsultasContratistas` escribe `"Estado"` y `"CadenaContratistas"` (`Form_FormInicial03ConsultasContratistas.cls:56-57`). Los errores llegan al usuario como `MsgBox` y el cierre es un `DoCmd.Close` (`:123`).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

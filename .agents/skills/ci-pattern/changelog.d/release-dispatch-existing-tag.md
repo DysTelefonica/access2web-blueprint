@@ -1,0 +1,6 @@
+type: minor
+
+**Qué.** `release.yml.tmpl` acepta `workflow_dispatch` con un tag que ya existe, para volver a publicarlo con el workflow corregido de la rama por defecto.
+**Causa.** Un push de tag ejecuta el workflow del commit etiquetado. Cuando el defecto está en el propio workflow (cadete v1.3.2, el tag visto como ligero), el arreglo no alcanza a ese tag, y la única salida era publicar a mano.
+**Arreglo.** Hay una entrada `tag` obligatoria y un `RELEASE_TAG` (`inputs.tag || github.ref_name`) que leen todos los jobs, en lugar de `GITHUB_REF_NAME`, que en un dispatch es la rama. Cada checkout es del tag. La Release que ya existe se conserva en vez de recrearse. El runbook describe el caso de la «versión quemada». Tests: el disparo, el `RELEASE_TAG` en todos los jobs y el checkout del tag, y que no se crea otra Release si ya existe.
+**A partir de ahora.** Una versión quemada por el workflow se vuelve a publicar con `gh workflow run release.yml --ref main -f tag=vX.Y.Z`, sin tocar el tag. Los consumidores que ya adoptaron la plantilla copian a su `release.yml` el disparo y `RELEASE_TAG` (la fricción 3: la plantilla y el workflow adoptado han de cambiar juntos). Fase 0 de CI/CD, punto 0.3.

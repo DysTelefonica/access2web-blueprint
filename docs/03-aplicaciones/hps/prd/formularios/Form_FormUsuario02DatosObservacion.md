@@ -110,7 +110,7 @@ Sin transacciones explícitas. El alta/edición se delega en `Observacion.Regist
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Cosas que ya se ven: `TIPO.Enabled = False` se aplica tras un `Me.TIPO = m_Argumento` (`:146`, dentro del bloque `:141-146`), así que en web debe traducirse a un campo no editable desde el inicio del alta; la pregunta «¿Desea guardar los cambios antes de cerrar?» es exclusiva de este formulario del PRD: `Form_FormUsuario02Edicion` y `Form_FormUsuario02HPS` aplican patrón similar (a verificar) pero no idéntico; el evento `EdicionRegistro` se lanza tanto desde `ComandoGrabar_Click` (`:102`) como desde `CmdSalir_Click` cuando el usuario eligió «Sí» en la pregunta (`:38`), así que el contenedor puede recibir la notificación dos veces si no deduplica.
+Pendiente de la coexistencia (documento aún no redactado). Cosas que ya se ven: `TIPO.Enabled = False` se aplica tras un `Me.TIPO = m_Argumento` (`:146`, dentro del bloque `:141-146`), así que en web debe traducirse a un campo no editable desde el inicio del alta; la pregunta «¿Desea guardar los cambios antes de cerrar?» es exclusiva de este formulario del PRD: `Form_FormUsuario02Edicion` y `Form_FormUsuario02HPS` aplican patrón similar (a verificar) pero no idéntico; el evento `EdicionRegistro` se lanza tanto desde `ComandoGrabar_Click` (`:102`) como desde `CmdSalir_Click` cuando el usuario eligió «Sí» en la pregunta (`:38`), así que el contenedor puede recibir la notificación dos veces si no deduplica.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

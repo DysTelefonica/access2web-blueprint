@@ -80,7 +80,7 @@ Todos los handlers acumulan el texto en `m_Error`, envían `CorreoAlAdministrado
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Lo que ya se ve: los `UPDATE` se construyen concatenando el nombre del fichero y la fecha formateada con `mm/dd/yyyy` (`SolicitudOperaciones.cls:1516-1525`); en PostgreSQL ambos pasarían a consultas parametrizadas, con el formato de fecha resuelto por el servidor. El almacenamiento del anexo es un sistema de ficheros, con la ruta calculada a partir de la sesión (`Solicitud.cls:993-1010`), y la apertura se delega en el visor del sistema operativo.
+Pendiente de la coexistencia (documento aún no redactado). Lo que ya se ve: los `UPDATE` se construyen concatenando el nombre del fichero y la fecha formateada con `mm/dd/yyyy` (`SolicitudOperaciones.cls:1516-1525`); en PostgreSQL ambos pasarían a consultas parametrizadas, con el formato de fecha resuelto por el servidor. El almacenamiento del anexo es un sistema de ficheros, con la ruta calculada a partir de la sesión (`Solicitud.cls:993-1010`), y la apertura se delega en el visor del sistema operativo.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

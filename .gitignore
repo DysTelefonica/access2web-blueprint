@@ -43,6 +43,13 @@ __pycache__/
 .coverage.*
 htmlcov/
 coverage.json
+# ...except the vendored CRAP fixtures. Their coverage.json IS the fixture: the
+# gate scores complexity against coverage, so a fixture without one cannot
+# exercise it. The blanket rule above made git drop the file silently, so the
+# vendored skill landed half-materialized and the propagator now fails closed
+# on it (team-skills#1222). Scoped to the vendored tree: the consumer's own
+# coverage output stays ignored everywhere else.
+!/.agents/skills/**/coverage.json
 quality-report.json
 
 # --- Python virtualenvs (lanzadera-mvp) ---

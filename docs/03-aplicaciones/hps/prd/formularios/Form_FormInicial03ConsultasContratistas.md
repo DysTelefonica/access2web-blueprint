@@ -77,7 +77,7 @@ Sin escrituras, sin transacciones.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Lo que ya se ve y distingue esta ficha de `Form_FormInicial03ConsultasEstado`: aquí el valor del usuario **sí** se concatena en el SQL, porque `getWhereParametro` usa la clave como columna y el valor con el comparativo `='` (`Filtro.bas:149-151`), sin escapado de comillas simples. La etiqueta de la jurídica es texto libre procedente de `TbExpedientesConEntidades` (`Constructor.bas:195-197`), de modo que el contenido de esa tabla decide si el `WHERE` resultante es válido.
+Pendiente de la coexistencia (documento aún no redactado). Lo que ya se ve y distingue esta ficha de `Form_FormInicial03ConsultasEstado`: aquí el valor del usuario **sí** se concatena en el SQL, porque `getWhereParametro` usa la clave como columna y el valor con el comparativo `='` (`Filtro.bas:149-151`), sin escapado de comillas simples. La etiqueta de la jurídica es texto libre procedente de `TbExpedientesConEntidades` (`Constructor.bas:195-197`), de modo que el contenido de esa tabla decide si el `WHERE` resultante es válido.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

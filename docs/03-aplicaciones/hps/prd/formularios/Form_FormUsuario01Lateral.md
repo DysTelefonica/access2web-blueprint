@@ -85,7 +85,7 @@ Sin base de datos, sin transacciones, sin correo.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Cosas que ya se ven: el formulario depende de que `SubFormCentral` sea un control concreto del padre — los nombres `FormUsuario02Edicion`, `FormUsuario02HPS`, `FormUsuario02Anexos` son literales que se duplican aquí y en `Form_FormUsuario00Principal` (que solo carga `FormUsuario01Lateral`); `Tag` codifica estado en lugar de propiedad de Access booleana, lo que complica el mapeo a CSS/`aria-pressed`; el triple `SubFormCentral`/`SubFormCentral` se ata a la jerarquía `Parent.Form` con la salvedad de que `lblDatosGenerales_Click` evita un nivel.
+Pendiente de la coexistencia (documento aún no redactado). Cosas que ya se ven: el formulario depende de que `SubFormCentral` sea un control concreto del padre — los nombres `FormUsuario02Edicion`, `FormUsuario02HPS`, `FormUsuario02Anexos` son literales que se duplican aquí y en `Form_FormUsuario00Principal` (que solo carga `FormUsuario01Lateral`); `Tag` codifica estado en lugar de propiedad de Access booleana, lo que complica el mapeo a CSS/`aria-pressed`; el triple `SubFormCentral`/`SubFormCentral` se ata a la jerarquía `Parent.Form` con la salvedad de que `lblDatosGenerales_Click` evita un nivel.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

@@ -1,0 +1,3 @@
+type: minor
+
+El agregador `required-jobs` admite la clave opcional `external_jobs` (DysTelefonica/team-skills#1313). Un job de `required_jobs` cuyo cableado vive en otro workflow (por ejemplo `governance-seals` en `pr-gates.yml`, en `pull_request_target`) se declara con el nombre de su fichero: sigue en `required_jobs`, como exige HR-72, pero ni el agregador ni la paridad piden que esté en su `needs:`. La paridad comprueba que el job está definido en el fichero nombrado y que no aparece en el `needs:` del agregador; un externo sin fichero o sin definir hace fallar la paridad (fail closed). Sin la clave el comportamiento no cambia: la comparación entre `needs` y la política es la de siempre.

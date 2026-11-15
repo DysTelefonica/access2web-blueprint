@@ -50,5 +50,13 @@
   "docs-commands": {
     "outputs": {},
     "result": "success"
+  },
+  "pip-audit-alert": {
+    "outputs": {},
+    "result": "skipped"
+  },
+  "ci-images": {
+    "outputs": {},
+    "result": "success"
   }
 }

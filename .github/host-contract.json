@@ -1,6 +1,5 @@
 {
   "contract_version": 1,
-  "approvers": ["ardelperal", "dys-orquestador[bot]"],
   "protected_branches": [
     "main"
   ],
@@ -47,8 +46,18 @@
     {
       "name": "required",
       "class": "host-enforced"
+    },
+    {
+      "name": "pr-gate",
+      "class": "host-enforced"
     }
   ],
+  "governed_path": {
+    "enabled": true,
+    "actors": [
+      "dys-orquestador[bot]"
+    ]
+  },
   "merge_methods": {
     "allow_merge_commit": {
       "declared": true,

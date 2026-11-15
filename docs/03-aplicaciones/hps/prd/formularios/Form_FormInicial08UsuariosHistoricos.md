@@ -114,7 +114,7 @@ No hay `INSERT`/`UPDATE`/`DELETE` directos desde este `.cls` — todo pasa por e
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Ya se ve: **estado global leído y escrito** (`m_ObjUsuarioHistoricoActivo`, `VariablesEntorno.bas:227`) entra por el lateral, sale por aquí y vuelve al cerrarse el formulario hijo `FormUsuarioHistorico00Principal` (`:19-23`); `Public Function EstablecerFiltroUsuariosHistoricos` (`:112`) acoplada a `Form_FormUsuario07SICAEdicion.cls:208` por contrato informal; `Set frm = Me.Controls("SubFormResultados").Form` (`:130`) acoplado a `FormInicial08UsuariosHistoricosDatos`, hoja-datos que **no está documentada en este directorio**; concatenación SQL `Like '*" & m_Nombre & "*'` (`:135`) vulnerable a inyección — la entrada es la caja `Nombre`, validada solo por la mano del usuario.
+Pendiente de la coexistencia (documento aún no redactado). Ya se ve: **estado global leído y escrito** (`m_ObjUsuarioHistoricoActivo`, `VariablesEntorno.bas:227`) entra por el lateral, sale por aquí y vuelve al cerrarse el formulario hijo `FormUsuarioHistorico00Principal` (`:19-23`); `Public Function EstablecerFiltroUsuariosHistoricos` (`:112`) acoplada a `Form_FormUsuario07SICAEdicion.cls:208` por contrato informal; `Set frm = Me.Controls("SubFormResultados").Form` (`:130`) acoplado a `FormInicial08UsuariosHistoricosDatos`, hoja-datos que **no está documentada en este directorio**; concatenación SQL `Like '*" & m_Nombre & "*'` (`:135`) vulnerable a inyección — la entrada es la caja `Nombre`, validada solo por la mano del usuario.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

@@ -17,9 +17,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MANIFEST_PATH = REPO_ROOT / ".governance-manifest.json"
@@ -141,16 +144,40 @@ def _sha256_lf(path: Path) -> str:
     return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 
 
-def test_manifest_schema_is_pinned() -> None:
-    """The manifest is the contrato de identidad del patrón; its schema is 1."""
-    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+def _cli_schema_version(cli: Path = CI_PATTERN_CLI) -> int:
+    """Read ``SCHEMA_VERSION`` from the vendored CLI without executing it.
 
-    assert manifest.get("schema_version") == 1, (
-        f"schema_version must be 1 (ci-pattern SKILL.md §3); got {manifest.get('schema_version')!r}"
+    The CLI is a script with no ``.py`` suffix, so it is parsed as text. A CLI
+    that does not declare the constant fails closed (HR-3): an unknown schema
+    is not a schema that can be declared conforming.
+    """
+    match = re.search(r"^SCHEMA_VERSION = (\d+)$", cli.read_text(encoding="utf-8"), re.MULTILINE)
+    if match is None:
+        raise AssertionError(f"{cli}: no module-level SCHEMA_VERSION = <int>")
+    return int(match.group(1))
+
+
+def test_manifest_schema_is_the_one_the_vendored_cli_writes() -> None:
+    """The manifest is the contrato de identidad del patrón; its schema is the CLI's."""
+    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    expected = _cli_schema_version()
+
+    assert manifest.get("schema_version") == expected, (
+        f"schema_version must be {expected} (ci-pattern SKILL.md §3, read from the "
+        f"vendored CLI); got {manifest.get('schema_version')!r}"
     )
     assert "files" in manifest and isinstance(manifest["files"], dict), (
         "manifest must declare a 'files' map (ruta → sha256)"
     )
+
+
+def test_cli_schema_version_parser_fails_closed_without_the_constant(tmp_path: Path) -> None:
+    """A CLI that stops declaring SCHEMA_VERSION must not read as a conforming schema."""
+    cli = tmp_path / "ci-pattern"
+    cli.write_text("ADOPTION_SCHEMA_VERSION = 1\n", encoding="utf-8")
+
+    with pytest.raises(AssertionError, match="no module-level SCHEMA_VERSION"):
+        _cli_schema_version(cli)
 
 
 def test_manifest_files_match_the_tree() -> None:

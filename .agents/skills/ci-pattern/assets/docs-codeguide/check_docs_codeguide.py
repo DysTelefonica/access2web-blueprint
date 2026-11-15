@@ -20,9 +20,11 @@
   gate por casualidad, que es lo que este gate existe para evitar.
 
 Visibilidad: idéntico en público y en privado Free — el script es
-local, no usa la API de GitHub, ni secretos, ni red. Sale 0 si ambos
-sentidos pasan, 1 ante cualquier ausente (y nombra cuáles), 2 si el
-directorio del repo no existe o el input es inválido.
+local, no usa la API de GitHub, ni secretos, ni red. Sale 1 si un doc
+cita una ruta que no existe (enlace muerto, sentido docs -> repo). Un
+módulo sin documentar (sentido repo -> docs) es AVISO y no bloquea:
+sale 0 (#1093, lote 2). Sale 2 si el directorio del repo no existe o
+el input es inválido.
 
 Veredicto fail-closed: una entrada vacía en cualquier lado
 (codeguide sin páginas, code-root sin módulos) es un FAIL — el
@@ -43,8 +45,13 @@ BACKTICK_RE = re.compile(r"`([^`]+)`")
 _MARKER_RE = re.compile(r"<[^<>/]+>")
 _GLOB_RE = re.compile(r"[*?\[]")
 
-DEFAULT_CODE_ROOT = "internal/components"
-DEFAULT_CODE_GLOB = "*.go"
+# Sin defaults de ruta ni de glob (#1166): el checker no asume el árbol de ningún
+# repo. Cada consumer declara sus raíces de código; si no lo hace, falla cerrado.
+NO_ROOTS_MSG = (
+    "FAIL input: falta --code-root (y su --code-glob): el checker no asume rutas de "
+    "ningún repo. Declare las raíces de código del consumer, por ejemplo "
+    "--code-root app --code-glob '*.py', una pareja por raíz."
+)
 
 # Prefijos que NO se tratan como rutas de repo aunque vivan entre
 # comillas invertidas: cualquier URL, dirección de correo o ruta de
@@ -250,8 +257,8 @@ def _list_modules(code_abs: Path, code_glob: str) -> list[str]:
 def check_docs_codeguide(
     repo: Path,
     docs_path: str = "docs/codebase",
-    code_root: str = "internal/components",
-    code_glob: str = "*.go",
+    code_root: str | None = None,
+    code_glob: str | None = None,
 ) -> dict[str, list[str]]:
     """Falla cerrada: devuelve el dict de ausentes; dos listas vacías = OK.
 
@@ -271,7 +278,30 @@ def check_docs_codeguide(
     sentido atrás, «nombrado» es la regla de :func:`_backward_findings`:
     nombre completo y en contexto de código o como segmento de ruta.
     """
+    if code_root is None or code_glob is None:
+        raise ValueError(NO_ROOTS_MSG)
+
     return check_docs_codeguide_roots(repo, [(code_root, code_glob)], docs_path)
+
+
+_OWNER_REPO_RE = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
+
+
+def _is_external_reference(repo: Path, token: str) -> bool:
+    """La cita nombra otro repo o una acción de GitHub, no una ruta del repo (#1359).
+
+    ``owner/repo#N`` y ``owner/repo@ref`` tienen sintaxis propia. Un ``owner/name``
+    desnudo (sin barra final ni extensión) cuyo primer segmento no existe en la raíz
+    del repo se toma por nombre de acción (``actions/checkout``). Un directorio muerto
+    con barra final, o bajo un árbol que sí existe, sigue siendo enlace muerto.
+    """
+    name = re.split(r"[#@]", token, maxsplit=1)[0]
+    if name != token:
+        return _OWNER_REPO_RE.fullmatch(name) is not None
+    if _OWNER_REPO_RE.fullmatch(token) is None:
+        return False
+    first, last = token.split("/")
+    return not (repo / first).exists() and "." not in last
 
 
 def _forward_findings(repo: Path, docs_path: str, pages: list[Path]) -> list[str]:
@@ -282,7 +312,8 @@ def _forward_findings(repo: Path, docs_path: str, pages: list[Path]) -> list[str
     cited: set[str] = set()
     for page in pages:
         cited.update(extract_path_refs(page.read_text(encoding="utf-8")))
-    problems = (check_citation(repo, path) for path in sorted(cited))
+    paths = [path for path in sorted(cited) if not _is_external_reference(repo, path)]
+    problems = (check_citation(repo, path) for path in paths)
     return [problem for problem in problems if problem is not None]
 
 
@@ -403,8 +434,8 @@ def _build_parser() -> argparse.ArgumentParser:
         action="append",
         default=None,
         help=(
-            "Ruta relativa al repo con los módulos de primer nivel a enumerar "
-            f"(default: {DEFAULT_CODE_ROOT}). Repetible: un --code-glob por raíz."
+            "Ruta relativa al repo con los módulos de primer nivel a enumerar. "
+            "Obligatoria (#1166). Repetible: un --code-glob por raíz."
         ),
     )
     parser.add_argument(
@@ -412,8 +443,8 @@ def _build_parser() -> argparse.ArgumentParser:
         action="append",
         default=None,
         help=(
-            "Glob que un módulo de primer nivel debe contener para contar "
-            f"(default: {DEFAULT_CODE_GLOB}). Repetible, emparejado con --code-root."
+            "Glob que un módulo de primer nivel debe contener para contar. "
+            "Obligatorio, emparejado con cada --code-root."
         ),
     )
     return parser
@@ -425,8 +456,11 @@ def main(argv: list[str]) -> int:
     args = parser.parse_args(argv[1:])
 
     repo = Path(args.repo)
-    roots_arg = args.code_root or [DEFAULT_CODE_ROOT]
-    globs_arg = args.code_glob or [DEFAULT_CODE_GLOB] * len(roots_arg)
+    if not args.code_root or not args.code_glob:
+        print(NO_ROOTS_MSG, file=sys.stderr)
+        return 2
+    roots_arg = args.code_root
+    globs_arg = args.code_glob
     if len(roots_arg) != len(globs_arg):
         print(
             f"FAIL input: --code-root ({len(roots_arg)}) and --code-glob "
@@ -444,11 +478,13 @@ def main(argv: list[str]) -> int:
     missing_in_repo = result["missing_in_repo"]
     missing_in_codeguide = result["missing_in_codeguide"]
 
-    if missing_in_repo or missing_in_codeguide:
+    # #1093 lote 2: un módulo sin documentar es AVISO (no bloquea); una ruta
+    # citada que no existe es un enlace muerto y sigue bloqueando.
+    for module in missing_in_codeguide:
+        print(f"AVISO: repo -> docs: missing {module} (no bloquea)", file=sys.stderr)
+    if missing_in_repo:
         for path in missing_in_repo:
             print(f"FAIL docs -> repo: missing {path}", file=sys.stderr)
-        for module in missing_in_codeguide:
-            print(f"FAIL repo -> docs: missing {module}", file=sys.stderr)
         return 1
 
     pages = sum(1 for _ in (repo / args.docs_path).rglob("*.md"))

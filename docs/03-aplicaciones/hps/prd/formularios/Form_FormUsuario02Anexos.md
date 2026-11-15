@@ -104,7 +104,7 @@ Sin transacciones propias: la del lote la abre y cierra el coordinador.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Lo concreto: `Application.Echo`, `DoCmd.Hourglass`, `DoCmd.Close` y `Application.TempVars` son APIs de Access sin equivalente directo; el apagado del reloj en los cuatro manejadores de error (`:431, 485, 537, 588`) presupone un encendido externo (a verificar). `fso` (`Scripting.FileSystemObject`, `VariablesEntorno.bas:218`) y la compensación de ficheros bajo `%TEMP%` (`AnexoSelectionTransactionCoordinator.cls:42`) no tienen traducción directa: en web el anexo debe viajar como recurso del servidor, con el hash que ya existe en la tabla (`AnexoSelectionTransactionCoordinator.cls:28`). Las dos columnas del listbox con la primera a ancho cero (`.form.txt:837, 904`) equivalen a un `id` no visible que la API debe devolver igualmente.
+Pendiente de la coexistencia (documento aún no redactado). Lo concreto: `Application.Echo`, `DoCmd.Hourglass`, `DoCmd.Close` y `Application.TempVars` son APIs de Access sin equivalente directo; el apagado del reloj en los cuatro manejadores de error (`:431, 485, 537, 588`) presupone un encendido externo (a verificar). `fso` (`Scripting.FileSystemObject`, `VariablesEntorno.bas:218`) y la compensación de ficheros bajo `%TEMP%` (`AnexoSelectionTransactionCoordinator.cls:42`) no tienen traducción directa: en web el anexo debe viajar como recurso del servidor, con el hash que ya existe en la tabla (`AnexoSelectionTransactionCoordinator.cls:28`). Las dos columnas del listbox con la primera a ancho cero (`.form.txt:837, 904`) equivalen a un `id` no visible que la API debe devolver igualmente.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

@@ -40,10 +40,15 @@
    {
     "app_id": 15368,
     "context": "required"
+   },
+   {
+    "app_id": 15368,
+    "context": "pr-gate"
    }
   ],
   "contexts": [
-   "required"
+   "required",
+   "pr-gate"
   ],
   "contexts_url": "https://api.github.com/repos/DysTelefonica/access2web-blueprint/branches/main/protection/required_status_checks/contexts",
   "strict": true,

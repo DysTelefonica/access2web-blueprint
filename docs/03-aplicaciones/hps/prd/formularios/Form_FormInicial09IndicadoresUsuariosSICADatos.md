@@ -62,7 +62,7 @@ Sin `INSERT`/`UPDATE`/`DELETE` directos en este `.cls` (`:1-47`).
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Ya se ve: literal Jet `WHERE id='-1'` (`:39`); SQL concatenado en `getUsuarioSICA` (`Constructor.bas:1273-1284`); dos llamadas de `DoCmd.Hourglass False` en ramas distintas (`:46, 21`) que se solapan si el error llega después de un `On Error Resume Next`.
+Pendiente de la coexistencia (documento aún no redactado). Ya se ve: literal Jet `WHERE id='-1'` (`:39`); SQL concatenado en `getUsuarioSICA` (`Constructor.bas:1273-1284`); dos llamadas de `DoCmd.Hourglass False` en ramas distintas (`:46, 21`) que se solapan si el error llega después de un `On Error Resume Next`.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

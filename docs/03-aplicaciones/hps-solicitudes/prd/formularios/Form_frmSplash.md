@@ -58,7 +58,7 @@ Sin escrituras en arranque; el splash no crea filas.
 
 ## Coexistencia
 
-`EVE` se apoya en `getdb()` con backend Access, abre `TbConfiguracion` y `TbConfiguracionBackends` (`VG.bas`); la conversión a PostgreSQL no se aborda aquí (queda para `../coexistencia.md`).
+`EVE` se apoya en `getdb()` con backend Access, abre `TbConfiguracion` y `TbConfiguracionBackends` (`VG.bas`); la conversión a PostgreSQL no se aborda aquí (queda para la coexistencia (documento aún no redactado)).
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 
