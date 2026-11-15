@@ -125,6 +125,16 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
         if state.get("timeline_error"):
             return 500, {"message": "timeline_error fixture"}, {}
         return 200, state.get("timeline", []), {}
+    if "/check-suites" in path:
+        # #1502: suites de la cabeza; `check_suites_script` da una respuesta por consulta.
+        sha = path.split("/commits/")[1].split("/")[0]
+        suites = state.get("check_suites", {}).get(sha, [])
+        script = state.get("check_suites_script", {}).get(sha)
+        if script:
+            polls = state.setdefault("check_suites_polls", {})
+            suites = script[min(polls.get(sha, 0), len(script) - 1)]
+            polls[sha] = polls.get(sha, 0) + 1
+        return 200, {"total_count": len(suites), "check_suites": suites}, {}
     if "/check-runs" in path:
         sha = path.split("/commits/")[1].split("/")[0]
         runs = state["check_runs"].get(sha, [])
