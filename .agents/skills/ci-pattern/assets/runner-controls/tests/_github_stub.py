@@ -120,6 +120,21 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
         if state.get("invalid_body"):
             return 200, "{not valid json", {}
         return _pulls_page(state, sha, query, base)
+    if path.endswith("/timeline"):
+        # #1495: eventos de la PR; `base_ref_changed` marca una base redirigida.
+        if state.get("timeline_error"):
+            return 500, {"message": "timeline_error fixture"}, {}
+        return 200, state.get("timeline", []), {}
+    if "/check-suites" in path:
+        # #1502: suites de la cabeza; `check_suites_script` da una respuesta por consulta.
+        sha = path.split("/commits/")[1].split("/")[0]
+        suites = state.get("check_suites", {}).get(sha, [])
+        script = state.get("check_suites_script", {}).get(sha)
+        if script:
+            polls = state.setdefault("check_suites_polls", {})
+            suites = script[min(polls.get(sha, 0), len(script) - 1)]
+            polls[sha] = polls.get(sha, 0) + 1
+        return 200, {"total_count": len(suites), "check_suites": suites}, {}
     if "/check-runs" in path:
         sha = path.split("/commits/")[1].split("/")[0]
         runs = state["check_runs"].get(sha, [])
@@ -128,7 +143,11 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
             polls = state.setdefault("check_runs_polls", {})
             runs = script[min(polls.get(sha, 0), len(script) - 1)]
             polls[sha] = polls.get(sha, 0) + 1
-        return 200, {"total_count": len(runs), "check_runs": runs}, {}
+        # Fase 0, 0.4: paginada como la API real (per_page por defecto 30).
+        per_page = int(query.get("per_page", ["30"])[0])
+        page = int(query.get("page", ["1"])[0])
+        window = runs[(page - 1) * per_page:page * per_page]
+        return 200, {"total_count": len(runs), "check_runs": window}, {}
     if method == "GET" and path.endswith("/actions/workflows") \
             and "/runs" not in path and "/dispatches" not in path:
         # #817: lista de workflows para validar que cada nombre declarado en

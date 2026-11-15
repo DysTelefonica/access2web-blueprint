@@ -1,11 +1,11 @@
 ---
 name: agent-operating-rules
-description: "Trigger: trabajar como agente en oracle o rosa, crear un checkout de trabajo, scratch temporal, borrar un directorio, lanzar tests en local, vigilar la CI, credencial en un comando, antes de commitear, MiniMax agotado. Reglas de trabajo del dueño para los agentes en sus máquinas compartidas."
+description: "Trigger: trabajar como agente en oracle o rosa, crear un checkout de trabajo, scratch temporal, borrar un directorio, lanzar tests en local, vigilar la CI, credencial en un comando, antes de commitear, antes de empujar, MiniMax agotado. Reglas de trabajo del dueño para los agentes en sus máquinas compartidas."
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: "1.0"
-  last_verified: 2026-11-01
+  version: "1.6"
+  last_verified: 2026-11-02
   scope: ['universal', 'ops']
   auto_invoke: ['working as an agent on a shared host', 'creating a work checkout', 'cleaning up scratch files']
   tiers: ['universal', 'ops']
@@ -33,6 +33,7 @@ Cargue esta skill cuando:
 - vaya a lanzar tests o a vigilar la CI desde la máquina;
 - un comando necesite una credencial;
 - vaya a hacer un commit;
+- vaya a empujar una rama;
 - trabaje como worker y MiniMax se haya agotado.
 
 **No la cargue** para la estación Windows del dueño: allí rige el diseño de worktrees de `worktree-reorg-per-project` (`<proyecto>-worktrees\<nombre>`).
@@ -50,7 +51,21 @@ Cargue esta skill cuando:
 - **HR-9** — Deje un mínimo de 120 s entre dos consultas a `gh` cuando vigile una PR o una ejecución. Nada de bucles con `sleep` cortos.
 - **HR-10** — Antes de cada commit, ejecute `ruff format --check` y `ruff check` con la versión de ruff que fija el lock del repositorio, no con la del `PATH`.
 - **HR-11** — Cierre una PR con `gh pr close`, nunca con `gh issue close`.
-- **HR-12** — Como worker, trabaje solo con MiniMax. Nunca pase a Claude (Haiku ni ningún otro modelo): la cuenta personal de Claude del dueño, con la mitad de capacidad que la de empresa, queda para los coordinadores.
+- **HR-12** — Como worker, trabaje primero con MiniMax (regla del dueño del 2026-11-02, que sustituye a la del 2026-11-01 «aparcar y nunca Claude»). Si MiniMax se agota y su coordinador todavía tiene Claude, cambie en el sitio a Haiku (`claude-bridge/claude-haiku-5-5`, nunca el proveedor `anthropic` directo, que factura uso extra) y vuelva a MiniMax en el primer punto seguro de cada ventana. Si se agota también el Claude personal del dueño, todo se aparca: los coordinadores cierran en `gpt-6.1-terra` y escriben su handoff.
+- **HR-13** — Cada push encola la CI entera de la rama: en APAP_WEB, unos 10 jobs y entre 7 y 8 minutos de runner. Por eso:
+  - Junte los commits de una tanda en local y empuje una sola vez, no uno por cada arreglo pequeño.
+  - No ponga al día una rama que aún no se va a fusionar. Se pone al día justo antes de fusionarla, y solo cuando `governed-delivery` o el contrato del repositorio lo exigen.
+  - Con `merge_freshness` en `off` (el defecto), no fusione `main` en su rama ni pulse «Update branch»: el merge gobernado fusiona la PR atrasada y el CI posterior verifica el árbol integrado. Solo se pone al día si la PR tiene conflicto con `main` (`DIRTY`) o si las dos cambiaron el mismo fichero de `.github/workflows/` (#783). Cada merge de `main` en la rama es una ejecución completa de la CI: en APAP_WEB, unos 25 minutos por eslabón (#3358 y #3371 el 2026-11-02; #3351 se fusionó atrasado sin ponerse al día).
+  - En una cadena, empuje solo el eslabón que sigue, no la cadena entera en cada cambio.
+  - Antes de empujar, pase en local lo que ya exigen HR-8 y HR-10, para no gastar una ejecución de la CI en un fallo de formato.
+  - Si vuelve a empujar y la ejecución anterior de **su** rama ya no sirve, cancélela. Nunca cancele ejecuciones de ramas ajenas.
+- **HR-14** — El presupuesto de 400 líneas por PR se planifica antes de empezar (regla del dueño, 2026-11-02; `governed-delivery`, regla 5):
+  - El coordinador estima el tamaño de la misión y la parte en eslabones de una cadena **en el brief**, con lo que entra en cada uno.
+  - El worker mira el tamaño de su diff mientras trabaja (`git diff --shortstat origin/main...`) y corta el eslabón hacia las 350 líneas, aunque el brief no lo previera.
+  - El chequeo de tamaño del preflight local es la última red. Si es la CI la que descubre que una PR se pasa, el corte llegó tarde.
+  - Si un eslabón no se puede partir, pida la excepción a su coordinador **antes** del push, con el motivo. Él juzga, lo registra y pone la etiqueta `size:exception`; usted nunca se la pone (`governed-delivery`, regla 5).
+- **HR-15** — La CI confirma, no descubre (`ci-pattern` HR-86): antes de cada push pase el preflight local del repositorio (cadete: `scripts/local-ci.sh`), con tamaño, contrato de PR y commits, nombre de rama, lint, tipos, tests unitarios y secretos. Una PR en rojo en uno de esos gates es un defecto de proceso: el coordinador lo apunta y corrige su brief.
+- **HR-16** — Cada criterio de aceptación de la issue lleva su evidencia en la PR, una línea por criterio: test con su salida en verde, comando con su salida real, captura para la UI, consulta o log para los datos. Un criterio sin evidencia no está hecho y la PR le vuelve (`ci-pattern` HR-87).
 
 ## Decision Gates
 
@@ -67,7 +82,11 @@ Cargue esta skill cuando:
 | Quiere comprobar el cambio en local | Solo los tests del cambio, con `nice -n 15` (HR-8). |
 | Hay que matar un proceso suyo | Recorra `/proc` y mate solo los procesos cuyo `cwd` cae en su worktree, empezando por el padre. `pkill -f` coincide con su propio comando. |
 | Va a hacer un commit | Primero `ruff format --check` y `ruff check` (HR-10). |
-| MiniMax se ha agotado | Aparque el trabajo al terminar el paso en curso (paso 6 de Execution Steps). |
+| Va a empujar | Una sola vez por tanda, solo el eslabón que sigue y sin poner al día una rama que aún no se fusiona (HR-13). |
+| Prepara el brief de una misión | Estime su tamaño y pártala en eslabones de menos de 400 líneas en el propio brief (HR-14). |
+| Su diff se acerca a las 350 líneas | Cierre el eslabón y siga en el siguiente, encadenado (HR-14). |
+| La cola de la CI sigue llena aunque se empuja poco | Pídale a infra-coord más runners con un `infra-request`. |
+| MiniMax se ha agotado | Con Claude disponible en su coordinador, siga con Haiku (`claude-bridge`) y vuelva a MiniMax en la siguiente ventana; sin él, aparque al terminar el paso en curso (HR-12, paso 6 de Execution Steps). |
 
 ## Execution Steps
 
@@ -104,9 +123,9 @@ Cargue esta skill cuando:
 
 4. **Tests y CI.** Ejecute los tests del cambio con `nice -n 15`. Para vigilar la CI, consulte cada 120 s como mínimo y use la API de check-runs si la App no puede leer `/actions/runs`.
 
-5. **Commit.** Ejecute `ruff format --check` y `ruff check` con la versión del lock. Los commits son convencionales (`feat`, `fix`, `docs`, `chore`, `ci`, `test`, `perf`, `refactor`, `revert`). `style` no está en esa lista: un reformateo puro va como `chore(...)`. El mensaje del commit no lleva atribución de IA (`Co-Authored-By:`, `Generated-by:` ni `Generated with`); el cuerpo de la PR sí puede llevar la marca de Claude Code.
+5. **Commit.** Ejecute `ruff format --check` y `ruff check` con la versión del lock. Los commits son convencionales (`feat`, `fix`, `docs`, `chore`, `ci`, `test`, `perf`, `refactor`, `revert`, `build`, `style`), los mismos tipos que admite el nombre de rama. Si la política del repositorio (`.github/pr-contract.policy.json`) declara su propio `conventional_commit_pattern`, manda ese. El mensaje del commit no lleva atribución de IA (`Co-Authored-By:`, `Generated-by:` ni `Generated with`); el cuerpo de la PR sí puede llevar la marca de Claude Code.
 
-6. **Aparcar y retomar (workers).** Si MiniMax se agota, termine el paso en curso y guarde su posición: tarea, rama, worktree y siguiente paso. Su coordinador avisa al dueño de que el worker queda aparcado. En la siguiente ventana de MiniMax (10, 15, 20, 01 y 06 UTC; avisa el cron `minimax-cycle`), el coordinador lo retoma con `/new` y un brief autocontenido que parte de esa posición, y vuelve a avisar al dueño.
+6. **Cambiar, aparcar y retomar (workers).** Si MiniMax se agota y su coordinador tiene Claude, cambie a Haiku en el sitio y vuelva a MiniMax en el primer punto seguro de la ventana siguiente. Si tampoco hay Claude, termine el paso en curso y guarde su posición: tarea, rama, worktree y siguiente paso. Su coordinador avisa al dueño de que el worker queda aparcado. En la siguiente ventana de MiniMax (10, 15, 20, 01 y 06 UTC; avisa el cron `minimax-cycle`), el coordinador lo retoma con `/new` y un brief autocontenido que parte de esa posición, y vuelve a avisar al dueño.
 
 7. **Entrega.** Informe con el Output Contract.
 
@@ -135,10 +154,11 @@ Cargue esta skill cuando:
 | `testing/run-unit-suites.sh` completo en oracle | Solo los tests del cambio con `nice -n 15`; la suite completa la corre la CI. |
 | `while :; do gh pr checks; sleep 10; done` | Una consulta cada 120 s como mínimo, o la API de check-runs. |
 | `pkill -f <patrón>` para parar sus tests | El patrón coincide con el propio `pkill`. Use `/proc/<pid>/cwd` para matar solo lo suyo. |
-| Commit `style(ci): ruff format` | `chore(...)`: el gate de commits no admite `style`. |
 | El ruff del `PATH` dice «limpio» y la CI falla por formato | Use la versión que fija el lock del repositorio. |
+| Un push por cada arreglo pequeño, o la cadena entera en cada cambio | Juntar en local y empujar una vez solo el eslabón que sigue (HR-13). |
+| `git merge origin/main` en todas las ramas abiertas «para tenerlas al día» | Solo justo antes de fusionar, y cuando el contrato lo exige (HR-13). |
 | `gh issue close <N>` sobre una PR | `gh pr close <N>`. |
-| Worker sin MiniMax que sigue con Haiku | Aparcarlo al terminar el paso y retomarlo en la siguiente ventana. |
+| Worker que sigue con Haiku cuando ya ha vuelto la ventana de MiniMax | Vuelva a MiniMax en el primer punto seguro de la ventana (HR-12). |
 
 ## References
 
