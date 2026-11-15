@@ -18,7 +18,7 @@ funciones de esa imagen desaparecieron de producción.
 | Pieza | Dónde corre | Qué hace |
 |---|---|---|
 | `image_provenance.py manifest` | workflow de release (CI), tras los gates del tag | sha256 de cada fichero del árbol desplegable **en el commit del tag**, leído de los objetos git; se sube como asset de la GitHub Release |
-| `build_release_image.py` | máquina de quien construye | clon limpio del tag desde el remoto; rechaza tag ausente, fuera de `main` o árbol que no es el contenido git del tag; etiqueta la imagen con `org.opencontainers.image.revision` = commit del tag y `org.opencontainers.image.version` = tag |
+| `build_release_image.py` | máquina de quien construye | clon limpio del tag desde el remoto; rechaza tag ausente, fuera de `main` o árbol que no es el contenido git del tag; construye con `--pull --no-cache` (imagen base actualizada y ninguna capa de un build anterior); etiqueta la imagen con `org.opencontainers.image.revision` = commit del tag y `org.opencontainers.image.version` = tag |
 | `image_provenance.py gate` | antes de `oc set image` | lee el árbol de la imagen, lo compara con el manifiesto de su release y comprueba la procedencia; imprime además el diff frente a la imagen que corre en el clúster |
 
 Códigos de salida comunes: `0` correcto · `1` hallazgos (cada fichero nombrado) ·
@@ -96,6 +96,23 @@ descarga; `--current-image` o `--current-archive` fijan la imagen de comparació
 Quien tenga permisos de `oc` puede saltarse el script. El gate convierte el salto en
 un acto explícito, no en un accidente; la política de admisión de OpenShift (solo
 imágenes firmadas) es el seguimiento de infraestructura.
+
+## Nombres de imagen cortos (fase 0, 0.10)
+
+`build_release_image.py` construye con `--pull --no-cache`. Con podman, un nombre
+corto (`composer:2.5`, sin registro) no se resuelve sin preguntar, y si la imagen no
+está en local el build falla con «no stage or image found with that name». Por eso
+`FROM` y `COPY --from` de un Dockerfile que construye podman llevan el nombre completo
+(`docker.io/library/composer:2.5`); cadete lo corrigió en su Dockerfile.
+
+Decisión: el gate de imágenes de CI (HR-78, `ci-images/check_ci_images_pinned.py`)
+no se amplía a los Dockerfiles. Mide lo que descarga el CI, y el fallo de los nombres
+cortos es del build con podman, que en la flota solo hace cadete y a mano; blueprint y
+APAP_WEB construyen con docker, que completa `docker.io` por su cuenta. Inventario del
+2026-11-02 (rama por defecto): cadete `Dockerfile` usa nombres completos; quedan con
+nombre corto `devops/runners/oracle/Dockerfile` (`ubuntu:24.04@sha256:…`, imagen de
+runner, construida con docker) y los `FROM` de blueprint y APAP_WEB, todos con digest.
+Si un segundo consumer construye con podman, se revisa la decisión.
 
 ## Tests
 
