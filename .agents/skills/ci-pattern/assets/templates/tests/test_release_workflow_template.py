@@ -76,8 +76,41 @@ class TestReleaseWorkflowTemplate(unittest.TestCase):
 
     def test_se_dispara_solo_con_tags_estables(self):
         events = policy_gate.workflow_events(self.doc)
-        self.assertEqual(list(events), ["push"])
+        self.assertEqual(sorted(events), ["push", "workflow_dispatch"])
         self.assertEqual(events["push"].get("tags"), ["v*", "!v*-*"])
+
+    # --- fase 0, 0.3: re-publicar un tag existente con el workflow corregido ---
+
+    def test_el_dispatch_pide_el_tag_y_todo_el_workflow_usa_release_tag(self):
+        """Un push de tag ejecuta el workflow de su commit: una release que un
+        defecto del propio workflow «quemó» solo se repite lanzando el de la
+        rama por defecto a mano, con el tag como entrada."""
+        dispatch = policy_gate.workflow_events(self.doc)["workflow_dispatch"]
+        tag_input = dispatch["inputs"]["tag"]
+        self.assertTrue(tag_input.get("required"))
+        self.assertEqual(self.doc["env"]["RELEASE_TAG"], "${{ inputs.tag || github.ref_name }}")
+        for name, job in self.doc["jobs"].items():
+            self.assertNotIn("$GITHUB_REF_NAME", run_commands(job), name)
+            checkout = next(step for step in job["steps"] if "actions/checkout" in str(step.get("uses")))
+            self.assertEqual(checkout["with"].get("ref"), "refs/tags/${{ env.RELEASE_TAG }}", name)
+
+    def test_re_publicar_un_tag_con_release_existente_no_la_crea_otra_vez(self):
+        if shutil.which("bash") is None:
+            self.skipTest("bash no disponible")
+        with tempfile.TemporaryDirectory() as tmp:
+            stub = Path(tmp) / "gh"
+            stub.write_text('#!/bin/sh\necho "$@" >> "$GH_LOG"\n'
+                            '[ "$1 $2" = "release view" ] && exit 0\nexit 0\n', encoding="utf-8")
+            stub.chmod(0o755)
+            log = Path(tmp) / "gh.log"
+            proc = self.run_step("release", "gh release create", tmp, RELEASE_NOTES_FILE="n.md",
+                                 GH_LOG=str(log),
+                                 PATH=tmp + os.pathsep + os.environ.get("PATH", ""))
+            calls = log.read_text(encoding="utf-8") if log.exists() else ""
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("release view v1.0.1", calls)
+        self.assertNotIn("release create", calls)
+        self.assertIn("ya existe", proc.stdout + proc.stderr)
 
     def test_el_job_previo_ejecuta_los_dos_gates(self):
         commands = run_commands(self.doc["jobs"]["preflight"])
@@ -98,7 +131,8 @@ class TestReleaseWorkflowTemplate(unittest.TestCase):
             stub.chmod(0o755)
             script = Path(tmp) / "step.sh"
             script.write_text(step["run"], encoding="utf-8")
-            environ = {**os.environ, **self.doc["env"], "GITHUB_REF_NAME": "v1.0.1", **env,
+            environ = {**os.environ, **self.doc["env"], "GITHUB_REF_NAME": "v1.0.1",
+                       "RELEASE_TAG": "v1.0.1", **env,
                        "PATH": tmp + os.pathsep + os.environ.get("PATH", "")}
             for name in drop:
                 environ.pop(name, None)
@@ -142,12 +176,48 @@ class TestReleaseWorkflowTemplate(unittest.TestCase):
         script = Path(cwd) / "step.sh"
         script.write_text(step["run"], encoding="utf-8")
         environ = {**os.environ, **self.doc["env"], "GITHUB_REF_NAME": "v1.0.1",
-                   "GITHUB_ENV": str(Path(cwd) / "github_env"),
+                   "RELEASE_TAG": "v1.0.1", "GITHUB_ENV": str(Path(cwd) / "github_env"),
                    "GITHUB_STEP_SUMMARY": str(Path(cwd) / "summary"), **env}
         for name in drop:
             environ.pop(name, None)
         return subprocess.run(["bash", str(script)], env=environ, cwd=cwd,
                               capture_output=True, text=True)
+
+    # --- tag anotado frente al tag ligero que deja actions/checkout ---
+
+    def test_el_preflight_mide_el_tag_anotado_del_remoto_y_no_el_ligero_local(self):
+        """En un push de tag, actions/checkout crea `refs/tags/<tag>` como tag
+        ligero sobre el commit y `fetch-tags` no lo sobrescribe: el gate veía
+        HR-19 «lightweight» sobre un tag anotado (cadete v1.3.2)."""
+        if shutil.which("git") is None:
+            self.skipTest("git no disponible")
+        gate = ASSET.parent / "release-gate" / "check_release_tag.py"
+        git_env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+                   "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
+
+        def git(cwd, *args):
+            subprocess.run(["git", *args], cwd=cwd, env=git_env, check=True,
+                           capture_output=True, text=True)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            src, remote, runner = (str(Path(tmp) / n) for n in ("src", "remote.git", "runner"))
+            git(tmp, "init", "-q", "-b", "main", src)
+            git(src, "commit", "-q", "--allow-empty", "-m", "release")
+            git(src, "tag", "-a", "v1.0.1", "-m", "v1.0.1")
+            git(tmp, "clone", "-q", "--bare", src, remote)
+            git(tmp, "clone", "-q", remote, runner)
+            # Lo que deja actions/checkout: el mismo nombre, como tag ligero.
+            git(runner, "tag", "-f", "v1.0.1", "v1.0.1^{commit}")
+            argv = [sys.executable, str(gate), "--repo", runner, "--tag", "v1.0.1",
+                    "--default-branch", "main"]
+            before = subprocess.run(argv, capture_output=True, text=True)
+            self.assertIn("lightweight", before.stdout + before.stderr)
+
+            proc = self.run_step("preflight", "refs/tags/$RELEASE_TAG:refs/tags/", runner,
+                                 GH_AUTH="dummy")
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            after = subprocess.run(argv, capture_output=True, text=True)
+            self.assertEqual(after.returncode, 0, after.stdout + after.stderr)
 
     # --- #1456: ruta de las notas, entorno, runner y verificación aplazable ---
 
@@ -294,8 +364,8 @@ class TestReleaseWorkflowTemplate(unittest.TestCase):
         commands = run_commands(job)
         self.assertIn('if [ ! -f "$IMAGE_PROVENANCE_CONFIG" ]', commands)
         self.assertIn("image-provenance/image_provenance.py\" manifest", commands)
-        self.assertIn('--tag "$GITHUB_REF_NAME"', commands)
-        self.assertIn('gh release upload "$GITHUB_REF_NAME" image-provenance-manifest.json',
+        self.assertIn('--tag "$RELEASE_TAG"', commands)
+        self.assertIn('gh release upload "$RELEASE_TAG" image-provenance-manifest.json',
                       commands)
         self.assertNotIn("actions/upload-artifact", self.text)
 
