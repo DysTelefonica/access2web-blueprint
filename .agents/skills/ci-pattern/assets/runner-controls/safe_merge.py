@@ -158,6 +158,54 @@ def gh_merge(repo: str, number: int, sha: str) -> str:
     return data.get("sha", "unknown")
 
 
+def branch_worktree(branch: str) -> Path | None:
+    """El worktree enlazado que tiene ``branch`` checked out, o None (#1501).
+
+    Lee `git worktree list --porcelain`; el worktree principal (el primero) no
+    cuenta: ahi `safe_cleanup` sale a la rama activa antes de borrar."""
+    try:
+        proc = run_command(["git", "worktree", "list", "--porcelain"], GIT_TIMEOUT)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if proc.returncode != 0:
+        return None
+    entries = [block.splitlines() for block in proc.stdout.strip().split("\n\n") if block.strip()]
+    for lines in entries[1:]:
+        path = next((line[len("worktree "):] for line in lines if line.startswith("worktree ")), None)
+        if path is not None and f"branch refs/heads/{branch}" in lines:
+            return Path(path).resolve()
+    return None
+
+
+def cleanup_local_branch(branch: str, pr_head: str) -> None:
+    """Borra la rama local, y el worktree que la sostiene, solo si `safe_cleanup` lo da por seguro.
+
+    #1501: con la rama en un worktree enlazado, `git branch -D` fallaba con
+    `used by worktree`. Ahora el worktree se pasa a `safe_cleanup`, que lo
+    rechaza si esta sucio o tiene procesos. Desde dentro de ese worktree no se
+    puede retirar: se dice y se nombran los comandos pendientes."""
+    worktree = branch_worktree(branch)
+    pending = (f"PENDING: once the worktree is clean and its tip is preserved, run "
+               f"`git worktree remove {worktree}` and `git branch -D {branch}`") if worktree else None
+    if worktree is not None:
+        cwd = Path.cwd().resolve()
+        if cwd == worktree or worktree in cwd.parents:
+            print(f"KEEP: local branch '{branch}' is kept: safe-merge runs inside its worktree '{worktree}'")
+            print(pending)
+            return
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from safe_cleanup import cleanup
+    result = cleanup(Path.cwd(), branch, worktree=worktree, pr_head=pr_head)
+    if result.ok:
+        if worktree is not None:
+            print(f"CLEAN: worktree '{worktree}' removed")
+        print(f"CLEAN: local branch '{branch}' {result.reason}")
+    else:
+        print(f"KEEP: local branch '{branch}' is kept: {result.reason}")
+        if pending:
+            print(pending)
+
+
 def cleanup_branch(branch: str, default_branch: str, pr_head: str) -> None:
     """Conservar la rama remota; borrar la local solo si esta preservada; luego
     `git worktree prune` (solo si cwd es un worktree git).
@@ -174,13 +222,7 @@ def cleanup_branch(branch: str, default_branch: str, pr_head: str) -> None:
     except (OSError, subprocess.TimeoutExpired):
         proc = None
     if proc is not None and proc.returncode == 0:
-        sys.path.insert(0, str(Path(__file__).resolve().parent))
-        from safe_cleanup import cleanup
-        result = cleanup(Path.cwd(), branch, pr_head=pr_head)
-        if result.ok:
-            print(f"CLEAN: local branch '{branch}' {result.reason}")
-        else:
-            print(f"KEEP: local branch '{branch}' is kept: {result.reason}")
+        cleanup_local_branch(branch, pr_head)
     # worktree prune (solo si cwd es un worktree git).
     try:
         proc = run_command(["git", "worktree", "prune"], GIT_TIMEOUT)

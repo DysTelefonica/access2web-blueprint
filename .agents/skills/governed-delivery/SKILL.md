@@ -4,7 +4,7 @@ description: "Trigger: actualizar mi rama, abrir un pull request, encadenar PRs,
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: "1.4"
+  version: "1.5"
   last_verified: 2026-11-02
   scope: ['universal', 'ops']
   auto_invoke: ['actualizar rama', 'abrir un PR', 'encadenar PRs', 'pedir merge', 'etiquetar un PR']
@@ -64,7 +64,11 @@ Antes de `gh pr create`, ejecute `ci-pattern pr preflight --draft --pr-body <cue
 
    Tras la acción, el agente relee la etiqueta o el estado del merge con un
    solo intento; si el resultado es incierto, se detiene sin reintentar. El
-   merge exige CI en verde y el camino gobernado; nunca `--admin`. El merge
+   merge exige CI en verde y el camino gobernado; nunca `--admin`. El verde
+   se comprueba con `python .agents/skills/ci-pattern/assets/runner-controls/wait_ci.py
+   --repo <owner/repo> --pr <n> --check <agregador>` (p. ej. `required`): espera a que los checks
+   aparezcan y terminen y nunca da verde con checks ausentes o pendientes
+   (`gh pr checks --watch` sale con 1 justo después del push, #1502). El merge
    nunca lo hace el agente sin esa orden registrada; la etiqueta
    `status:approved` sí se puede poner sin ella. Un mantenedor puede aprobar
    y mergear su propio cambio si la protección de la rama lo admite. —
