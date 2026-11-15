@@ -21,8 +21,8 @@ El documento es vivo: cambia cuando se descubre que una fase o una hipótesis ll
 
 | N.º | Decisión |
 |---|---|
-| 1 | La estrategia pasa de corte único (la web solo entra en servicio cuando todas las aplicaciones legacy estén migradas y probadas) a coexistencia progresiva (patrón strangler fig). |
-| 2 | La Lanzadera Access y todas las aplicaciones Access se alojan en un servidor de aplicaciones Windows publicado por Citrix. La plataforma web, en la misma máquina o en una conectada a ella. |
+| 1 | La estrategia pasa de corte único (la web solo entra en servicio cuando todas las aplicaciones legacy estén migradas y probadas) a coexistencia progresiva (patrón strangler fig). Es una propuesta en exploración: ver la decisión 18. |
+| 2 | La Lanzadera Access y todas las aplicaciones Access se alojan en un servidor de aplicaciones Windows publicado por Citrix. La plataforma web, en la misma máquina o en una conectada a ella. Concretada por la decisión 20. |
 | 3 | Todas las tablas de todos los backends `.accdb` legacy pasan a un único PostgreSQL, con esquemas por aplicación ([D14](../decisions/2026-08-04-d14-postgresql-compartido-con-esquemas-por.md)). Los backends legacy las vinculan por ODBC. |
 | 4 | La Lanzadera Access sigue abriendo las aplicaciones Access aún no apagadas; la Lanzadera web contiene solo las aplicaciones web nuevas. Ninguna lanza aplicaciones de la otra. Ambas conviven hasta el final. |
 | 5 | El corte es por aplicación: se deshabilita su botón en la Lanzadera Access y se habilita en la web. La reversión consiste en volver a habilitar el botón de Access; los datos son compartidos. |
@@ -32,28 +32,53 @@ El documento es vivo: cambia cuando se descubre que una fase o una hipótesis ll
 | 9 | Este documento es vivo, con estados de fase, hipótesis marcadas y registro de cambios de rumbo. |
 | 10 | Durante la coexistencia, la web trabaja directamente sobre las tablas con forma legacy en PostgreSQL: una sola fuente de verdad, para garantizar que el legacy sigue funcionando y que la reversión es posible. No hay esquema web propio con sincronización. Cuando el legacy esté apagado por completo, el modelo se refactoriza a un esquema moderno para dejar de arrastrar la deuda técnica de las tablas legacy. Resuelve P-EXP-3 (ver [P-EXP-3](#p-exp-3)). |
 | 11 | La estructura de datos se mejora en el legacy antes de que cada backend pase a PostgreSQL, donde no cueste demasiado trabajo, para que la web nunca empiece sobre tablas con defectos inaceptables. Toda mejora estructural se hace en el backend Access (con sus fronts adaptados) antes de migrar ese backend. Durante la coexistencia, los cambios de esquema son solo aditivos (columnas nuevas que admiten nulos, tablas nuevas) y nunca cambian el significado de lo existente. Ver la [fase 1](#fase-1-saneamiento-en-access). |
-| 12 | La Lanzadera es la primera aplicación en coexistir, porque alberga el control de permisos del resto de herramientas y tiene a todos los usuarios y sus permisos (`Lanzadera_Datos`). El ensayo de la fase 3 se hace con una copia de `Lanzadera_Datos` en preproducción, no con una isla. Ver [Cambios de rumbo](#cambios-de-rumbo). |
+| 13 | AGEDYS Técnico y AGEDYS ECO se sustituyen por una sola aplicación web, **APGEDYS**, con la misma aplicación mostrando vista de técnico o de gestor económico según el usuario que entre. El alcance de la migración son las once aplicaciones del catálogo de la Lanzadera que el propietario marca: las nueve del grupo general más Seguridad y HPS. |
+| 14 | AGEDO y Tareas quedan fuera del alcance pero **siguen en uso en Access** de forma indefinida. Son consumidores permanentes de tablas que sí migran: cuando el backend dueño de una de esas tablas pase a PostgreSQL, sus vínculos se reapuntan por ODBC como los de cualquier otro front Access. Las tablas de AGEDO que consumen aplicaciones del alcance tienen que llegar a PostgreSQL para que la web pueda leerlas. Ver [backends fuera del alcance](fase-0/backends-fuera-de-alcance.md#agedo-y-tareas-siguen-en-uso). **Para AGEDO la sustituye la decisión 27:** AGEDO ya no se usa. |
+| 15 | La fila 21 de `TbAplicaciones` (AGEDYS, `AGEDYS.accdb`, sin icono en la lanzadera) es un residuo que no se usa. No entra en la migración ni en el reparto de `AGEDYS_DATOS`. Ver el [catálogo de aplicaciones](fase-0/catalogo-aplicaciones.md). |
+| 16 | `Correos_datos` es un backend más, no un servicio de la plataforma. Su tabla `TbCorreosEnviados` es la cola de salida: las aplicaciones la cargan y un proceso del servidor la recorre cada cinco minutos para enviar los correos con el SMTP de la empresa. Ese proceso es un consumidor más que hay que reapuntar cuando la cola pase a PostgreSQL. |
+| 17 | APGEDYS tiene un único backend común. Las 55 tablas de `AGEDYS_DATOS` que no usa ninguno de los dos fronts pasan por el [protocolo de huérfanas](#protocolo-de-huérfanas) antes de retirarse. |
+| 18 | La coexistencia es una prueba de viabilidad en exploración, no la estrategia aprobada. Dirección mantiene el plan de corte único: cuando la última aplicación web esté terminada, se apaga todo el legacy y se enciende lo nuevo, sin compartir nada. La propuesta se presenta a dirección como alternativa. |
+| 19 | Tras aplicar en los backends legacy los accionables de la fase 0 (fase 1), se ensaya en Citrix, en preproducción, el paso de **todos** los backends a PostgreSQL, sin ningún backend Access. Superado el ensayo, todos los datos pasan a PostgreSQL de una vez en producción. Ese traslado es **irreversible**. Desde entonces solo hay PostgreSQL: lo no migrado funciona con la Lanzadera Access y lo migrado con la web, las dos contra PostgreSQL. La única reversión que queda es la del botón de cada aplicación. Sustituye el ensayo solo con `Lanzadera_Datos` de la decisión 12 y el traslado por tandas de las fases 3 y 4. |
+| 20 | Mientras convivan, los usuarios entran a todo por Citrix: la Lanzadera Access y sus aplicaciones se ejecutan en el servidor de aplicaciones Windows, y la web nueva se abre con un navegador publicado en Citrix. La web nueva y PostgreSQL común están en otra máquina de la misma red. Al terminar la convivencia, la web, ya en contenedores, se lleva a OpenShift, como cadete. |
+| 21 | `TbExpedientesAnualidades` vive de forma única en el backend de Expedientes. Hoy hay dos tablas propias con ese nombre, en `AGEDYS_DATOS` y en `Expedientes_datos`, que se vinculan mutuamente y las dos tienen la misma estructura (clave `IDAnualidad`), pero divergen: 223 filas en AGEDYS y 173 en Expedientes, ningún `IDAnualidad` común, 157 pares expediente y año presentes en las dos sin ninguna fila idéntica (por ejemplo, IPSI del 8 % en AGEDYS frente al 4 % en Expedientes), 66 pares solo en AGEDYS y 16 solo en Expedientes. Antes de retirar la de AGEDYS hay que conciliarlas; cuando no coinciden, mandan los valores de Expedientes. Ver el [catálogo de conflictos](fase-0/catalogo-accionables-conflictos.md#qué-necesita-decidir-el-propietario). |
+| 22 | `TbCorreosEnviados.IDCorreo` pasa a autonumérico. `IDCorreo` no es autonumérico: lo asigna cada aplicación al escribir en la cola (Condor lo calcula con `Max(IDCorreo) + 1` en `CorreoRepositorio.bas:18-24`; en total lo asignan once aplicaciones: Lanzadera, Expedientes, Condor, Seguridad, HPS, Solicitudes HPS, Gestión de Riesgos, No Conformidades, Registros, AGEDYS Técnico y AGEDYS ECO). En la copia de referencia hay 19 valores repetidos, cada uno en una pareja de correos distintos (otro asunto, remitente o aplicación): son colisiones de escrituras simultáneas, no filas duplicadas, y no se puede borrar ninguna. En el saneamiento se renumera el segundo correo de cada pareja por encima del máximo actual, se declara la clave primaria y todas las aplicaciones dejan de calcular el identificador. Antes de renumerar se comprueba que ninguna tabla guarda esos 19 valores. Se lleva como épica ([#1740](https://github.com/DysTelefonica/access2web-blueprint/issues/1740)): primero el backend, después cada front; AGEDYS Técnico, AGEDYS ECO y Gestión de Riesgos guardan `IDCorreo` en otras tablas y tienen que leer el que asigna la base. |
+| 23 | Excepción a la regla de cambios solo aditivos (decisión 11) para la cuarentena: renombrar una tabla sin uso para ponerla en cuarentena se permite porque es reversible (se le devuelve el nombre) y no cambia el significado de nada. La regla sigue vigente para todo lo demás. Ver el [protocolo de huérfanas](#protocolo-de-huérfanas). |
+| 24 | Orden de paso de las aplicaciones a la web: Lanzadera web, Expedientes, Condor, Seguridad, HPS y Solicitudes HPS seguidas, Gestión de Riesgos y No Conformidades seguidas, Registros, Brass y APGEDYS. Con el traslado único los datos ya no marcan el orden; lo marcan el aprendizaje, el riesgo y el acoplamiento entre aplicaciones que se escriben tablas. Ver el [orden de paso a la web](fase-0/orden-cortes-web.md). |
+| 25 | Se retira la funcionalidad de códigos de compras de expediente. `TbExpedientesCodigoCompras` existe en `AGEDYS_DATOS` y en `Expedientes_datos`, las dos vacías en producción: solo AGEDYS ECO tiene pantalla para crear códigos (en su copia), Expedientes solo lee y borra la suya y en AGEDYS Técnico el código es muerto. Issues de la fase 1: [AGEDYS_ECO#11](https://github.com/DysTelefonica/AGEDYS_ECO/issues/11), [Expedientes#278](https://github.com/DysTelefonica/Expedientes/issues/278) y [AGEDYS#4](https://github.com/DysTelefonica/AGEDYS/issues/4); las dos tablas van a cuarentena cuando estén publicadas. |
+| 26 | Se retira la cola local de correo de Contratos. `GestionContratos_datos` tiene su propia `TbCorreosEnviados` (204 filas de 2023-2024, 184 sin enviar): la clase `Correo` que la escribe no se instancia en ningún sitio y ningún proceso de Automatización abre ese backend. Issue de la fase 1: [CONTRATOS#2](https://github.com/DysTelefonica/CONTRATOS/issues/2). La cola local de Solicitudes HPS queda abierta: tiene emisor propio en producción y un diseño con recordatorios que la cola común no soporta (ver [clasificación de las tablas](fase-0/clasificacion-tablas.md)). |
+| 27 | AGEDO ya no se usa (propietario, 2026-11-05: «agedo no se usa ahora ya»). Deja de ser consumidor permanente: los vínculos de su backend ya no cuentan como uso y `tbUsuarios` de `Lanzadera_Datos`, que solo vinculaba AGEDO, pasa a huérfana. Sigue en pie la otra parte de la decisión 14: las tablas de `AGEDO20_Datos` que leen aplicaciones del alcance (`TbDocumentos`, `TbDocumentosID`, `TbDocExpProceso`) llegan a PostgreSQL. Tareas sigue en uso. |
+| 12 | La Lanzadera es la primera aplicación en coexistir, porque alberga el control de permisos del resto de herramientas y tiene a todos los usuarios y sus permisos (`Lanzadera_Datos`). El ensayo de la fase 3 se hace con una copia de `Lanzadera_Datos` en preproducción, no con una isla. Ver [Cambios de rumbo](#cambios-de-rumbo). El alcance del ensayo queda sustituido por la decisión 19. |
 
 ## Modelo de coexistencia
 
 ```text
-Servidor de aplicaciones Windows (Citrix)          Plataforma web (misma máquina o conectada)
-  Lanzadera Access                                   Lanzadera web
-    └── aplicaciones Access no apagadas                └── aplicaciones web nuevas
-          │                                                  │
-          ▼                                                  │
-    backends .accdb (tablas vinculadas por ODBC)             │
-          │                                                  │
-          └──────────────► PostgreSQL ◄──────────────────────┘
-                     (un esquema por aplicación, D14)
+Puesto del usuario: solo el cliente Citrix
+        │
+        ▼
+Servidor de aplicaciones Windows (Citrix)          Máquina web (misma red)
+  Navegador publicado ─────────────────────────────► Lanzadera web
+  Lanzadera Access                                     └── aplicaciones web nuevas
+    └── aplicaciones Access no apagadas                        │
+          │ (tablas vinculadas por ODBC)                       │
+          └──────────────────────────────────────────► PostgreSQL común
+                                                       (un esquema por aplicación, D14)
 ```
 
-Cada aplicación está en un solo lado a la vez: su botón está habilitado en una Lanzadera y deshabilitado en la otra. Los datos no se duplican ni se sincronizan entre copias: la web usa las mismas tablas con forma legacy (decisión 10).
+Cada aplicación está en un solo lado a la vez: su botón está habilitado en una Lanzadera y deshabilitado en la otra. Los datos no se duplican ni se sincronizan entre copias: la web usa las mismas tablas con forma legacy (decisión 10). Tras el traslado único de la fase 4 no queda ningún backend `.accdb` (decisión 19).
 
 ## Alcance
 
-- **Dentro:** las aplicaciones del catálogo `TbAplicaciones` que abre la Lanzadera Access, salvo las excluidas.
-- **Fuera:** Sirdee y AGEDO.
+El alcance lo fija el catálogo de la Lanzadera Access, con la decisión del propietario sobre qué entra de cada grupo (2026-11-04).
+
+| Grupo del catálogo | Aplicaciones | En el alcance |
+|---|---|---|
+| Fuera de la Oficina CARU | AGEDYS Técnico, AGEDYS ECO, Registro, Gestión de Riesgos, No Conformidades, Brass, Solicitudes HPS, Expedientes, Condor | las nueve |
+| Solo Oficina | Seguridad, SICA, HPS, Contratos, AGEDO | Seguridad y HPS |
+| En Pruebas | pendientes de confirmar | según la decisión del propietario |
+
+- **Dentro:** las once aplicaciones marcadas. AGEDYS Técnico y AGEDYS ECO se sustituyen por **una sola aplicación web, APGEDYS**, que muestra vista de técnico o de gestor económico según el usuario que entre (decisión 13).
+- **Fuera:** Sirdee (decisión 6), AGEDO (decisión 6, confirmada por el propietario el 2026-11-05), SICA y Contratos (decisión del propietario de 2026-11-04) y Tareas (decisión del propietario de 2026-11-05; su backend `Tareas_datos1` no tiene fila en el catálogo de la lanzadera).
+- **Backends de aplicaciones fuera del alcance:** sus tablas las consumen aplicaciones dentro del alcance, de modo que se inventarían como dependencias en la fase 0:  Correos, Registro de salida, SICA, Control de cambios, AGEDO y Tareas. No se migran como aplicaciones, pero sí hay que saber qué sobrevive y quién es su dueño.
 - **Tablas de AGEDO vinculadas por AGEDYS TEC:** AGEDYS TEC vincula 4 tablas de AGEDO. Viajan con el grupo AGEDYS o se eliminan si no se usan; lo decide la fase 0.
 
 ## Reglas del legacy
@@ -124,16 +149,16 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 
 | Fase | Nombre | Estado |
 |---|---|---|
-| 0 | Inventario | en curso |
+| 0 | Inventario | hecha |
 | 1 | Saneamiento en Access | pendiente |
 | 2 | Unificar el acceso a datos | pendiente |
-| 3 | Ensayo con `Lanzadera_Datos` (antes: ensayo con una isla) | revisada |
-| 4 | `Lanzadera_Datos` y núcleos compartidos | pendiente |
+| 3 | Ensayo en Citrix con todos los backends (antes: con `Lanzadera_Datos`; antes aún: con una isla) | revisada |
+| 4 | Traslado único de todos los datos a PostgreSQL | pendiente |
 | 5 | Expedientes a web | pendiente |
 
 ### Fase 0. Inventario
 
-**Estado:** en curso. Hecho: [`Lanzadera_Datos`](fase-0/lanzadera-datos.md) (#1560) y [`Brass`](fase-0/brass.md) (#1574), con sus propuestas de acción catalogadas, pendientes de revisión transversal. Pendiente: el resto de backends. Completar un inventario individual no habilita cambios en el legacy.
+**Estado:** hecha (2026-11-06). El criterio de terminado se cumple con evidencia: ver el [cierre de la fase 0](fase-0/cierre.md), con lo que queda abierto y en qué fase se resuelve. Pasa a `revisada` cuando el propietario valide la evidencia; hasta entonces no se aplica nada en el legacy.
 
 **Objetivo.** Conocer, en solo lectura, el grafo completo de dependencias entre backends, el estado de cada tabla y los patrones de VBA que no sobrevivirían a PostgreSQL.
 
@@ -148,6 +173,25 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 - **Coste de cada cambio estructural:** número de referencias en código por tabla y por columna, sumando todos los fronts. Es el criterio de coste de la fase 1.
 - **Verificación de R-1 y R-2**, con sus excepciones listadas.
 
+**Avance.** Inventarios publicados, todos de solo lectura y con las propuestas de acción catalogadas sin aplicar:
+
+- [`Lanzadera_Datos`](fase-0/lanzadera-datos.md) y el [inventario de aperturas directas](fase-0/aperturas-directas-lanzadera.md).
+- [`Brass`](fase-0/brass.md), la excepción con controles conectados y vínculos en el front.
+- [`HPS`](fase-0/hps.md), [`Condor`](fase-0/condor.md), [`Expedientes`](fase-0/expedientes.md), [`Gestión de Riesgos`](fase-0/gestion-riesgos.md) y [`No Conformidades`](fase-0/no-conformidades.md).
+- El [catálogo único de accionables](fase-0/catalogo-accionables.md), con los [grupos b y c](fase-0/catalogo-accionables-b.md) y los [conflictos, bloqueos y decisiones](fase-0/catalogo-accionables-conflictos.md): las 159 propuestas de las once aplicaciones del alcance y de los siete backends de dependencias, ordenadas por decisión.
+- El [grafo de dependencias entre backends](fase-0/grafo-dependencias.md) en su versión transversal: 17 backends con un único método de recuento.
+- El [catálogo de aplicaciones de la lanzadera](fase-0/catalogo-aplicaciones.md): las 22 filas de `TbAplicaciones`, que confirman el alcance y destapan la tercera aplicación AGEDYS, el RegistroAntiguo y el backend de Condor PRUEBA.
+- La [copia de producción de referencia](fase-0/copia-referencia.md): la foto fija de los 18 backends, con su SHA-256, contra la que se hacen todas las comprobaciones de datos.
+- El [orden de paso de las aplicaciones a la web](fase-0/orden-cortes-web.md) (decisión 24).
+- El [mapa de propiedad](fase-0/mapa-propiedad.md): qué tabla es propia de qué backend, qué backend vincula a cuál y las propuestas que estaban en el backend equivocado.
+- Los [patrones de riesgo del VBA](fase-0/patrones-riesgo.md) de las trece aplicaciones, con un solo método.
+- El [coste de los cambios](fase-0/coste-cambios.md) por tabla y por columna, y los tipos, reglas y valores por defecto de cada columna.
+- La [clasificación de las tablas](fase-0/clasificacion-tablas.md): las 535 tablas de los backends y las 50 de los fronts, según qué aplicación las usa de verdad.
+- Las [comprobaciones de datos del grupo (a)](fase-0/comprobaciones-grupo-a.md): las 36 propuestas imprescindibles que admiten medición, con su veredicto contra la copia de referencia.
+- El [anexo de controles conectados](fase-0/controles-conectados.md): el SQL literal de cada control con origen de datos y el catálogo de consultas que sobrevivirán a PostgreSQL. La medición refuta la regla «salvo Brass, los formularios son desconectados»: Registros tiene 37 controles conectados y HPS 3 formularios unidos a recordset.
+
+R-1 se confirma en los backends y se refuta en los fronts, con las excepciones medidas. La base de análisis de cada aplicación es su RC1 pendiente de UAT cuando existe; HPS queda en `main` porque su UAT ya está aprobada y liberada.
+
 **Criterio de terminado.** Todo backend dentro de alcance tiene su lista de vínculos; toda tabla tiene clasificación y ficha; todo front tiene su inventario de patrones de riesgo; R-1 y R-2 constan como confirmadas o con sus excepciones.
 
 ### Fase 1. Saneamiento en Access
@@ -156,7 +200,7 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 
 **Objetivo.** Mejorar la estructura de datos en el legacy, backend a backend y antes de migrar cada uno, para que la web no empiece sobre tablas con defectos inaceptables (decisión 11). Los cambios se hacen sobre `.accdb` y son reversibles.
 
-**Condición de entrada.** La fase 1 no comienza hasta terminar el descubrimiento de **todas** las herramientas dentro de alcance, incluidos sus fronts y backends y la excepción de controles conectados de Brass. Antes se reconcilian las dependencias y se revisa el catálogo conjunto de accionables con el propietario. Durante la fase 0 se catalogan propuestas, pero no se aplican cambios en el legacy: tampoco renombrados de cuarentena, borrados, movimientos, nuevas claves ni restricciones.
+**Condición de entrada.** La fase 1 no comienza hasta terminar el descubrimiento de **todas** las herramientas dentro de alcance, incluidos sus fronts y backends y los controles conectados de cada aplicación, medidos uno por uno. Antes se reconcilian las dependencias y se revisa el catálogo conjunto de accionables con el propietario. Durante la fase 0 se catalogan propuestas, pero no se aplican cambios en el legacy: tampoco renombrados de cuarentena, borrados, movimientos, nuevas claves ni restricciones.
 
 **Reglas.**
 
@@ -184,7 +228,7 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 
 **Estado:** pendiente.
 
-**Objetivo.** Que cada front cambie entre `.accdb` y PostgreSQL solo por configuración. Ese mismo cambio es la reversión.
+**Objetivo.** Que cada front cambie entre `.accdb` y PostgreSQL solo por configuración. Ese cambio permite el ensayo de la fase 3; tras el traslado único de la fase 4 ya no hay vuelta a `.accdb` (decisión 19).
 
 **Entregables.** Adaptación a ODBC sin DSN de los cuatro mecanismos de acceso existentes:
 
@@ -197,25 +241,25 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 
 **Criterio de terminado.** Para cada front, el paso de `.accdb` a PostgreSQL y la vuelta se hacen cambiando solo configuración, demostrado en un entorno que no es producción.
 
-### Fase 3. Ensayo con `Lanzadera_Datos`
+### Fase 3. Ensayo en Citrix con todos los backends
 
-**Estado:** revisada (2026-11-04, decisión 12). El objetivo anterior, ensayar con una isla (Brass o Seguridad), queda sustituido; ver [Cambios de rumbo](#cambios-de-rumbo).
+**Estado:** revisada (2026-11-05, decisión 19). Sustituye al ensayo solo con `Lanzadera_Datos` (decisión 12), que a su vez sustituyó al ensayo con una isla; ver [Cambios de rumbo](#cambios-de-rumbo).
 
-**Objetivo.** Ensayar la migración de una copia de `Lanzadera_Datos` en preproducción dentro de Citrix, con la Lanzadera Access, la Lanzadera web y al menos una aplicación Access que vincule sus tablas de identidad (por ejemplo, Expedientes con la unión entre responsables y usuarios).
+**Objetivo.** Ensayar en preproducción, dentro de Citrix, el paso de **todos** los backends ya saneados a PostgreSQL, sin ningún backend Access, con la Lanzadera Access y todas las aplicaciones Access funcionando contra él.
 
-**Entregables.** Informe del ensayo con: conversión de tipos, tablas vinculadas actualizables (requieren clave primaria), rendimiento de las uniones mixtas `.accdb` + ODBC y reversión. Resultado de las [hipótesis H-1 y H-2](#hipótesis-abiertas).
+**Entregables.** Informe del ensayo con: conversión de tipos, tablas vinculadas actualizables (requieren clave primaria), funcionamiento de cada aplicación, rendimiento en Citrix y resultado de las [hipótesis H-1, H-3 y H-4](#hipótesis-abiertas).
 
-**Criterio de terminado.** Las dos Lanzaderas funcionan sobre la copia en PostgreSQL en preproducción, la reversión se ha ejecutado al menos una vez y H-1 y H-2 están confirmadas o refutadas con evidencia.
+**Criterio de terminado.** Todas las aplicaciones Access funcionan en preproducción sobre PostgreSQL con un rendimiento aceptable, y H-1, H-3 y H-4 están confirmadas o refutadas con evidencia.
 
-### Fase 4. `Lanzadera_Datos` y núcleos compartidos
+### Fase 4. Traslado único de todos los datos
 
 **Estado:** pendiente.
 
-**Objetivo.** Trasladar `Lanzadera_Datos` a PostgreSQL. Si la fase 3 refuta que las uniones mixtas sean aceptables (H-2), el traslado incluye en el mismo corte los backends que vinculan sus tablas y los núcleos compartidos (`AGEDYS_DATOS` y Registro).
+**Objetivo.** Trasladar en producción, de una vez, todos los backends a PostgreSQL. Los ficheros `.accdb` de datos dejan de usarse. Es el **único paso sin vuelta atrás** del plan (decisión 19).
 
-**Entregables.** Plan del corte conjunto, ensayo en preproducción y resultado de la [Hipótesis H-2](#hipótesis-abiertas).
+**Entregables.** Plan del traslado, repetición del ensayo de la fase 3 con una copia reciente de producción y reapuntado de los consumidores que no migran (AGEDO, Tareas y el proceso de envío de correos del servidor, decisiones 14 y 16). Los despliegues de prueba (`CONDOR Prueba`, `EXPEDIENTES PRUEBA`, `HPS PRUEBA`, `No Conformidades Prueba`, `00_datos_prueba`) comparten la unidad de red con producción: el plan debe decir qué se hace con cada uno.
 
-**Criterio de terminado.** Las dos Lanzaderas y todas las aplicaciones Access operan sobre estos backends en PostgreSQL, y la reversión del corte conjunto se ha ensayado.
+**Criterio de terminado.** Todas las aplicaciones Access trabajan en producción sobre PostgreSQL y no queda ningún backend `.accdb` en uso.
 
 ### Fase 5. Expedientes a web
 
@@ -256,7 +300,9 @@ El propietario borra en el legacy; el agente aporta la evidencia.
 | Id | Hipótesis | Se ensaya en | Estado |
 |---|---|---|---|
 | H-1 | Cómo resuelve Access la cadena de vínculos front → vínculo del backend → ODBC: si el front necesita revincularse o no. | Fase 3 | pendiente |
-| H-2 | Las uniones entre tablas deben estar en el mismo motor: una unión mixta `.accdb` + ODBC se resuelve en local dentro de Citrix, con lentitud. Por eso los backends cuyas tablas se unen entre sí se trasladan juntos, y `Lanzadera_Datos` (identidad) debe estar en PostgreSQL desde el principio, porque la comparten las dos Lanzaderas y todas las aplicaciones Access. | Fase 3 (decide el alcance de la fase 4) | pendiente |
+| H-2 | Las uniones entre tablas deben estar en el mismo motor: una unión mixta `.accdb` + ODBC se resuelve en local dentro de Citrix, con lentitud. Por eso los backends cuyas tablas se unen entre sí se trasladan juntos, y `Lanzadera_Datos` (identidad) debe estar en PostgreSQL desde el principio, porque la comparten las dos Lanzaderas y todas las aplicaciones Access. | — | sin objeto: con el traslado único (decisión 19) no hay uniones mixtas |
+| H-3 | La copia del front por usuario que ya hace la Lanzadera (`%APPDATA%\Aplicaciones DYSN\`, `Aplicacion.cls:305` y `:668`) funciona en Citrix sin cambios. Falta confirmar la sincronización de perfiles itinerantes (copiar `.accde` a `%APPDATA%` alarga los inicios de sesión; valorar `%LOCALAPPDATA%`), la ruta de arranque (hoy un acceso directo a una carpeta sincronizada en el perfil), las instalaciones del servidor (Access o Access Runtime con la arquitectura de los fronts y el driver ODBC de PostgreSQL) y cuántas sesiones simultáneas soporta. Se comprueba en dos pasos: primero en local, con una máquina virtual Windows Server en evaluación con el rol RDS Session Host (la capa multisesión sobre la que se ejecuta Citrix), la Lanzadera publicada como RemoteApp, Access Runtime, el driver ODBC de PostgreSQL y varios usuarios a la vez; después, en el Citrix de preproducción, lo que solo existe allí: la gestión de perfiles de Citrix, sus políticas y el rendimiento desde el puesto. Montar Citrix completo en local no compensa (dominio, Delivery Controller, StoreFront, licencias). | Fase 3 (prueba local antes) | pendiente |
+| H-4 | Los documentos adjuntos viven como ficheros en la carpeta `ANEXOS` de cada aplicación en la unidad de red. La web tiene que acceder a esa carpeta o hay que decidir dónde guarda los documentos. | Fase 3 | pendiente |
 
 ## P-EXP-3
 
@@ -287,6 +333,18 @@ Las issues abiertas se redactaron bajo el supuesto de corte único. Se propone:
 Este documento no clasifica más issues concretas; la reclasificación se hace en issues aparte.
 
 ## Cambios de rumbo
+
+### 2026-11-05. Traslado único de los datos y acceso por Citrix
+
+- **Qué se creía.** Los backends pasaban a PostgreSQL por tandas: primero `Lanzadera_Datos` y los núcleos compartidos, y los demás a medida que sus aplicaciones migraban, con backends `.accdb` conviviendo con PostgreSQL. La coexistencia figuraba como estrategia adoptada.
+- **Qué cambia.** Tras el saneamiento, se ensaya en Citrix el paso de todos los backends y después se trasladan todos de una vez; es el único paso irreversible (decisión 19). Los usuarios entran a todo por Citrix mientras convivan, y la web irá después a OpenShift (decisión 20). Ante dirección, la coexistencia es una propuesta en exploración frente al corte único (decisión 18).
+- **Motivo.** El propietario lo aclara el 2026-11-05 al preparar la presentación para dirección. Con un solo motor desaparecen las uniones mixtas (H-2) y la convivencia de dos formatos de datos.
+
+### 2026-11-04. Alcance por catálogo de la lanzadera y fusión de AGEDYS
+
+- **Qué se creía.** El alcance era el catálogo `TbAplicaciones` completo, con Sirdee y AGEDO excluidos.
+- **Qué cambia.** El propietario delimita el alcance con el catálogo visible de la Lanzadera: entran las nueve aplicaciones del grupo general más Seguridad y HPS; quedan fuera SICA y Contratos. AGEDYS Técnico y AGEDYS ECO se sustituyen por una sola aplicación web, APGEDYS, con vista según rol (decisión 13).
+- **Motivo.** El catálogo es lo que el usuario ve y abre; migrar una aplicación que no está en el catálogo no tiene destinatario. La fusión de AGEDYS evita mantener dos aplicaciones web para el mismo dato técnico y económico.
 
 ### 2026-11-04. Primero descubrimiento global; después saneamiento
 
