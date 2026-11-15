@@ -47,6 +47,7 @@ El documento es vivo: cambia cuando se descubre que una fase o una hipótesis ll
 | 25 | Se retira la funcionalidad de códigos de compras de expediente. `TbExpedientesCodigoCompras` existe en `AGEDYS_DATOS` y en `Expedientes_datos`, las dos vacías en producción: solo AGEDYS ECO tiene pantalla para crear códigos (en su copia), Expedientes solo lee y borra la suya y en AGEDYS Técnico el código es muerto. Issues de la fase 1: [AGEDYS_ECO#11](https://github.com/DysTelefonica/AGEDYS_ECO/issues/11), [Expedientes#278](https://github.com/DysTelefonica/Expedientes/issues/278) y [AGEDYS#4](https://github.com/DysTelefonica/AGEDYS/issues/4); las dos tablas van a cuarentena cuando estén publicadas. |
 | 26 | Se retira la cola local de correo de Contratos. `GestionContratos_datos` tiene su propia `TbCorreosEnviados` (204 filas de 2023-2024, 184 sin enviar): la clase `Correo` que la escribe no se instancia en ningún sitio y ningún proceso de Automatización abre ese backend. Issue de la fase 1: [CONTRATOS#2](https://github.com/DysTelefonica/CONTRATOS/issues/2). La cola local de Solicitudes HPS queda abierta: tiene emisor propio en producción y un diseño con recordatorios que la cola común no soporta (ver [clasificación de las tablas](fase-0/clasificacion-tablas.md)). |
 | 27 | AGEDO ya no se usa (propietario, 2026-11-05: «agedo no se usa ahora ya»). Deja de ser consumidor permanente: los vínculos de su backend ya no cuentan como uso y `tbUsuarios` de `Lanzadera_Datos`, que solo vinculaba AGEDO, pasa a huérfana. Sigue en pie la otra parte de la decisión 14: las tablas de `AGEDO20_Datos` que leen aplicaciones del alcance (`TbDocumentos`, `TbDocumentosID`, `TbDocExpProceso`) llegan a PostgreSQL. Tareas sigue en uso. |
+| 28 | El propietario valida la evidencia de la fase 0 (2026-11-15): la fase pasa a `revisada` y con ella se habilita la fase 1, el saneamiento en Access, aplicación a aplicación y en el orden de la decisión 24. Validar la evidencia no es aplicarla: los cambios en el legacy los aplica el propietario, y cada punto abierto del [cierre de la fase 0](fase-0/cierre.md) sigue bloqueando su propia fase. |
 | 12 | La Lanzadera es la primera aplicación en coexistir, porque alberga el control de permisos del resto de herramientas y tiene a todos los usuarios y sus permisos (`Lanzadera_Datos`). El ensayo de la fase 3 se hace con una copia de `Lanzadera_Datos` en preproducción, no con una isla. Ver [Cambios de rumbo](#cambios-de-rumbo). El alcance del ensayo queda sustituido por la decisión 19. |
 
 ## Modelo de coexistencia
@@ -149,8 +150,8 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 
 | Fase | Nombre | Estado |
 |---|---|---|
-| 0 | Inventario | hecha |
-| 1 | Saneamiento en Access | pendiente |
+| 0 | Inventario | revisada |
+| 1 | Saneamiento en Access | en curso |
 | 2 | Unificar el acceso a datos | pendiente |
 | 3 | Ensayo en Citrix con todos los backends (antes: con `Lanzadera_Datos`; antes aún: con una isla) | revisada |
 | 4 | Traslado único de todos los datos a PostgreSQL | pendiente |
@@ -158,7 +159,7 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 
 ### Fase 0. Inventario
 
-**Estado:** hecha (2026-11-06). El criterio de terminado se cumple con evidencia: ver el [cierre de la fase 0](fase-0/cierre.md), con lo que queda abierto y en qué fase se resuelve. Pasa a `revisada` cuando el propietario valide la evidencia; hasta entonces no se aplica nada en el legacy.
+**Estado:** revisada (2026-11-15). El criterio de terminado se cumple con evidencia: ver el [cierre de la fase 0](fase-0/cierre.md), con lo que queda abierto y en qué fase se resuelve. El propietario validó esa evidencia el 2026-11-15 (decisión 28), con lo que la fase 1 queda habilitada. Validar la evidencia no es aplicarla: hasta que el propietario aplique un cambio en el legacy, el inventario sigue siendo de solo lectura.
 
 **Objetivo.** Conocer, en solo lectura, el grafo completo de dependencias entre backends, el estado de cada tabla y los patrones de VBA que no sobrevivirían a PostgreSQL.
 
@@ -196,7 +197,7 @@ R-1 se confirma en los backends y se refuta en los fronts, con las excepciones m
 
 ### Fase 1. Saneamiento en Access
 
-**Estado:** pendiente.
+**Estado:** en curso (2026-11-15), habilitada por la validación de la fase 0 (decisión 28). El trabajo empieza por las acciones de cada aplicación, en el orden de la decisión 24, con su issue en el repositorio de la aplicación. Los cambios en el legacy los aplica el propietario, no el agente.
 
 **Objetivo.** Mejorar la estructura de datos en el legacy, backend a backend y antes de migrar cada uno, para que la web no empiece sobre tablas con defectos inaceptables (decisión 11). Los cambios se hacen sobre `.accdb` y son reversibles.
 
