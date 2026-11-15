@@ -1076,6 +1076,76 @@ class Phase3SubstitutionTests(unittest.TestCase):
             self.assertIn("name", err)
 
 
+class Phase3SliceBlocksTests(unittest.TestCase):
+    """Fase 0, 0.5: AGENTS.md se sella por sus bloques propagados.
+
+    Un AGENTS.md con marcadores `personal-skills:slice:*` lleva dos partes: el
+    bloque que escribe la propagación y la sección local del consumer. Sellar
+    el fichero entero obligaba a re-sellar cada vez que el consumer tocaba su
+    sección. Con el bloque en `slice_blocks`, la fase 3 da AGENTS.md por
+    sellado aunque no esté en `files`, también con `--seal-baseline`, que
+    sigue exigiendo el mismo `pattern_path` (cadete 0.5c).
+    """
+
+    BLOCK = ("<!-- personal-skills:slice:consumer @ v1234567 -->\n"
+             "Regla propagada.\n"
+             "<!-- /personal-skills:slice:consumer -->\n")
+
+    def _repo(self, tmp, local="Sección local.\n"):
+        contract = complete_contract(upto=3)
+        contract["phases"]["3"]["pattern_paths"].append("AGENTS.md")
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        seed_evidence(repo, 3)
+        seed_phase3(repo)
+        (repo / "AGENTS.md").write_text("# consumer\n\n" + self.BLOCK + "\n" + local,
+                                        encoding="utf-8")
+        block = CLI.extract_slice_block((repo / "AGENTS.md").read_text(encoding="utf-8"),
+                                        "consumer")
+        manifest = json.loads((repo / ".governance-manifest.json").read_text(encoding="utf-8"))
+        manifest["files"].pop("AGENTS.md")
+        manifest["slice_blocks"] = {"consumer": "sha256:" + hashlib.sha256(
+            block[1].encode("utf-8")).hexdigest()}
+        touch(repo, ".governance-manifest.json", json.dumps(manifest, indent=2))
+        return repo
+
+    def test_agents_md_sealed_by_its_slice_block_passes_phase_three(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            code, out, err = run_cli(["adoption", "check", "--phase", "3", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_the_local_section_changes_without_a_reseal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            with (repo / "AGENTS.md").open("a", encoding="utf-8") as agents:
+                agents.write("Otra regla local.\n")
+            code, out, err = run_cli(["adoption", "check", "--phase", "3", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_it_holds_under_the_seal_baseline_that_still_declares_agents_md(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            base = Path(tmp) / "base"
+            (base / ".github").mkdir(parents=True)
+            (base / ".github" / "ci-pattern-adoption.json").write_text(json.dumps(
+                {"schema_version": 1, "phases": {"3": {"pattern_paths": [
+                    ".github/workflows/ci.yml", "AGENTS.md"]}}}), encoding="utf-8")
+            code, out, err = run_cli(["adoption", "check", "--phase", "3",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_a_modified_propagated_block_still_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            text = (repo / "AGENTS.md").read_text(encoding="utf-8")
+            (repo / "AGENTS.md").write_text(text.replace("Regla propagada.", "Regla pirata."),
+                                            encoding="utf-8")
+            code, _, err = run_cli(["adoption", "check", "--phase", "3", str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn("AGENTS.md", err)
+            self.assertIn("slice_blocks", err)
+
+
 class SealBaselineTests(unittest.TestCase):
     """#1317: la fase 3 no puede reducir la base de sellado del patrón.
 
@@ -4360,6 +4430,57 @@ class AdoptionContractSchemaTests(unittest.TestCase):
             "la CLI lo retiró por #513/#540; reintroducir requiere "
             "reintroducir la regla completa, no basta con citar el "
             "nombre")
+
+
+class GovernedPathCasingTests(unittest.TestCase):
+    """Auditoría de CI/CD de cadete 2026-10-29, hallazgo 7: en un sistema de
+    ficheros que no distingue mayúsculas (Windows), el patrón literal
+    `.github/pull_request_template.md` casa con `PULL_REQUEST_TEMPLATE.md` y
+    `glob` devuelve la ruta del patrón. La fase 0 la daba por artefacto sin
+    inventario aunque el inventario nombra el fichero real."""
+
+    def _repo(self, tmp):
+        repo = Path(tmp) / "repo"
+        (repo / ".github").mkdir(parents=True)
+        (repo / ".github" / "PULL_REQUEST_TEMPLATE.md").write_text("x", encoding="utf-8")
+        return repo
+
+    def test_the_relative_path_takes_the_name_on_disk(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            self.assertEqual(
+                CLI._on_disk_relpath(repo, repo / ".github" / "pull_request_template.md"),
+                ".github/PULL_REQUEST_TEMPLATE.md")
+
+    def test_a_missing_file_has_no_relative_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            self.assertIsNone(CLI._on_disk_relpath(repo, repo / ".github" / "otro.md"))
+
+    def test_a_case_insensitive_match_is_reported_by_its_real_name(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            real_glob = Path.glob
+
+            def insensitive_glob(self, pattern):
+                # Como en Windows: el segmento literal casa sin distinguir
+                # mayúsculas y la ruta sale escrita como el patrón.
+                if pattern == ".github/pull_request_template.md":
+                    return iter([self / pattern])
+                return real_glob(self, pattern)
+
+            real_is_file = Path.is_file
+
+            def insensitive_is_file(self):
+                if self.name == "pull_request_template.md":
+                    return real_is_file(self.with_name("PULL_REQUEST_TEMPLATE.md"))
+                return real_is_file(self)
+
+            with unittest.mock.patch.object(Path, "glob", insensitive_glob), \
+                    unittest.mock.patch.object(Path, "is_file", insensitive_is_file):
+                found = CLI._scan_governed_paths(repo)
+            self.assertIn(".github/PULL_REQUEST_TEMPLATE.md", found)
+            self.assertNotIn(".github/pull_request_template.md", found)
 
 
 class PhaseZeroWorkflowCommentsTests(unittest.TestCase):

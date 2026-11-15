@@ -97,12 +97,14 @@ class TestReleaseNotesTemplate(unittest.TestCase):
         self.assertIn("Rollback:", _bloque(self.text, "Cómo actualizar / desplegar"))
 
     def test_runbook_y_workflow_apuntan_a_la_misma_ruta(self):
-        # La convención vigente es la raíz `RELEASE-<TAG>.md`: el workflow la lee con
-        # `--notes-file` y el runbook la describe. Si alguna cambia, este test falla.
+        # La convención por defecto es la raíz `RELEASE-<TAG>.md`: el workflow la lee
+        # de RELEASE_NOTES_PATH (#1456) y el runbook la describe. Si alguna cambia,
+        # este test falla.
         runbook = RUNBOOK.read_text(encoding="utf-8")
         workflow = RELEASE_WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("RELEASE-<TAG>.md", runbook)
-        self.assertIn('RELEASE-$GITHUB_REF_NAME.md', workflow)
+        self.assertIn('RELEASE_NOTES_PATH: "RELEASE-{tag}.md"', workflow)
+        self.assertIn('--notes-file "$RELEASE_NOTES_FILE"', workflow)
 
     def test_runbook_describe_las_secciones_de_la_plantilla(self):
         runbook = RUNBOOK.read_text(encoding="utf-8")

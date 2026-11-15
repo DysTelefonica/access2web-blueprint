@@ -129,6 +129,93 @@ class TestLockfilesDoNotCount(unittest.TestCase):
         self.assertEqual(budget.budget_lines(numstat), 12)
 
 
+GITATTRIBUTES = """\
+# generados por scripts/build-*.py
+docs/skills-inventory.html linguist-generated
+docs/ci-pattern-flow.md linguist-generated=true
+*.min.js linguist-generated
+gen/** linguist-generated
+gen/keep.md -linguist-generated
+app/** text eol=lf
+"""
+
+
+class TestGeneratedPatterns(unittest.TestCase):
+    """#1440: lo que la base marca ``linguist-generated`` no es trabajo de revision."""
+
+    def setUp(self) -> None:
+        self.patterns = budget.generated_patterns(GITATTRIBUTES)
+
+    def test_a_marked_path_is_generated(self) -> None:
+        for path in ("docs/skills-inventory.html", "docs/ci-pattern-flow.md"):
+            self.assertTrue(budget.is_generated(path, self.patterns), path)
+
+    def test_a_pattern_without_slash_matches_at_any_depth(self) -> None:
+        self.assertTrue(budget.is_generated("web/vendor/app.min.js", self.patterns))
+
+    def test_a_double_star_matches_the_whole_subtree(self) -> None:
+        self.assertTrue(budget.is_generated("gen/a/b/c.txt", self.patterns))
+
+    def test_the_last_matching_line_wins(self) -> None:
+        self.assertFalse(budget.is_generated("gen/keep.md", self.patterns))
+
+    def test_handwritten_docs_are_not_generated(self) -> None:
+        for path in ("docs/guide.md", "README.md", "docs/sub/skills-inventory.html"):
+            self.assertFalse(budget.is_generated(path, self.patterns), path)
+
+    def test_other_attributes_do_not_mark_a_path(self) -> None:
+        self.assertFalse(budget.is_generated("app/main.py", self.patterns))
+
+    def test_without_gitattributes_nothing_is_generated(self) -> None:
+        self.assertEqual(budget.generated_patterns(""), ())
+        self.assertFalse(budget.is_generated("docs/skills-inventory.html", ()))
+
+    def test_the_lockfile_rule_is_unchanged(self) -> None:
+        self.assertTrue(budget.is_generated("uv.lock", ()))
+
+    def test_a_double_star_not_next_to_a_slash_is_a_single_star(self) -> None:
+        """Como ``git check-attr``: ``docs/**.md`` no cruza directorios."""
+        patterns = budget.generated_patterns("docs/**.md linguist-generated\n")
+        self.assertTrue(budget.is_generated("docs/x.md", patterns))
+        self.assertFalse(budget.is_generated("docs/a/x.md", patterns))
+
+    def test_quoted_patterns_and_macro_lines_mark_nothing(self) -> None:
+        text = '"sp ace.txt" linguist-generated\n[attr]gen linguist-generated\n'
+        patterns = budget.generated_patterns(text)
+        self.assertEqual(patterns, ())
+
+    def test_a_leading_bom_is_ignored(self) -> None:
+        patterns = budget.generated_patterns("﻿gen.html linguist-generated\n")
+        self.assertTrue(budget.is_generated("gen.html", patterns))
+
+
+class TestGeneratedFilesDoNotCount(unittest.TestCase):
+    """#1440: los ficheros generados quedan fuera; la documentacion a mano cuenta."""
+
+    def setUp(self) -> None:
+        self.patterns = budget.generated_patterns(GITATTRIBUTES)
+
+    def test_a_modified_generated_file_does_not_count(self) -> None:
+        path = "docs/skills-inventory.html"
+        self.assertFalse(budget.counts_to_budget(path, path, self.patterns))
+
+    def test_a_handwritten_doc_counts(self) -> None:
+        self.assertTrue(budget.counts_to_budget("docs/guide.md", "docs/guide.md", self.patterns))
+
+    def test_a_rename_from_authored_into_a_generated_path_counts(self) -> None:
+        self.assertTrue(budget.counts_to_budget("app/auth.py", "gen/auth.py", self.patterns))
+
+    def test_without_patterns_a_generated_path_still_counts(self) -> None:
+        path = "docs/skills-inventory.html"
+        self.assertTrue(budget.counts_to_budget(path, path))
+
+    def test_budget_lines_leaves_generated_files_out(self) -> None:
+        numstat = ("10\t2\tdocs/guide.md\n300\t300\tdocs/skills-inventory.html\n"
+                   "5\t5\tgen/a/b.txt\n")
+        self.assertEqual(budget.budget_lines(numstat, generated=self.patterns), 12)
+        self.assertEqual(budget.budget_lines(numstat), 622)
+
+
 class TestParseNumstat(unittest.TestCase):
     def test_plain_path(self) -> None:
         self.assertEqual(budget.parse_numstat("app/a.py"), ("app/a.py", "app/a.py"))

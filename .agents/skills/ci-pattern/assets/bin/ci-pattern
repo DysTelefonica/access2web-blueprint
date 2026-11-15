@@ -222,12 +222,23 @@ def load_manifest(repo, allow_legacy=False):
     return manifest
 
 
+def manifest_newline(repo):
+    """El final de línea del manifiesto en disco: CRLF si ya lo usa, si no LF.
+    Re-sellar no cambia los finales de línea de un manifiesto commiteado con
+    CRLF; el diff que se revisa es solo el sello (#1415)."""
+    try:
+        data = (Path(repo) / MANIFEST_NAME).read_bytes()
+    except OSError:
+        return "\n"
+    return "\r\n" if b"\r\n" in data else "\n"
+
+
 def write_manifest(repo, manifest):
     # Sin ordenar las claves: re-sellar cambia la línea del hash y conserva el
     # orden del manifiesto, así el diff que se revisa es solo el sello (#1415).
     path = Path(repo) / MANIFEST_NAME
     path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8",
-                    newline="\n")
+                    newline=manifest_newline(repo))
     return path
 
 
@@ -1285,7 +1296,7 @@ def cmd_manifest_seal(args):
         target = Path(out_path)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(json.dumps(sealed, indent=2) + "\n",
-                          encoding="utf-8", newline="\n")
+                          encoding="utf-8", newline=manifest_newline(repo))
     else:
         write_manifest(repo, sealed)
     destino = out_path or str(repo / MANIFEST_NAME)
@@ -2561,6 +2572,12 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
             "- Conventional Commits: `tipo[(scope)]: descripción` con tipo en "
             "feat|fix|docs|chore|refactor|test|ci|perf.",
             "- Sin atribución de IA: sin `Co-Authored-By` ni pies de página generados.",
+            "- Autor vinculado a una cuenta de GitHub (HR-84): `git config user.name` y "
+            "`git config user.email` con un correo verificado de la cuenta o su dirección "
+            "noreply; un autor que GitHub no vincula (p. ej. `pi-agent <pi-agent@local>`) "
+            "avisa, y bloquea cuando la política declara `commit_identity.mode: enforce`. "
+            "Los bots legítimos se declaran en `commit_identity.allowed_bots` de "
+            "`.github/pr-contract.policy.json`.",
         ]),
         "pull-request": "\n".join([
             f"- Presupuesto: {params['P06_review_budget_lines']} líneas (añadidas + borradas, "
@@ -3096,6 +3113,29 @@ def _referenced_governance_scripts(repo, refs, declared=()):
     return found
 
 
+def _on_disk_relpath(repo, path):
+    """Ruta relativa de ``path`` con los nombres que tiene en disco, o None si
+    no existe. En un sistema de ficheros que no distingue mayúsculas, `glob`
+    devuelve el segmento literal escrito como el patrón
+    (`pull_request_template.md` para `PULL_REQUEST_TEMPLATE.md`), y esa ruta
+    no casa con el inventario, que nombra el fichero real."""
+    current = Path(repo)
+    parts = []
+    for part in path.relative_to(repo).parts:
+        try:
+            names = os.listdir(current)
+        except OSError:
+            return None
+        if part not in names:
+            matches = [n for n in names if n.casefold() == part.casefold()]
+            if len(matches) != 1:
+                return None
+            part = matches[0]
+        parts.append(part)
+        current = current / part
+    return "/".join(parts) if current.is_file() else None
+
+
 def _scan_governed_paths(repo, declared=()):
     """Artefactos de gobierno PRESENTES en el árbol: rutas del catálogo
     (glob como dato) y scripts descubiertos por REFERENCIA (#312)."""
@@ -3104,7 +3144,10 @@ def _scan_governed_paths(repo, declared=()):
     for pattern in patterns:
         for p in repo.glob(pattern):
             if p.is_file():
-                found.add(p.relative_to(repo).as_posix())
+                # Sin nombre resoluble en disco (nombre ambiguo, error de
+                # lectura) se queda la ruta del glob: mejor un hallazgo de más
+                # que un artefacto sin medir.
+                found.add(_on_disk_relpath(repo, p) or p.relative_to(repo).as_posix())
     for rel in _referenced_governance_scripts(repo, refs, declared):
         if (repo / rel).is_file():
             found.add(rel)
@@ -3332,14 +3375,55 @@ def _manifest_identity_findings(repo, declared_paths):
                 f"(esperado {manifest_files[rel]}, encontrado {actual}); "
                 "la identidad del patrón no es autodeclarada (HR-46). "
                 f"Re-selle el manifiesto con: ci-pattern manifest seal {repo}")
-    # (b) todo artefacto declarado del patrón está cubierto por el manifiesto.
+    # (b) todo artefacto declarado del patrón está cubierto por el manifiesto:
+    # en `files` o, para AGENTS.md, por sus bloques propagados en
+    # `slice_blocks` (fase 0, 0.5): la sección local del consumer cambia sin
+    # re-sellar, y el bloque del patrón sigue verificado aquí mismo.
+    covered = set(manifest_files)
+    slice_state = _agents_slice_seal(repo, manifest)
+    if slice_state is True:
+        covered.add(AGENTS_MD)
     for rel in sorted(declared_paths):
-        if rel not in manifest_files:
+        if rel in covered:
+            continue
+        if rel == AGENTS_MD and isinstance(slice_state, str):
             findings.append(
-                f"fase 3: '{rel}' se declara del patrón pero no está en el "
-                "manifiesto de gobierno; la identidad del patrón no es "
-                "autodeclarada (HR-46)")
-    return findings, manifest_files
+                f"fase 3: '{rel}' se sella por 'slice_blocks', pero {slice_state}; "
+                "la identidad del patrón no es autodeclarada (HR-46). "
+                f"Re-propague o re-selle el manifiesto con: ci-pattern manifest seal {repo}")
+            continue
+        findings.append(
+            f"fase 3: '{rel}' se declara del patrón pero no está en el "
+            "manifiesto de gobierno; la identidad del patrón no es "
+            "autodeclarada (HR-46)")
+    return findings, covered
+
+
+AGENTS_MD = "AGENTS.md"
+
+
+def _agents_slice_seal(repo, manifest):
+    """¿Sellan los `slice_blocks` del manifiesto el AGENTS.md del árbol? (0.5).
+
+    `True` si hay bloques declarados y todos están en AGENTS.md con su hash;
+    `None` si el manifiesto no declara bloques; si no, el motivo, para el
+    hallazgo. El hash es el de `verify` y `manifest seal`: el cuerpo del bloque
+    con LF."""
+    blocks = manifest.get("slice_blocks")
+    if not isinstance(blocks, dict) or not blocks:
+        return None
+    agents = Path(repo) / AGENTS_MD
+    if not agents.is_file():
+        return "AGENTS.md no existe en el árbol"
+    text = agents.read_text(encoding="utf-8")
+    for name, expected in sorted(blocks.items()):
+        block = extract_slice_block(text, name)
+        if block is None:
+            return f"el bloque '{name}' no está en AGENTS.md"
+        actual = "sha256:" + hashlib.sha256(block[1].replace("\r\n", "\n").encode("utf-8")).hexdigest()
+        if actual != expected:
+            return f"el bloque '{name}' difiere del hash del manifiesto"
+    return True
 
 
 def _pattern_rulesets_from_host_contract(repo):

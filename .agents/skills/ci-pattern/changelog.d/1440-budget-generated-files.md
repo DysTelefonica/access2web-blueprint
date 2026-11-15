@@ -1,0 +1,3 @@
+type: minor
+
+El presupuesto de revisión (A1 de `pr-contract`, `check_pr_size.py`) deja fuera los ficheros que el `.gitattributes` de la BASE de la PR marca `linguist-generated`, como ya hacía con los lockfiles. La documentación escrita a mano sigue contando, como en `Gentleman-Programming/gentle-ai`. El gate solo lee el `.gitattributes` de la base, así que una PR no puede declarar generadas sus propias líneas. Un renombrado desde una ruta de autoría hacia una generada sigue contando. `check_pr_contract.py` y `check_pr_size.py` aceptan `--gitattributes-file`, y la plantilla `pr-contract.yml.tmpl` pasa el de la base. HR-54.11 y G4.2 de la guía de porting lo recogen. Refs #1440.

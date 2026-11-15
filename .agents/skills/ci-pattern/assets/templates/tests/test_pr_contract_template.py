@@ -28,6 +28,11 @@ class PrContractTemplateTests(unittest.TestCase):
     def setUp(self):
         self.text = TEMPLATE.read_text(encoding="utf-8")
 
+    def test_the_contract_reruns_when_the_body_or_labels_change(self):
+        """#1440: el contrato lee el cuerpo y las etiquetas; los jobs del arbol no (porting-guide)."""
+        for event in ("opened", "edited", "labeled", "unlabeled", "synchronize", "reopened"):
+            self.assertIn(event, self.text)
+
     def test_the_template_declares_no_secret_input(self):
         """El `workflow_call` no exige ningún secreto a quien lo llama."""
         self.assertNotRegex(self.text, r"(?m)^\s+secrets:\s*$")

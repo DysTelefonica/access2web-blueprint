@@ -13,7 +13,8 @@ checks out the tag and refuses when
   content of the tag (a ``.gitattributes`` eol rule or a filter would put
   in the image bytes that the release manifest does not hold).
 
-Then it runs ``<engine> build`` with the OCI labels the deploy gate reads:
+Then it runs ``<engine> build --pull --no-cache`` (fresh base image, no layer
+of an earlier build) with the OCI labels the deploy gate reads:
 ``org.opencontainers.image.revision`` = the tag commit and
 ``org.opencontainers.image.version`` = the tag. ``--push`` also pushes.
 
@@ -109,7 +110,11 @@ def main(argv) -> int:
                 for line in refusals:
                     print(f"  - {line}")
                 return 1
-            ip.run_cmd([*engine, "build", "-f", str(clone / cfg.get("containerfile", "Dockerfile")),
+            # --pull and --no-cache: a release never reuses a cached base or a
+            # cached `dnf update` layer from an earlier build, or its package
+            # fixes never reach the image.
+            ip.run_cmd([*engine, "build", "--pull", "--no-cache",
+                        "-f", str(clone / cfg.get("containerfile", "Dockerfile")),
                         "--label", f"{ip.ImageTree.REVISION}={commit}",
                         "--label", f"{ip.ImageTree.VERSION}={args.tag}",
                         "--label", "org.opencontainers.image.source="

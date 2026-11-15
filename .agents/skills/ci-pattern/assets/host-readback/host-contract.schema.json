@@ -58,10 +58,16 @@
       "uniqueItems": true,
       "description": "Optional. Basenames of workflows to redispatch via workflow_dispatch after a governed merge (DysTelefonica/team-skills#817, HR-817). Each basename must exist as a workflow with `on: workflow_dispatch:` in the repo; if not, the merge fails closed before PUT /merge."
     },
+    "post_merge_verify": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true,
+      "description": "Optional (DysTelefonica/team-skills#1440). Basenames of the workflows that verify the integrated tree after a governed merge. They are dispatched via workflow_dispatch only when the merged PR was behind its base; a PR that was up to date merged the tree its CI already verified. Each one must exist, declare `on: workflow_dispatch:` and run its jobs on that event: a job whose `if:` excludes it (`github.event_name != 'workflow_dispatch'`) blocks the merge before PUT /merge. A name cannot also be in post_merge_dispatch, which keeps the detectors dispatched after every merge. A non-empty list also lets a PR behind its base merge under merge_freshness off."
+    },
     "merge_freshness": {
       "type": "string",
       "enum": ["off", "required"],
-      "description": "Optional, default off (DysTelefonica/team-skills#1397). off: CI runs once, on the PR; a PR behind its base with green required checks merges and the post-merge CI (post_merge_dispatch) verifies the integrated tree; without post_merge_dispatch being behind still blocks. required: a PR behind its base is blocked (#787) and an integrated tree that differs from the verified head exits 5. The workflow-overlap refusal (#783) applies with either value; any other value fails closed (exit 2)."
+      "description": "Optional, default off (DysTelefonica/team-skills#1397). off: CI runs once, on the PR; a PR behind its base with green required checks merges and the post-merge CI (post_merge_dispatch) verifies the integrated tree; without post_merge_dispatch or post_merge_verify (#1440) being behind still blocks. required: a PR behind its base is blocked (#787) and an integrated tree that differs from the verified head exits 5. The workflow-overlap refusal (#783) applies with either value; any other value fails closed (exit 2)."
     },
     "governed_path": {
       "type": "object",

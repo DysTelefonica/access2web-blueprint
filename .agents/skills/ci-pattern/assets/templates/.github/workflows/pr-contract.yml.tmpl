@@ -93,6 +93,13 @@ jobs:
             --names-file .ci-pr-names \
             --log-file .ci-pr-log \
             --output .ci-pr-origins
+          # #1440: lo generado (`linguist-generated`) sale del presupuesto. Se lee
+          # de la BASE: una PR no puede declarar generadas sus propias lineas.
+          if [ -f base/.gitattributes ]; then
+            cp base/.gitattributes .ci-base-gitattributes
+          else
+            : > .ci-base-gitattributes
+          fi
 
       - name: PR contract gate
         env:
@@ -106,7 +113,8 @@ jobs:
             --numstat-file   .ci-pr-numstat \
             --commits-file   .ci-pr-commits \
             --tracked-files  .ci-pr-tracked \
-            --origins-file   .ci-pr-origins
+            --origins-file   .ci-pr-origins \
+            --gitattributes-file .ci-base-gitattributes
 
       # El espejo del veredicto sobre la CABEZA del PR: el check run nativo de
       # este job queda en la base y el merge gobernado no lo ve (ver cabecera).

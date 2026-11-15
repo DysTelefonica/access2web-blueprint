@@ -1,0 +1,56 @@
+name: Post-push compliance
+
+# Detective posterior al push (HR-49), adoptado de DysTelefonica/cadete (#1359): audita cada
+# push a main con el asset canónico vendorizado `check_push_compliance.py`. Para cada commit
+# del rango empujado, la API debe mostrar un PR mergeado en main con los checks requeridos del
+# host-contract (`required`, `pr-gate`) en verde sobre su cabeza y, porque el contrato declara
+# `governed_path`, fusionado por un actor gobernado (`dys-orquestador[bot]`) o con la marca del
+# merge gobernado en el commit de merge. Si no, abre una issue de incidente con la evidencia
+# (SHA, autor, fusionador, checks) y el job falla (exit 1); un estado que no puede medir falla
+# cerrado (exit 2) sin abrir incidente.
+#
+# Solo `push`: el merge gobernado fusiona con el token de instalación de la App
+# `dys-orquestador`, y un merge con ese token sí dispara el `push` de main (al contrario que
+# GITHUB_TOKEN). Por eso el contrato no declara `post_merge_dispatch` ni este workflow
+# `workflow_dispatch`.
+on:
+  push:
+    branches: [main]
+
+# Serializa auditorías de pushes seguidos a main sin abortar ninguna a mitad de evidencia
+# (DysTelefonica/team-skills#800).
+concurrency:
+  group: push-compliance-${{ github.ref }}
+  cancel-in-progress: false
+
+# GITHUB_TOKEN del workflow, sin PAT ni App: lee commits, PRs y check-runs y solo escribe la
+# issue de incidente.
+permissions:
+  contents: read
+  checks: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  push-compliance:
+    name: push compliance
+    # Mismo runner alojado que el resto de workflows: efímero, sin estado entre jobs.
+    runs-on: ubuntu-24.04
+    # El detective espera hasta 900 s (--wait-seconds) a que el CI publique los checks
+    # requeridos; el techo del job queda por encima.
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # NO se usa `python3 -I`: `check_push_compliance.py` importa módulos hermanos de
+      # `assets/runner-controls/` y `sys.path[0]` debe seguir siendo su directorio.
+      - name: Audit the push
+        run: |
+          python3 .agents/skills/ci-pattern/assets/runner-controls/check_push_compliance.py \
+            --event "$GITHUB_EVENT_PATH" \
+            --contract .github/host-contract.json

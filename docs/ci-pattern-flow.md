@@ -31,6 +31,7 @@ detecta el gate de documentación operativa de `ci-pattern adoption check`.
 
 - Conventional Commits: `tipo[(scope)]: descripción` con tipo en feat|fix|docs|chore|refactor|test|ci|perf.
 - Sin atribución de IA: sin `Co-Authored-By` ni pies de página generados.
+- Autor vinculado a una cuenta de GitHub (HR-84): `git config user.name` y `git config user.email` con un correo verificado de la cuenta o su dirección noreply; un autor que GitHub no vincula (p. ej. `pi-agent <pi-agent@local>`) avisa, y bloquea cuando la política declara `commit_identity.mode: enforce`. Los bots legítimos se declaran en `commit_identity.allowed_bots` de `.github/pr-contract.policy.json`.
 
 <!-- ci-pattern-doc:end commits -->
 

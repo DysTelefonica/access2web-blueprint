@@ -1,0 +1,6 @@
+type: patch
+
+**Qué.** El merge gobernado podía dar por ausente el check `required`, por dos motivos. En un commit con más de 100 check-runs, `required` quedaba fuera de la primera página. Y cuando el run había terminado sin publicar `required`, el merge esperaba los 5 minutos del techo para acabar imprimiendo `required check missing`, sin decir qué hacer (cadete#992).
+**Causa.** `check_verdict` leía una sola página (`filter=latest&per_page=100`). Además, un `missing` se trataba siempre como esperable, aunque todos los check-runs del commit estuvieran ya terminados.
+**Arreglo.** `fetch_check_runs` sigue las páginas hasta `total_count`, con el límite de páginas de `github_rest`. Lo comparten el merge gobernado y la auditoría de push. Si todos los check-runs han terminado y falta `required`, el merge falla al momento: «re-run the whole workflow run (not only its failed jobs) and merge again». Tests: `test_required_check_beyond_the_first_page_is_read` y `test_required_absent_from_a_completed_run_fails_fast_and_says_what_to_do`. El stub de GitHub pagina como la API real.
+**A partir de ahora.** Las lecturas de listas de la API siguen la paginación. Un hallazgo que ya no puede cambiar no se espera, y dice qué acción lo resuelve. Fase 0 de CI/CD, punto 0.4.
