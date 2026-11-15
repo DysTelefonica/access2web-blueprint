@@ -331,9 +331,15 @@ def check_closes(pr, base, default_branch, policy, advisories):
                 "en el cuerpo (la issue la cierra el PR punta de cadena)."
             )
         if has_closes:
+            # cadete#1031: la palabra de cierre puede estar en cualquier parte
+            # del cuerpo (un `follow-up: … closes #N` en Chain Context), y GitHub
+            # cierra la issue igual al fusionar. Se cita la línea: el merge
+            # gobernado la bloquea, y la CI tiene que decirlo antes (HR-86).
+            lines = "; ".join(repr(line.strip()) for line in body.splitlines() if rx.search(line))
             advisories.append(
                 "HR-7: el PR con etiqueta chain:partial no debe llevar "
-                "'Closes #<issue>'; solo el PR punta de cadena la cierra."
+                "'Closes #<issue>'; solo el PR punta de cadena la cierra. "
+                f"El merge gobernado lo bloquea. Línea(s): {lines}."
             )
     elif is_tip and requires and not has_closes:
         advisories.append(
@@ -388,7 +394,7 @@ class BudgetFigure:
 def check_budget(pr, figure, policy, findings):
     """A1: el presupuesto es 400 (adiciones + eliminaciones del PR, sin
     exclusiones). Si el diff lo supera, la única vía válida es la
-    etiqueta `size:exception` aplicada por el mantenedor; el campo
+    etiqueta `size:exception` aplicada por el coordinador del proyecto; el campo
     `size-exception-reason:` del cuerpo está retirado.
 
     Sin el mapa de orígenes (--origins-file) el árbol vendorizado cuenta
@@ -404,8 +410,8 @@ def check_budget(pr, figure, policy, findings):
     if not size_exception_applied(pr, policy):
         message = (
             f"A1: el diff supera el presupuesto ({figure.lines} > {budget}) y "
-            f"no lleva la etiqueta '{label_name}' aplicada por el mantenedor. "
-            "Encadene PRs o pida al mantenedor la etiqueta tras responder las "
+            f"no lleva la etiqueta '{label_name}' aplicada por el coordinador. "
+            "Encadene PRs o pida al coordinador del proyecto la etiqueta tras responder las "
             "4 preguntas de '## Excepción de tamaño' en el cuerpo."
         )
         if figure.vendored and not figure.origins_supplied:
@@ -452,7 +458,7 @@ def compile_ai_attribution(patterns):
 
 def check_commits(messages, policy, findings):
     pattern = policy.get("conventional_commit_pattern",
-                         r"^(feat|fix|docs|chore|ci|test|perf|refactor|revert)(\([^)]+\))?!?: ")
+                         r"^(feat|fix|docs|chore|ci|test|perf|refactor|revert|build|style)(\([^)]+\))?!?: ")
     ai_patterns = compile_ai_attribution(
         policy.get("ai_attribution_patterns",
                    ["Co-Authored-By:", "Generated-by:", "Generated with"]))

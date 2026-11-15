@@ -68,11 +68,11 @@ class ValidationsTest(BaseSafeMergeTest):
         proc = run_gate(self.root, base_state())
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
         self.assert_merged(proc, True)
-        # Cleanup: la rama remota se borra.
+        # #1491: la rama remota se conserva siempre (invariante de la flota).
         state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
-        self.assertTrue(any("git/refs/heads/chore/test" in c
-                            for c in state["deleted_branches"]),
-                        state["deleted_branches"])
+        self.assertEqual(state["deleted_branches"], [])
+        self.assertIn("KEEP: remote branch 'chore/test' is kept: the fleet never deletes "
+                      "remote branches", proc.stdout)
 
     def test_check_only_exits_zero(self) -> None:
         proc = run_gate(self.root, base_state(), check_only=True)

@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="../../uat/assets/style-base.css" />
+<title>Propuesta en exploración: migrar por coexistencia de Access y web</title>
+<link rel="stylesheet" href="plan-coexistencia.css" />
+</head>
+<body>
+<div class="page">
+<header class="hero" role="banner">
+  <div class="eyebrow">Propuesta en exploración · Épica #1545</div>
+  <h1>Prueba de viabilidad: ¿pueden convivir Access y la web sobre los mismos datos?</h1>
+  <p class="lead">El plan actual es un cambio único al final: cuando la última aplicación web esté terminada, se apaga todo Access y se enciende lo nuevo. Estamos explorando si es posible otra vía: pasar primero todos los datos a PostgreSQL, tras un ensayo completo, y después llevar las aplicaciones a la web una a una, de forma que cada una pueda volver a Access si hace falta.</p>
+</header>
+
+<section class="card" aria-labelledby="sec-ways">
+  <h2 id="sec-ways">Dos caminos</h2>
+  <div class="ways">
+    <div class="node way-now">
+      <span class="rag-pill rag-grey">Plan actual</span>
+      <h3>Corte único al final</h3>
+      <p class="where">La web se construye aparte, sin compartir nada con Access. Cuando la última aplicación web está terminada, se apaga todo el legacy y se enciende lo nuevo de una vez.</p>
+      <ul>
+        <li>Nada se pone en producción hasta el final.</li>
+        <li>Todo el riesgo se concentra en un solo día.</li>
+        <li>Los datos se migran de golpe en ese corte.</li>
+      </ul>
+    </div>
+    <div class="node way-new">
+      <span class="rag-pill rag-violet">Propuesta en exploración</span>
+      <h3>Coexistencia, aplicación a aplicación</h3>
+      <p class="where">Primero todos los datos pasan de los ficheros Access a PostgreSQL, y las aplicaciones Access siguen funcionando contra él. Después cada aplicación pasa a la web cuando está lista, y volver atrás es encender de nuevo su botón en Access.</p>
+      <ul>
+        <li>Los datos se mueven una sola vez, tras un ensayo completo en Citrix. Ese paso no tiene vuelta atrás.</li>
+        <li>Cada aplicación entra en servicio en cuanto está lista.</li>
+        <li>El paso de cada aplicación a la web sí se puede deshacer.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout warn"><strong>Qué tiene que demostrar la exploración.</strong> Que todas las aplicaciones Access funcionan en Citrix contra PostgreSQL, sin backends Access, y con un rendimiento aceptable. Se demuestra en preproducción antes del traslado de los datos, que es el único paso sin vuelta atrás. Si no se demuestra, se sigue con el corte único, y el inventario de la fase 0 sirve igual para ese camino.</div>
+</section>
+
+<section class="card" aria-labelledby="sec-arch">
+  <h2 id="sec-arch">Cómo funciona hoy y cómo quedaría con la propuesta</h2>
+  <div class="views" role="tablist" aria-label="Vista del montaje">
+    <button type="button" role="tab" id="tab-today" aria-controls="view-today" aria-selected="true">Cómo funciona hoy</button>
+    <button type="button" role="tab" id="tab-future" aria-controls="view-future" aria-selected="false" tabindex="-1">Cómo quedaría</button>
+  </div>
+
+  <div id="view-today" role="tabpanel" aria-labelledby="tab-today">
+    <figure class="schema">
+      <svg viewBox="0 0 1000 438" role="img" aria-labelledby="svg-today-t svg-today-d">
+        <title id="svg-today-t">Esquema del funcionamiento actual</title>
+        <desc id="svg-today-d">Cada aplicación tiene una carpeta en la unidad de red compartida con sus datos, sus anexos y una carpeta de recursos con el front compilado, el fichero de versión y los iconos. Al abrir una aplicación, si su versión ha subido, el front y los iconos se copian al equipo del usuario, que lo ejecuta en local y lee y escribe directamente en el fichero de datos compartido.</desc>
+        <defs>
+          <marker id="ah-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#757575"/></marker>
+          <marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0066CC"/></marker>
+        </defs>
+        <g font-size="13" fill="#1A1A1A">
+          <g id="pc">
+            <rect x="20" y="30" width="250" height="100" rx="10" fill="#fff" stroke="#757575" stroke-width="2"/>
+            <text x="35" y="55" font-weight="700" fill="#003D7A">Equipo de un usuario</text>
+            <rect x="35" y="70" width="105" height="42" rx="6" fill="#E8EEF5"/><text x="87" y="88" text-anchor="middle" font-size="12">Lanzadera</text><text x="87" y="104" text-anchor="middle" font-size="11" fill="#5C5C5C">copia local</text>
+            <rect x="150" y="70" width="105" height="42" rx="6" fill="#E8EEF5"/><text x="202" y="88" text-anchor="middle" font-size="12">Aplicación</text><text x="202" y="104" text-anchor="middle" font-size="11" fill="#5C5C5C">.accde + iconos</text>
+          </g>
+          <use href="#pc" y="120"/>
+          <use href="#pc" y="240"/>
+          <text x="145" y="392" text-anchor="middle" font-size="12" fill="#5C5C5C">… y así en cada puesto</text>
+
+          <rect x="560" y="20" width="420" height="398" rx="12" fill="#fff" stroke="#757575" stroke-width="2" stroke-dasharray="6 4"/>
+          <text x="580" y="48" font-weight="700" fill="#003D7A">Unidad de red compartida</text>
+          <text x="580" y="68" font-size="12" fill="#5C5C5C" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">\\datoste\APLICACIONES_DYS\Aplicaciones PpD</text>
+
+          <rect x="580" y="84" width="380" height="270" rx="8" fill="#F5F7FA" stroke="#D4DBE3"/>
+          <text x="596" y="108" font-weight="700">Carpeta EXPEDIENTES</text>
+          <rect x="596" y="122" width="348" height="92" rx="6" fill="#fff" stroke="#D4DBE3"/>
+          <text x="610" y="142" font-weight="700" font-size="12" fill="#003D7A">recursos</text>
+          <text x="610" y="162" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">Expedientes.accde</text><text x="790" y="162" font-size="12" fill="#5C5C5C">front compilado</text>
+          <text x="610" y="182" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">Expedientes.ini</text><text x="790" y="182" font-size="12" fill="#5C5C5C">versión en producción</text>
+          <text x="610" y="202" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">iconos</text><text x="790" y="202" font-size="12" fill="#5C5C5C">se copian con el front</text>
+          <rect x="596" y="224" width="348" height="58" rx="6" fill="#fff" stroke="#0066CC"/>
+          <path d="M612,240 v24 a12,4 0 0 0 24,0 v-24" fill="#E8EEF5" stroke="#0066CC"/><ellipse cx="624" cy="240" rx="12" ry="4" fill="#E8EEF5" stroke="#0066CC"/>
+          <text x="648" y="248" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">Expedientes_datos.accdb</text>
+          <text x="648" y="268" font-size="12" fill="#5C5C5C">los datos, abiertos a la vez por todos</text>
+          <rect x="596" y="292" width="348" height="48" rx="6" fill="#fff" stroke="#D4DBE3"/>
+          <text x="610" y="313" font-weight="700" font-size="12" fill="#003D7A">ANEXOS</text>
+          <text x="610" y="331" font-size="12" fill="#5C5C5C">documentos adjuntos, como ficheros</text>
+          <text x="580" y="374" font-size="12" font-weight="600" fill="#5C5C5C">Igual para cada aplicación, cada una en su carpeta:</text>
+          <text x="580" y="392" font-size="11" fill="#5C5C5C">0Lanzadera · BRASS · CONDOR · GESTION RIESGOS · HPS · No Conformidades ·</text>
+          <text x="580" y="408" font-size="11" fill="#5C5C5C">Proyectos · REGISTROS · Seguridad · SOLICITUDES HPS · AGEDO · SICA …</text>
+
+          <g stroke="#757575" stroke-width="2" stroke-dasharray="6 4" fill="none" marker-end="url(#ah-grey)">
+            <path d="M594,160 C470,150 380,90 272,85"/>
+            <path d="M594,168 C470,175 380,205 272,205"/>
+            <path d="M594,176 C480,210 390,320 272,325"/>
+          </g>
+          <text x="420" y="78" text-anchor="middle" font-size="12" font-weight="600" fill="#5C5C5C">al abrir, si sube la versión del .ini,</text>
+          <text x="420" y="94" text-anchor="middle" font-size="12" fill="#5C5C5C">se copian el front y los iconos</text>
+
+          <g stroke="#0066CC" stroke-width="2" fill="none" marker-start="url(#ah-blue)" marker-end="url(#ah-blue)">
+            <path d="M272,115 C420,130 470,245 594,250"/>
+            <path d="M272,235 C420,240 480,255 594,256"/>
+            <path d="M272,355 C430,355 480,270 594,262"/>
+          </g>
+          <text x="280" y="430" text-anchor="start" font-size="12" font-weight="600" fill="#0066CC">cada equipo lee y escribe directamente en el fichero de datos compartido</text>
+        </g>
+      </svg>
+      <figcaption>Hoy: cada puesto ejecuta su propia copia de cada aplicación contra los ficheros de datos de la unidad de red.</figcaption>
+    </figure>
+    <p>Cada aplicación se copia al ordenador de cada usuario y se ejecuta allí. Los datos viven en ficheros Access en una unidad de red compartida.</p>
+    <div class="today">
+      <div class="node pc">
+        <div>
+          <h3>Ordenador de cada usuario</h3>
+          <p class="where">Todo lo que sigue ocurre en cada puesto, uno por uno</p>
+        </div>
+        <ol class="steps">
+          <li><span>El usuario pulsa el acceso directo, que abre <code>ParaLanzadera.accdb</code> en la unidad de red.</span></li>
+          <li><span>Se copia la última versión de la Lanzadera a la carpeta temporal del usuario y se abre en su equipo.</span></li>
+          <li><span>Al abrir cada aplicación, si la versión de su <code>.ini</code> ha subido, se copian a su equipo el front compilado (<code>.accde</code>) y sus iconos desde la carpeta <code>recursos</code>.</span></li>
+          <li><span>La aplicación se ejecuta en el equipo del usuario y lee y escribe directamente en el fichero de datos de su carpeta, y en <code>ANEXOS</code> los documentos.</span></li>
+        </ol>
+      </div>
+      <div class="shares">
+        <div class="node share">
+          <h3>Una carpeta por aplicación</h3>
+          <p class="where">En la unidad de red compartida. Dentro: <code>recursos</code> (front, versión e iconos), el fichero de datos y <code>ANEXOS</code>.</p>
+          <p class="arrow">← De <code>recursos</code> salen las copias (pasos 1 a 3)</p>
+        </div>
+        <div class="node share">
+          <h3>Datos y anexos compartidos</h3>
+          <p class="where">Un fichero Access de datos por aplicación, abierto a la vez desde todos los equipos, y los documentos adjuntos como ficheros.</p>
+          <p class="arrow">← Aquí leen y escriben (paso 4)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-future" role="tabpanel" aria-labelledby="tab-future" hidden>
+  <figure class="schema">
+    <svg viewBox="0 0 1000 470" role="img" aria-labelledby="svg-fut-t svg-fut-d">
+      <title id="svg-fut-t">Esquema de cómo quedaría con la propuesta</title>
+      <desc id="svg-fut-d">Los usuarios entran siempre por Citrix. En el servicio Citrix se ejecutan la Lanzadera Access, las aplicaciones Access y un navegador publicado que abre la web nueva. La web nueva y PostgreSQL común están en otra máquina de la misma red. Las aplicaciones Access acceden a PostgreSQL por ODBC. Ya no queda ningún backend Access.</desc>
+      <defs>
+        <marker id="bh-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#757575"/></marker>
+        <marker id="bh-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0066CC"/></marker>
+      </defs>
+      <g font-size="13" fill="#1A1A1A">
+        <g id="user">
+          <rect x="20" y="90" width="170" height="70" rx="10" fill="#fff" stroke="#757575" stroke-width="2"/>
+          <text x="105" y="120" text-anchor="middle" font-weight="700" fill="#003D7A">Equipo de usuario</text>
+          <text x="105" y="142" text-anchor="middle" font-size="12" fill="#5C5C5C">solo el cliente Citrix</text>
+        </g>
+        <use href="#user" y="100"/>
+        <use href="#user" y="200"/>
+
+        <rect x="300" y="40" width="680" height="420" rx="14" fill="none" stroke="#D4DBE3" stroke-width="2" stroke-dasharray="8 6"/>
+        <text x="965" y="450" text-anchor="end" font-size="12" font-weight="700" fill="#5C5C5C">MISMA RED INTERNA</text>
+
+        <rect x="325" y="70" width="290" height="240" rx="10" fill="#fff" stroke="#757575" stroke-width="2"/>
+        <text x="340" y="96" font-weight="700" fill="#003D7A">Servicio Citrix</text>
+        <text x="340" y="114" font-size="12" fill="#5C5C5C">Servidor de aplicaciones Windows</text>
+        <rect x="340" y="126" width="260" height="34" rx="6" fill="#E3F2FD" stroke="#0066CC"/><text x="470" y="148" text-anchor="middle" font-weight="600" fill="#003D7A">Navegador publicado: web nueva</text>
+        <rect x="340" y="168" width="260" height="34" rx="6" fill="#E8EEF5"/><text x="470" y="190" text-anchor="middle">Lanzadera Access</text>
+        <rect x="340" y="210" width="260" height="34" rx="6" fill="#E8EEF5"/><text x="470" y="232" text-anchor="middle">Aplicaciones Access aún no migradas</text>
+        <text x="470" y="340" text-anchor="middle" font-size="12" font-weight="700" fill="#5C5C5C">Ya no queda ningún backend Access:</text>
+        <text x="470" y="358" text-anchor="middle" font-size="12" fill="#5C5C5C">todos los datos están en PostgreSQL</text>
+        <rect x="340" y="252" width="260" height="34" rx="6" fill="#F5F7FA" stroke="#D4DBE3"/><text x="470" y="274" text-anchor="middle" font-size="12" fill="#5C5C5C">AGEDO y Tareas (siguen en Access)</text>
+
+        <rect x="660" y="70" width="300" height="360" rx="10" fill="#fff" stroke="#0066CC" stroke-width="2.5"/>
+        <text x="675" y="96" font-weight="700" fill="#003D7A">Máquina web y PostgreSQL</text>
+        <text x="675" y="114" font-size="12" fill="#5C5C5C">Otra máquina de la misma red</text>
+        <rect x="675" y="126" width="270" height="34" rx="6" fill="#E8EEF5"/><text x="810" y="148" text-anchor="middle" font-weight="600" fill="#003D7A">Lanzadera web</text>
+        <rect x="675" y="168" width="270" height="34" rx="6" fill="#E8EEF5"/><text x="810" y="190" text-anchor="middle" font-weight="600" fill="#003D7A">Desarrollo web: aplicaciones nuevas</text>
+        <path d="M810,204 v62" stroke="#0066CC" stroke-width="2" marker-end="url(#bh-blue)"/>
+        <g>
+          <path d="M720,285 v105 a90,20 0 0 0 180,0 v-105" fill="#003D7A"/>
+          <ellipse cx="810" cy="285" rx="90" ry="20" fill="#0066CC"/>
+          <text x="810" y="345" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">PostgreSQL común</text>
+          <text x="810" y="366" text-anchor="middle" font-size="12" fill="#fff">un espacio por aplicación</text>
+        </g>
+
+        <g stroke="#757575" stroke-width="2" fill="none" marker-end="url(#bh-grey)">
+          <path d="M190,125 C250,125 260,160 323,175"/>
+          <path d="M190,225 C250,225 260,200 323,195"/>
+          <path d="M190,325 C260,325 270,230 323,215"/>
+        </g>
+        <text x="258" y="112" text-anchor="middle" font-size="12" font-weight="700" fill="#5C5C5C">Citrix</text>
+
+        <path d="M600,143 L673,143" stroke="#0066CC" stroke-width="2" fill="none" marker-end="url(#bh-blue)"/>
+        <g stroke="#0066CC" stroke-width="2" fill="none" marker-end="url(#bh-blue)">
+          <path d="M600,227 C650,240 680,290 718,318"/>
+        </g>
+        <text x="628" y="300" text-anchor="middle" font-size="12" font-weight="700" fill="#0066CC">ODBC</text>
+      </g>
+    </svg>
+    <figcaption>Cómo quedaría mientras convivan: todo se usa a través de Citrix; Access se ejecuta en el servidor y la web en su propia máquina, las dos sobre PostgreSQL común. Al terminar la convivencia, la web, ya en contenedores, se lleva a OpenShift, como cadete.</figcaption>
+  </figure>
+  <p>Con la propuesta, las aplicaciones Access dejarían de copiarse a cada equipo: se ejecutarían en un servidor. Pulse una aplicación para cambiarla de máquina. Así funcionaría cada corte, y la vuelta atrás sería la misma operación. Es una demostración: el orden real lo fijaría el mapa de dependencias.</p>
+
+  <div class="arch">
+    <div class="node users">
+      <h3>Personas usuarias</h3>
+      <p class="where">Desde su puesto, siempre a través de Citrix</p>
+    </div>
+    <div class="paths" aria-hidden="true"><span>Acceso por Citrix</span><span>Navegador publicado en Citrix</span></div>
+
+    <div class="network" aria-label="Red interna">
+      <div class="tag">Misma red interna</div>
+      <div class="machines">
+        <div class="node machine citrix" aria-labelledby="h-citrix">
+          <div>
+            <h3 id="h-citrix">Servicio Citrix</h3>
+            <p class="where">Servidor de aplicaciones Windows</p>
+          </div>
+          <div class="launcher">Lanzadera Access <span class="rag-pill rag-grey" id="n-access"></span></div>
+          <ul class="apps" id="access"></ul>
+          <p class="permanent">También aquí, sin migrar: AGEDO y Tareas, que siguen en Access.</p>
+          <div class="link">Sus tablas, vinculadas por ODBC a PostgreSQL a través de la red</div>
+        </div>
+        <div class="node machine web" aria-labelledby="h-web">
+          <div>
+            <h3 id="h-web">Máquina web y PostgreSQL</h3>
+            <p class="where">Otra máquina de la misma red: el desarrollo web nuevo y la base de datos</p>
+          </div>
+          <div class="launcher">Lanzadera web <span class="rag-pill rag-grey" id="n-web"></span></div>
+          <ul class="apps" id="web"></ul>
+          <div class="node db">
+            <h3>PostgreSQL común</h3>
+            <p class="where">Una sola base de datos, con un espacio por aplicación. Las dos Lanzaderas leen y escriben aquí.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout" id="log" role="status" aria-live="polite"></div>
+  <div class="actions"><button type="button" id="reset">Volver al estado de hoy</button></div>
+  </div>
+</section>
+
+<section class="card" aria-labelledby="sec-phases">
+  <h2 id="sec-phases">Las fases de la propuesta</h2>
+  <p>La fase 0 es la exploración en curso y sirve para cualquiera de los dos caminos. El resto solo se ejecuta si la exploración demuestra que la vía es viable. Pulse una fase para ver en qué consiste y cuándo se da por terminada.</p>
+  <div id="phases"></div>
+</section>
+
+<p class="footer-note">Fuente: docs/07-migracion/epica-coexistencia-postgresql.md · Estado a 5 de noviembre de 2026</p>
+</div>
+
+<script>
+const APPS = ["Expedientes", "APGEDYS", "Registro", "Gestión de Riesgos", "No Conformidades", "Brass", "Condor", "HPS", "Solicitudes HPS", "Seguridad"];
+const TODAY = "Hoy todas las aplicaciones están en el servidor de aplicaciones. La Lanzadera web ya existe, todavía sin aplicaciones.";
+const onWeb = new Set();
+const log = document.getElementById("log");
+
+function plural(n) { return n === 1 ? "1 aplicación" : n + " aplicaciones"; }
+
+function draw(focusName) {
+  const access = document.getElementById("access"), web = document.getElementById("web");
+  access.replaceChildren(); web.replaceChildren();
+  for (const name of APPS) {
+    const isWeb = onWeb.has(name);
+    const li = document.createElement("li"), b = document.createElement("button");
+    b.type = "button";
+    b.dataset.app = name;
+    b.setAttribute("aria-label", isWeb ? name + ": volver a Access" : name + ": pasar a la web");
+    b.innerHTML = "<span></span><span class=\"act\"></span>";
+    b.firstChild.textContent = name;
+    b.lastChild.textContent = isWeb ? "Volver a Access" : "Pasar a la web →";
+    b.addEventListener("click", () => toggle(name));
+    li.appendChild(b);
+    (isWeb ? web : access).appendChild(li);
+  }
+  if (!onWeb.size) {
+    const li = document.createElement("li");
+    li.className = "empty";
+    li.textContent = "Todavía ninguna aplicación.";
+    web.appendChild(li);
+  }
+  document.getElementById("n-access").textContent = plural(APPS.length - onWeb.size);
+  document.getElementById("n-web").textContent = plural(onWeb.size);
+  if (focusName) document.querySelector("[data-app=\"" + focusName + "\"]").focus();
+}
+
+function toggle(name) {
+  const toWeb = !onWeb.has(name);
+  toWeb ? onWeb.add(name) : onWeb.delete(name);
+  log.textContent = toWeb
+    ? name + " pasa a la web: se apaga su botón en la Lanzadera Access y se enciende en la web. Los datos no se mueven."
+    : name + " vuelve a Access: se enciende su botón en la Lanzadera Access y se apaga en la web. Los datos no se mueven.";
+  draw(name);
+}
+
+const tabs = [document.getElementById("tab-today"), document.getElementById("tab-future")];
+function showView(i) {
+  tabs.forEach((t, j) => {
+    t.setAttribute("aria-selected", String(j === i));
+    t.tabIndex = j === i ? 0 : -1;
+    document.getElementById(t.getAttribute("aria-controls")).hidden = j !== i;
+  });
+}
+tabs.forEach((t, i) => {
+  t.addEventListener("click", () => showView(i));
+  t.addEventListener("keydown", e => {
+    if (e.key === "ArrowRight" || e.key === "ArrowLeft") { const j = 1 - i; showView(j); tabs[j].focus(); e.preventDefault(); }
+  });
+});
+
+document.getElementById("reset").addEventListener("click", () => { onWeb.clear(); log.textContent = TODAY; draw(); });
+log.textContent = TODAY;
+draw();
+
+const PHASES = [
+  { n: "0", name: "Inventario", lead: "Saber exactamente qué tenemos", status: "En curso", pill: "rag-amber", cls: "now", open: true,
+    what: "Mapa de las aplicaciones, sus 17 bases de datos y sus 535 tablas, y de quién usa qué. Solo se lee: no se ha cambiado nada en las aplicaciones en uso.",
+    result: "12 fichas de aplicación, el mapa de dependencias y un catálogo de 159 mejoras: 100 imprescindibles, 50 recomendables y 9 para el final. El responsable ha tomado 17 decisiones.",
+    done: "Todas las tablas están clasificadas y el responsable ha revisado el catálogo de mejoras." },
+  { n: "1", name: "Saneamiento en Access", lead: "Arreglar los cimientos antes de la mudanza", status: "Pendiente", pill: "rag-grey",
+    what: "Se corrigen en Access los defectos que no pueden llegar a la web: tablas sin clave, numeración manual, relaciones sin declarar, fechas guardadas como texto.",
+    result: "Cada base de datos lista para migrar, con sus aplicaciones funcionando igual que antes.",
+    done: "Las mejoras imprescindibles de cada base de datos están aplicadas y probadas." },
+  { n: "2", name: "Unificar el acceso a datos", lead: "Un interruptor por aplicación", status: "Pendiente", pill: "rag-grey",
+    what: "Cada aplicación Access puede trabajar contra Access o contra PostgreSQL cambiando solo su configuración.",
+    result: "Las aplicaciones Access se pueden probar contra PostgreSQL sin tocar su código.",
+    done: "Cada aplicación funciona contra PostgreSQL cambiando solo su configuración, demostrado fuera de producción." },
+  { n: "3", name: "Ensayo general en Citrix", lead: "Todos los datos en PostgreSQL, en preproducción", status: "Pendiente", pill: "rag-grey",
+    what: "Una copia de todos los backends, ya saneados, pasa a PostgreSQL en preproducción, y todas las aplicaciones Access se prueban en Citrix contra él, sin ningún backend Access.",
+    result: "Informe del ensayo: conversión de datos, funcionamiento de cada aplicación y rendimiento.",
+    done: "Todas las aplicaciones Access funcionan en preproducción sobre PostgreSQL con un rendimiento aceptable." },
+  { n: "4", name: "Traslado de todos los datos", lead: "El único paso sin vuelta atrás", status: "Pendiente", pill: "rag-grey",
+    what: "Todos los backends pasan a PostgreSQL en producción de una vez, y los ficheros Access de datos dejan de usarse. Para el usuario no cambia nada: sigue usando las mismas aplicaciones, ahora en Citrix.",
+    result: "Ya no queda ningún backend Access: todos los datos viven en PostgreSQL.",
+    done: "Todas las aplicaciones Access trabajan en producción sobre PostgreSQL." },
+  { n: "5", name: "Expedientes a web", lead: "Primera aplicación en la web", status: "Pendiente", pill: "rag-grey",
+    what: "Es el primer corte del gráfico de arriba: Expedientes pasa a la Lanzadera web y su botón se apaga en la Lanzadera Access.",
+    result: "Expedientes en la web, sobre los mismos datos que el resto.",
+    done: "Expedientes funciona en la web y se ha probado la vuelta a Access." },
+  { n: "→", name: "El resto y la modernización", lead: "Una aplicación detrás de otra", status: "Después", pill: "rag-grey",
+    what: "El resto de aplicaciones sigue el mismo camino, en el orden que marcan sus dependencias.",
+    result: "Cuando ya no quede nada en Access, la web, ya en contenedores, se lleva a OpenShift, como cadete, y el modelo de datos se moderniza.",
+    done: "Todas las aplicaciones están en la web, Access se apaga y la web funciona en OpenShift." }
+];
+
+const phases = document.getElementById("phases");
+for (const p of PHASES) {
+  const d = document.createElement("details");
+  d.className = "phase " + (p.cls || "");
+  d.open = Boolean(p.open);
+  d.innerHTML =
+    "<summary><span class=\"num\" aria-hidden=\"true\"></span><span><strong></strong><small></small></span><span class=\"rag-pill\"></span></summary>" +
+    "<div class=\"body\"><p><b>En qué consiste.</b> <span></span></p><p><b>Qué se obtiene.</b> <span></span></p><p><b>Terminada cuando.</b> <span></span></p></div>";
+  d.querySelector(".num").textContent = p.n;
+  d.querySelector("strong").textContent = (p.n === "→" ? "Final" : "Fase " + p.n) + ": " + p.name;
+  d.querySelector("small").textContent = p.lead;
+  const pill = d.querySelector(".rag-pill");
+  pill.textContent = p.status;
+  pill.classList.add(p.pill);
+  const spans = d.querySelectorAll(".body span");
+  spans[0].textContent = p.what;
+  spans[1].textContent = p.result;
+  spans[2].textContent = p.done;
+  phases.appendChild(d);
+}
+</script>
+</body>
+</html>
