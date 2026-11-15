@@ -1,4 +1,4 @@
-# Read-only schema extraction for an Access database (#1074).
+# Read-only schema extraction for an Access database (#1074; phase 0 inventory fields, #1560).
 # Works on a temporary copy opened with DAO in read-only mode; the source file is never written.
 param(
     [Parameter(Mandatory = $true)][string]$Path,
@@ -18,17 +18,28 @@ try {
     $db = $engine.OpenDatabase($copy, $false, $true, $connect)
     $tables = foreach ($t in $db.TableDefs) {
         if ($t.Name -like 'MSys*' -or $t.Name -like '~*') { continue }
+        # Reading Fields or Indexes of a link opens its source; an unreachable source is recorded, not fatal.
+        $linkError = $null
+        $fields = @(); $indexes = @()
+        try {
+            $fields = @(foreach ($f in $t.Fields) {
+                    [pscustomobject]@{ name = $f.Name; type = $f.Type; size = $f.Size; required = $f.Required; allowZeroLength = $f.AllowZeroLength; defaultValue = $f.DefaultValue; validationRule = $f.ValidationRule; attributes = $f.Attributes; isComplex = [bool]$f.IsComplex }
+                })
+            $indexes = @(foreach ($i in $t.Indexes) {
+                    [pscustomobject]@{ name = $i.Name; primary = $i.Primary; unique = $i.Unique; fields = @(foreach ($f in $i.Fields) { $f.Name }) }
+                })
+        }
+        catch { if ($t.Connect) { $linkError = $_.Exception.Message; $fields = @(); $indexes = @() } else { throw } }
         [pscustomobject]@{
             name      = $t.Name
             linked    = [bool]$t.Connect
             connect   = $(if ($t.Connect) { ($t.Connect -replace 'PWD=[^;]*', 'PWD=***') } else { $null })
             source    = $t.SourceTableName
-            fields    = @(foreach ($f in $t.Fields) {
-                    [pscustomobject]@{ name = $f.Name; type = $f.Type; size = $f.Size; required = $f.Required; allowZeroLength = $f.AllowZeroLength; defaultValue = $f.DefaultValue }
-                })
-            indexes   = @(foreach ($i in $t.Indexes) {
-                    [pscustomobject]@{ name = $i.Name; primary = $i.Primary; unique = $i.Unique; fields = @(foreach ($f in $i.Fields) { $f.Name }) }
-                })
+            linkError = $linkError
+            fields    = $fields
+            indexes   = $indexes
+            validationRule = $(if ($t.Connect) { $null } else { $t.ValidationRule })
+            recordCount = $(if ($t.Connect) { $null } else { $db.OpenRecordset("SELECT COUNT(*) FROM [" + $t.Name + "]").Fields(0).Value })
         }
     }
     $relations = foreach ($r in $db.Relations) {

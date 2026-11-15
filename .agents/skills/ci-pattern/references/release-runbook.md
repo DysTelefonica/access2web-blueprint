@@ -55,6 +55,26 @@ es siempre el mismo —arreglar en la rama por defecto, dejar el CI en verde
 sobre el commit exacto que se quiere publicar y mover el tag— y volver a
 lanzar. Un tag mal cortado no se borra y se rehace: se corta el siguiente.
 
+### Versión quemada por el propio workflow (fase 0, 0.3)
+
+Un push de tag ejecuta el `release.yml` **del commit etiquetado**. Si lo que
+falla es el propio workflow (cadete v1.3.2: el gate veía el tag como ligero),
+el arreglo en la rama por defecto no alcanza a ese tag: la versión queda
+«quemada». No se mueve ni se rehace el tag. Se vuelve a publicar con el
+workflow ya corregido de la rama por defecto:
+
+```bash
+gh workflow run release.yml --ref main -f tag=vX.Y.Z
+```
+
+El `preflight` exige lo mismo que en el push: tag anotado, semver estable,
+alcanzable desde la rama por defecto y CI en verde sobre su commit. Todos los
+jobs hacen checkout del tag (`RELEASE_TAG`), nunca de la rama. Si la Release
+de ese tag ya existe (publicada a mano mientras tanto), `release` la conserva y
+`verify` y `provenance` la comprueban y completan. Un consumer que adoptó la
+plantilla antes de este cambio necesita copiar a su `.github/workflows/release.yml`
+el disparo `workflow_dispatch` y el `RELEASE_TAG`.
+
 ## Procedimiento de hotfix (HR-20, HR-21)
 
 1. **Issue.** Abra la issue canónica con `type:bug` y la evidencia del

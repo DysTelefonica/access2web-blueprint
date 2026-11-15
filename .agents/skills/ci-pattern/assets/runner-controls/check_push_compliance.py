@@ -37,7 +37,7 @@ from pathlib import Path
 from typing import NoReturn
 from urllib.parse import urlencode
 
-from github_rest import GitHubApiError, call, get_json
+from github_rest import MAX_PAGES, GitHubApiError, call, get_json
 
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 
@@ -45,6 +45,8 @@ SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 # es un incumplimiento: es el CI en marcha. Son los mismos dos veredictos que el
 # gate pre-merge marca como esperables (`check_governed_merge.WAITABLE`).
 WAITABLE = (": missing", ": pending")
+# Fase 0, 0.4: el maximo de la API; las paginas se siguen hasta total_count.
+CHECK_RUNS_PER_PAGE = 100
 # El check requerido suele ser el rollup final de un DAG: en APAP_WEB tardo hasta
 # 13 min desde el merge (#1019). El techo cubre esa observacion; el workflow del
 # consumer debe declarar `timeout-minutes` mayor que el (ver SKILL.md).
@@ -321,17 +323,36 @@ def commit_tree_sha(commit: object) -> str | None:
     return tree if isinstance(tree, str) and SHA_RE.match(tree) else None
 
 
-def check_verdict(repo: str, pr_number: object, head_sha: str, required: list[str]) -> list[str]:
-    # Politica de verificacion (#326): se leen las check-runs con
-    # filter=latest sobre la primera pagina (per_page=100); la API legada de
-    # commit statuses se ignora a proposito. Ambos limites sesgan a FALSO
-    # POSITIVO (un check requerido ausente de la pagina se reporta missing y
-    # bloquea), nunca a falso verde: un gate que no mide no puede aprobar.
-    runs = gh_json(f"repos/{repo}/commits/{head_sha}/check-runs?filter=latest&per_page=100")
-    if not isinstance(runs, dict) or not isinstance(runs.get("check_runs"), list):
-        fail(f"check-runs for PR #{pr_number} is not the API object shape")
+def fetch_check_runs(repo: str, pr_number: object, head_sha: str) -> list:
+    """Todas las check-runs (filter=latest) del commit, pagina a pagina.
+
+    Lector COMPARTIDO del veredicto (fase 0, 0.4): antes se leia solo la
+    primera pagina (per_page=100), y en un commit con mas check-runs el
+    requerido podia quedar fuera y salir `missing`. La API legada de commit
+    statuses se ignora a proposito (#326). Una forma inesperada falla cerrado.
+    """
+    runs: list = []
+    for page in range(1, MAX_PAGES + 1):
+        data = gh_json(f"repos/{repo}/commits/{head_sha}/check-runs"
+                       f"?filter=latest&per_page={CHECK_RUNS_PER_PAGE}&page={page}")
+        if not isinstance(data, dict) or not isinstance(data.get("check_runs"), list):
+            fail(f"check-runs for PR #{pr_number} is not the API object shape")
+        runs += data["check_runs"]
+        total = data.get("total_count")
+        if len(data["check_runs"]) < CHECK_RUNS_PER_PAGE or (isinstance(total, int) and len(runs) >= total):
+            return runs
+    fail(f"check-runs for PR #{pr_number} exceed {MAX_PAGES} pages; refusing to continue")
+
+
+def check_verdict(repo: str, pr_number: object, head_sha: str, required: list[str],
+                  runs: list | None = None) -> list[str]:
+    # Un check requerido ausente se reporta missing y bloquea: el sesgo es a
+    # FALSO POSITIVO, nunca a falso verde (#326). `runs` deja al que llama
+    # reutilizar la lectura que ya hizo.
+    if runs is None:
+        runs = fetch_check_runs(repo, pr_number, head_sha)
     latest: dict = {}
-    for run in runs["check_runs"]:
+    for run in runs:
         if not isinstance(run, dict) or not isinstance(run.get("name"), str):
             continue
         if run["name"] not in latest or run.get("id", 0) > latest[run["name"]].get("id", 0):
