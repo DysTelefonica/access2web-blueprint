@@ -1,6 +1,6 @@
 # Cierre de la fase 0
 
-La fase 0 de la [épica](../epica-coexistencia-postgresql.md#fase-0-inventario) queda **hecha** el 2026-11-06: su criterio de terminado se cumple con la evidencia que enlaza este documento. Pasa a **revisada** cuando el propietario valide esa evidencia; hasta entonces no se aplica nada en el legacy (decisión 12).
+La fase 0 de la [épica](../epica-coexistencia-postgresql.md#fase-0-inventario) queda **hecha** el 2026-11-06: su criterio de terminado se cumple con la evidencia que enlaza este documento. El 2026-11-15 el propietario validó esa evidencia y la fase pasa a **revisada** (decisión 28), con lo que la fase 1 queda habilitada. Validar la evidencia no es aplicarla: hasta que el propietario aplique un cambio en el legacy, el inventario sigue siendo de solo lectura.
 
 ## Criterio de terminado
 
@@ -17,7 +17,7 @@ El trabajo de la fase 1 está en el [catálogo único de accionables](catalogo-a
 
 ## Lo que queda abierto
 
-Nada de esto impide cerrar la fase 0, pero cada punto tiene que estar resuelto antes de la fase en que se usa.
+Nada de esto impide cerrar la fase 0, pero cada punto tiene que estar resuelto antes de la fase en que se usa. La validación del 2026-11-15 no los cierra: siguen pendientes y cada uno bloquea su propia fase.
 
 | Punto | Qué falta | Antes de |
 |---|---|---|
