@@ -48,7 +48,7 @@
       "class": "host-enforced"
     },
     {
-      "name": "pr-gate",
+      "name": "pr-gate / pr-context",
       "class": "host-enforced"
     }
   ],

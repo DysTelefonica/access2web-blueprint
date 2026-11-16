@@ -95,4 +95,7 @@ def test_contract_names_the_orchestrator_bot_as_the_only_governed_merger() -> No
         "actors": ["dys-orquestador[bot]"],
         "merge_marker": r"^Merge PR #\d+ \((safe|governed) merge\)$",
     }
-    assert [c["name"] for c in contract["required_checks"]] == ["required", "pr-gate"]
+    assert [c["name"] for c in contract["required_checks"]] == [
+        "required",
+        "pr-gate / pr-context",
+    ]
