@@ -943,6 +943,128 @@ class TestCancelInProgress(GateCase):
                        "  cancel-in-progress: ${{ github.event_name == 'pull_request' }}\n")
         self.assertEqual(self.run_gate(text)[0], 1)
 
+    def test_an_expression_on_the_ref_passes(self):
+        # #1598: the ref-based form cancels everywhere but main; safe_merge skips a cancelled twin.
+        text = self.wf("concurrency:\n  group: wf\n"
+                       "  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}\n")
+        code, out = self.run_gate(text)
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("cancel-in-progress", out)
+
+    def test_a_job_level_expression_on_the_ref_passes(self):
+        text = self.wf("concurrency:\n  group: wf\n").replace(
+            "    timeout-minutes: 5\n",
+            "    timeout-minutes: 5\n    concurrency:\n      group: j\n"
+            "      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}\n")
+        code, out = self.run_gate(text)
+        self.assertEqual(code, 0, out)
+
+    def test_the_finding_names_the_ref_way_out(self):
+        text = self.wf("concurrency:\n  group: wf\n  cancel-in-progress: true\n")
+        code, out = self.run_gate(text)
+        self.assertEqual(code, 1, out)
+        self.assertIn("github.ref", out)
+
+    # #1600: the expression is evaluated, not searched for a word.
+    def _cancel(self, expr):
+        text = self.wf("concurrency:\n  group: wf\n  cancel-in-progress: " + expr + "\n")
+        return self.run_gate(text)
+
+    def test_accepted_forms_pass(self):
+        for expr in (
+            "${{ github.ref != 'refs/heads/main' }}",
+            "${{ 'refs/heads/main' != github.ref }}",
+            "${{   github.event.action ==  \"synchronize\" }}".replace('"', "'"),
+            "${{ github.event_name != 'pull_request' || github.event.action == 'synchronize' }}",
+            "${{ github.ref != 'refs/heads/main' && (github.event_name != 'pull_request'"
+            " || github.event.action == 'synchronize') }}",
+        ):
+            with self.subTest(expr=expr):
+                code, out = self._cancel(expr)
+                self.assertEqual(code, 0, out)
+                self.assertNotIn("cancel-in-progress", out)
+
+    def test_forms_that_still_cancel_are_findings(self):
+        for expr in (
+            "${{ github.ref == 'refs/heads/x' || true }}",
+            "${{ github.event.action == 'synchronize' || true }}",
+            "${{ !startsWith(github.ref, 'refs/tags/') }}",
+            "${{ contains(github.ref, 'pull') }}",
+            "${{ github.ref_name != 'main' }}",
+            "${{ github.ref != 'refs/heads/main' || github.event_name == 'push' }}",
+            "${{ !(github.event.action == 'synchronize') }}",
+            "${{ github.event.action != 'labeled' }}",
+        ):
+            with self.subTest(expr=expr):
+                code, out = self._cancel(expr)
+                self.assertEqual(code, 1, out)
+                self.assertIn("cancel-in-progress", out)
+
+    def test_what_the_evaluator_cannot_parse_or_decide_is_a_finding(self):
+        # #1600: an unknown function or an unmodelled context fails closed.
+        for expr in (
+            "${{ fromJSON('true') }}",
+            "${{ env.CANCEL }}",
+            "${{ github.head_ref != 'main' }}",
+            "${{ format('{0}', github.ref) != 'x' }}",
+        ):
+            with self.subTest(expr=expr):
+                code, out = self._cancel(expr)
+                self.assertEqual(code, 1, out)
+                self.assertIn("cancel-in-progress", out)
+
+    # #1600 L3: blockers and advisories of the independent verification.
+    def test_pull_request_target_is_evaluated_with_its_own_event_name(self):
+        text = self.wf("concurrency:\n  group: wf\n"
+                       "  cancel-in-progress: ${{ github.event_name != 'pull_request' }}\n",
+                       on="on:\n  pull_request_target:\n")
+        code, out = self.run_gate(text)
+        self.assertEqual(code, 1, out)
+        self.assertIn("cancel-in-progress", out)
+
+    def test_the_ref_rule_follows_the_base_branch(self):
+        text = self.wf("concurrency:\n  group: wf\n"
+                       "  cancel-in-progress: ${{ github.ref != 'refs/heads/develop' }}\n")
+        code, out = self.run_gate(text, extra=("--base-branch", "develop"))
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("cancel-in-progress", out)
+        code, out = self.run_gate(text)
+        self.assertEqual(code, 1, out)
+        self.assertIn("cancel-in-progress", out)
+
+    def test_a_quoted_github_ref_is_not_a_read_of_the_ref(self):
+        code, out = self._cancel("${{ github.event_name == 'pull_request' && 'github.ref' }}")
+        self.assertEqual(code, 1, out)
+        self.assertIn("cancel-in-progress", out)
+
+    def test_every_same_sha_action_is_considered(self):
+        for action in ("closed", "enqueued", "auto_merge_enabled", "unassigned"):
+            with self.subTest(action=action):
+                code, out = self._cancel("${{ github.event.action == '" + action + "' }}")
+                self.assertEqual(code, 1, out)
+                self.assertIn("cancel-in-progress", out)
+
+    def test_an_action_github_adds_later_is_considered(self):
+        known = ("synchronize", "opened", "reopened", "edited", "labeled", "unlabeled",
+                 "closed", "ready_for_review", "converted_to_draft", "assigned", "unassigned",
+                 "review_requested", "review_request_removed", "milestoned", "demilestoned",
+                 "locked", "unlocked", "enqueued", "dequeued", "auto_merge_enabled",
+                 "auto_merge_disabled")
+        expr = " && ".join(f"github.event.action != '{a}'" for a in known)
+        code, out = self._cancel("${{ " + expr + " }}")
+        self.assertEqual(code, 1, out)
+        self.assertIn("cancel-in-progress", out)
+
+    def test_context_names_and_literals_are_case_insensitive(self):
+        code, out = self._cancel("${{ GitHub.Ref != 'refs/heads/main' }}")
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("cancel-in-progress", out)
+        code, out = self._cancel("${{ FALSE }}")
+        self.assertEqual(code, 0, out)
+        code, out = self._cancel("${{ TRUE }}")
+        self.assertEqual(code, 1, out)
+        self.assertIn("cancel-in-progress", out)
+
     def test_without_a_pull_request_trigger_true_is_not_judged(self):
         import importlib.util
         spec = importlib.util.spec_from_file_location("cwp", Path(__file__).resolve().parents[1] / "check_workflow_policy.py")
@@ -1340,10 +1462,6 @@ class TestHR30ApiPublishedCheckNames(RepoCase):
         self.assertIn("does not evaluate the PR", out)
 
 
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
-
-
 GATE_OUTPUTS = ("    outputs:\n"
                 "      lockfile_scope_changed: ${{ steps.lanes.outputs.lockfile_scope_changed }}\n")
 
@@ -1689,6 +1807,27 @@ class PullRequestCatalogSecretTests(GateCase):
         self.assertEqual(code, 1, out)
         self.assertIn(self.SECRET, out)
 
+    def test_windows_paths_still_link_the_reusable_workflow_to_its_caller(self):
+        """#1612: con rutas de Windows (`\\`) el llamado hereda los eventos de quien lo llama.
+
+        Se prueba con nombres de ruta, sin ficheros, para que falle en Linux igual que en Windows.
+        """
+        caller = ("on:\n  pull_request:\nconcurrency:\n  group: wf-${{ github.ref }}\njobs:\n"
+                  "  call:\n    name: call\n    timeout-minutes: 5\n"
+                  "    uses: ./.github/workflows/callee.yml\n")
+        callee = self.wf(on="on:\n  workflow_call:\n", job="gate")
+        for callee_path, caller_path in (
+                ("C:\\repo\\.github\\workflows\\callee.yml", "C:\\repo\\.github\\workflows\\caller.yml"),
+                (".github\\workflows\\callee.yml", ".github/workflows/caller.yml")):
+            with self.subTest(callee=callee_path):
+                docs = [(callee_path, gate.parse_workflow(callee, callee_path)),
+                        (caller_path, gate.parse_workflow(caller, caller_path))]
+                out: list[str] = []
+                gate.pull_request_secret_findings(docs, out)
+                self.assertEqual(len(out), 1, out)
+                self.assertIn(callee_path, out[0])
+                self.assertIn(self.SECRET, out[0])
+
     def test_a_reusable_workflow_called_only_from_a_target_is_clean(self):
         caller = ("on:\n  pull_request_target:\nconcurrency:\n  group: wf-${{ github.ref }}\njobs:\n"
                   "  call:\n    name: call\n    timeout-minutes: 5\n"
@@ -1698,3 +1837,7 @@ class PullRequestCatalogSecretTests(GateCase):
             ".github/workflows/caller.yml": caller,
         }, required=("call",))
         self.assertEqual(code, 0, out)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

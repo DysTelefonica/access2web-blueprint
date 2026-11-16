@@ -1,0 +1,8 @@
+type: minor
+
+**Qué.** `pr-contract` (HR-7) avisa, sin bloquear, de cada palabra de cierre (`close[sd]?`, `fix(es|ed)?`, `resolve[sd]?`, sin distinguir mayúsculas) seguida de una issue en el cuerpo del PR, en las formas `#N`, `owner/repo#N` y URL de la issue. El aviso cita la línea, nombra la issue que se cerrará y recuerda que GitHub ignora la negación que precede a la palabra. Y **bloquea** cuando el cuerpo lleva `Refs #N` y además una palabra de cierre antes del mismo `#N`: el hallazgo cita la línea exacta.
+**Causa.** El cuerpo de APAP_WEB#4075 decía «It does not close #4039» y GitHub cerró #4039 al fusionarse. El de team-skills#1614 empezaba con `Refs #1592` y en la prosa decía «the last one closes #1592»: se cerró #1592 con dos PRs pendientes, porque eran paralelos, sin `chain:partial`, y la guarda de la punta de cadena no se aplicó.
+**Arreglo.** `check_closing_mentions` en `check_pr_contract.py`, bajo la clave `closes` de la política. El aviso no cambia el código de salida; las reglas de cierre existentes (punta de cadena y `chain:partial`) no cambian. Tests: `tests/test_closing_mentions.py`, con la línea real de #1614 como fixture.
+**A partir de ahora.** Para mencionar una issue que el PR no cierra, escriba `Refs #N` y no use una palabra de cierre delante del número, ni siquiera negada. Un consumer que vendoriza `pr-contract` debe re-vendorizarlo; un cuerpo con `Refs #N` y `closes #N` a la vez pasa a fallar.
+
+**Nota (#1613 S5).** La expectativa «passes» de #840 para un cuerpo con `Closes #N` y `Refs #N` a la vez queda sustituida: ahora bloquea. El test se renombró a `test_closes_and_refs_for_the_same_issue_blocks`.

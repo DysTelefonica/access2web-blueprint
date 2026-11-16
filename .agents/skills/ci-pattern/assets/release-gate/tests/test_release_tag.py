@@ -20,6 +20,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tests"))
+from _cp1252_locale import run_under_cp1252_locale  # noqa: E402
+
 ASSET = Path(__file__).resolve().parent.parent
 GATE = ASSET / "check_release_tag.py"
 
@@ -268,6 +271,18 @@ class Contract(GateCase):
             r.tag_annotated("v1.0.0")
             code, out = self.run_gate(r, "v1.0.0")
             self.assertEqual(code, 0)
+            self.assertIn("RELEASE OK", out)
+
+    def test_non_ascii_tag_in_the_list_is_read_under_cp1252(self):
+        """#1601: the tag list from git is UTF-8 whatever the locale."""
+        with tempfile.TemporaryDirectory() as d:
+            r = Repo(d)
+            r.commit("base")
+            r.tag_annotated("v0.9.0-Á")
+            r.tag_annotated("v1.0.0")
+            code, out, err = run_under_cp1252_locale(
+                GATE, "--repo", str(r.d), "--tag", "v1.0.0", "--default-branch", "main")
+            self.assertEqual(code, 0, out + err)
             self.assertIn("RELEASE OK", out)
 
 

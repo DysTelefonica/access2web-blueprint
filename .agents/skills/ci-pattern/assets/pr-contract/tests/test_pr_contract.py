@@ -796,9 +796,11 @@ class ClosingKeywordInCommitsTests(unittest.TestCase):
         body = ("Refs #1029\n\n" + chain_ok("feature/x")
                 + "\n- follow-up: el tramo 2 closes #1029\n\n" + AI_OK)
         proc = self.run_case(["fix: tramo 1"], body=body)
-        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-        self.assertIn("HR-7", proc.stdout)
-        self.assertIn("- follow-up: el tramo 2 closes #1029", proc.stdout)
+        # #1613 S5: Refs y cierre del mismo #N bloquean también en chain:partial.
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("HR-7: el cuerpo dice `Refs #1029` y la línea «- follow-up: el tramo 2 closes #1029» "
+                      "cierra #1029 al fusionar el PR: es contradictorio. Quite la palabra de cierre o el "
+                      "`Refs #1029`.", proc.stdout)
 
     def test_tip_sin_chain_partial_puede_llevar_closes_en_su_commit(self):
         proc = self.run_case(
@@ -882,11 +884,13 @@ class IssueLinkGateTests(unittest.TestCase):
                            base_sha=base_sha, head_sha=head_sha)
         return run_gate(event, make_policy(tmp), repo=repo)
 
-    def test_closes_and_refs_for_the_same_issue_passes(self):
-        # Closes y Refs de la misma issue no es un fallo ni un aviso en issue-spec (#840).
+    def test_closes_and_refs_for_the_same_issue_blocks(self):
+        # #1613 S5 sustituye la expectativa de #840: Closes y Refs del mismo #N bloquean.
         proc = self.run_case("Closes #333\n\n## " + CLOSURE_HEADING
                              + "\n\n- `tests/test_gate.py`\n" + chain_ok("main") + "\nRefs #333\n\n" + AI_OK)
-        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("HR-7: el cuerpo dice `Refs #333` y la línea «Closes #333» cierra #333 al fusionar el PR: "
+                      "es contradictorio. Quite la palabra de cierre o el `Refs #333`.", proc.stdout)
 
     def test_foreign_repository_link_fails(self):
         proc = self.run_case("Closes #333\n\nRefs otro-org/otro-repo#12\n\n" + chain_ok("main"))
@@ -909,7 +913,7 @@ class IssueLinkGateTests(unittest.TestCase):
 
 ALL_CHECKS = ("closes", "chain_context", "issue_links", "closure_tests",
               "docs_evidence", "budget", "commits", "ai_disclosure",
-              "commit_identity")
+              "commit_identity", "deleted_tests")
 ONLY_DOCS = {name: False for name in ALL_CHECKS if name != "docs_evidence"}
 DOCS_EVIDENCE = {"pages": [{"page": "docs/p.md", "covers": ["f.txt"]}], "checklists": {}}
 
@@ -1282,8 +1286,8 @@ class LiveApiTests(unittest.TestCase):
             env["GITHUB_API_URL"] = server.base_url
             proc = self._run(env, payload_body="cuerpo obsoleto")
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-            # El cuerpo vivo cierra: HR-7 no tiene nada que avisar (#1172).
-            self.assertNotIn("HR-7", proc.stdout)
+            # El cuerpo vivo cierra #42: el aviso de HR-7 (#1613) sale del cuerpo de la API.
+            self.assertIn("AVISO (no bloquea): HR-7: la línea «Closes #42» cierra #42", proc.stdout)
         finally:
             server.close()
 
@@ -1322,6 +1326,7 @@ class LiveApiTests(unittest.TestCase):
                if k not in ("GITHUB_TOKEN", "GH_TOKEN")}
         env["GITHUB_TOKEN"] = "test-token"
         env["GITHUB_API_URL"] = "http://127.0.0.1:9"  # puerto cerrado
+        env["GH_API_RETRY_ESPERA_S"] = "0"  # #1592: el reintento no duerme en el test
         proc = self._run(env, payload_labels=["type:chore"],
                          payload_body="Closes #42 - cuerpo unico")
         self.assertEqual(proc.returncode, 2, proc.stderr)
@@ -1389,9 +1394,9 @@ class LiveApiTests(unittest.TestCase):
             proc = self._run_actions(self._token_env(server),
                                      payload_body="cuerpo obsoleto")
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-            # El cuerpo vivo cierra: HR-7 no avisa (#1172). Si el gate hubiera
-            # leido el payload, el aviso habria estado.
-            self.assertNotIn("HR-7", proc.stdout)
+            # El cuerpo vivo cierra #42: el aviso de HR-7 (#1613) sale del cuerpo de la API,
+            # no del payload, que no cierra nada.
+            self.assertIn("AVISO (no bloquea): HR-7: la línea «Closes #42» cierra #42", proc.stdout)
         finally:
             server.close()
 
@@ -1432,6 +1437,7 @@ class LiveApiTests(unittest.TestCase):
         env = {k: v for k, v in os.environ.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN")}
         env["GITHUB_TOKEN"] = "test-token"
         env["GITHUB_API_URL"] = "http://127.0.0.1:9"  # puerto cerrado
+        env["GH_API_RETRY_ESPERA_S"] = "0"  # #1592: el reintento no duerme en el test
         proc = self._run_actions(env, payload_labels=["type:chore"],
                                  payload_body="Closes #42 - cuerpo unico")
         self.assertEqual(proc.returncode, 2, proc.stderr)
@@ -1864,6 +1870,32 @@ class A1GeneratedFilesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             p = self._run(tmp, gitattributes="docs/other.html linguist-generated\n")
             self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+
+
+class A1OddTasksTests(unittest.TestCase):
+    """#1611: A1 deja fuera `odd/tasks/*.md`, como pr-size; nada más amplio."""
+
+    def _run(self, tmp, numstat):
+        repo, base_sha, head_sha = make_repo(tmp, commits=["feat: x"])
+        ev = make_event(tmp, body=A1VendoredOriginsTests.BODY, labels=["type:feature"],
+                        base="main", base_sha=base_sha, head_sha=head_sha)
+        pol = make_policy(tmp, review_budget_lines=5)
+        with tempfile.TemporaryDirectory() as dest:
+            flags = write_range_data(ev, repo, dest)
+            Path(flags[flags.index("--numstat-file") + 1]).write_text(numstat, encoding="utf-8")
+            return run_gate(ev, pol, repo, data_flags=flags)
+
+    def test_a_task_document_does_not_count(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp, "500\t0\todd/tasks/1611-x.md\n")
+            self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+
+    def test_a_rename_into_odd_tasks_and_a_nested_document_count(self):
+        for numstat in ("500\t0\todd/{notes => tasks}/x.md\n", "500\t0\todd/tasks/sub/x.md\n"):
+            with tempfile.TemporaryDirectory() as tmp:
+                p = self._run(tmp, numstat)
+                self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+                self.assertIn("A1", p.stdout)
 
 
 if __name__ == "__main__":

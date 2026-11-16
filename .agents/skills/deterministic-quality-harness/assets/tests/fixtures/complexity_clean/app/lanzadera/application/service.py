@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — positive fixture
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.3 — positive fixture
 """Every function here sits well under the ceiling."""
 
 

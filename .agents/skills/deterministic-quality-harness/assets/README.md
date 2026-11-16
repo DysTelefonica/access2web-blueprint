@@ -1,4 +1,4 @@
-<!-- HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/README.md -->
+<!-- HARNESS-PROVENANCE: deterministic-quality-harness v2.3 — assets/README.md -->
 
 # Assets — reference implementation of the harness
 
@@ -51,6 +51,8 @@ drift, and drift is Hard Rule 10.
 | `tests/test_test_classification.py` | `tests/test_test_classification.py` |
 | `tests/test_quality_policy.py` | `tests/test_quality_policy.py` |
 | `tests/test_quality_report_contract.py` | `tests/test_quality_report_contract.py` |
+| `scripts/cache_consistency.py` | `scripts/cache_consistency.py` (optional: adopt it when the repo keeps a derived cache, Hard Rule 20) |
+| `tests/test_cache_consistency.py` | `tests/test_cache_consistency.py` (with `cache_consistency.py`) |
 | `tests/fixtures/**` | `tests/fixtures/**` |
 | `pyproject.fragment.toml` | merged into `pyproject.toml` |
 

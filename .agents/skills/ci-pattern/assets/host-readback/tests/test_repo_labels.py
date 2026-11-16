@@ -22,10 +22,15 @@ import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[6]
-DRIFT = REPO_ROOT / "personal" / "ardelperal" / "ci-pattern" / "assets" / "host-readback" / "check_host_drift.py"
+# El asset va con la ruta relativa a la skill (#1707): vale en el catálogo y en un consumer.
+DRIFT = Path(__file__).resolve().parents[1] / "check_host_drift.py"
 CONTRACT = REPO_ROOT / ".github" / "host-contract.json"
 
 SKILL = "personal/ardelperal/ci-pattern"
+# El catálogo es personal/ardelperal/ci-pattern; un consumer vendoriza la skill en otra ruta (#1707).
+IN_CATALOGUE = Path(__file__).resolve().parents[5].name == "personal"
+CATALOGUE_ONLY = unittest.skipUnless(
+    IN_CATALOGUE, "prueba del repositorio del catálogo (#1707): fuera del catálogo no hay host-contract.json")
 
 # Cuerpo 403 de limite de plan que devuelve el host a un repo privado sin
 # Pro en la proteccion de rama y en los rulesets (team-skills#330). Es
@@ -87,6 +92,7 @@ def _run_drift(labels_snapshot, branch_protection=None, repo=None, rulesets=None
         )
 
 
+@CATALOGUE_ONLY
 class RepoHostContractTests(unittest.TestCase):
 
     def test_contract_exists_and_declares_chain_partial(self):
@@ -96,6 +102,14 @@ class RepoHostContractTests(unittest.TestCase):
         labels = {item["name"]: item["class"] for item in contract.get("labels", [])}
         self.assertEqual(labels.get("chain:partial"), "host-enforced")
         self.assertEqual(labels.get("status:approved"), "host-enforced")
+
+    def test_contract_declares_the_ci_red_governance_label(self):
+        """HR-89 (#1508): `ci-red` es etiqueta de gobierno (HR-34) del catalogo."""
+        contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
+        labels = {item["name"]: item for item in contract.get("labels", [])}
+        self.assertIn("ci-red", labels)
+        self.assertEqual(labels["ci-red"]["class"], "host-enforced")
+        self.assertIn("HR-89", labels["ci-red"].get("description", ""))
 
     def test_contract_declares_the_capability_of_every_area(self):
         """R6: la capacidad se declara en las tres areas. Sin la clave, el

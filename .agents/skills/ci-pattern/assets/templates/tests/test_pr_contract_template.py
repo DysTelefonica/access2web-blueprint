@@ -154,6 +154,12 @@ class PrContractTemplateTests(unittest.TestCase):
         self.assertIn("path: base", self.text)
         self.assertRegex(self.text, r"ref: \$\{\{ github\.event\.pull_request\.base\.sha \}\}")
 
+    def test_the_gate_reads_deleted_tests_from_the_python_diff(self):
+        """HR-88 (#1509): el gate recibe el diff de Python de la PR."""
+        self.assertIn("diff --no-renames -U0 \"${BASE_SHA}...${HEAD_SHA}\" -- '*.py' > .ci-pr-diff",
+                      self.text)
+        self.assertIn("--diff-file      .ci-pr-diff", self.text)
+
     def test_the_base_checkout_leaves_no_credentials(self):
         base = self.text[self.text.index("path: base"):]
         self.assertIn("persist-credentials: false", base[:400])

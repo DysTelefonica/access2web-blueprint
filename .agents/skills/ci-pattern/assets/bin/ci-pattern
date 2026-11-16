@@ -1473,7 +1473,7 @@ def cmd_report_friction(args):
             "consumer-local NUNCA se publica en team-skills: pase --repo <repo-del-consumer>. Rechazado.")
 
     def gh(*argv):
-        return _run_cmd(["gh", *argv], timeout=120)
+        return _run_cmd([*_gh_command(), *argv], timeout=120)
 
     occ_files = []
     try:
@@ -2608,6 +2608,10 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
              "una regla que no esté aquí.",
              f"- Contextos requeridos declarados: {_or_none(list(contexts))}.",
              f"- Checks del contrato de host: {_or_none(required_checks)}.",
+             "- Un run programado (`schedule`) en rojo sobre la rama por defecto abre la "
+             "issue `ci-red` de su workflow, asignada al `coordinator` del contrato del "
+             "host, o la comenta si ya está abierta; el run programado en verde la "
+             "comenta y la cierra (HR-89, `assets/ci-red/report_ci_red.py`).",
              ""]
             + [f"| `{name}` | {what} | `bash {entrypoint}` | → {recovery} |"
                for name, (what, recovery) in _checks_table_rows(jobs)]),
@@ -2817,7 +2821,12 @@ def _check_review_budget(repo):
 
 
 def _ci_images_mode(repo):
-    """#1264: 'on' si P56_ci_images_gate: on; None sin declaración (ausente, off o sin clave).
+    """#1264: 'on' si P56_ci_images_gate: on; None sin declaración (ausente, off o sin clave)."""
+    return _opt_in_mode(repo, "P56", "P56_ci_images_gate")
+
+
+def _opt_in_mode(repo, pid, key):
+    """'on' si `key: on` en ci-pattern.yaml; None sin declaración (ausente, off o sin clave).
     Fail-closed: fichero ilegible o valor fuera de {off, on} es UsageError (exit 2)."""
     path = repo / "ci-pattern.yaml"
     if not path.is_file():
@@ -2826,13 +2835,27 @@ def _ci_images_mode(repo):
         params = parse_params_yaml(path.read_text(encoding="utf-8"))
     except (ParamsFileError, OSError, UnicodeDecodeError) as exc:
         raise UsageError(f"fase 4: ci-pattern.yaml ilegible ({path}): {exc}") from exc
-    if "P56_ci_images_gate" not in params:
+    if key not in params:
         return None
-    param = next(p for p in load_schema()[0]["parameters"] if p["id"] == "P56")
-    err = validate_value(param, params["P56_ci_images_gate"])
+    param = next(p for p in load_schema()[0]["parameters"] if p["id"] == pid)
+    err = validate_value(param, params[key])
     if err:
         raise UsageError(f"fase 4: ci-pattern.yaml ilegible: {err}")
-    return "on" if params["P56_ci_images_gate"] == "on" else None
+    return "on" if params[key] == "on" else None
+
+
+UPGRADE_PATH_JOB = "upgrade-path"
+
+
+def _upgrade_path_findings(repo):
+    """#1561 (HR-92): con P60=on el job upgrade-path bloquea, así que existe y es requerido."""
+    if _opt_in_mode(repo, "P60", "P60_upgrade_path") is None:
+        return []
+    return [
+        "fase 4: " + f
+        for f in _workflow_job_findings(repo, UPGRADE_PATH_JOB, hr="HR-92")
+        + _required_job_findings(repo, UPGRADE_PATH_JOB, hr="HR-92")
+    ]
 
 
 def _ci_images_jobs(repo):
@@ -2975,6 +2998,7 @@ def _check_gates_phase(repo, decl, contract, seal=None):
     if runner:
         findings.extend(_runner_online_findings(repo, contract, runner))
     findings.extend(_ci_images_findings(repo))
+    findings.extend(_upgrade_path_findings(repo))
     return findings
 
 
@@ -3041,6 +3065,16 @@ def _child_env():
     env = os.environ.copy()
     env[RECURSION_ENV] = "1"
     return env
+
+
+def _gh_command():
+    """``gh`` a ejecutar: ``$CI_PATTERN_GH`` si esta fijada (una ruta ``.py`` corre
+    con este mismo Python) y, si no, ``gh`` del PATH. Los tests fijan la ruta del
+    ``gh`` falso; nunca dependen de como resuelve el PATH (#1609)."""
+    explicit = os.environ.get("CI_PATTERN_GH")
+    if explicit and explicit.endswith(".py"):
+        return [sys.executable, explicit]
+    return [explicit or "gh"]
 
 
 def _run_cmd(cmd, timeout):

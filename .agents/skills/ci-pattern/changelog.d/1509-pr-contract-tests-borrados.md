@@ -1,0 +1,3 @@
+type: minor
+
+HR-88: `pr-contract` avisa con `::warning::` cuando la PR borra un `def test_` cuyo módulo sigue en el árbol de la cabeza, conserva el símbolo que el test usaba y lo importa un fichero que no es de test. El aviso nombra el test, el módulo y el fichero que lo importa; la sección `## Cobertura movida` no vacía del cuerpo lo silencia. Borrar el test con el código que probaba no avisa. La regla sale siempre 0. Comprobación nueva `deleted_tests` en `checks` y dato nuevo `--diff-file` (`git diff --no-renames -U0 BASE...HEAD -- '*.py'`), que pasan la plantilla del workflow y `ci-pattern pr contract`; sin él la regla no se mide y lo dice por `stderr`. Refs #1509.

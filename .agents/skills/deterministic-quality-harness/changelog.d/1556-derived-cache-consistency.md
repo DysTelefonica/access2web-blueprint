@@ -1,0 +1,3 @@
+type: minor
+
+Nueva Hard Rule 20: un repositorio que mantiene una caché derivada (desnormalizada) lleva una comprobación de solo lectura, por CLI y nocturna, que compara la caché con la derivación de origen en cada fila viva y abre una única issue, o comenta en la abierta, cuando alguna fila difiere. La referencia `references/derived-cache-consistency.md` describe el patrón y las rutas de escritura que suelen olvidar recalcular (orden de importación, importación a medias, reconciliación interactiva, altas desde la web). El asset opcional `assets/scripts/cache_consistency.py` aporta la comparación pura, y `assets/tests/test_cache_consistency.py` fija que la comprobación se pone en rojo con una fila caducada a propósito. Origen: APAP_WEB#3557 (#1556).

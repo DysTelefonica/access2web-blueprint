@@ -1,0 +1,3 @@
+type: patch
+
+El presupuesto de revisión deja de contar los documentos de tarea de ODD: exactamente `odd/tasks/*.md` en la raíz del repositorio. La exclusión vive una sola vez en `assets/budget/vendored_budget.py` (`is_odd_task`), de modo que `pr-size` y la regla A1 de `pr-contract`, el gate de tamaño en CI, dan la misma cifra para el mismo diff. Siguen contando `odd/handoffs/*`, `odd/tasks/sub/x.md`, `odd/tasks/x.txt` y `foo/odd/tasks/x.md`, y un renombrado desde una ruta de autoría hacia `odd/tasks/*.md` cuenta, como con los lockfiles (#1177). `pr-size` informa de esas líneas junto a las generadas (#1611).

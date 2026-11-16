@@ -18,7 +18,9 @@ import os
 import subprocess
 import sys
 import tempfile
+import threading
 import unittest
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 GATE_ENV = "CI_PATTERN_ISSUE_SPEC_PATH"
@@ -349,6 +351,10 @@ class PrEventFailClosedTests(unittest.TestCase):
         # de la API; el cuerpo del payload NO se imprime.
         env = {k: v for k, v in os.environ.items() if k != "GITHUB_TOKEN"}
         env["GITHUB_TOKEN"] = "test-token"
+        env["GH_API_RETRY_ESPERA_S"] = "0"  # #1592: el reintento no duerme en el test
+        # Un intento: en algunos hosts un puerto cerrado cuelga en vez de rechazar;
+        # el reintento lo cubren PrEventApiRetryTests (#1592).
+        env["GH_API_RETRY_INTENTOS"] = "1"
         env["GITHUB_API_URL"] = "http://127.0.0.1:9"  # puerto cerrado
         p = self._run_pr_event(env)
         self.assertEqual(p.returncode, 2, p.stderr)
@@ -443,6 +449,104 @@ class ObsoleteFlagsCompatibilityTests(unittest.TestCase):
         self.assertEqual(result.returncode, baseline.returncode, result.stderr)
         self.assertEqual(result.stdout, baseline.stdout)
         self.assertIn(self._warning("host-contract"), result.stderr)
+
+
+class _ApiHandler(BaseHTTPRequestHandler):
+    """API local: cada ruta responde su secuencia de (status, cuerpo); la última se repite."""
+
+    def do_GET(self) -> None:  # noqa: N802 - nombre que exige http.server
+        path = self.path.split("?")[0]
+        self.server.seen.append(path)
+        script = self.server.routes.get(path, [(404, {"message": "Not Found"})])
+        status, payload = script[min(self.server.seen.count(path), len(script)) - 1]
+        raw = json.dumps(payload).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(raw)))
+        self.end_headers()
+        self.wfile.write(raw)
+
+    def log_message(self, *args: object) -> None:
+        return
+
+
+class PrEventApiRetryTests(unittest.TestCase):
+    """#1592 — el modo pr-event lee por el cliente compartido y reintenta como él.
+
+    Antes, `check_issue_spec.py` llamaba a `urlopen` por su cuenta: un 503 era un
+    único intento y el gate quedaba en rojo (ardelperal/APAP_WEB, job
+    131271799279). Ahora la regla es la de `assets/gh-api-retry/casos.tsv`:
+    un 5xx se reintenta con backoff, un 4xx no. `GH_API_RETRY_ESPERA_S=0`: el
+    test no duerme; el backoff lo prueba la suite del cliente.
+    """
+
+    PULL = "/repos/team/skills/pulls/7"
+    ISSUE = "/repos/team/skills/issues/12"
+    UNAVAILABLE = (503, {"message": "Service Unavailable"})
+
+    def setUp(self) -> None:
+        self.server = ThreadingHTTPServer(("127.0.0.1", 0), _ApiHandler)
+        self.server.routes, self.server.seen = {}, []
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        self.addCleanup(self.server.server_close)
+        self.addCleanup(self.server.shutdown)
+        self.server.routes[self.PULL] = [(200, {"number": 7, "body": "Closes #12"})]
+        self.server.routes[self.ISSUE] = [(200, plain_issue())]
+
+    def _run(self) -> subprocess.CompletedProcess:
+        env = {k: v for k, v in os.environ.items()
+               if not k.startswith("GH_API_RETRY_")}
+        env.update({"GITHUB_TOKEN": "test-token", "GH_API_RETRY_ESPERA_S": "0",
+                    "GITHUB_API_URL": f"http://127.0.0.1:{self.server.server_address[1]}"})
+        with tempfile.TemporaryDirectory() as tmp:
+            event = Path(tmp) / "event.json"
+            event.write_text(json.dumps(_pr_payload("payload obsoleto")), encoding="utf-8")
+            return subprocess.run(
+                [sys.executable, str(GATE), "pr-event", str(event)],
+                capture_output=True, text=True, check=False, env=env, timeout=60)
+
+    def test_a_transient_503_reading_the_pr_body_is_retried(self):
+        self.server.routes[self.PULL].insert(0, self.UNAVAILABLE)
+        p = self._run()
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertEqual(self.server.seen.count(self.PULL), 2)
+        self.assertIn("issue-spec: contrato satisfecho", p.stdout)
+        self.assertIn("AVISO: GET /repos/team/skills/pulls/7 fallo (intento 1 de 4)", p.stderr)
+
+    def test_a_pr_body_read_that_keeps_failing_fails_closed_after_four_attempts(self):
+        self.server.routes[self.PULL] = [self.UNAVAILABLE]
+        p = self._run()
+        self.assertEqual(p.returncode, 2, p.stderr)
+        self.assertEqual(self.server.seen.count(self.PULL), 4)
+        self.assertIn("issue-spec: pr-event: no se pudo leer el cuerpo actual del PR por API "
+                      "(GET /repos/team/skills/pulls/7 failed: HTTP Error 503: Service Unavailable", p.stderr)
+        self.assertIn("(falló tras 4 intentos)", p.stderr)
+        self.assertNotIn("payload obsoleto", p.stderr)
+        self.assertNotIn(self.ISSUE, self.server.seen)
+
+    def test_a_4xx_reading_the_pr_body_is_not_retried(self):
+        self.server.routes[self.PULL] = [(404, {"message": "Not Found"})]
+        p = self._run()
+        self.assertEqual(p.returncode, 2, p.stderr)
+        self.assertEqual(self.server.seen.count(self.PULL), 1)
+        self.assertIn("no se pudo leer el cuerpo actual del PR por API "
+                      "(GET /repos/team/skills/pulls/7 failed: HTTP Error 404: Not Found", p.stderr)
+        self.assertNotIn("AVISO", p.stderr)
+
+    def test_a_transient_503_reading_the_issue_is_retried(self):
+        self.server.routes[self.ISSUE].insert(0, self.UNAVAILABLE)
+        p = self._run()
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertEqual(self.server.seen.count(self.ISSUE), 2)
+        self.assertIn("issue-spec: contrato satisfecho", p.stdout)
+
+    def test_an_issue_read_that_keeps_failing_fails_closed(self):
+        self.server.routes[self.ISSUE] = [self.UNAVAILABLE]
+        p = self._run()
+        self.assertEqual(p.returncode, 1, p.stderr)
+        self.assertEqual(self.server.seen.count(self.ISSUE), 4)
+        self.assertIn("issue-spec: #12: cannot read the issue (GET /repos/team/skills/issues/12 "
+                      "failed: HTTP Error 503: Service Unavailable", p.stderr)
 
 
 if __name__ == "__main__":

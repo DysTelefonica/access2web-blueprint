@@ -77,9 +77,15 @@ that keeps the last value would report OK), and every job declares ``timeout-min
 job (#806): a ``concurrency`` group at job or workflow level, no service container pinning a
 host port (``H:C``, ``IP:H:C``), and a ``timeout``-wrapped ``docker info`` before the first
 ``docker run`` (in an earlier step or earlier in the same step; a comment is no guard).
-In a workflow with a ``pull_request`` trigger, ``cancel-in-progress`` may be ``false`` or an
-expression naming ``synchronize``; a literal ``true`` is refused (#978): a run cancelled after
-its jobs exist leaves a cancelled required check on the head SHA, which blocks the merge.
+In a workflow with a ``pull_request`` trigger, ``cancel-in-progress`` may be ``false``, an
+expression that is false for every ``pull_request`` action but ``synchronize``, or an expression
+on ``github.ref`` that is false for every run on ``refs/heads/main`` (for example
+``${{ github.ref != 'refs/heads/main' }}``, #1598). The expression is evaluated, not searched
+for a word (#1600): ``||`` with a constant, functions and other contexts are refused. A literal
+``true`` and any other expression are refused (#978): a run cancelled after its jobs exist leaves a cancelled required check on the
+head SHA. The merge gates skip that cancelled check when a twin of the same name exists on the
+SHA (``safe_merge`` and ``check_push_compliance``, #1591/#1598), so the ref-based form cancels
+superseded runs off ``main`` without blocking the merge.
 
 The same job can run in two instances: its own workflow (a ``pull_request`` trigger) and the
 same file called with ``workflow_call`` from another workflow. Two instances sharing one
@@ -170,7 +176,12 @@ def _mentions_catalog_secret(node) -> bool:
         return any(_mentions_catalog_secret(v) for v in node)
     return False
 def workflow_id(path: str) -> str:
-    """El nombre del workflow dentro de `.github/workflows/`, comparable entre rutas."""
+    """El nombre del workflow dentro de `.github/workflows/`, comparable entre rutas.
+
+    Una ruta de Windows llega con `\\`: se normaliza para que el llamado y quien lo
+    llama den el mismo nombre (#1612).
+    """
+    path = path.replace("\\", "/")
     marker = ".github/workflows/"
     return path.split(marker)[-1] if marker in path else path
 def caller_map(docs: list[tuple[str, dict]]) -> dict[str, set[str]]:
@@ -681,39 +692,222 @@ def docker_preflight_finding(steps: list) -> str | None:
     return None
 
 
-def _cancels_on_any_event(value: object) -> bool:
-    """`cancel-in-progress` that can cancel a run of the same head SHA: literal true, or an
-    expression that does not restrict itself to `synchronize` (a new commit)."""
+# #1600: the expression is evaluated, not searched for a word. Only this subset of the GitHub
+# expression language is understood; anything else (functions, other contexts) cannot be
+# evaluated and is a finding (fail closed).
+_EXPR_TOKEN = re.compile(
+    r"\s*(?:(?P<op>&&|\|\||==|!=|!|\(|\))|'(?P<str>(?:[^']|'')*)'"
+    r"|(?P<name>github\.event\.action|github\.event_name|github\.ref|true|false|null)(?![\w.]))",
+    re.IGNORECASE)  # GitHub: context names and literals are case-insensitive
+_EXPR_CONTEXTS = ("github.event.action", "github.event_name", "github.ref")
+# Same head SHA, new run: every pull_request action except `synchronize` (#978), plus a
+# placeholder for an action GitHub may add later (fail closed).
+_SAME_SHA_ACTIONS = ("opened", "reopened", "edited", "labeled", "unlabeled", "closed",
+                     "ready_for_review", "converted_to_draft", "assigned", "unassigned",
+                     "review_requested", "review_request_removed", "milestoned", "demilestoned",
+                     "locked", "unlocked", "enqueued", "dequeued", "auto_merge_enabled",
+                     "auto_merge_disabled", "<unknown action>")
+# Runs on the base branch that a ref-based form must never cancel (#1598).
+_BASE_EVENTS = ("push", "workflow_dispatch", "schedule")
+
+
+def _expr_tokens(text: str) -> list | None:
+    tokens, pos = [], 0
+    while pos < len(text):
+        if text[pos:].strip() == "":
+            break
+        m = _EXPR_TOKEN.match(text, pos)
+        if not m:
+            return None
+        if m.group("op"):
+            tokens.append(("op", m.group("op")))
+        elif m.group("str") is not None:
+            tokens.append(("val", m.group("str").replace("''", "'")))
+        else:
+            name = m.group("name").lower()
+            literal = {"true": True, "false": False, "null": None}
+            tokens.append(("val", literal[name]) if name in literal else ("ctx", name))
+        pos = m.end()
+    return tokens
+
+
+class _UnknownExpressionError(Exception):
+    """The expression leaves the understood subset: it cannot be judged safe."""
+
+
+def _truthy(value) -> bool:
+    return value not in (None, False, "") and value != 0
+
+
+def _equal(left, right) -> bool:
+    """GitHub `==`: strings compare case-insensitively; null equals null or the empty string."""
+    if isinstance(left, str) and isinstance(right, str):
+        return left.lower() == right.lower()
+    if type(left) is type(right):
+        return left == right
+    if left is None or right is None:
+        return (left or "") == (right or "")
+    raise _UnknownExpressionError
+
+
+class _Evaluator:
+    """Evaluate tokens under `context` with GitHub's precedence (! > ==,!= > && > ||);
+    string comparison is case-insensitive, as in GitHub Actions."""
+
+    def __init__(self, tokens: list, context: dict):
+        self.tokens, self.context, self.pos = tokens, context, 0
+
+    def peek(self):
+        return self.tokens[self.pos] if self.pos < len(self.tokens) else (None, None)
+
+    def take(self, expected=None):
+        tok = self.peek()
+        if tok[0] is None or (expected and tok != ("op", expected)):
+            raise _UnknownExpressionError
+        self.pos += 1
+        return tok
+
+    def primary(self):
+        kind, value = self.take()
+        if kind == "op" and value == "!":
+            return not _truthy(self.primary())
+        if kind == "op" and value == "(":
+            inner = self.disjunction()
+            self.take(")")
+            return inner
+        if kind == "ctx":
+            return self.context[value]
+        if kind == "val":
+            return value
+        raise _UnknownExpressionError
+
+    def comparison(self):
+        left = self.primary()
+        while self.peek() in (("op", "=="), ("op", "!=")):
+            op = self.take()[1]
+            equal = _equal(left, self.primary())
+            left = equal if op == "==" else not equal
+        return left
+
+    def conjunction(self):
+        left = self.comparison()
+        while self.peek() == ("op", "&&"):
+            self.take()
+            right = self.comparison()
+            left = right if _truthy(left) else left
+        return left
+
+    def disjunction(self):
+        left = self.conjunction()
+        while self.peek() == ("op", "||"):
+            self.take()
+            right = self.conjunction()
+            left = left if _truthy(left) else right
+        return left
+
+    def result(self) -> bool:
+        value = self.disjunction()
+        if self.pos != len(self.tokens):
+            raise _UnknownExpressionError
+        return _truthy(value)
+
+
+def _evaluate(tokens: list, context: dict) -> bool:
+    """Evaluate tokens under `context` (see `_Evaluator`)."""
+    return _Evaluator(tokens, context).result()
+
+
+def _pr_contexts(pr_events, base_branch: str):
+    """Every same-SHA PR run the workflow can get: each declared PR event under each action.
+    `pull_request` runs on the merge ref; `pull_request_target` on the PR's base branch, which
+    may be the gate's base branch or another one."""
+    refs = {"pull_request": ("refs/pull/1/merge",),
+            "pull_request_target": (f"refs/heads/{base_branch}", "refs/heads/<other base>")}
+    for event in pr_events:
+        for ref in refs.get(event, ("refs/pull/1/merge",)):
+            for action in _SAME_SHA_ACTIONS:
+                yield {"github.event_name": event, "github.event.action": action, "github.ref": ref}
+
+
+def _cancels_on_any_event(value: object, pr_events=("pull_request",),
+                          base_branch: str = "main") -> bool:
+    """`cancel-in-progress` that can cancel a run of the same head SHA (#978) and is not the
+    ref-based form (#1598). Literal true cancels. An expression is evaluated (#1600):
+    - it passes when it is false for every same-SHA action of every PR event the workflow
+      declares (only `synchronize`, a new commit, may cancel);
+    - or when it reads the `github.ref` context and is false for every run on
+      `refs/heads/<base_branch>` (push, dispatch, schedule): the merge gates skip a cancelled
+      twin (#1591, #1598);
+    - anything outside the understood subset (functions, other contexts) is a finding."""
     if value is True:
         return True
     if not isinstance(value, str):
         return False
-    text = value.strip()
+    return _text_cancels(value.strip(), pr_events, base_branch)
+
+
+def _text_cancels(text: str, pr_events, base_branch: str) -> bool:
+    """A string `cancel-in-progress` value (see `_cancels_on_any_event`)."""
     if text.lower() == "true":
         return True
-    return "${{" in text and "synchronize" not in text
+    if not (text.startswith("${{") and text.endswith("}}")):
+        return "${{" in text
+    tokens = _expr_tokens(text[3:-2])
+    if not tokens:
+        return True
+    try:
+        return _expression_cancels(tokens, pr_events, base_branch)
+    except (_UnknownExpressionError, KeyError):
+        return True
 
 
-def cancel_in_progress_findings(wf: str, doc: dict) -> list[str]:
+def _expression_cancels(tokens: list, pr_events, base_branch: str) -> bool:
+    """Whether understood `tokens` can cancel a same-SHA run (see `_cancels_on_any_event`)."""
+    if not any(_evaluate(tokens, ctx) for ctx in _pr_contexts(pr_events, base_branch)):
+        return False
+    if ("ctx", "github.ref") not in tokens:
+        return True
+    return any(_evaluate(tokens, {"github.event_name": event, "github.event.action": None,
+                                  "github.ref": f"refs/heads/{base_branch}"})
+               for event in _BASE_EVENTS)
+
+
+def cancel_in_progress_findings(wf: str, doc: dict, base_branch: str = "main") -> list[str]:
     """#978: in a workflow with a `pull_request` trigger, only a new commit may cancel a run.
 
     `edited`, `labeled` and `reopened` fire runs on the same head SHA; cancelling one after its
     jobs exist leaves a `cancelled` check run on that SHA, and a cancelled required check blocks
     the merge even when a later run of the same SHA is green. A pending run that is replaced
     creates no check run, so `cancel-in-progress: ${{ github.event.action == 'synchronize' }}`
-    keeps the saving where it matters (the superseded run belongs to an old SHA)."""
-    if not any(ev in workflow_events(doc) for ev in PR_EVENTS):
+    keeps the saving where it matters (the superseded run belongs to an old SHA).
+
+    #1600: the expression is evaluated, so `... || true` no longer passes for naming a word. It is
+    evaluated under every PR event the workflow declares (`pull_request_target` too), and the
+    ref-based form must be false on `refs/heads/<base_branch>` (`--base-branch`).
+
+    #1598: an expression on the ref (`${{ github.ref != 'refs/heads/main' }}`) is accepted too.
+    It can cancel a run of the same SHA, but the merge gates (`safe_merge`,
+    `check_push_compliance`) let the newest non-cancelled check run of a name decide, so the
+    cancelled twin no longer blocks; a cancelled check with no twin still blocks."""
+    pr_events = [ev for ev in PR_EVENTS if ev in workflow_events(doc)]
+    if not pr_events:
         return []
     why = ("`cancel-in-progress` can cancel a run of the same head SHA and leave a cancelled "
-           "required check that blocks the merge: use `false` or an expression on "
-           "`github.event.action == 'synchronize'` (#978)")
+           "required check that blocks the merge: use `false`, an expression that is false for "
+           "every action but `github.event.action == 'synchronize'` (#978) or an expression on "
+           "`github.ref` that is false on the base branch, e.g. "
+           f"`${{{{ github.ref != 'refs/heads/{base_branch}' }}}}` "
+           "(#1598); the expression is evaluated, and `||` with a constant, functions or other "
+           "contexts are refused (#1600)")
     found = []
     block = doc.get("concurrency")
-    if isinstance(block, dict) and _cancels_on_any_event(block.get("cancel-in-progress")):
+    if isinstance(block, dict) and _cancels_on_any_event(block.get("cancel-in-progress"),
+                                                         pr_events, base_branch):
         found.append(f"{wf} workflow concurrency: {why}")
     for jid, job in doc["jobs"].items():
         block = job.get("concurrency")
-        if isinstance(block, dict) and _cancels_on_any_event(block.get("cancel-in-progress")):
+        if isinstance(block, dict) and _cancels_on_any_event(block.get("cancel-in-progress"),
+                                                             pr_events, base_branch):
             found.append(f"{wf} job '{jid}' concurrency: {why}")
     return found
 
@@ -1364,7 +1558,7 @@ def main(argv):
     findings, seen, published = [], set(), set()
     contract = host_contract(declared, docs)
     for w, doc in docs:
-        findings.extend(cancel_in_progress_findings(w, doc))
+        findings.extend(cancel_in_progress_findings(w, doc, args.base_branch))
         for jid, job in doc["jobs"].items():
             if jid in required:
                 seen.add(jid)

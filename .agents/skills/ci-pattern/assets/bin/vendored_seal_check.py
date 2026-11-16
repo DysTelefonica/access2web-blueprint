@@ -43,8 +43,9 @@ def _pin_output_encoding() -> None:
 
 
 def git(repo: Path, *args: str) -> subprocess.CompletedProcess:
+    # Salida en UTF-8 sea cual sea el locale, como la copia del head leída del disco (#1601).
     return subprocess.run(["git", "-C", str(repo), *args],  # noqa: S603, S607 — git con argumentos fijos, sin shell.
-                          capture_output=True, text=True)
+                          capture_output=True, encoding="utf-8", errors="replace")
 
 
 def first_line_at(repo: Path, rev: str, manifest: str) -> str | None:

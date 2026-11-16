@@ -1,0 +1,3 @@
+type: patch
+
+El merge gobernado (`check_governed_merge.py`) ya no toma el `required` más reciente del SHA sin mirar el evento: su veredicto sale de los check-runs de la ejecución del evento `pull_request` sobre la cabeza del PR. Un `required` en `skipped` de un `workflow_dispatch` posterior sobre el mismo SHA ya no bloquea un PR cuyo run de `pull_request` está verde, y un `required` rojo del `pull_request` sigue bloqueando aunque un dispatch posterior salga en verde. Sin run de `pull_request` para el requerido, sigue faltando y bloquea; si no se pueden leer las ejecuciones del SHA, el merge falla cerrado (exit 2). Refs #1713.

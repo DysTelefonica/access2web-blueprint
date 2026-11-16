@@ -166,7 +166,8 @@ def _git_head(repo: str) -> str:
     try:
         out = subprocess.run(  # noqa: S603 — git en PATH, args de control.
             ["git", "-C", repo, "rev-parse", "--abbrev-ref", "HEAD"],  # noqa: S607
-            capture_output=True, text=True, check=False, timeout=10,
+            # La rama puede no ser ASCII: UTF-8 sea cual sea el locale (#1601).
+            capture_output=True, encoding="utf-8", errors="replace", check=False, timeout=10,
             shell=False)
     except (OSError, subprocess.TimeoutExpired):
         return ""

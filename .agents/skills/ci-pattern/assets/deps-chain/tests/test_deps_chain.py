@@ -110,5 +110,53 @@ class TestCheck(unittest.TestCase):
                 declares_dependencies(repo / "app" / "pyproject.toml")
 
 
+class TestEveryLockMustMove(unittest.TestCase):
+    """#1693: cada lock del manifiesto tiene que cambiar; uno solo no cierra la cadena.
+
+    El gate miraba si CUALQUIER lock cambiaba: un PR que regenera `uv.lock` dejaba pasar
+    un `requirements-dev.lock` desfasado, que es el que instala la CI."""
+
+    def test_a_manifest_with_only_one_of_its_locks_is_a_finding(self) -> None:
+        """RED: manifiesto + uv.lock, sin requirements-dev.lock -> rojo que nombra el que falta."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), _bp_files())
+            found = check(repo, ["app/pyproject.toml", "app/uv.lock"])
+            self.assertEqual(len(found), 1, found)
+            self.assertIn("app/requirements-dev.lock", found[0])
+            self.assertNotIn("app/uv.lock,", found[0])
+
+    def test_the_finding_names_the_missing_lock_and_its_regeneration_command(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), _bp_files())
+            found = check(repo, ["app/pyproject.toml", "app/uv.lock"])
+            self.assertIn("uv export --project app", found[0])
+            self.assertIn("--output-file app/requirements-dev.lock", found[0])
+
+    def test_the_other_direction_is_also_a_finding(self) -> None:
+        """manifiesto + requirements-dev.lock, sin uv.lock -> rojo que nombra uv.lock."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), _bp_files())
+            found = check(repo, ["app/pyproject.toml", "app/requirements-dev.lock"])
+            self.assertEqual(len(found), 1, found)
+            self.assertIn("uv lock --project app", found[0])
+
+    def test_every_lock_changed_with_the_manifest_is_green(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), _bp_files())
+            self.assertEqual(check(repo, ["app/pyproject.toml", "app/uv.lock",
+                                          "app/requirements-dev.lock"]), [])
+
+    def test_every_missing_lock_is_named_when_several_are_missing(self) -> None:
+        files = _bp_files()
+        files["app/poetry.lock"] = "[[package]]\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), files)
+            found = check(repo, ["app/pyproject.toml", "app/uv.lock"])
+            self.assertEqual(len(found), 1, found)
+            self.assertIn("app/requirements-dev.lock", found[0])
+            self.assertIn("app/poetry.lock", found[0])
+            self.assertNotIn("(app/uv.lock", found[0])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -16,6 +16,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tests"))
+from _cp1252_locale import run_under_cp1252_locale  # noqa: E402
+
 ASSET = Path(__file__).resolve().parent.parent
 GATE = ASSET / "check_changelog_fragment.py"
 FIXTURE = ASSET / "tests" / "fixtures" / "violador" / "changelog.d"
@@ -87,6 +90,28 @@ class ChangelogFragmentGateTests(unittest.TestCase):
         code, out = run_gate(self.tmp, self.base)
         self.assertEqual(code, 0, out)
         self.assertIn("CHANGELOG-FRAGMENT OK", out)
+
+    def test_fragment_that_is_not_utf8_is_not_ok(self):
+        """#1601: a cp1252-saved fragment must not pass; consolidation reads UTF-8 strictly."""
+        self.edit_skill()
+        frag = Path(self.tmp) / self.skill / "changelog.d" / "fix-a.md"
+        frag.parent.mkdir(parents=True, exist_ok=True)
+        frag.write_bytes(b"type: patch\n\nCorrige la secci\xf3n A.\n")
+        self.repo.commit("fix")
+        code, out = run_gate(self.tmp, self.base)
+        self.assertNotEqual(code, 0, out)
+        self.assertNotIn("CHANGELOG-FRAGMENT OK", out)
+        self.assertIn("not UTF-8", out)
+
+    def test_crlf_and_lone_cr_fragments_still_validate(self):
+        """#1601: the strict reader keeps text=True's newline translation."""
+        self.edit_skill()
+        p = Path(self.tmp) / self.skill / "changelog.d" / "fix-a.md"
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_bytes(b"type: patch\r\rCorrige A.\r")
+        self.repo.commit("fix")
+        code, out = run_gate(self.tmp, self.base)
+        self.assertEqual(code, 0, out)
 
     def test_edit_with_valid_minor_fragment_is_clean(self):
         self.edit_skill()
@@ -262,6 +287,18 @@ class ChangelogFragmentGateTests(unittest.TestCase):
         code, out = run_gate(self.tmp, "ref-que-no-existe")
         self.assertEqual(code, 2, out)
         self.assertIn("does not resolve", out)
+
+    def test_non_ascii_fragment_read_from_git_is_valid_under_cp1252(self):
+        """#1601: the fragment read with ``git show`` is UTF-8 whatever the locale."""
+        self.edit_skill()
+        self.repo.write(f"{self.skill}/changelog.d/breaking.md",
+                        "type: major\n\nEl authfile pasa a ~/.config (Á).\n\n"
+                        "Migración: mueva el fichero a la ruta nueva.\n")
+        self.repo.commit("breaking")
+        code, out, err = run_under_cp1252_locale(
+            GATE, "--repo", str(self.tmp), "--base", self.base, "--head", "HEAD")
+        self.assertEqual(code, 0, out + err)
+        self.assertIn("CHANGELOG-FRAGMENT OK", out)
 
 
 if __name__ == "__main__":

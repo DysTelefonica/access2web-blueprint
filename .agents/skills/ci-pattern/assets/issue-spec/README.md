@@ -29,6 +29,14 @@ primera edición del cuerpo y desde cualquier «Re-run jobs» del UI (#830,
 ardelperal/APAP_WEB#2163, #2164). Sin `GITHUB_TOKEN`, el modo sale con exit 2
 y un motivo explícito; con la API caída, idem. Modo `local` no se ve afectado.
 
+Cada lectura (el PR y las issues que enlaza) reintenta un fallo transitorio
+—5xx, 429, error de red o JSON malformado— con la regla del cliente compartido
+`runner-controls/github_rest.py`: 4 intentos con esperas de 2, 4 y 8 s
+(`GH_API_RETRY_INTENTOS`, `GH_API_RETRY_ESPERA_S`). Un 4xx no se reintenta.
+Antes era un único intento y un 503 transitorio dejaba el job `pr-gate` en rojo
+(#1592, ardelperal/APAP_WEB job 131271799279). El gate carga el cliente por
+ruta (`../runner-controls/github_rest.py`); si falta, sale con 2.
+
 ## Reglas de forma
 
 1. El cuerpo enlaza una issue con `Closes|Fixes|Resolves|Refs #N` fuera de

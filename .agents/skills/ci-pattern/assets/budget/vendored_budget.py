@@ -10,6 +10,9 @@ Los lockfiles generados (los patrones de :data:`LOCKFILE_PATTERNS`) quedan
 fuera también: los escribe la herramienta, no quien abre la PR. Un fichero
 renombrado desde una ruta de autoría hacia un lockfile sí cuenta (#1177).
 
+Los documentos de tarea de ODD (exactamente ``odd/tasks/*.md``, ver
+:func:`is_odd_task`) quedan fuera con la misma regla, renombrado incluido (#1611).
+
 Desde #1088 la lista tiene una sola entrada: ``.agents/skills/``, el árbol
 vendorizado que los consumers reciben del canon. ``skills/`` **no** se
 excluye: en el canon es el catálogo de autoría (64 skills escritas aquí) y en
@@ -70,6 +73,20 @@ def is_generated_lockfile(path: str) -> bool:
     """
     name = path.rsplit("/", 1)[-1]
     return any(fnmatchcase(name, pattern) for pattern in LOCKFILE_PATTERNS)
+
+
+#: Directorio de los documentos de tarea de ODD: fuera del presupuesto (#1611).
+ODD_TASKS_DIR = "odd/tasks/"
+
+
+def is_odd_task(path: str) -> bool:
+    """True solo para ``odd/tasks/<nombre>.md`` en la raíz del repo (#1611).
+
+    Exactamente eso: ``odd/tasks/sub/x.md``, ``odd/tasks/x.txt``,
+    ``odd/handoffs/*`` y ``foo/odd/tasks/x.md`` cuentan.
+    """
+    name = path[len(ODD_TASKS_DIR):]
+    return path.startswith(ODD_TASKS_DIR) and "/" not in name and name.endswith(".md")
 
 
 #: Atributo de ``.gitattributes`` que marca un fichero como generado (#1440).
@@ -153,8 +170,8 @@ def generated_patterns(gitattributes: str) -> GeneratedPatterns:
 
 
 def is_generated(path: str, patterns: GeneratedPatterns = ()) -> bool:
-    """True si ``path`` es un lockfile o la última línea que lo casa lo marca generado."""
-    if is_generated_lockfile(path):
+    """True si ``path`` es un lockfile, una tarea de ODD o la última línea que lo casa lo marca generado."""
+    if is_generated_lockfile(path) or is_odd_task(path):
         return True
     marked = False
     for regex, value in patterns:
@@ -178,8 +195,8 @@ def is_under_vendored(path: str) -> bool:
 def counts_to_budget(old_path: str, new_path: str, generated: GeneratedPatterns = ()) -> bool:
     """Decide si los cambios de un fichero cuentan para el presupuesto.
 
-    1. Destino generado (lockfile, o marcado en ``generated``): no cuenta,
-       salvo que el fichero venga de una ruta de autoría (#1177, #1440).
+    1. Destino generado (lockfile, tarea de ODD o marcado en ``generated``): no
+       cuenta, salvo que el fichero venga de una ruta de autoría (#1177, #1440, #1611).
     2. Destino fuera de las rutas vendorizadas: cuenta.
     3. Destino vendorizado y sin renombrado desde autoría: no cuenta.
     4. Renombrado desde una ruta de autoría hacia una vendorizada: cuenta.

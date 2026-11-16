@@ -41,9 +41,10 @@ def _pin_output_encoding():
 
 
 def _git(root, *args):
-    # git en PATH, args de control; sin shell.
+    # git en PATH, args de control; sin shell. Salida en UTF-8 sea cual sea el locale (#1601).
     proc = subprocess.run(["git", "-C", str(root), *args],  # noqa: S603, S607
-                          capture_output=True, text=True, check=False)
+                          capture_output=True, encoding="utf-8", errors="replace",
+                          check=False)
     if proc.returncode != 0:
         raise UsageError(f"git {' '.join(args)} falla: {proc.stderr.strip()}")  # noqa: TRY003
     return proc.stdout
@@ -60,7 +61,7 @@ def resolve_base(root, name):
     for ref in (f"origin/{name}", name):
         proc = subprocess.run(  # noqa: S603
             ["git", "-C", str(root), "rev-parse", "--verify", "-q", ref],  # noqa: S607
-            capture_output=True, text=True, check=False)
+            capture_output=True, encoding="utf-8", errors="replace", check=False)
         if proc.returncode == 0:
             return ref
     raise UsageError(f"la base '{name}' no resuelve (ni origin/{name} ni {name}): "  # noqa: TRY003
@@ -95,6 +96,7 @@ def range_data(root, base, head):
         "numstat": _git(root, "diff", "--numstat", rng),
         "commits": _git(root, "log", "--format=%P%n%B%n---COMMIT-END---", f"{base}..{head}"),
         "tracked": _git(root, "ls-files"),
+        "diff": _git(root, "diff", "--no-renames", "-U0", rng, "--", "*.py"),
         "origins": origins_for(root, base, head),
     }
 
@@ -185,7 +187,8 @@ def _gate_on_range(root, event, policy_path, base, head):
             "--event-file", paths["event"], "--policy-file", str(policy_path),
             "--repo", str(root), "--changed-files", paths["changed"],
             "--numstat-file", paths["numstat"], "--commits-file", paths["commits"],
-            "--tracked-files", paths["tracked"], "--origins-file", paths["origins"]])
+            "--tracked-files", paths["tracked"], "--origins-file", paths["origins"],
+            "--diff-file", paths["diff"]])
     finally:
         for path in written:
             path.unlink(missing_ok=True)

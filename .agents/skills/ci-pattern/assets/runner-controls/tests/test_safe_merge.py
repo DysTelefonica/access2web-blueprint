@@ -12,12 +12,14 @@ archivo bajo el presupuesto de revision.
 Shim y fixtures compartidos en _shim.py.
 """
 import json
+import os
 import sys
 import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _shim import (
+    PATH_TESTS_SKIP,
     SHA,
     BaseSafeMergeTest,
     base_state,
@@ -74,6 +76,13 @@ class ValidationsTest(BaseSafeMergeTest):
         self.assertIn("KEEP: remote branch 'chore/test' is kept: the fleet never deletes "
                       "remote branches", proc.stdout)
 
+    @unittest.skipIf(os.name == "nt", PATH_TESTS_SKIP)
+    def test_without_explicit_gh_the_gh_on_path_still_merges(self) -> None:
+        # #1609: sin CI_PATTERN_GH el comportamiento de produccion no cambia.
+        proc = run_gate(self.root, base_state(), via_path=True)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assert_merged(proc, True)
+
     def test_check_only_exits_zero(self) -> None:
         proc = run_gate(self.root, base_state(), check_only=True)
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
@@ -94,6 +103,54 @@ class ValidationsTest(BaseSafeMergeTest):
         self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
         self.assert_merged(proc, False)
         self.assertIn("open", proc.stdout.lower())
+
+
+
+def _run(run_id: int, conclusion: str) -> dict:
+    return {"id": run_id, "name": "unit", "conclusion": conclusion, "status": "completed"}
+
+
+class CancelledTwinTest(BaseSafeMergeTest):
+    """#1598: un check-run ``cancelled`` con gemelo del mismo nombre no es veredicto del SHA.
+
+    Por cada nombre decide el check-run mas reciente no cancelado; si todos estan
+    cancelados, decide el cancelado mas reciente y el merge se bloquea (como #1591)."""
+
+    def gate(self, *runs: dict):
+        state = base_state()
+        state["check_runs"][SHA] = list(runs)
+        return run_gate(self.root, state, required_check=["unit"])
+
+    def test_old_run_cancelled_by_the_new_one_merges_when_the_new_one_is_green(self) -> None:
+        # Linea temporal: el run viejo (id menor) se cancela al llegar el nuevo (id mayor).
+        proc = self.gate(_run(1, "cancelled"), _run(2, "success"))
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assert_merged(proc, True)
+        self.assertNotIn("DENIED", proc.stdout)
+
+    def test_newer_cancelled_twin_of_a_green_run_merges(self) -> None:
+        proc = self.gate(_run(1, "success"), _run(2, "cancelled"))
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assert_merged(proc, True)
+        self.assertNotIn("DENIED", proc.stdout)
+
+    def test_cancelled_alone_is_denied(self) -> None:
+        proc = self.gate(_run(1, "cancelled"))
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assert_merged(proc, False)
+        self.assertIn("check 'unit': status=completed, conclusion=cancelled", proc.stdout)
+
+    def test_all_twins_cancelled_is_denied(self) -> None:
+        proc = self.gate(_run(1, "cancelled"), _run(2, "cancelled"))
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assert_merged(proc, False)
+        self.assertIn("check 'unit': status=completed, conclusion=cancelled", proc.stdout)
+
+    def test_newer_cancelled_twin_does_not_hide_an_older_failure(self) -> None:
+        proc = self.gate(_run(1, "failure"), _run(2, "cancelled"))
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assert_merged(proc, False)
+        self.assertIn("check 'unit': status=completed, conclusion=failure", proc.stdout)
 
 
 if __name__ == "__main__":

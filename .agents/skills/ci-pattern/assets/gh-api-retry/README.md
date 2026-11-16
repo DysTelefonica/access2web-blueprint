@@ -1,15 +1,16 @@
 # gh-api-retry
 
-La regla del reintento de las consultas a la API, en un solo sitio (#1210, #1220).
+La regla del reintento de las llamadas a la API, en un solo sitio (#1210, #1220, #1592).
 
-## La regla (cuatro casos)
+## La regla
 
-| Caso | Qué hace la API | Reintenta | Intentos | Resultado |
-|---|---|---|---|---|
-| fallo de llamada | error de red o HTTP | sí | 3 | la llamada responde bien |
-| JSON malformado | el cuerpo no es JSON | sí | 3 | la llamada responde bien |
-| respuesta válida vacía | `[]` o cuerpo vacío válido | **no** | 1 | se devuelve tal cual |
-| intentos agotados | siempre falla | sí | 3 | **falla cerrado** |
+Se reintenta lo transitorio con **backoff exponencial**: 4 intentos, esperas
+de 2, 4 y 8 s. Un 4xx distinto de 429 no se reintenta. Agotados los intentos,
+se falla cerrado (HR-3).
+
+Un 4xx recibiría la misma respuesta otra vez; el 429 (límite de peticiones)
+pasa con el tiempo. El 403 del límite secundario no se reintenta: GitHub lo da
+con el mismo código que un permiso que falta.
 
 Una respuesta válida **nunca** se reintenta: una lista vacía puede significar «sin PR»
 o «cero issues abiertas», y reintentarla debilitaría el gate en vez de
@@ -17,7 +18,8 @@ protegerlo.
 
 ## La tabla es el contrato
 
-`casos.tsv` contiene esas cuatro filas. **Las dos implementaciones la recorren en
+`casos.tsv` contiene esas filas, con sus esperas (los tests las observan sin
+dormir). **Las dos implementaciones la recorren en
 sus tests**:
 
 - este asset, en bash, que envuelve la CLI `gh` (`gh-api-retry.sh`);
@@ -44,8 +46,9 @@ data = github_rest.get_json(f"repos/{repo}/commits/{sha}/pulls")
 
 | Variable | Por defecto | Para qué |
 |---|---|---|
-| `GH_API_RETRY_INTENTOS` | 3 | intentos totales; `1` desactiva el reintento |
-| `GH_API_RETRY_ESPERA_S` | 1 | segundos de espera entre intentos |
+| `CI_PATTERN_GH` | el `gh` del PATH | el `gh` a ejecutar, como en el resto de assets (#1609, #1632); una ruta `.py` corre con `python3` |
+| `GH_API_RETRY_INTENTOS` | 4 | intentos totales; `1` desactiva el reintento |
+| `GH_API_RETRY_ESPERA_S` | 2 | primera espera en segundos; cada reintento la dobla; `0` = sin esperas (tests) |
 
 ## Detalles que no son obvios
 
@@ -53,9 +56,26 @@ data = github_rest.get_json(f"repos/{repo}/commits/{sha}/pulls")
   la API responde objetos o arrays, así que un cuerpo vacío o que no empieza por
   `{` o `[` se trata como malformado. Es un criterio de forma, no de parseo, y
   por eso este helper es para consultas JSON de la API.
-- **El cliente Python reintenta lecturas, no escrituras**: un POST repetido
-  podría duplicar el efecto (por ejemplo, abrir dos incidencias). El helper
-  bash tampoco se usa para escrituras.
+- **Escrituras: solo las idempotentes** (#1592). El cliente Python reintenta
+  las lecturas (`get_json`) y, con `call_con_reintento`, las escrituras que
+  repetidas dejan el mismo estado: el `PUT .../merge` con `sha` del merge
+  gobernado (si el primero llegó a fusionar, el reintento recibe un 4xx y falla
+  cerrado; nunca fusiona otra cabeza), el `PATCH` que cierra una issue y la
+  consulta GraphQL (un `POST` que solo lee). Las escrituras **no idempotentes**
+  —el `POST` de un comentario, de una issue de incidente o de un
+  `workflow_dispatch`— van por `call` y hacen **un solo intento**: repetidas
+  tras un 5xx que sí se aplicó, duplicarían el comentario, la issue o el run, y
+  un duplicado es peor que un rojo que falla cerrado. Por eso tampoco hay
+  comprobación previa: añadiría una lectura más que también puede fallar. El
+  helper bash no se usa para escrituras. Un fallo de configuración (sin token)
+  no se reintenta.
+- **Cómo sabe el helper bash que es un 4xx**: `gh api` escribe
+  `gh: <mensaje> (HTTP nnn)` en stderr; sin código (error de red), se reintenta.
+- **Quién más usa la regla**: el gate `issue-spec` (`check_issue_spec.py`, el
+  job `pr-gate`) lee el cuerpo del PR y las issues con la regla del cliente
+  compartido (`github_rest.con_reintento`); antes llamaba a `urlopen` con un
+  único intento (#1592, APAP_WEB job 131271799279). `pr-contract` y
+  `required-jobs` leen con `get_json`, que ya reintenta.
 - **Streams separados**: la salida de `gh` va a `stdout` y su `stderr` a
   `stderr`, sin mezclarse: un aviso de `gh` no puede corromper el JSON que el
   gate va a parsear.
