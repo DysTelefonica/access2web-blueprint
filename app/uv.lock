@@ -183,7 +183,7 @@ requires-dist = [
     { name = "cachetools", specifier = ">=5,<8" },
     { name = "cosmic-ray", marker = "extra == 'dev'", specifier = "==8.7.0" },
     { name = "cryptography", specifier = ">=50.0,<51" },
-    { name = "fastapi", specifier = ">=0.142,<0.162" },
+    { name = "fastapi", specifier = ">=0.142,<0.163" },
     { name = "httpx", specifier = "==0.28.*" },
     { name = "import-linter", marker = "extra == 'dev'", specifier = "==2.15" },
     { name = "jinja2", specifier = "==3.1.*" },
