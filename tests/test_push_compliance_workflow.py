@@ -91,6 +91,7 @@ def test_contract_measured_by_the_detective_names_the_orchestrator_bot() -> None
     assert contract["governed_path"] == {
         "enabled": True,
         "actors": ["dys-orquestador[bot]"],
+        "merge_marker": r"^Merge PR #\d+ \((safe|governed) merge\)$",
     }
     assert [c["name"] for c in contract["required_checks"]] == ["required", "pr-gate"]
 
