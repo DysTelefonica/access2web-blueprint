@@ -279,17 +279,31 @@ def check_sources(
 
 
 def _git(*args: str, root: Path) -> str:
+    """Run git and return its stdout decoded as UTF-8, whatever the locale (#1596).
+
+    The head copy is read as strict UTF-8, so the base copy is decoded the same
+    way: a locale code page (cp1252 on Windows) would garble non-ASCII comments
+    and report them as lost. Output that is not valid UTF-8 fails closed as an
+    unreadable base instead of being compared with replacement characters.
+    The bytes are decoded here, not by ``subprocess`` (``text=True``): on
+    Windows its reader thread swallows a decode error and yields ``None``.
+    """
+    command = " ".join(("git", *args))
     done = subprocess.run(  # noqa: S603 - fixed git argv, no shell
         ["git", *args],  # noqa: S607 - PATH-resolved binary
         cwd=root,
         capture_output=True,
-        text=True,
         check=False,
     )
     if done.returncode != 0:
-        command = " ".join(("git", *args))
-        raise BaseUnreadableError(command, done.stderr.strip())
-    return done.stdout
+        detail = done.stderr.decode("utf-8", errors="replace").strip()
+        raise BaseUnreadableError(command, detail)
+    try:
+        text = done.stdout.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise BaseUnreadableError(command, f"output is not valid UTF-8 ({exc})") from exc
+    # universal newlines, as ``text=True`` did and as ``read_text`` does for the head
+    return text.replace("\r\n", "\n").replace("\r", "\n")
 
 
 def check_against_base(

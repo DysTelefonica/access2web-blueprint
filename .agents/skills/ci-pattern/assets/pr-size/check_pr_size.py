@@ -18,8 +18,9 @@ Line-ending churn is not a change a reviewer has to read, so
 ``--ignore-cr-at-eol`` is enabled by default. The generated lockfiles
 (``uv.lock``, ``package-lock.json``, ``pnpm-lock.yaml``, ``poetry.lock`` and
 ``requirements*.lock``) are excluded too: the package manager writes them,
-not the author (#1177). Nothing else is: any other generated file counts (the
-budget is additions + deletions).
+not the author (#1177). So are the ODD task documents, exactly ``odd/tasks/*.md``
+(#1611), reported with the generated lines. Nothing else is: any other generated
+file counts (the budget is additions + deletions).
 
 Two ways to measure. Locally and in a full checkout the diff against the
 base comes from ``git``. With ``--event <pull_request event json>`` the
@@ -188,6 +189,16 @@ def changed_lines(base_ref: str, generated_rules: GeneratedPatterns | None = Non
     return counted, vendored, generated, per_file
 
 
+def gh_command() -> list[str]:
+    """``gh`` a ejecutar: ``$CI_PATTERN_GH`` si esta fijada (una ruta ``.py`` corre
+    con este mismo Python) y, si no, ``gh`` del PATH. Los tests fijan la ruta del
+    ``gh`` falso; nunca dependen de como resuelve el PATH (#1609)."""
+    explicit = os.environ.get("CI_PATTERN_GH")
+    if explicit and explicit.endswith(".py"):
+        return [sys.executable, explicit]
+    return [explicit or "gh"]
+
+
 def pr_base_ref() -> str | None:
     """Return ``origin/<baseRefName>`` of the PR for the current branch, or None.
 
@@ -197,8 +208,9 @@ def pr_base_ref() -> str | None:
     returns None, and the caller falls back to ``origin/main``.
     """
     try:
-        found = subprocess.run(
-            ["gh", "pr", "view", "--json", "baseRefName"],
+        # S603: gh_command() is `gh` or $CI_PATTERN_GH, set only by the tests (#1609).
+        found = subprocess.run(  # noqa: S603
+            [*gh_command(), "pr", "view", "--json", "baseRefName"],
             capture_output=True, text=True, check=False, encoding="utf-8",
         )
     except FileNotFoundError:

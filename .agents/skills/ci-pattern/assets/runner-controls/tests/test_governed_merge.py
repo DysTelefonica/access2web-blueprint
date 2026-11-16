@@ -269,6 +269,48 @@ class GovernedMergeTests(unittest.TestCase):
         stored = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
         self.assertEqual(sum("/check-runs" in call for call in stored["calls"]), 1)
 
+    def test_cancelled_twin_of_a_green_run_does_not_block(self) -> None:
+        # #1591: concurrency cancelled a twin run of the same SHA; its `required`
+        # (newer id) said cancelled while the other run's `required` is green.
+        state = base_state()
+        state["check_runs"][SHA] = [
+            {"id": 1, "name": CHECK, "conclusion": "success", "status": "completed"},
+            {"id": 2, "name": CHECK, "conclusion": "cancelled", "status": "completed"}]
+        proc = run_gate(self.root, contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assert_merged(proc, True)
+
+    def test_cancelled_twin_of_a_running_run_is_waited_for(self) -> None:
+        # #1591: the twin is still running: wait for it, never judge the cancelled one.
+        state = base_state()
+        cancelled = {"id": 2, "name": CHECK, "conclusion": "cancelled", "status": "completed"}
+        running = [{"id": 1, "name": CHECK, "conclusion": None, "status": "in_progress"}, cancelled]
+        green = [{"id": 1, "name": CHECK, "conclusion": "success", "status": "completed"}, cancelled]
+        state["check_runs_script"] = {SHA: [running, green]}
+        proc = run_gate(self.root, contract(), state, "--wait-seconds", "30", "--poll-seconds", "0.05")
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assert_merged(proc, True)
+        self.assertIn(f'required check "{CHECK}": pending', proc.stderr)
+
+    def test_cancelled_without_a_twin_still_blocks(self) -> None:
+        state = base_state()
+        state["check_runs"][SHA] = [{"id": 2, "name": CHECK, "conclusion": "cancelled",
+                                     "status": "completed", "html_url": "https://x/runs/2"}]
+        proc = run_gate(self.root, contract(), state, "--wait-seconds", "30", "--poll-seconds", "0.05")
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assert_merged(proc, False)
+        self.assertIn(f'required check "{CHECK}": cancelled [https://x/runs/2]', proc.stdout)
+
+    def test_cancelled_twin_does_not_hide_a_red_run(self) -> None:
+        state = base_state()
+        state["check_runs"][SHA] = [
+            {"id": 1, "name": CHECK, "conclusion": "failure", "status": "completed"},
+            {"id": 2, "name": CHECK, "conclusion": "cancelled", "status": "completed"}]
+        proc = run_gate(self.root, contract(), state)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assert_merged(proc, False)
+        self.assertIn(f'required check "{CHECK}": failure', proc.stdout)
+
     def test_required_check_beyond_the_first_page_is_read(self) -> None:
         # Fase 0, 0.4: un commit con mas de 100 check-runs dejaba `required`
         # fuera de la primera pagina y el merge lo daba por ausente.
@@ -296,10 +338,10 @@ class GovernedMergeTests(unittest.TestCase):
         stored = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
         self.assertEqual(sum("/check-runs" in call for call in stored["calls"]), 1)
 
-    def test_required_absent_after_a_base_retarget_says_to_reopen_or_push(self) -> None:
+    def test_required_absent_after_a_base_retarget_says_to_push_an_empty_commit(self) -> None:
         # #1495 (cadete#1074): redirigir la base dispara `edited`, que el CI no
         # escucha; los runs de la cabeza son de la base anterior. Relanzarlos
-        # no sirve: hay que cerrar y reabrir la PR o empujar un commit.
+        # no sirve: hay que empujar un commit vacio; cerrar y reabrir no es la via (#1630).
         state = base_state()
         state["check_runs"][SHA] = [{"id": 1, "name": "lint", "conclusion": "success",
                                      "status": "completed", "started_at": "2026-11-04T16:00:00Z"}]
@@ -310,7 +352,7 @@ class GovernedMergeTests(unittest.TestCase):
         self.assert_merged(proc, False)
         self.assertIn(f'required check "{CHECK}": missing; no check run of {SHA[:12]} started after '
                       "the PR's base was changed (2026-11-04T16:30:00Z), and a base change does not "
-                      "start CI: close and reopen the PR, or push a commit (never a merge of the base, "
+                      "start CI: push an empty commit (never a merge of the base, "
                       "HR-13), then merge again", proc.stdout)
         self.assertNotIn("re-run the whole workflow run", proc.stdout)
 

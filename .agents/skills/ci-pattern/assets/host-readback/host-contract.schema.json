@@ -32,6 +32,11 @@
       "uniqueItems": true,
       "description": "Deprecated (DysTelefonica/team-skills#1093, R1). Logins that may put `status:approved` on an issue. Since R1 the issue-spec gate does not read this list: `status:approved` is a convention that anyone (agents included) may apply and that no gate requires. The key is kept so the consumer contracts that declare it stay valid."
     },
+    "coordinator": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional (DysTelefonica/team-skills#1508, HR-89). GitHub login of the repository coordinator. A scheduled run that fails on the default branch opens its `ci-red` tracking issue assigned to this login (assets/ci-red/report_ci_red.py); without it the reporter exits 2, because a notice without an owner is the gap HR-89 closes. An empty or non-string value fails closed (exit 2, HR-3)."
+    },
     "required_checks": {
       "type": "array",
       "description": "Required check names with classification. `host-enforced` = the host DEMANDS that check (branch protection), and it is only admissible when `host_capabilities.required_checks` is `available`; with the capability `unavailable` the host cannot demand it and the honest class is `documented-only` (the CI runs the check, the host does not require it)."
@@ -94,6 +99,17 @@
       "type": "string",
       "minLength": 1,
       "description": "Optional (DysTelefonica/team-skills#333, regla 7). Con la clave declarada, lo que llega a una rama protegida tiene que venir por el PR del tracker (modelo «rama de feature con PR tracker en borrador»). Sin declaracion el control no cambia: una cadena apilada hacia main no necesita tracker y exigirlo sin declararlo inventaria una regla que el contrato no pide. Una cadena vacia o no textual hace fallar cerrado el contrato (HR-3)."
+    },
+    "deploy_backup_publisher": {
+      "type": "object",
+      "description": "Optional (DysTelefonica/team-skills#1705). Pin del gate de backup del deploy del consumer (APAP #4077). `check_name` es el nombre no vacio del check que publica el backup; `app_id` es el entero >= 0 de la GitHub App que lo publica (0 si el consumer no fija app); `todo` es texto libre opcional. Sin otras claves: una forma invalida falla cerrado (exit 2, HR-3) nombrando la clave.",
+      "required": ["check_name", "app_id"],
+      "additionalProperties": false,
+      "properties": {
+        "check_name": {"type": "string", "minLength": 1},
+        "app_id": {"type": "integer", "minimum": 0},
+        "todo": {"type": "string"}
+      }
     }
   }
 }

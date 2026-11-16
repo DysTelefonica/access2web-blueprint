@@ -40,7 +40,9 @@ class GateError(Exception):
 
 
 def git(repo, *args):
-    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True)
+    # git output is UTF-8 whatever the locale code page (#1601).
+    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True,
+                          encoding="utf-8", errors="replace")
 
 
 def must_git(repo, *args) -> str:

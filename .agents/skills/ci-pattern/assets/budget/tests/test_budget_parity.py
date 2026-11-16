@@ -193,5 +193,53 @@ class TestParity(ParityFixture):
         return subprocess.run(args, capture_output=True, text=True, env=_clean_env())
 
 
+class TestOddTasksParity(unittest.TestCase):
+    """#1611: pr-size y A1 dejan fuera ``odd/tasks/*.md`` con la misma cifra."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.repo = Path(self._tmp.name)
+        _git(self.repo, "init", "-q", "-b", "main")
+        _write(self.repo, "odd/notes/r.md", 200)
+        _git(self.repo, "add", "-A")
+        _git(self.repo, "commit", "-q", "-m", "chore: base")
+        _git(self.repo, "checkout", "-q", "-b", "feat/x")
+        _write(self.repo, "odd/tasks/x.md", 500)  # fuera del presupuesto
+        for rel, lines in (("odd/tasks/sub/y.md", 7), ("odd/tasks/x.txt", 11),
+                           ("odd/handoffs/h.md", 13), ("foo/odd/tasks/z.md", 17)):
+            _write(self.repo, rel, lines)
+        # Renombrado desde autoría hacia odd/tasks: sus 19 líneas nuevas cuentan.
+        _git(self.repo, "mv", "odd/notes/r.md", "odd/tasks/r.md")
+        with (self.repo / "odd/tasks/r.md").open("a", encoding="utf-8") as handle:
+            handle.write("".join(f"extra {i}\n" for i in range(19)))
+        _git(self.repo, "add", "-A")
+        _git(self.repo, "commit", "-q", "-m", "docs: tareas")
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    def test_pr_size_and_a1_count_the_same_figure(self) -> None:
+        numstat = _git(self.repo, "diff", "--numstat", "--find-renames=50%",
+                       "--ignore-cr-at-eol", "main...HEAD")
+        self.assertIn("odd/{notes => tasks}/r.md", numstat)
+        figure = _load_budget().budget_lines(numstat)
+        self.assertEqual(figure, 7 + 11 + 13 + 17 + 19)
+        proc = subprocess.run(
+            [sys.executable, str(PR_SIZE), "--base-ref", "main", "--json"],
+            cwd=self.repo, capture_output=True, text=True, env=_clean_env(),
+        )
+        self.assertEqual(json.loads(proc.stdout)["indicators"]["changed_lines"], figure)
+        numstat_path = self.repo / "numstat.txt"
+        numstat_path.write_text(numstat, encoding="utf-8")
+        for budget, code in ((figure, 0), (figure - 1, 1)):
+            policy = json.loads(POLICY.read_text(encoding="utf-8"))
+            policy["review_budget_lines"] = budget
+            policy_path = self.repo / "policy.json"
+            policy_path.write_text(json.dumps(policy), encoding="utf-8")
+            proc = TestParity._contract(self, numstat=numstat_path, origins=None,
+                                        policy=policy_path)
+            self.assertEqual(proc.returncode, code, proc.stdout + proc.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

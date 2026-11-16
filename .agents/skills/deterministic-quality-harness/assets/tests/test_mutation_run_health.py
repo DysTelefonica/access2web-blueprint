@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/tests/test_mutation_run_health.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.3 — assets/tests/test_mutation_run_health.py
 """A mutation run that killed nothing did not measure the code (#809 T2b).
 
 ``check_run_health`` already refuses a session with no jobs at all. What it did not refuse

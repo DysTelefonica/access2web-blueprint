@@ -26,6 +26,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tests"))
+from _cp1252_locale import run_under_cp1252_locale  # noqa: E402
+
 GATE = Path(__file__).resolve().parents[1] / "check_e2e_evidence.py"
 
 
@@ -255,6 +258,14 @@ class E2eEvidenceGateTests(unittest.TestCase):
         proc = run_gate(self.repo, "--head", "HEAD",
                         "--pr-body-file", str(body))
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_non_ascii_backend_path_is_read_under_cp1252(self) -> None:
+        """#1601: the changed paths from git are UTF-8 whatever the locale."""
+        git(self.repo, "config", "core.quotepath", "false")
+        add_commit(self.repo, {"docs/guía-Á.md": "notas\n"}, "docs")
+        code, out, err = run_under_cp1252_locale(
+            GATE, "--repo", str(self.repo), "--base", "main", "--head", "HEAD")
+        self.assertEqual(code, 0, out + err)
 
 
 if __name__ == "__main__":

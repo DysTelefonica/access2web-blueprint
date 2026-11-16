@@ -55,6 +55,10 @@ prevents.
     `make verify` covers every checkout-and-tools PR gate in CI order. PR payload, scheduled mutation,
     network, and Docker gates may be excluded only by explicit capability and reason. Preserve LF in
     the Makefile because CRLF breaks recipes on Linux.
+20. **Check derived caches.** A denormalized cache is correct only while every write path
+    recomputes it, and reviews find the forgotten paths one at a time. A read-only comparison of
+    every live row with the source derivation finds the next one; see
+    [Derived cache consistency](derived-cache-consistency.md).
 
 ## Shipped ceilings
 

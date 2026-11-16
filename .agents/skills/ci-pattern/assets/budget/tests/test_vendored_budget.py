@@ -129,6 +129,30 @@ class TestLockfilesDoNotCount(unittest.TestCase):
         self.assertEqual(budget.budget_lines(numstat), 12)
 
 
+class TestOddTasksDoNotCount(unittest.TestCase):
+    """#1611: ``odd/tasks/*.md`` queda fuera del presupuesto, y nada más amplio."""
+
+    def test_a_task_document_at_the_top_level_directory_is_excluded(self) -> None:
+        self.assertTrue(budget.is_odd_task("odd/tasks/1611-x.md"))
+        self.assertTrue(budget.is_generated("odd/tasks/1611-x.md", ()))
+        self.assertFalse(budget.counts_to_budget("odd/tasks/x.md", "odd/tasks/x.md"))
+
+    def test_only_exactly_odd_tasks_md_is_excluded(self) -> None:
+        for path in ("odd/handoffs/x.md", "odd/tasks/sub/x.md", "odd/tasks/x.txt",
+                     "foo/odd/tasks/x.md", "odd/tasks.md", "odd/tasks/x.MD"):
+            self.assertFalse(budget.is_odd_task(path), path)
+            self.assertTrue(budget.counts_to_budget(path, path), path)
+
+    def test_a_rename_from_authored_into_odd_tasks_counts(self) -> None:
+        self.assertTrue(budget.counts_to_budget("docs/plan.md", "odd/tasks/x.md"))
+        self.assertFalse(budget.counts_to_budget("odd/tasks/a.md", "odd/tasks/b.md"))
+
+    def test_budget_lines_leaves_only_the_task_document_out(self) -> None:
+        numstat = ("500\t0\todd/tasks/x.md\n7\t0\todd/tasks/sub/y.md\n"
+                   "11\t0\todd/handoffs/h.md\n19\t0\todd/{notes => tasks}/r.md\n")
+        self.assertEqual(budget.budget_lines(numstat), 37)
+
+
 GITATTRIBUTES = """\
 # generados por scripts/build-*.py
 docs/skills-inventory.html linguist-generated

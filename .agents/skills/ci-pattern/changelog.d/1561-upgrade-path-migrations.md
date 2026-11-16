@@ -1,0 +1,3 @@
+type: minor
+
+El canon publica el job `upgrade-path` (guía de adopción, G4.7): arranca la última release sobre un Postgres vacío y ejecuta dos veces el arranque completo del cambio sobre ese esquema, de modo que las migraciones se prueban desde el esquema de producción y no desde una base vacía. La nueva HR-92 lo exige, añade a la revisión de migraciones que su test parta del esquema actual y establece que todo check nuevo declare si bloquea y, si bloquea, figure en `required_jobs` y en el agregador con un test que lo demuestre. Con `P60_upgrade_path: on` la fase 4 exige que el job exista y sea requerido; sin la declaración es inerte, así que ningún consumer cambia de veredicto con la propagación (#1561)

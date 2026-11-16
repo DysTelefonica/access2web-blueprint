@@ -52,16 +52,24 @@ class GateError(Exception):
 
 
 def git(repo, *args) -> str:
-    r = subprocess.run(["git", "-C", str(repo), *args],
-                       capture_output=True, text=True)
+    # git output is strict UTF-8 whatever the locale code page (#1601): a fragment that is
+    # not UTF-8 would pass with replacement characters here and then break the release,
+    # whose consolidation reads fragments strictly. Decoded here, not in the reader thread.
+    r = subprocess.run(["git", "-C", str(repo), *args], capture_output=True)
     if r.returncode != 0:
-        raise GateError(f"git {' '.join(args)} failed: {r.stderr.strip()}")
-    return r.stdout.strip()
+        raise GateError(f"git {' '.join(args)} failed: "
+                        f"{r.stderr.decode('utf-8', 'replace').strip()}")
+    try:
+        out = r.stdout.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        msg = f"git {' '.join(args)}: output is not UTF-8 ({exc})"
+        raise GateError(msg) from exc
+    return out.replace(chr(13) + chr(10), chr(10)).replace(chr(13), chr(10)).strip()
 
 
 def rev_parse(repo: Path, ref: str) -> str:
     r = subprocess.run(["git", "-C", str(repo), "rev-parse", "--verify", "-q", ref],
-                       capture_output=True, text=True)
+                       capture_output=True, encoding="utf-8", errors="replace")
     if r.returncode != 0:
         raise GateError(f"ref {ref!r} does not resolve")
     return r.stdout.strip()

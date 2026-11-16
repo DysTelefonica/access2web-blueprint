@@ -4,8 +4,8 @@ description: "Trigger: «actúa como coordinador», «actúa como colaborador»,
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: "1.1"
-  last_verified: 2026-10-29
+  version: "1.1.1"
+  last_verified: 2026-11-13
   scope: ['universal']
   auto_invoke: ['actúa como coordinador', 'actúa como colaborador', 'como coordinador', 'como colaborador']
   tiers: ['universal']
@@ -43,6 +43,7 @@ El rol se declara **una vez por tarea**. Cambiar de rol a mitad de una tarea exi
 - **Al delegar, se delega siempre con la identidad de colaborador.** Un agente o subagente delegado recibe el PATH, el token y el credential helper de `dys-agentes`; **nunca** los de `dys-orquestador`. Delegar no transfiere la capacidad de fusionar: el coordinador conserva esa capacidad para sí y delega el trabajo, no el permiso.
 - **El coordinador puede hacer el trabajo él mismo** o delegarlo en otros agentes; en los dos casos, el merge lo firma él.
 - **Si el repo tiene merge gobernado, el coordinador fusiona por él, nunca con `gh pr merge`.** El merge gobernado es el workflow `runner-merge.yml` o `governed-merge.yml` del repo: comprueba el contrato del host (checks requeridos, etiqueta `type:*`, presupuesto de tamaño, frescura con `merge_freshness`) antes de fusionar. `gh pr merge` se salta ese contrato. Si el workflow bloquea la PR, el coordinador corrige lo que nombra el hallazgo o lo informa; no recurre a `gh pr merge` para esquivarlo. Solo en un repo sin ese workflow se fusiona con `gh pr merge`.
+- **Un run cancelado o caído lo relanza el coordinador del repositorio, nunca el colaborador.** `dys-agentes` no tiene `actions: write` (decisión del dueño, #1630): el colaborador pide el relanzamiento al coordinador, con el repo y el id del run. Cerrar y reabrir la PR no es la vía de relanzar.
 - **El rol no se deduce del alcance de la tarea.** Que la tarea sea grande no convierte a la IA en coordinador; el rol lo dice la persona.
 
 ## Decision Gates
@@ -100,6 +101,16 @@ fi
 
 Un `BLOCKED` es el veredicto del contrato: nombra lo que falta (un check, la etiqueta, la rama atrasada respecto de su base). Se corrige y se vuelve a lanzar el workflow.
 
+### Relanzar un run como coordinador
+
+El coordinador relanza con su propia App y un solo comando, sin turno de modelo:
+
+```bash
+python .agents/skills/ci-pattern/assets/runner-controls/rerun_run.py --repo OWNER/REPO --run RUN_ID
+```
+
+El script comprueba que el run es del repo, que terminó `cancelled`, `failure` o `timed_out` y que su SHA sigue siendo la cabeza de la PR o de la rama; si no, sale con 2 y dice el motivo (con un SHA viejo, que se empuje). Relanza con `--failed`. La última línea y el código de salida dicen el resultado.
+
 ## Output Contract
 
 - El rol con el que se está operando y la identidad efectiva de GitHub.
@@ -117,6 +128,7 @@ Un `BLOCKED` es el veredicto del contrato: nombra lo que falta (un check, la eti
 | Se deduce el rol por el tamaño de la tarea | El tamaño no otorga autoridad | El rol lo dice la persona |
 | El cambio de rol a mitad de tarea, sin decirlo | La identidad cambia sin que nadie lo decida | Declarar el cambio en voz alta |
 | El coordinador usa `gh pr merge` en un repo con `runner-merge.yml` | Se salta el contrato del host: un PR atrasado se fusiona aunque el contrato pida `merge_freshness: "required"` | Lanzar el workflow de merge gobernado |
+| El colaborador cierra y reabre la PR para relanzar un run cancelado | Ensucia el historial de la PR y esquiva la decisión del dueño (#1630) | Pedir el relanzamiento al coordinador, que ejecuta `rerun_run.py` |
 | El workflow bloquea y el coordinador fusiona con `gh pr merge` | Convierte el veredicto del contrato en un consejo | Corregir lo que nombra el `BLOCKED` y relanzar el workflow |
 
 ## References

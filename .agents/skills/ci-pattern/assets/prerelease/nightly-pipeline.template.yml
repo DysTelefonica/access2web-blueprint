@@ -1,0 +1,92 @@
+# Plantilla del pipeline nocturno (perfil pre-release).
+# Cada job es un marcador que falla en cerrado: sustituya el comando del proyecto.
+# El job gate decide con nightly_pipeline.py si el despliegue procede.
+name: nightly-pipeline
+
+on:
+  schedule:
+    # El proyecto elige la hora (UTC); 02:00 es solo un valor de ejemplo.
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Ensayo: ejecuta todo y no despliega"
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      dry_run:
+        description: "Ensayo: ejecuta todo y no despliega"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: nightly-pipeline
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      pending: ${{ steps.mig.outputs.pending }}
+    steps:
+      # El proyecto debe contar aqui las migraciones sin aplicar y escribir su numero en $GITHUB_OUTPUT.
+      # Hasta entonces no escribe nada y falla: el gate recibe un valor vacio y retiene el deploy.
+      - id: mig
+        run: 'echo "PLACEHOLDER: sustituya el conteo de migraciones pendientes" && exit 1'
+      - run: 'echo "PLACEHOLDER: sustituya el comando del proyecto para build" && exit 1'
+
+  e2e-full:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'echo "PLACEHOLDER: sustituya el comando del proyecto para e2e-full" && exit 1'
+
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'echo "PLACEHOLDER: sustituya el comando del proyecto para integration" && exit 1'
+
+  upgrade-path:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'echo "PLACEHOLDER: sustituya el comando del proyecto para upgrade-path" && exit 1'
+
+  trivy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'echo "PLACEHOLDER: sustituya el comando del proyecto para trivy" && exit 1'
+
+  security-deep:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'echo "PLACEHOLDER: sustituya el comando del proyecto para security-deep" && exit 1'
+
+  gate:
+    needs: [build, e2e-full, integration, upgrade-path, trivy, security-deep]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: >-
+          python ci-pattern/assets/prerelease/nightly_pipeline.py plan
+          --repo ${{ github.repository }}
+          --run ${{ github.run_id }}
+          --profile .github/prerelease.json
+          --pending-migrations ${{ needs.build.outputs.pending }}
+
+  deploy:
+    needs: gate
+    if: ${{ inputs.dry_run != true && needs.gate.result == 'success' }}
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - run: 'echo "PLACEHOLDER: deploy; un deploy exige copia de seguridad verificada (perfil pre-release, regla 4)" && exit 1'

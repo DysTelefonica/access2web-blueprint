@@ -52,7 +52,11 @@ al día, el árbol integrado es el que ya verificó su CI y no se lanza nada
 dato es el `behind_by` que el gate ya lee para la frescura. La validación
 previa al merge es la de `post_merge_dispatch` (el workflow existe y
 declara `workflow_dispatch`) y una más: ningún job **requerido** de un
-workflow de verificación puede saltarse en `workflow_dispatch`. Los jobs
+workflow de verificación, ni del workflow de `post_merge_dispatch` que
+aloja el agregador, puede saltarse en `workflow_dispatch` (#1568). Aloja
+el agregador el workflow con un job que ejecuta `check_required_jobs.py`;
+los detectores no se miden, y si ningún workflow de `post_merge_dispatch`
+lo aloja, el gate lo avisa con un `WARNING:` en el log del merge. Los jobs
 requeridos son los de `required_jobs` en `.github/required-jobs-policy.json`
 de la base, el mismo fichero que lee `check_required_jobs.py`; si no se
 puede leer, el gate falla cerrado con exit 2 nombrándolo. La regla es

@@ -1,0 +1,3 @@
+type: patch
+
+`park_issues.py` (#1691) habla con la API de GitHub por `runner-controls/github_rest.py` (urllib, stdlib) en vez del CLI `gh`: el runner del consumer no tiene `gh`, asi que el asset no podia correr en su CI. Se mantienen los argumentos, los codigos de salida y las lineas de resultado (`PARKED:`, `UNPARKED:`, `DRY-RUN:`, `HOLD:`, `FAILED:`); el texto interno de los errores de lectura cambia, porque ya no nombra un comando `gh`. El seam `CI_PATTERN_GH` desaparece de este script. Los tests pasan del `gh` falso al servidor stub (`runner-controls/tests/_github_stub.py`, con rutas nuevas para la ejecucion nocturna por id, los despliegues y sus estados, y las etiquetas de una issue) y se ejecutan sin ningun `gh` en el PATH. Refs #1691.

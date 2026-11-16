@@ -66,8 +66,11 @@ class RestTests(unittest.TestCase):
         self.server.routes, self.server.seen = {}, []
         threading.Thread(target=self.server.serve_forever, daemon=True).start()
         self.base = f"http://127.0.0.1:{self.server.server_address[1]}"
+        # #1592: sin esperas reales entre reintentos (el backoff lo prueba
+        # `test_github_rest_retry.py` con la espera inyectada).
         self.env = mock.patch.dict(os.environ, {"GITHUB_API_URL": self.base,
-                                                "GITHUB_TOKEN": SECRET}, clear=False)
+                                                "GITHUB_TOKEN": SECRET,
+                                                "GH_API_RETRY_ESPERA_S": "0"}, clear=False)
         self.env.start()
         self.addCleanup(self.env.stop)
         self.addCleanup(self.server.server_close)
@@ -147,7 +150,7 @@ class RestTests(unittest.TestCase):
             github_rest.get_json("repos/o/r")
         message = str(ctx.exception)
         self.assertTrue(message.startswith("HTTP 502 on GET repos/o/r"), message)
-        self.assertTrue(message.endswith("(falló tras 3 intentos)"), message)
+        self.assertTrue(message.endswith("(falló tras 4 intentos)"), message)
 
     def test_unreachable_api_fails_closed(self) -> None:
         with socket.socket() as probe:

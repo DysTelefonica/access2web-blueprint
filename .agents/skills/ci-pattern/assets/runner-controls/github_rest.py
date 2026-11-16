@@ -8,7 +8,9 @@ aparece en un mensaje de error. HTTPS fijo (HTTP solo hacia loopback, para los
 tests) y sin redirecciones: el token no viaja a otro host. Los listados se
 pagian siguiendo la cabecera `Link` (rel="next"). Cualquier respuesta
 distinta de 2xx, fallo de red, timeout o cuerpo que no sea JSON lanza
-`GitHubApiError`: el llamador falla cerrado (HR-3). `GITHUB_API_URL` (la
+`GitHubApiError`: el llamador falla cerrado (HR-3). Las lecturas (`get_json`)
+y las escrituras idempotentes (`call_con_reintento`) reintentan un fallo
+transitorio con backoff exponencial; `call` no reintenta (#1592). `GITHUB_API_URL` (la
 variable que fija Actions) apunta a la raiz del host; por defecto,
 https://api.github.com."""
 import contextlib
@@ -48,8 +50,16 @@ class GitHubApiError(Exception):
         self.status = status
 
 
+class GitHubConfigError(GitHubApiError):
+    """Falta el token o `GITHUB_API_URL` no es valida: no es transitorio y no se reintenta."""
+
+
 def _fail(message: str, cause: BaseException | None = None, status: int = 0) -> NoReturn:
     raise GitHubApiError(message, status) from cause
+
+
+def _fail_config(message: str, cause: BaseException | None = None) -> NoReturn:
+    raise GitHubConfigError(message) from cause
 
 
 def _diagnostic(exc: urllib.error.HTTPError) -> str:
@@ -75,7 +85,7 @@ def _diagnostic(exc: urllib.error.HTTPError) -> str:
 def token() -> str:
     tok = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
     if not tok:
-        _fail("no GITHUB_TOKEN or GH_TOKEN in the environment")
+        _fail_config("no GITHUB_TOKEN or GH_TOKEN in the environment")
     return tok
 
 
@@ -84,12 +94,12 @@ def _api_root() -> str:
     try:
         parts = urllib.parse.urlsplit(base)
     except ValueError as exc:
-        _fail(f"GITHUB_API_URL is not a valid URL: {exc}", exc)
+        _fail_config(f"GITHUB_API_URL is not a valid URL: {exc}", exc)
     if parts.scheme == "https":
         return base
     if parts.scheme == "http" and (parts.hostname or "") in LOOPBACK:
         return base
-    _fail("GITHUB_API_URL must be https (loopback http only for tests)")
+    _fail_config("GITHUB_API_URL must be https (loopback http only for tests)")
 
 
 class _Payload(NamedTuple):
@@ -115,7 +125,7 @@ def _open(scheme: str, netloc: str, tail: str, payload: _Payload, ctx: ssl.SSLCo
         return urllib.request.urlopen(
             urllib.request.Request(f"http://{netloc}{tail}", data=payload.data, headers=payload.headers, method=payload.method),
             timeout=API_TIMEOUT, context=ctx)
-    _fail(f"unsupported scheme for GitHub API: {scheme!r}")
+    _fail_config(f"unsupported scheme for GitHub API: {scheme!r}")
 
 
 def call(method: str, path: str, body: dict | None = None) -> tuple[str, str]:
@@ -154,23 +164,34 @@ def call(method: str, path: str, body: dict | None = None) -> tuple[str, str]:
     return text, link
 
 
-# --- Reintento de las lecturas JSON (#1210, #1220) ------------------------
-# La regla completa, con sus cuatro casos, esta en
-# `assets/gh-api-retry/casos.tsv`. Las dos implementaciones de la regla —este
-# cliente y el helper bash `assets/gh-api-retry/gh-api-retry.sh`— recorren esa
-# misma tabla en sus tests, asi que no pueden divergir sin que salte un test.
+# --- Reintento con backoff exponencial (#1210, #1220, #1592) --------------
+# La regla completa, con sus casos, esta en `assets/gh-api-retry/casos.tsv`.
+# Las dos implementaciones de la regla —este cliente y el helper bash
+# `assets/gh-api-retry/gh-api-retry.sh`— recorren esa misma tabla en sus
+# tests, asi que no pueden divergir sin que salte un test.
 #
-# Se reintenta un fallo de llamada y un JSON malformado. Una respuesta
-# valida —incluida una lista vacia— NO se reintenta: no es un fallo, es la
-# respuesta. Agotados los intentos, el ultimo error se propaga y el gate
-# falla cerrado (HR-3).
+# Se reintenta lo transitorio: un error de red o timeout, un 5xx, un 429 y un
+# JSON malformado. Un 4xx distinto de 429 (tambien el 403 del limite
+# secundario) y un fallo de configuracion no se reintentan: la misma peticion
+# recibiria la misma respuesta. Una respuesta valida —incluida una lista
+# vacia— NO se reintenta. Las esperas crecen: la primera es
+# `GH_API_RETRY_ESPERA_S` (2 s por defecto) y cada reintento la dobla: 2, 4 y
+# 8 s con los 4 intentos por defecto. Agotados los intentos, el ultimo error
+# se propaga y el gate falla cerrado (HR-3). `call` no reintenta: un `POST` que
+# crea algo, repetido tras un 5xx que si se aplico, duplicaria el efecto.
 RETRY_INTENTOS_ENV = "GH_API_RETRY_INTENTOS"
 RETRY_ESPERA_ENV = "GH_API_RETRY_ESPERA_S"
-DEFAULT_RETRY_INTENTOS = 3
-DEFAULT_RETRY_ESPERA_S = 1.0
+DEFAULT_RETRY_INTENTOS = 4
+DEFAULT_RETRY_ESPERA_S = 2.0
+RETRY_FACTOR = 2  # cada reintento dobla la espera anterior
+HTTP_TOO_MANY_REQUESTS = 429
+HTTP_SERVER_ERROR_MIN = 500
+
+#: La espera entre intentos. Los tests la sustituyen para observar las esperas sin dormir.
+_esperar = time.sleep
 
 
-class RetryIntentosInvalidError(GitHubApiError):
+class RetryIntentosInvalidError(GitHubConfigError):
     """La variable de intentos no es un entero >= 1; el mensaje lo compone la clase (TRY003)."""
 
     def __init__(self, raw: str) -> None:
@@ -178,7 +199,7 @@ class RetryIntentosInvalidError(GitHubApiError):
 
 
 def _retry_settings() -> tuple[int, float]:
-    """Intentos y espera del reintento, leidos del entorno."""
+    """Intentos y espera base del reintento, leidos del entorno."""
     raw = os.environ.get(RETRY_INTENTOS_ENV, str(DEFAULT_RETRY_INTENTOS))
     try:
         intentos = int(raw)
@@ -190,21 +211,34 @@ def _retry_settings() -> tuple[int, float]:
         espera = float(os.environ.get(RETRY_ESPERA_ENV, str(DEFAULT_RETRY_ESPERA_S)))
     except ValueError:
         espera = DEFAULT_RETRY_ESPERA_S
+    if espera < 0:
+        espera = DEFAULT_RETRY_ESPERA_S
     return intentos, espera
 
 
-def _con_reintento(operacion, descripcion: str):
-    """Ejecuta `operacion` reintentando un fallo de llamada o un JSON malformado.
+def es_transitorio(exc: GitHubApiError) -> bool:
+    """¿Merece otro intento? Red, timeout, JSON malformado, 5xx y 429 si; el resto no."""
+    if isinstance(exc, GitHubConfigError):
+        return False
+    return exc.status in (0, HTTP_TOO_MANY_REQUESTS) or exc.status >= HTTP_SERVER_ERROR_MIN
+
+
+def con_reintento(operacion, descripcion: str):
+    """Ejecuta `operacion` reintentando un fallo transitorio con backoff exponencial.
 
     Una respuesta valida no lanza, asi que sale en el primer intento: una
-    lista vacia nunca se reintenta. Agotados los intentos, el error se
-    propaga sin mas y el gate falla cerrado.
+    lista vacia nunca se reintenta. Un fallo no transitorio (un 4xx distinto
+    de 429, un fallo de configuracion) se propaga tal cual, sin esperar.
+    Agotados los intentos, el error se propaga con el numero de intentos y el
+    gate falla cerrado.
     """
     intentos, espera = _retry_settings()
     for intento in range(1, intentos + 1):
         try:
             return operacion()
         except GitHubApiError as exc:
+            if not es_transitorio(exc):
+                raise
             if intento >= intentos:
                 # El mensaje se compone en `_fail` (el helper de la casa): un
                 # `raise GitHubApiError("...")` con el texto fuera de la clase
@@ -215,17 +249,27 @@ def _con_reintento(operacion, descripcion: str):
                 f"reintento en {espera}s: {exc}",
                 file=sys.stderr,
             )
-            time.sleep(espera)
+            _esperar(espera)
+            espera *= RETRY_FACTOR
     raise AssertionError("inalcanzable")
+
+
+def call_con_reintento(method: str, path: str, body: dict | None = None) -> tuple[str, str]:
+    """`call` con el reintento de `con_reintento`. SOLO para lecturas y escrituras idempotentes.
+
+    Un `POST` que crea algo (comentario, issue, `workflow_dispatch`) va por
+    `call`, sin reintento: repetirlo podria duplicar el efecto (#1592).
+    """
+    return con_reintento(lambda: call(method, path, body), f"{method} {path}")
 
 
 def get_json(path: str) -> object:
     """GET de un documento. Un listado se pagina siguiendo `Link` y se fusiona.
 
-    La lectura reintenta un fallo de llamada o un JSON malformado (#1220). Una
-    respuesta valida, incluida una lista vacia, sale en el primer intento.
+    La lectura reintenta un fallo transitorio (#1220, #1592). Una respuesta
+    valida, incluida una lista vacia, sale en el primer intento.
     """
-    return _con_reintento(lambda: _get_json(path), f"GET {path}")
+    return con_reintento(lambda: _get_json(path), f"GET {path}")
 
 
 def _get_json(path: str) -> object:

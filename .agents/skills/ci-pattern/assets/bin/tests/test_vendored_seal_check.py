@@ -10,9 +10,13 @@ script, so a PR cannot edit the checker either.
 Runs offline in temporary git repositories; no network, no secret.
 """
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tests"))
+from _cp1252_locale import run_under_cp1252_locale  # noqa: E402
 
 ASSET = Path(__file__).resolve().parent.parent
 CHECK = ASSET / "vendored_seal_check.py"
@@ -138,6 +142,14 @@ class VendoredSealCheckTests(unittest.TestCase):
         base = git(repo, "rev-parse", "HEAD")
         proc = run_check(repo, base)
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_non_ascii_seal_matching_base_passes_under_cp1252(self):
+        """#1601: the base seal from git is UTF-8, as the head copy read from disk."""
+        repo = base_repo(self.tmp, seal="# Auto-generado por el catálogo (catalog @ 1d34d1c).\n")
+        base = git(repo, "rev-parse", "HEAD")
+        code, out, err = run_under_cp1252_locale(
+            CHECK, "--base", base, "--vendored", VENDORED, "--manifest", MANIFEST, cwd=repo)
+        self.assertEqual(code, 0, out + err)
 
 
 if __name__ == "__main__":

@@ -3625,6 +3625,23 @@ class OperatingDocTests(unittest.TestCase):
             self.assertEqual(code, 2, err)
             self.assertIn("--out", err)
 
+    def test_generate_doc_tells_the_scheduled_red_has_an_owner(self):
+        # HR-89 (#1508): el documento operativo propagado dice que un run
+        # programado en rojo abre la issue `ci-red` del coordinador.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = make_docs_repo(tmp)
+            out = Path(tmp) / "doc.md"
+            code, _, err = run_cli(
+                ["adoption", "generate-doc", str(repo), "--out", str(out)])
+            self.assertEqual(code, 0, err)
+            text = out.read_text(encoding="utf-8")
+            start = text.index("<!-- ci-pattern-doc:begin required-checks -->")
+            end = text.index("<!-- ci-pattern-doc:end required-checks -->")
+            section = text[start:end]
+            for needle in ("HR-89", "`ci-red`", "coordinator",
+                           "assets/ci-red/report_ci_red.py"):
+                self.assertIn(needle, section)
+
 
 def _lifecycle_section(text):
     """Cuerpo de la sección 'lifecycle' del documento generado."""

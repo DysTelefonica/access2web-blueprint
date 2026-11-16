@@ -23,6 +23,7 @@
     "budget": true,
     "commits": true,
     "ai_disclosure": true,
-    "commit_identity": true
+    "commit_identity": true,
+    "deleted_tests": true
   }
 }

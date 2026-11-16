@@ -200,6 +200,33 @@ def git(root: Path, *args: str) -> None:
                     *args], check=True, capture_output=True)
 
 
+CP1252_BOOTSTRAP = (
+    "import locale, runpy, sys\n"
+    "locale.getencoding = lambda: 'cp1252'\n"
+    "locale.getpreferredencoding = lambda do_setlocale=True: 'cp1252'\n"
+    "sys.argv = sys.argv[1:]\n"
+    "runpy.run_path(sys.argv[0], run_name='__main__')\n"
+)
+
+
+def run_under_cp1252_locale(root: Path, *args: str) -> tuple[int, str, str]:
+    """Run the guard in a child whose locale code page is cp1252 on any host.
+
+    UTF-8 mode is switched off with ``-X utf8=0`` (it overrides PYTHONUTF8) and
+    the locale lookups return cp1252, so the child decodes like a default
+    Windows host even on Linux CI.
+    """
+    env = {k: v for k, v in os.environ.items() if k not in ("PYTHONUTF8", "PYTHONIOENCODING")}
+    done = subprocess.run(  # noqa: S603 - fixed argv, no shell
+        [sys.executable, "-X", "utf8=0", "-c", CP1252_BOOTSTRAP, str(SCRIPT),
+         "--root", str(root), *args],
+        capture_output=True,
+        env=env,
+        check=False,
+    )
+    return done.returncode, done.stdout.decode("utf-8"), done.stderr.decode("utf-8")
+
+
 class CliAgainstGit(unittest.TestCase):
     def setUp(self) -> None:
         self.guard = load_guard()
@@ -276,6 +303,34 @@ class CliAgainstGit(unittest.TestCase):
         self.assertEqual(code, self.guard.EXIT_RELAXED)
         code, _ = self.run_cli("--base-ref", "main")
         self.assertEqual(code, self.guard.EXIT_OK)
+
+    def test_lowering_with_non_ascii_justifications_passes_on_a_non_utf8_locale(self) -> None:
+        """Issue #1596: git output is UTF-8 whatever the locale code page is."""
+        base = (
+            "BASELINE = {\n"
+            "    # redistribución pendiente, ver §9.2\n"
+            "    'app/a.py': 3,\n"
+            "    'app/b.py': 2,  # más estricta en `id_map.py`\n"
+            "}\n"
+        )
+        self.repo_with(base.replace("'app/a.py': 3", "'app/a.py': 1"), base=base)
+        code, out, err = run_under_cp1252_locale(self.root, "--base-ref", "main")
+        self.assertEqual(err, "")
+        self.assertEqual(out.splitlines(), ["check_baseline_relaxation: OK (compared with main)"])
+        self.assertEqual(code, self.guard.EXIT_OK)
+
+    def test_base_that_is_not_utf8_fails_closed(self) -> None:
+        self.repo_with(gate(300))
+        git(self.root, "checkout", "-q", "main")
+        latin1 = "BASELINE = {\n    # redistribución\n    'app/a.py': 362,\n}\n"
+        (self.root / "scripts" / "gate.py").write_bytes(latin1.encode("latin-1"))
+        git(self.root, "commit", "-qam", "latin-1 base")
+        git(self.root, "checkout", "-q", "feature")
+        git(self.root, "merge", "-q", "-s", "ours", "main")
+        code, out = self.run_cli("--base-ref", "main")
+        self.assertEqual(code, self.guard.EXIT_UNREADABLE)
+        self.assertIn("cannot read base main", out)
+        self.assertIn("not valid UTF-8", out)
 
     def test_without_a_base_the_comparison_is_declared_not_performed(self) -> None:
         saved = os.environ.pop("GITHUB_BASE_REF", None)

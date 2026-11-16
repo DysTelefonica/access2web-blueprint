@@ -17,6 +17,7 @@ detecta el detective post-push (HR-49). Solo stdlib; cada llamada a
 """
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -102,12 +103,25 @@ class CheckRunsShapeError(MergeFailClosedError):
     template = "check-runs for PR #{0} is not the API shape"
 
 
+def gh_command() -> list[str]:
+    """``gh`` a ejecutar: ``$CI_PATTERN_GH`` si esta fijada (una ruta ``.py`` corre
+    con este mismo Python) y, si no, ``gh`` del PATH. Los tests fijan la ruta del
+    ``gh`` falso; nunca dependen de como resuelve el PATH (#1609)."""
+    explicit = os.environ.get("CI_PATTERN_GH")
+    if explicit and explicit.endswith(".py"):
+        return [sys.executable, explicit]
+    return [explicit or "gh"]
+
+
 def run_command(argv: list[str], timeout: int) -> subprocess.CompletedProcess:
     """Run ``argv`` with the executable resolved through PATH to an absolute path.
 
     The only ``subprocess`` call of this module. A missing executable raises
     ``FileNotFoundError`` (an ``OSError``), as ``subprocess.run`` did before.
+    ``gh`` is ``gh_command()`` (#1609).
     """
+    if argv[0] == "gh":
+        argv = [*gh_command(), *argv[1:]]
     executable = shutil.which(argv[0])
     if executable is None:
         raise FileNotFoundError(argv[0])
@@ -301,7 +315,10 @@ def base_findings(repo: str, number: int, pull: dict,
 
 
 def ci_findings(repo: str, number: int, head_sha: str, required: set[str]) -> list[str]:
-    """Step 4: every latest check-run on the head is green and the required ones exist."""
+    """Step 4: every deciding check-run on the head is green and the required ones exist.
+
+    The deciding run of a name is its newest non-cancelled one (#1598); a cancelled run
+    decides only when every run of that name is cancelled, and then it blocks."""
     check_runs_data = gh_json(
         f"repos/{repo}/commits/{head_sha}/check-runs"
         "?filter=latest&per_page=100"
@@ -309,11 +326,11 @@ def ci_findings(repo: str, number: int, head_sha: str, required: set[str]) -> li
     )
     if not isinstance(check_runs_data, dict) or not isinstance(check_runs_data.get("check_runs"), list):
         raise CheckRunsShapeError(number)
-    latest: dict = {}
-    for run in check_runs_data.get("check_runs", []):
-        is_named = isinstance(run, dict) and isinstance(run.get("name"), str)
-        if is_named and (run["name"] not in latest or run.get("id", 0) > latest[run["name"]].get("id", 0)):
-            latest[run["name"]] = run
+    # #1598: per name, the newest non-cancelled check run decides; a cancelled one with no
+    # twin still decides and blocks. Same rule as the governed merge (#1591).
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from check_push_compliance import _latest_by_name
+    latest = _latest_by_name(check_runs_data.get("check_runs", []))
     findings = []
     missing = required - {run["name"] for run in latest.values()}
     if missing:
