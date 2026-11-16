@@ -955,7 +955,7 @@ def test_release_signs_and_verifies_the_published_digest_with_oidc() -> None:
     release = yaml.safe_load((_find_workflow().parent / "release.yml").read_text(encoding="utf-8"))
     publish = release["jobs"]["publish"]
     verify = release["jobs"]["verify"]
-    installer = "sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6"
+    installer = "sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532"
 
     assert publish["permissions"]["id-token"] == "write"
     assert "id-token" not in verify["permissions"]
