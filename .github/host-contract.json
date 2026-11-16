@@ -56,7 +56,8 @@
     "enabled": true,
     "actors": [
       "dys-orquestador[bot]"
-    ]
+    ],
+    "merge_marker": "^Merge PR #\\d+ \\((safe|governed) merge\\)$"
   },
   "merge_methods": {
     "allow_merge_commit": {
