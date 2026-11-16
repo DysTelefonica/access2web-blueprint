@@ -4,8 +4,8 @@ description: "Trigger: actualizar mi rama, abrir un pull request, encadenar PRs,
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: "1.5"
-  last_verified: 2026-11-02
+  version: "1.6.2"
+  last_verified: 2026-11-14
   scope: ['universal', 'ops']
   auto_invoke: ['actualizar rama', 'abrir un PR', 'encadenar PRs', 'pedir merge', 'etiquetar un PR']
   tiers: ['universal', 'ops']
@@ -46,6 +46,13 @@ Antes de `gh pr create`, ejecute `ci-pattern pr preflight --draft --pr-body <cue
    todos y reescribirla rompe los enlaces, los PRs y el trabajo de quien
    venía revisando. — *referencia: `ci-pattern`, HR-54.*
 
+   Las historias se unen con un `git merge origin/<base>` normal,
+   resolviendo los conflictos. En una rama que va a un PR están prohibidos
+   `git merge -s ours` y `-X ours`: `-s ours` registra la base como
+   fusionada pero conserva el árbol de la rama y descarta los cambios de la
+   base, y el merge gobernado puede revertir después en silencio el trabajo
+   de la base (incidente: ardelperal/APAP_WEB, 2026-11).
+
 2. **El merge lo lanza un mantenedor, por el camino gobernado**
    (`gh workflow run <workflow> -f pr=<N>`). `status:approved` no es
    puerta: la puede poner cualquiera, agentes incluidos (decisión del
@@ -75,12 +82,17 @@ Antes de `gh pr create`, ejecute `ci-pattern pr preflight --draft --pr-body <cue
    *referencia: `ci-pattern`, flujo §«Pedir un merge».*
 
 3. **Las cadenas**: los intermedios llevan `chain:partial` y `Refs #N`;
-   solo la punta lleva `Closes #N`. El merge avanza de abajo arriba:
-   se re-apunta el PR siguiente sobre main y se relanza su CI, porque
-   re-apuntar por sí solo no lo lanza (dispara `edited`, que el CI no
-   escucha). Se relanza cerrando y reabriendo el PR, sin commit, o con un
-   commit vacío; nunca fusionando main en la rama (`agent-operating-rules`,
-   HR-13). — *referencia: `ci-pattern`, HR-7 y HR-54.*
+   solo la punta lleva `Closes #N`. El merge avanza de abajo arriba: se
+   re-apunta el PR siguiente sobre main. Re-apuntar no lanza la CI (dispara
+   `edited`, que el CI no escucha). Bajo el perfil pre-release (#1627,
+   regla 5), un re-apuntado con el head sin cambiar no necesita run: el
+   merge gobernado da por bueno el run verde que ya existe sobre ese SHA.
+   Cuando el eslabón sí necesite un run, la única vía es un commit vacío
+   (`git commit --allow-empty`); nunca fusionando main en la rama
+   (HR-13 de las reglas de agente del dueño). Cerrar y reabrir el PR no es la vía
+   de relanzar. Un run cancelado o caído por un transitorio lo relanza el
+   coordinador del repo con `rerun_run.py` (`github-roles`). —
+   *referencia: `ci-pattern`, HR-7 y HR-54.*
 
 4. **Etiqueta `type:*` orientativa, de las que declara el contrato del
    host.** Ningún gate la exige (team-skills#1093, R1). Una etiqueta que el
@@ -141,6 +153,8 @@ Antes de `gh pr create`, ejecute `ci-pattern pr preflight --draft --pr-body <cue
 
 - Rebase o `--amend` sobre una rama que ya se empujó: la historia de
   otros deja de cuadrar y el review ya emitido se invalida.
+- `git merge -s ours` o `-X ours` en una rama que va a un PR: la base
+  figura como fusionada y sus cambios se pierden en el merge.
 - Force-push a la rama por defecto: el guard lo detecta y abre el
   incidente.
 - Declarar un PR listo con el CI en rojo, o encadenar sin re-apuntar y

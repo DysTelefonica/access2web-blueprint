@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Gate de contrato de PR y commits (#193): HR-6/7/8/14/31/84. Sin procesos.
+"""Gate de contrato de PR y commits (#193): HR-6/7/8/14/31/84/88. Sin procesos.
 
 La API solo se consulta en modo vivo (#938): etiquetas, cuerpo y, para HR-84,
 la identidad de los autores de los commits (#1433).
 
 El gate no ejecuta `git`: el workflow genera los datos del rango y se los pasa
 por fichero (`--changed-files`, `--numstat-file`, `--commits-file`,
-`--tracked-files`), de modo que un consumer lo copia byte a byte sin hallazgos
+`--tracked-files`, `--diff-file`), de modo que un consumer lo copia byte a byte sin hallazgos
 de S603/S607 (DysTelefonica/team-skills#753). Un fichero necesario que falta
 sale 2 (HR-3)."""
 
@@ -22,6 +22,7 @@ from pathlib import Path
 
 # Fuente única del presupuesto (#931): la regla A1 la comparte con pr-size.
 # A1 es el único check de tamaño en CI (#1396): pr-size es medida local.
+# Las exclusiones (lockfiles, `odd/tasks/*.md` de #1611, generados) viven allí.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "budget"))
 from vendored_budget import (  # noqa: E402
     VENDORED_ROOTS,
@@ -198,7 +199,7 @@ def read_data_file(path):
 
 CHECK_NAMES = ("closes", "chain_context", "issue_links", "closure_tests",
                "docs_evidence", "budget", "commits", "ai_disclosure",
-               "commit_identity")
+               "commit_identity", "deleted_tests")
 
 # #1113: comprobaciones que #1093 (R1/R2) retiraron del gate. `labels` estuvo
 # en CHECK_NAMES hasta 938754363; `required_labels` era su campo de politica
@@ -237,7 +238,8 @@ def active_checks(policy):
     active = {name for name in CHECK_NAMES if config.get(name, True)}
     # HR-84 (#1433) no cuenta: sin la API viva no mide nada, y un gate que solo
     # la tiene a ella daría OK sin comprobar nada en local (HR-3).
-    if not active - {"commit_identity"}:
+    # HR-88 (#1509) tampoco: sin `--diff-file` no mide nada.
+    if not active - {"commit_identity", "deleted_tests"}:
         raise NoActiveChecksError
     return active
 
@@ -361,6 +363,46 @@ def check_closes(pr, base, default_branch, policy, advisories):
             f"al mergearse. Si solo debe cerrar una, quita de las demas la palabra "
             f"de cierre.",
             file=sys.stderr)
+
+
+# HR-7 (#1613): GitHub cierra la issue que sigue a la palabra de cierre en
+# cualquier parte del cuerpo e ignora la negación que la precede: APAP_WEB#4075
+# cerró #4039 con «It does not close #4039». Cada mención es un AVISO, porque una
+# negación no se detecta de forma fiable. Si el mismo número lleva además
+# `Refs #N`, el cuerpo se contradice y es un HALLAZGO que cita la línea
+# (team-skills#1614 cerró #1592 con «the last one closes #1592»): solo compara
+# números, no interpreta la frase.
+CLOSING_MENTION_RX = re.compile(
+    r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?\s+"
+    r"(?:https?://github\.com/(?P<url>[\w.-]+/[\w.-]+)/issues/"
+    r"|(?P<repo>[\w.-]+/[\w.-]+)#|#)(?P<num>\d+)\b", re.IGNORECASE)
+
+
+def check_closing_mentions(pr, data, findings, advisories):
+    """HR-7 (#1613): avisa de cada issue que el cuerpo cierra; bloquea `Refs #N` + cierre de #N."""
+    body = pr.get("body") or ""
+    current = ((data.get("repository") or {}).get("full_name") or "").lower()
+    refs = set(REFS_NUMBER_RX.findall(body))
+    seen = set()
+    for raw in body.splitlines():
+        line = raw.strip()
+        for match in CLOSING_MENTION_RX.finditer(line):
+            owner_repo, num = match.group("url") or match.group("repo"), match.group("num")
+            target = f"{owner_repo}#{num}" if owner_repo else f"#{num}"
+            if target in seen:
+                continue
+            seen.add(target)
+            own = not owner_repo or owner_repo.lower() == current
+            if own and num in refs:
+                findings.append(
+                    f"HR-7: el cuerpo dice `Refs #{num}` y la línea «{line}» cierra #{num} "
+                    "al fusionar el PR: es contradictorio. Quite la palabra de cierre o el "
+                    f"`Refs #{num}`.")
+            else:
+                advisories.append(
+                    f"HR-7: la línea «{line}» cierra {target} al fusionar el PR. GitHub "
+                    "ignora la negación delante de la palabra de cierre; si no debe "
+                    f"cerrarla, escriba `Refs {target}`.")
 
 def size_exception_applied(pr, policy):
     """A1: la excepción de presupuesto la aplica solo el mantenedor cuando
@@ -984,6 +1026,218 @@ def check_ai_disclosure(pr, advisories):
             "declaración va en el PR, no en los commits.")
 
 
+# HR-88 (#1509, ardelperal/APAP_WEB#3440): por cada `def test_` que el diff de la PR
+# (`--diff-file`) borra sin reaparecer en otro test, si el módulo que probaba sigue en
+# la cabeza con el símbolo usado y lo importa un fichero que no es de test, avisa con
+# `::warning::` salvo sección «Cobertura movida» no vacía. Nunca bloquea.
+DEFAULT_MOVED_COVERAGE_HEADING = "Cobertura movida"
+TEST_DEF_RX = re.compile(r"^(\s*)(?:async\s+)?def\s+(test_\w+)\s*\(")
+IMPORT_FROM_RX = re.compile(r"^\s*from\s+(\.*[\w.]*)\s+import\s+(.+)$")
+IMPORT_RX = re.compile(r"^\s*import\s+(.+)$")
+HUNK_BREAK = None
+
+
+def parse_unified_diff(text):
+    """{fichero: (líneas borradas, líneas añadidas)} de un `git diff -U0`.
+
+    Las líneas borradas de cada hunk se separan con `HUNK_BREAK` para que el cuerpo
+    de un test no se junte con el del hunk siguiente."""
+    files, current, in_hunk, old_path = {}, None, False, None
+    for line in text.splitlines():
+        if line.startswith("diff --git "):
+            current, in_hunk, old_path = None, False, None
+        elif not in_hunk and line.startswith("--- "):
+            old_path = line[4:].strip()
+        elif not in_hunk and line.startswith("+++ "):
+            new_path = line[4:].strip()
+            path = new_path if old_path in (None, "/dev/null") else old_path
+            current = files.setdefault(path.split("/", 1)[1] if "/" in path else path, ([], []))
+        elif line.startswith("@@") and current is not None:
+            in_hunk = True
+            current[0].append(HUNK_BREAK)
+        elif in_hunk and current is not None and line[:1] in ("-", "+"):
+            current[0 if line[0] == "-" else 1].append(line[1:])
+    return files
+
+
+def deleted_test_bodies(removed):
+    """{test: líneas de su cuerpo} de los `def test_` que aparecen entre las borradas."""
+    tests, name, indent = {}, None, ""
+    for line in removed:
+        if line is HUNK_BREAK:
+            name = None
+            continue
+        match = TEST_DEF_RX.match(line)
+        if match:
+            indent, name = match.group(1), match.group(2)
+            tests[name] = []
+        elif name and line.strip() and len(line) - len(line.lstrip()) <= len(indent):
+            name = None
+        elif name:
+            tests[name].append(line)
+    return tests
+
+
+def _logical_import_lines(lines):
+    """Une las importaciones entre paréntesis en una sola línea."""
+    out, pending = [], ""
+    for line in lines:
+        if line is HUNK_BREAK:
+            pending = ""
+            continue
+        if pending:
+            pending += " " + line.strip()
+            if ")" in line:
+                out.append(pending)
+                pending = ""
+        elif ("import" in line and "(" in line and ")" not in line):
+            pending = line.strip()
+        else:
+            out.append(line)
+    return out
+
+
+def _resolve_relative(module, test_path):
+    dots = len(module) - len(module.lstrip("."))
+    if not dots:
+        return module
+    package = test_path.split("/")[:-1]
+    package = package[:len(package) - (dots - 1)] if dots > 1 else package
+    rest = module[dots:]
+    return ".".join([*package, rest] if rest else package)
+
+
+def _alias(parts, default):
+    """`x as y` liga `y`; sin `as`, el nombre por defecto."""
+    return parts[-1] if parts[-2:-1] == ["as"] else default
+
+
+def import_bindings(lines, test_path):
+    """[(nombre ligado, módulo con puntos, símbolo o None)] de las importaciones."""
+    bindings = []
+    for line in _logical_import_lines(lines):
+        match = IMPORT_FROM_RX.match(line)
+        if match:
+            module = _resolve_relative(match.group(1), test_path)
+            for item in match.group(2).replace("(", " ").replace(")", " ").split(","):
+                parts = item.split()
+                if parts and parts[0] != "*":
+                    bound = _alias(parts, parts[0])
+                    bindings.append((bound, module, parts[0]))
+            continue
+        match = IMPORT_RX.match(line)
+        if match:
+            for item in match.group(1).split(","):
+                parts = item.split()
+                if parts:
+                    bound = _alias(parts, parts[0].split(".")[0])
+                    bindings.append((bound, parts[0], None))
+    return bindings
+
+
+def module_path(module, tracked):
+    """Ruta versionada del módulo (`a.b` → `a/b.py` o `a/b/__init__.py`, también bajo `src/`)."""
+    if not module:
+        return None
+    base = module.replace(".", "/")
+    for candidate in (f"{base}.py", f"{base}/__init__.py"):
+        if candidate in tracked:
+            return candidate
+        nested = sorted(rel for rel in tracked if rel.endswith("/" + candidate))
+        if nested:
+            return nested[0]
+    return None
+
+
+class _HeadTree:
+    """Lectura perezosa del árbol de la cabeza: el gate no ejecuta git."""
+
+    def __init__(self, repo, tracked):
+        self.repo, self.tracked, self._cache = Path(repo), tracked, {}
+
+    def text(self, rel):
+        if rel not in self._cache:
+            try:
+                self._cache[rel] = (self.repo / rel).read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                self._cache[rel] = ""
+        return self._cache[rel]
+
+    def referrer(self, module, path):
+        """Primer fichero Python versionado, sin ser de test, que importa el módulo."""
+        leaf = module.rsplit(".", 1)[-1]
+        dotted = re.compile(rf"(?<![\w.]){re.escape(module)}(?![\w])")
+        relative = re.compile(
+            rf"^\s*(?:from\s+\.+(?:[\w.]*\.)?{re.escape(leaf)}\s+import\b"
+            rf"|from\s+\.+[\w.]*\s+import\s+.*\b{re.escape(leaf)}\b)", re.M)
+        for rel in sorted(self.tracked):
+            if rel == path or not rel.endswith(".py") or TEST_FILE_RX.search(rel):
+                continue
+            text = self.text(rel)
+            if dotted.search(text) or relative.search(text):
+                return rel
+        return None
+
+
+def _targets(body, bindings, tree):
+    """Módulos versionados que el test probaba: [(módulo, ruta, símbolos usados)]."""
+    local = []
+    for bound, module, symbol in bindings:
+        path = module_path(module, tree.tracked)
+        submodule = module_path(f"{module}.{symbol}", tree.tracked) if symbol else None
+        if submodule:
+            module, path, symbol = f"{module}.{symbol}", submodule, None
+        if path and not TEST_FILE_RX.search(path):
+            local.append((bound, module, path, symbol))
+    text = "\n".join(body)
+    used = [item for item in local if re.search(rf"\b{re.escape(item[0])}\b", text)]
+    targets = {}
+    for _bound, module, path, symbol in used or local:
+        targets.setdefault((module, path), set())
+        if symbol and used:
+            targets[(module, path)].add(symbol)
+    return [(module, path, symbols) for (module, path), symbols in sorted(targets.items())]
+
+
+def deleted_tests_findings(diff_text, tree):
+    """HR-88: (test, módulo, fichero que lo referencia) por cada test borrado de código en uso."""
+    files = parse_unified_diff(diff_text)
+    added = {match.group(2) for _removed, adds in files.values() for line in adds
+             if (match := TEST_DEF_RX.match(line))}
+    findings = []
+    for rel, (removed, _adds) in sorted(files.items()):
+        if not rel.endswith(".py") or not TEST_FILE_RX.search(rel):
+            continue
+        head = tree.text(rel) if rel in tree.tracked else ""
+        bindings = import_bindings([*head.splitlines(), HUNK_BREAK, *removed], rel)
+        for name, body in deleted_test_bodies(removed).items():
+            if name in added or re.search(rf"\bdef\s+{name}\b", head):
+                continue
+            for module, path, symbols in _targets(body, bindings, tree):
+                source = tree.text(path)
+                if symbols and not any(re.search(rf"\b{re.escape(s)}\b", source) for s in symbols):
+                    continue
+                referrer = tree.referrer(module, path)
+                if referrer:
+                    findings.append((f"{rel}::{name}", module, referrer))
+    return findings
+
+
+def check_deleted_tests(pr, diff_text, tree, policy, warnings):
+    """HR-88 (#1509): aviso `::warning::` por test borrado de un módulo en uso.
+
+    Sin bloqueo: la sección «Cobertura movida» no vacía del cuerpo lo silencia."""
+    heading = policy.get("moved_coverage_heading", DEFAULT_MOVED_COVERAGE_HEADING)
+    reason = re.sub(r"<!--.*?-->", "", section_body(pr.get("body"), heading), flags=re.S)
+    if AI_DISCLOSURE_TEXT_RX.search(reason):
+        return
+    for test, module, referrer in deleted_tests_findings(diff_text, tree):
+        warnings.append(
+            f"HR-88: la PR borra `{test}` y el módulo `{module}` que probaba sigue en uso "
+            f"(lo importa `{referrer}`). Diga en la sección «{heading}» del cuerpo dónde "
+            "está ahora esa cobertura (aviso, no bloquea).")
+
+
 def check_issue_links(pr, data, findings):
     """#333: el enlace de la issue no enlaza una issue de otro repositorio; una
     mención informativa del cuerpo no es un enlace. Cerrar y referenciar el
@@ -1007,6 +1261,7 @@ class Verdict:
 
     findings: list = field(default_factory=list)
     advisories: list = field(default_factory=list)
+    warnings: list = field(default_factory=list)  # HR-88 (#1509): `::warning::`
 
 
 def _pin_output_encoding() -> None:
@@ -1063,6 +1318,8 @@ def _load_range_data(args, active):
         error = _load_budget_extras(args, texts)
         if error:
             return None, error
+    if "deleted_tests" in active:
+        _load_deleted_tests_data(args, texts)
     return texts, None
 
 
@@ -1096,6 +1353,7 @@ def _pr_level_checks(active, data, pr, ctx, verdict):
     # de IA. El enlace a la issue lo sigue exigiendo `issue-spec`.
     if "closes" in active:
         check_closes(pr, base_ref, default_branch, policy, verdict.advisories)
+        check_closing_mentions(pr, data, verdict.findings, verdict.advisories)
     # #1093 R3/R9: Chain Context y Asistencia de IA avisan; no bloquean.
     if "chain_context" in active:
         check_chain_context(pr, base_ref, default_branch, policy, verdict.advisories)
@@ -1145,6 +1403,31 @@ def _range_checks(active, pr, ctx, texts, verdict):
         # el fichero de datos, así la política lo apaga con la clave que ya usa
         # para HR-14 y el contrato `checks` no crece. #1172: avisa.
         check_closing_in_commits(texts["commits_file"], pr, policy, verdict.advisories)
+    if "deleted_tests" in active:
+        _deleted_tests_check(pr, ctx, texts, verdict)
+
+
+def _load_deleted_tests_data(args, texts):
+    """HR-88 (#1509): lee `--diff-file` y `--tracked-files`; si falla, lo dice por `stderr`."""
+    try:
+        if args.diff_file:
+            texts["diff_file"] = read_data_file(args.diff_file)
+        if "tracked_files" not in texts and args.tracked_files:
+            texts["tracked_files"] = read_data_file(args.tracked_files)
+    except (OSError, UnicodeDecodeError) as exc:
+        texts.pop("diff_file", None)
+        print(f"PR-CONTRACT: HR-88 no se mide: {exc}", file=sys.stderr)
+
+
+def _deleted_tests_check(pr, ctx, texts, verdict):
+    """HR-88 (#1509): sin `--diff-file` o `--tracked-files` no se mide y se dice."""
+    if "diff_file" not in texts or "tracked_files" not in texts:
+        print("PR-CONTRACT: HR-88 no se mide sin --diff-file y --tracked-files: los tests "
+              "borrados se leen del diff de la PR.", file=sys.stderr)
+        return
+    repo, policy = ctx
+    tracked = frozenset(line for line in texts["tracked_files"].splitlines() if line)
+    check_deleted_tests(pr, texts["diff_file"], _HeadTree(repo, tracked), policy, verdict.warnings)
 
 
 def main(argv=None):
@@ -1158,6 +1441,8 @@ def main(argv=None):
     parser.add_argument("--commits-file",
                         help="`git log --format='%%P%%n%%B%%n---COMMIT-END---' BASE..HEAD`.")
     parser.add_argument("--tracked-files", help="`git ls-files`.")
+    parser.add_argument("--diff-file",
+                        help="Opcional (#1509, HR-88): `git diff --no-renames -U0 BASE...HEAD -- '*.py'`.")
     parser.add_argument("--origins-file",
                         help="Opcional (#931): origen de cada fichero vendorizado, que genera el runner local.")
     parser.add_argument("--gitattributes-file",
@@ -1212,7 +1497,7 @@ def main(argv=None):
     # HR-31: el gate procesa el estado actual sin importar la acción
     # (opened, edited, labeled, unlabeled, synchronize).
     return _verdict(verdict.findings, pr, action_text=data.get("action", "opened"),
-                    advisories=verdict.advisories)
+                    advisories=verdict.advisories, warnings=verdict.warnings)
 
 
 def _load_commit_identity(args, data, pr, policy, active):
@@ -1235,11 +1520,13 @@ def _load_commit_identity(args, data, pr, policy, active):
     return identity, commits, error
 
 
-def _verdict(findings, pr, *, action_text, advisories=()):
+def _verdict(findings, pr, *, action_text, advisories=(), warnings=()):
     """Imprime los avisos (#1093: no cambian el veredicto) y el veredicto:
     0 (OK) o 1 (hallazgos)."""
     for advisory in advisories:
         print(f"AVISO (no bloquea): {advisory}")
+    for warning in warnings:
+        print(f"::warning::{warning}")
     if findings:
         print(f"FAIL: contrato de PR con {len(findings)} hallazgo(s):")
         for f in findings:

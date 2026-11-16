@@ -104,7 +104,8 @@ def _run_git(args: list[str], cwd: Path) -> subprocess.CompletedProcess:
             raise FileNotFoundError("git")
         return subprocess.run(
             [git, *args],
-            capture_output=True, text=True, cwd=cwd,
+            # Salida en UTF-8 sea cual sea el locale (#1601).
+            capture_output=True, encoding="utf-8", errors="replace", cwd=cwd,
             timeout=GIT_TIMEOUT,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:

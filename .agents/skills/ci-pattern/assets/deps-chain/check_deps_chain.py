@@ -123,8 +123,22 @@ def _changed_manifests(repo: Path, changed_files: list[str]) -> list[Path]:
     return out
 
 
+def regeneration_command(repo: Path, lock: Path, directory: str) -> str:
+    """El comando que regenera ESE lock (#1693): cada tipo de lock tiene el suyo."""
+    relative = lock.relative_to(repo).as_posix()
+    if lock.name == "uv.lock":
+        return RELOCK_COMMAND.replace("<dir>", directory)
+    if lock.name.startswith("requirements") and lock.name.endswith(".lock"):
+        return f"{EXPORT_COMMAND.replace('<dir>', directory)} --output-file {relative}"
+    return f"cd {directory} && poetry lock"
+
+
 def check(repo: Path, changed_files: list[str]) -> list[str]:
     """Hallazgos de la cadena manifiesto ↔ lock. Vacío cuando todo cuadra.
+
+    Cuando el manifiesto cambia, CADA lock de su directorio tiene que cambiar con
+    él (#1693): uno solo no basta, porque el CI instala el lock que no se movió. El
+    hallazgo nombra cada lock que falta y el comando que lo regenera.
 
     Un manifiesto sin lock a su lado no es un hallazgo: el gate no puede exigir
     una coherencia que el consumer no ha declarado (ver :func:`notes`).
@@ -135,15 +149,17 @@ def check(repo: Path, changed_files: list[str]) -> list[str]:
         if not locks:
             continue
         relative = manifest.relative_to(repo).as_posix()
-        if not any(lock.relative_to(repo).as_posix() in changed_files for lock in locks):
-            lock_names = ", ".join(lock.relative_to(repo).as_posix() for lock in locks)
-            directory = manifest.parent.relative_to(repo).as_posix()
-            out.append(
-                f"HR-76: el manifiesto '{relative}' cambio y su lock no ({lock_names}): "
-                f"el CI instala el lock y la imagen se construye desde el manifiesto, "
-                f"asi que el bump no se aplicaria. Regenere el lock: "
-                f"{RELOCK_COMMAND.replace('<dir>', directory)} y "
-                f"{EXPORT_COMMAND.replace('<dir>', directory)}")
+        directory = manifest.parent.relative_to(repo).as_posix()
+        missing = [lock for lock in locks if lock.relative_to(repo).as_posix() not in changed_files]
+        if not missing:
+            continue
+        missing_names = ", ".join(lock.relative_to(repo).as_posix() for lock in missing)
+        commands = " y ".join(regeneration_command(repo, lock, directory) for lock in missing)
+        out.append(
+            f"HR-76: el manifiesto '{relative}' cambio y no cambian todos sus locks; faltan "
+            f"({missing_names}): el CI instala el lock y la imagen se construye desde el "
+            f"manifiesto, asi que el bump no se aplicaria en el lock que no se movio. "
+            f"Regenere cada lock que falta: {commands}")
     return out
 
 

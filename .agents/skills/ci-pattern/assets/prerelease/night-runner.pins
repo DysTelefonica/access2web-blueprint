@@ -1,0 +1,5 @@
+# Versiones que exige el runner nocturno (#1627, slice 6). Formato nombre=versión.
+# Deben coincidir con las de la CI (.github/workflows/tests.yml); el test
+# ShippedPinsTests lo comprueba. Lo lee provision-night-runner.sh.
+python3=3.12.7
+node=22.12.0

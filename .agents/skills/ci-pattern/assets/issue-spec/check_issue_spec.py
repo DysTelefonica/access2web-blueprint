@@ -25,10 +25,13 @@ Modos:
   payload, sin token ni red.
 - `pr-event <event.json>`: el cuerpo del PR se lee por API y las referencias se
   resuelven contra las issues del repositorio. Usa GITHUB_TOKEN y
-  GITHUB_API_URL del entorno si existen. Las flags obsoletas
-  `--required-sections` y `--host-contract` se aceptan y se ignoran (#1103);
-  el gate avisa por stderr y no cambia el veredicto. `--required-sections`
-  existia tambien en el modo `local`, asi que ahi se acepta igual.
+  GITHUB_API_URL del entorno si existen. Cada lectura reintenta un fallo
+  transitorio (5xx, 429, red, JSON malformado) con la regla del cliente
+  compartido `runner-controls/github_rest.py` (#1592); un 4xx no se
+  reintenta. Las flags obsoletas `--required-sections` y `--host-contract`
+  se aceptan y se ignoran (#1103); el gate avisa por stderr y no cambia el
+  veredicto. `--required-sections` existia tambien en el modo `local`, asi
+  que ahi se acepta igual.
 
 Un PR de Dependabot (actor `dependabot[bot]` y rama de Dependabot) queda exento
 (#1113): sale 0 sin leer el cuerpo ni las issues.
@@ -38,6 +41,8 @@ Exit codes: 0 sin hallazgos · 1 hallazgos · 2 entrada inválida.
 from __future__ import annotations
 
 import argparse
+import contextlib
+import importlib.util
 import json
 import os
 import re
@@ -53,6 +58,31 @@ from typing import Any
 # Detección compartida con check_branch_name.py (#1113).
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "dependabot"))
 from dependabot import is_dependabot_pr  # noqa: E402
+
+
+def _load_github_rest():
+    """Carga el cliente compartido `runner-controls/github_rest.py` por ruta (#1592).
+
+    De él sale la regla de reintento de la API (`assets/gh-api-retry/casos.tsv`).
+    Sin él, el gate no arranca: sale con 2 (HR-3), como `pr-contract`.
+    """
+    rest_path = Path(__file__).resolve().parents[1] / "runner-controls" / "github_rest.py"
+    if not rest_path.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location("issue_spec_github_rest", str(rest_path))
+    if spec is None or spec.loader is None:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+_REST = _load_github_rest()
+if _REST is None:
+    print("issue-spec: runner-controls/github_rest.py no esta en el catalogo "
+          "(HR-3 fail-closed)", file=sys.stderr)
+    sys.exit(2)
 
 DEPENDS_ON_HINT = (
     "Refs/Closes solo apuntan a issues del mismo repositorio; la PR de la que "
@@ -234,6 +264,24 @@ class UnsupportedApiUrlError(GitHubApiError):
         super().__init__(f"api url must be https (loopback http only): {api_url}")
 
 
+# Fallos de un intento, con la forma del cliente compartido: su `status` decide
+# si se reintenta (`github_rest.es_transitorio`). El texto es el de antes
+# (`HTTP Error 403: Forbidden`, `<urlopen error ...>`).
+class _HttpStatusError(_REST.GitHubApiError):
+    def __init__(self, exc: urllib.error.HTTPError) -> None:
+        super().__init__(str(exc), exc.code)
+
+
+class _TransportError(_REST.GitHubApiError):
+    def __init__(self, exc: BaseException) -> None:
+        super().__init__(str(exc))
+
+
+class _InvalidJsonError(_REST.GitHubApiError):
+    def __init__(self, exc: BaseException) -> None:
+        super().__init__(f"response is not valid JSON: {exc}")
+
+
 def _open(api_url: str, path: str, headers: Mapping[str, str],
           query: Mapping[str, Any] | None = None):
     """Abre el GET con el esquema validado: https, o http solo en loopback.
@@ -271,12 +319,33 @@ class GitHubClient:
             headers["Authorization"] = f"Bearer {self._token}"
         return headers
 
+    def _get_once(self, path: str) -> Mapping[str, Any]:
+        """Un intento del GET. Cada fallo lleva el `status` que decide el reintento."""
+        try:
+            with _open(self._api_url, path, self._headers()) as response:
+                return json.load(response)
+        except urllib.error.HTTPError as exc:
+            # HTTPError es cerrable: libera la respuesta sin esperar al GC.
+            with contextlib.closing(exc):
+                raise _HttpStatusError(exc) from exc
+        except (urllib.error.URLError, TimeoutError, OSError) as exc:
+            raise _TransportError(exc) from exc
+        except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+            raise _InvalidJsonError(exc) from exc
+
+    def _get(self, path: str) -> Mapping[str, Any]:
+        """GET con la regla de reintento del cliente compartido (#1592).
+
+        Un 5xx, un 429, un error de red o un JSON malformado se reintentan con
+        backoff exponencial (`GH_API_RETRY_INTENTOS`, `GH_API_RETRY_ESPERA_S`);
+        un 4xx, no. Agotados los intentos, el último fallo se propaga.
+        """
+        return _REST.con_reintento(lambda: self._get_once(path), f"GET {path}")
+
     def issue(self, repository: str, number: int) -> Mapping[str, Any]:
         try:
-            with _open(self._api_url, f"/repos/{repository}/issues/{number}",
-                       self._headers()) as response:
-                return json.load(response)
-        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as exc:
+            return self._get(f"/repos/{repository}/issues/{number}")
+        except _REST.GitHubApiError as exc:
             raise GitHubIssueFailedError(repository, number, exc) from exc
 
     def pull_request(self, repository: str, number: int) -> Mapping[str, Any]:
@@ -284,11 +353,10 @@ class GitHubClient:
         # payload queda obsoleto en cuanto el cuerpo se edita, y todo
         # "Re-run jobs" del UI reusa el mismo payload (el workaround de hoy
         # es un commit vacío para forzar `synchronize`, ardelperal/APAP_WEB#2163).
+        # Un 503 transitorio se reintenta (#1592, APAP_WEB job 131271799279).
         try:
-            with _open(self._api_url, f"/repos/{repository}/pulls/{number}",
-                       self._headers()) as response:
-                return json.load(response)
-        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as exc:
+            return self._get(f"/repos/{repository}/pulls/{number}")
+        except _REST.GitHubApiError as exc:
             raise GitHubPullRequestFailedError(repository, number, exc) from exc
 
 

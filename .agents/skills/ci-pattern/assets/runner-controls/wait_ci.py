@@ -116,7 +116,7 @@ def wait(args: argparse.Namespace) -> int:
         elapsed = time.monotonic() - start
         if not seen_runs and elapsed >= args.appear_seconds:
             print(f"NOT STARTED: no check runs appeared for {sha[:12]} within {args.appear_seconds:g} s; "
-                  "a base change does not start CI: close and reopen the PR or push a commit")
+                  "a base change does not start CI: push an empty commit")
             return 1
         if elapsed >= args.timeout_seconds:
             print(f"TIMEOUT: {detail} after {args.timeout_seconds:g} s")

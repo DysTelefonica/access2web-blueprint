@@ -13,6 +13,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tests"))
+from _cp1252_locale import run_under_cp1252_locale  # noqa: E402
+
 ASSET_DIR = Path(__file__).resolve().parent.parent
 ASSET = ASSET_DIR / "safe_cleanup.py"
 
@@ -389,6 +392,28 @@ class IntegrationWorktreeTests(unittest.TestCase):
             ["git", "rev-parse", "origin/main"], cwd=repo
         ).stdout.strip()
         self.assertEqual(remote_tip, tip, "main debe retener la punta de feat-integ")
+
+
+class GitOutputEncodingTests(unittest.TestCase):
+    """#1601: the refs read from git are UTF-8 whatever the locale code page."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.tmp = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def test_cli_cleans_a_non_ascii_checked_out_branch_under_cp1252(self):
+        repo = make_repo(self.tmp)
+        make_branch(repo, "fix-sección-Á")
+        code, out, err = run_under_cp1252_locale(
+            ASSET, "--repo-dir", str(repo), "--branch", "fix-sección-Á",
+            "--bundle-dir", str(self.tmp / "backups"), cwd=self.tmp, env=GIT_ENV, timeout=60)
+        self.assertEqual(code, 0, out + err)
+        self.assertIn("CLEAN: branch:fix-sección-Á", out)
+        branches = subprocess.run(
+            ["git", "for-each-ref", "--format=%(refname)", "refs/heads"],
+            capture_output=True, cwd=repo, check=True).stdout.decode("utf-8")
+        self.assertNotIn("fix-sección-Á", branches)
 
 if __name__ == "__main__":
     unittest.main()

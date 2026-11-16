@@ -713,5 +713,172 @@ class GovernedMergePostMergeVerifyTests(unittest.TestCase):
         self.assertIn("ci", proc.stderr)
 
 
+CANONICAL_CALL = "python3 scripts/required-jobs/check_required_jobs.py \"$@\""
+
+
+def aggregator_yaml(condition: str = "", call: str = CANONICAL_CALL, needs: bool = True) -> str:
+    """#1568: `job_yaml` con un job `required` que corre `call` (el agregador canonico).
+
+    Sin `needs` el job no declara `needs:` ni `toJSON(needs)`.
+    """
+    wiring = ("    needs: [tests]\n"
+              "    env:\n"
+              "      NEEDS_JSON: ${{ toJSON(needs) }}\n") if needs else ""
+    return job_yaml(condition).replace("jobs:\n", "jobs:\n"
+                                       "  required:\n"
+                                       f"{wiring}"
+                                       "    if: always()\n"
+                                       "    runs-on: ubuntu-latest\n"
+                                       "    steps:\n"
+                                       "      - run: |\n"
+                                       "          printf '%s' \"$NEEDS_JSON\" |\n"
+                                       f"            {call}\n")
+
+
+def dispatch_contract(*names: str) -> dict:
+    """#1568: workflows en `post_merge_dispatch`, sin `post_merge_verify` (APAP_WEB#3721)."""
+    return verify_contract(verify=[], dispatch=("push-compliance", *(names or ("ci",))))
+
+
+NO_AGGREGATOR_WARNING = ("WARNING: no post_merge_dispatch workflow hosts the required-jobs "
+                         "aggregator (check_required_jobs.py); the #1440 required-job check "
+                         "does not apply to {0} (#1568)")
+
+
+class GovernedMergePostMergeDispatchRequiredJobsTests(unittest.TestCase):
+    """#1568: el check #1440 mide el workflow de `post_merge_dispatch` que aloja el agregador."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def stored(self) -> dict:
+        return json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+
+    def dispatched(self) -> list[str]:
+        return [item["name"] for item in self.stored().get("dispatches", [])]
+
+    def test_the_aggregator_workflow_skipping_a_required_job_is_refused_before_the_merge(self) -> None:
+        state = verify_state(aggregator_yaml("github.event_name == 'pull_request'"), behind=0)
+        proc = run_gate(self.root, dispatch_contract(), state)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertFalse(self.stored().get("merges", []))
+        self.assertEqual(self.stored().get("dispatches", []), [])
+        self.assertIn("post_merge_dispatch workflow 'ci' skips the required job 'tests' on "
+                      "workflow_dispatch: the post-merge dispatch would not run it (#1440); "
+                      "skipped jobs: ['tests']", proc.stdout)
+
+    def test_a_workflow_without_the_aggregator_keeps_its_own_filters(self) -> None:
+        # El falso positivo del revisor: `deploy` filtra su propio `build` fuera del dispatch.
+        deploy = job_yaml("github.event_name == 'pull_request'").replace("  tests:\n", "  build:\n")
+        state = verify_state(job_yaml(), behind=0)
+        path = ".github/workflows/deploy.yml"
+        state["workflows"].append({"id": 3, "name": "deploy", "path": path, "state": "active"})
+        state["workflow_files"][path] = {
+            "content": base64.b64encode(deploy.encode()).decode("ascii"),
+            "encoding": "base64", "path": path, "name": "deploy.yml", "type": "file"}
+        with_policy(state, {"required_jobs": ["build"], "events": {}})
+        proc = run_gate(self.root, dispatch_contract("deploy"), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertTrue(self.stored()["merges"])
+        self.assertEqual(sorted(self.dispatched()), ["deploy.yml", "push-compliance.yml"])
+
+    def test_no_aggregator_requires_nothing_new_and_warns(self) -> None:
+        # Sin agregador en el dispatch no se lee la politica: falta y el merge sale, como en main.
+        state = verify_state(job_yaml("github.event_name == 'pull_request'"), behind=0)
+        del state["workflow_files"][POLICY_PATH]
+        proc = run_gate(self.root, dispatch_contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertTrue(self.stored()["merges"])
+        self.assertEqual(sorted(self.dispatched()), ["ci.yml", "push-compliance.yml"])
+        self.assertIn(NO_AGGREGATOR_WARNING.format("['ci', 'push-compliance']"), proc.stdout)
+
+    def test_a_detector_only_consumer_without_a_policy_merges_as_before(self) -> None:
+        state = verify_state(job_yaml(), behind=0, ci_present=False)
+        del state["workflow_files"][POLICY_PATH]
+        proc = run_gate(self.root, verify_contract(verify=[]), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertTrue(self.stored()["merges"])
+        self.assertEqual(self.dispatched(), ["push-compliance.yml"])
+        self.assertIn(NO_AGGREGATOR_WARNING.format("['push-compliance']"), proc.stdout)
+
+    def test_an_aggregator_skip_of_a_non_required_or_accepted_job_is_dispatched(self) -> None:
+        skipping = aggregator_yaml("github.event_name == 'pull_request'").replace(
+            "  tests:\n", "  other:\n")
+        accepted = verify_state(aggregator_yaml("github.event_name == 'pull_request'"), behind=0)
+        with_policy(accepted, {"required_jobs": ["tests", "build"],
+                               "events": {"workflow_dispatch": {"accepted_skips": ["tests"]}}})
+        cases = {"not required": verify_state(skipping, behind=0), "accepted skip": accepted}
+        for label, state in cases.items():
+            with self.subTest(case=label):
+                proc = run_gate(self.root, dispatch_contract(), state)
+                self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+                self.assertTrue(self.stored()["merges"])
+                self.assertEqual(sorted(self.dispatched()), ["ci.yml", "push-compliance.yml"])
+                self.assertNotIn("WARNING: no post_merge_dispatch workflow", proc.stdout)
+
+    def assert_not_an_aggregator(self, workflow: str, yaml_text: str) -> None:
+        state = verify_state(job_yaml(), behind=0, ci_present=False)
+        path = f".github/workflows/{workflow}.yml"
+        state["workflows"].append({"id": 3, "name": workflow, "path": path, "state": "active"})
+        state["workflow_files"][path] = {
+            "content": base64.b64encode(yaml_text.encode()).decode("ascii"),
+            "encoding": "base64", "path": path, "name": f"{workflow}.yml", "type": "file"}
+        proc = run_gate(self.root, dispatch_contract(workflow), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertTrue(self.stored()["merges"])
+        names = sorted([workflow, "push-compliance"])
+        self.assertEqual(sorted(self.dispatched()), [f"{name}.yml" for name in names])
+        self.assertIn(NO_AGGREGATOR_WARNING.format(names), proc.stdout)
+
+    def test_a_job_that_only_echoes_the_script_name_is_not_the_aggregator(self) -> None:
+        self.assert_not_an_aggregator("ci", aggregator_yaml(
+            "github.event_name == 'pull_request'", call="echo check_required_jobs.py"))
+
+    def test_a_script_whose_basename_only_starts_with_the_name_is_not_the_aggregator(self) -> None:
+        self.assert_not_an_aggregator("ci", aggregator_yaml(
+            "github.event_name == 'pull_request'",
+            call="python3 scripts/required-jobs/check_required_jobs.py.bak"))
+
+    def test_a_classifier_call_without_needs_is_not_the_aggregator(self) -> None:
+        # N1 del revisor: deploy.yml corre `check_required_jobs.py --ui-changed` sin `needs`.
+        self.assert_not_an_aggregator("deploy", aggregator_yaml(
+            "github.event_name == 'pull_request'", needs=False,
+            call="python3 scripts/required-jobs/check_required_jobs.py --ui-changed"))
+
+    def test_an_empty_needs_list_with_spaces_is_not_the_aggregator(self) -> None:
+        self.assert_not_an_aggregator("ci", aggregator_yaml(
+            "github.event_name == 'pull_request'").replace("needs: [tests]", "needs: [ ]"))
+
+    def test_the_canonical_aggregator_call_variants_are_still_detected(self) -> None:
+        calls = (CANONICAL_CALL, "python -u ./scripts/required-jobs/check_required_jobs.py",
+                 "/usr/bin/python3 'scripts/required-jobs/check_required_jobs.py' \"$@\"")
+        for call in calls:
+            with self.subTest(call=call):
+                state = verify_state(aggregator_yaml("github.event_name == 'pull_request'",
+                                                     call=call), behind=0)
+                proc = run_gate(self.root, dispatch_contract(), state)
+                self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+                self.assertFalse(self.stored().get("merges", []))
+                self.assertIn("post_merge_dispatch workflow 'ci' skips the required job 'tests'",
+                              proc.stdout)
+
+    def test_an_unreadable_policy_with_the_aggregator_in_dispatch_fails_closed(self) -> None:
+        cases = {"missing": None, "not json": "{nope", "no required_jobs": {"events": {}}}
+        for label, policy in cases.items():
+            with self.subTest(case=label):
+                state = verify_state(aggregator_yaml(), behind=0)
+                if policy is None:
+                    del state["workflow_files"][POLICY_PATH]
+                else:
+                    with_policy(state, policy)
+                proc = run_gate(self.root, dispatch_contract(), state)
+                self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+                self.assertFalse(self.stored().get("merges", []))
+                self.assertEqual(self.stored().get("dispatches", []), [])
+                self.assertIn(".github/required-jobs-policy.json", proc.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

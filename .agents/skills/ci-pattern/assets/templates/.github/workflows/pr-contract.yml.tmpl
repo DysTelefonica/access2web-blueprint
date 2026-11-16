@@ -85,6 +85,8 @@ jobs:
           git -C pr-head diff --numstat  "${BASE_SHA}...${HEAD_SHA}" > .ci-pr-numstat
           git -C pr-head log --format='%P%n%B%n---COMMIT-END---' "${BASE_SHA}..${HEAD_SHA}" > .ci-pr-commits
           git -C pr-head ls-files > .ci-pr-tracked
+          # HR-88 (#1509): los `def test_` borrados se leen del diff de Python.
+          git -C pr-head diff --no-renames -U0 "${BASE_SHA}...${HEAD_SHA}" -- '*.py' > .ci-pr-diff
           git -C pr-head diff --name-only --find-renames=50% "${BASE_SHA}...${HEAD_SHA}" > .ci-pr-names
           git -C pr-head log --name-status --pretty=format: "${BASE_SHA}..${HEAD_SHA}" > .ci-pr-log
           python3 "$PATTERN_DIR/assets/bin/origins_file.py" \
@@ -113,6 +115,7 @@ jobs:
             --numstat-file   .ci-pr-numstat \
             --commits-file   .ci-pr-commits \
             --tracked-files  .ci-pr-tracked \
+            --diff-file      .ci-pr-diff \
             --origins-file   .ci-pr-origins \
             --gitattributes-file .ci-base-gitattributes
 

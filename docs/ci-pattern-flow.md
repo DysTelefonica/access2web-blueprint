@@ -54,6 +54,7 @@ detecta el gate de documentación operativa de `ci-pattern adoption check`.
 - Jobs requeridos del agregador: ci-images, codeql, docs-architecture, docs-codeguide, docs-commands, docs-decisions, docs-links, e2e-smoke, governance-seals, integration, pip-audit, pip-audit-alert, pr-gate, quality, security. Tabla generada 1:1 desde ellos: ningún check puede fallar por una regla que no esté aquí.
 - Contextos requeridos declarados: required.
 - Checks del contrato de host: pr-gate, required.
+- Un run programado (`schedule`) en rojo sobre la rama por defecto abre la issue `ci-red` de su workflow, asignada al `coordinator` del contrato del host, o la comenta si ya está abierta; el run programado en verde la comenta y la cierra (HR-89, `assets/ci-red/report_ci_red.py`).
 
 | `ci-images` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |
 | `codeql` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |

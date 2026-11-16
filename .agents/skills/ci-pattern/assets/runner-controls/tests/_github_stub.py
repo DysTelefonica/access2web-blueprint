@@ -39,15 +39,32 @@ def _atomic_write_json(path: Path, payload: dict) -> None:
 MERGED_SHA = "2c7d9b1a4e"
 
 
+def _transient(state: dict, flag: str) -> bool:
+    """#1592: ``state[flag]`` = cuántas llamadas más responden 503 antes de ir bien."""
+    left = state.get(flag, 0)
+    if left > 0:
+        state[flag] = left - 1
+        return True
+    return False
+
+
 def _route(method: str, path: str, query: dict, body: dict, state: dict, base: str) -> tuple:
     """Devuelve (status, payload, headers) para la petición; muta state si es escritura."""
     state["calls"].append(f"{method} {path}")
     if state.get("api_error"):
         return 500, {"message": "api_error fixture"}, {}
+    # #1592: 5xx transitorios de las escrituras, para el reintento.
+    if method == "PUT" and path.endswith("/merge") and _transient(state, "merge_transient"):
+        return 503, {"message": "merge_transient fixture"}, {}
+    if method == "PATCH" and "/issues/" in path and _transient(state, "close_transient"):
+        return 503, {"message": "close_transient fixture"}, {}
+    if method == "POST" and path.endswith("/comments") and state.get("comment_error"):
+        return 503, {"message": "comment_error fixture"}, {}
     if method == "POST" and path.endswith("/issues"):
         if state.get("issue_post_error"):
             return 503, {"message": "issue_post_error fixture"}, {}
-        state["created_issues"].append({"title": body.get("title", ""), "body": body.get("body", "")})
+        state["created_issues"].append({"title": body.get("title", ""), "body": body.get("body", ""),
+                                        "labels": body.get("labels", [])})
         repo = path[len("repos/"):-len("/issues")]
         return 201, {"number": 42, "html_url": f"https://github.com/{repo}/issues/42",
                      "title": body.get("title", "")}, {}
@@ -101,8 +118,52 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
         state.setdefault("dispatches", []).append(
             {"name": name, "ref": body.get("ref"), "inputs": body.get("inputs")})
         return 204, "", {}
+    # #1691: `park_issues.py` (aparcar issues) anade o quita una etiqueta de una issue.
+    if method in ("POST", "DELETE") and "/issues/" in path and "/labels" in path:
+        number = int(path.split("/issues/")[1].split("/")[0])
+        if method == "POST":
+            label = (body.get("labels") or [""])[0]
+            action = "add"
+        else:
+            label = urllib.parse.unquote(path.split("/labels/")[1])
+            action = "remove"
+        attempt = {"action": action, "number": number, "label": label}
+        state.setdefault("label_attempts", []).append(attempt)
+        if number in state.get("fail_edit", []):
+            return 422, {"message": "Validation Failed"}, {}
+        state.setdefault("label_edits", []).append(attempt)
+        return 200, ([{"name": label}] if action == "add" else []), {}
     if method != "GET":
         return 404, {"message": "unsupported endpoint"}, {}
+    # #1691: la ejecucion nocturna por id, los despliegues y sus estados.
+    # Solo con la fixture `night_run`; sin ella la ruta cae a las de otros assets (#1694).
+    if method == "GET" and "/actions/runs/" in path and path.count("/") == 5 and "night_run" in state:
+        number = path.rsplit("/actions/runs/", 1)[1]
+        run = state["night_run"]
+        if run is None or str(run.get("id", "")) != number:
+            return 404, {"message": "Not Found"}, {}
+        return 200, run, {}
+    # #1691: deployments del repo (filtro por entorno, consultas guardadas, fallos fijos)
+    # y sus estados. Un solo juego de rutas: `deployment_queries`, `deployments_error`,
+    # `deployments_raw`, `statuses_error`.
+    if method == "GET" and path.endswith("/deployments") and path.count("/") == 3:
+        state.setdefault("deployment_queries", []).append(query)
+        if state.get("deployments_error"):
+            return 500, {"message": "deployments_error fixture"}, {}
+        if state.get("deployments_raw") is not None:
+            return 200, state["deployments_raw"], {}
+        wanted = query.get("environment", [None])[0]
+        deployments = [dep for dep in state.get("deployments", [])
+                       if wanted is None or dep.get("environment") == wanted]
+        return 200, deployments, {}
+    if method == "GET" and "/deployments/" in path and path.endswith("/statuses"):
+        if state.get("statuses_error"):
+            return 500, {"message": "statuses_error fixture"}, {}
+        number = path.split("/deployments/")[1].split("/")[0]
+        return 200, state.get("deployment_statuses", {}).get(number, []), {}
+    if method == "GET" and path.startswith("repos/") and path.count("/") == 3 \
+            and path.endswith("/pulls") and query.get("state") == ["open"]:
+        return _open_pulls_page(state, query, base)
     if method == "GET" and path.startswith("repos/") and path.count("/") == 3 \
             and path.endswith("/pulls"):
         base = query.get("base", [None])[0]
@@ -171,6 +232,8 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
     if "/compare/" in path:
         # `compares` fija la respuesta por rango ("base...head"); `compare` es el valor por defecto.
         spec = path.split("/compare/", 1)[1]
+        if spec in state.get("compare_errors", {}):  # #1597: estado HTTP fijo por rango
+            return state["compare_errors"][spec], {"message": "compare_errors fixture"}, {}
         default = state.get("compare", {"total_commits": 0, "commits": [], "files": [], "behind_by": 0})
         return 200, state.get("compares", {}).get(spec, default), {}
     if "/pulls/" in path:
@@ -195,7 +258,51 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
         if override is not None:
             return 200, override, {}
         return 200, {"state": "closed", "state_reason": "completed"}, {}
+    if method == "GET" and path.startswith("repos/") and path.endswith("/issues") and path.count("/") == 3:
+        # #1627: listado de issues (`issue_list`); el filtro por etiqueta lo fija el test.
+        # #1691: la query se guarda (`issue_list_queries`), `issue_list_error` rompe la
+        # lectura y `issue_list_raw` devuelve un cuerpo que no es JSON.
+        state.setdefault("issue_list_queries", []).append(query)
+        if state.get("issue_list_error"):
+            return 500, {"message": "issue_list_error fixture"}, {}
+        if state.get("issue_list_raw") is not None:
+            return 200, state["issue_list_raw"], {}
+        return 200, state.get("issue_list", []), {}
+    if method == "GET" and "/actions/workflows/" in path and path.endswith("/runs"):
+        # #1627: ejecuciones de un workflow, la más reciente primero. `runs_by_branch` fija
+        # las de cada rama (sin entrada, ninguna); sin él, `runs` sirve a cualquier rama.
+        # `fail_event` (#1627): 500 solo para la consulta de ese evento.
+        if state.get("fail_event") and query.get("event", [None])[0] == state["fail_event"]:
+            return 500, {"message": "fail_event fixture"}, {}
+        # Como la API: filtra por `event` y `status`, y luego corta a `per_page` (30 por defecto).
+        runs = state["runs_by_branch"].get(query.get("branch", [""])[0], []) \
+            if "runs_by_branch" in state else state.get("runs", [])
+        for key, field in (("event", "event"), ("status", "status")):
+            wanted = query.get(key, [None])[0]
+            if wanted:
+                runs = [run for run in runs if run.get(field) == wanted]
+        return 200, {"workflow_runs": runs[:int(query.get("per_page", ["30"])[0])]}, {}
+    if method == "GET" and path in state.get("api_pages", {}):
+        # #1691: paginas libres del fixture; se encadenan con la cabecera `Link`.
+        return _api_pages(state, path, query, base)
+    if method == "GET" and path in state.get("api", {}):
+        # #1691: ruta libre del fixture (`api`): un cuerpo por ruta.
+        return 200, state["api"][path], {}
     return 404, {"message": "unsupported endpoint"}, {}
+
+
+def _api_pages(state: dict, path: str, query: dict, base: str) -> tuple:
+    """Paginas libres del fixture (#1691): las encadena con la cabecera `Link`.
+
+    Cada pagina es un cuerpo completo; la ultima no lleva `Link`, asi que el
+    cliente para de seguirlas. La ruta y la query de la pagina siguiente las
+    decide el servidor, no el cliente."""
+    pages = state["api_pages"][path]
+    number = int(query.get("page", ["1"])[0])
+    headers = {}
+    if number < len(pages):
+        headers["Link"] = f'<{base}/{path}?page={number + 1}>; rel="next"'
+    return 200, pages[number - 1] if 0 < number <= len(pages) else [], headers
 
 
 def _workflows_page(state: dict, query: dict) -> tuple:
@@ -213,6 +320,25 @@ def _workflows_page(state: dict, query: dict) -> tuple:
     page = int(query.get("page", ["1"])[0])
     start = max(page - 1, 0) * per_page
     return 200, {"total_count": len(items), "workflows": items[start:start + per_page]}, {}
+
+
+def _open_pulls_page(state: dict, query: dict, server: str) -> tuple:
+    """#1597: PRs abiertas; `open_pulls_pages` pagina con Link (como `_pulls_page`).
+
+    `open_pulls_transient` cuenta cuántas consultas más responden 503;
+    `open_pulls_forbidden` responde 403.
+    """
+    if _transient(state, "open_pulls_transient"):
+        return 503, {"message": "open_pulls_transient fixture"}, {}
+    if state.get("open_pulls_forbidden"):
+        return 403, {"message": "open_pulls_forbidden fixture"}, {}
+    pages = state.get("open_pulls_pages") or [state.get("open_pulls", [])]
+    number = int(query.get("page", ["1"])[0])
+    page = pages[number - 1] if 0 < number <= len(pages) else []
+    headers = {}
+    if number < len(pages):
+        headers["Link"] = f'<{server}/repos/stub/stub/pulls?state=open&page={number + 1}>; rel="next"'
+    return 200, page, headers
 
 
 def _pulls_page(state: dict, sha: str, query: dict, base: str) -> tuple:
@@ -267,14 +393,16 @@ class _Handler(BaseHTTPRequestHandler):
     do_POST = _serve
     do_PUT = _serve
     do_PATCH = _serve
+    do_DELETE = _serve
 
     def log_message(self, *args: object) -> None:
         return
 
 
 def stub_env(base: str) -> dict:
-    """Entorno de los assets: API local y token de prueba (GITHUB_TOKEN gana a GH_TOKEN)."""
-    return {**os.environ, "GITHUB_API_URL": base, "GITHUB_TOKEN": "test-token"}
+    """Entorno de los assets: API local, token de prueba (GITHUB_TOKEN gana a GH_TOKEN) y reintento sin espera."""
+    return {**os.environ, "GITHUB_API_URL": base, "GITHUB_TOKEN": "test-token",
+            "GH_API_RETRY_ESPERA_S": "0"}  # #1592: sin esperas reales entre reintentos
 
 
 @contextlib.contextmanager

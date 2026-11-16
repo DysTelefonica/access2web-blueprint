@@ -53,7 +53,8 @@ class WaitCiTests(unittest.TestCase):
         proc = self.wait(state(), "--appear-seconds", "0.3")
         self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
         self.assertIn(f"WAITING: no check runs yet for {SHA[:12]}", proc.stdout)
-        self.assertIn(f"NOT STARTED: no check runs appeared for {SHA[:12]} within 0.3 s", proc.stdout)
+        self.assertIn(f"NOT STARTED: no check runs appeared for {SHA[:12]} within 0.3 s; a base change "
+                      "does not start CI: push an empty commit", proc.stdout)
         self.assertNotIn("GREEN", proc.stdout)
 
     def test_waits_through_absent_and_pending_then_green(self) -> None:

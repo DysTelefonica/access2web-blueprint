@@ -160,6 +160,26 @@ class ProtectedBranchesContractTests(unittest.TestCase):
             self.assertIn("protected_branches", proc.stderr)
 
 
+class CoordinatorContractTests(unittest.TestCase):
+    """#1508 (HR-89): el coordinador del repositorio es dato validado del
+    contrato; la issue `ci-red` de un run programado en rojo se le asigna."""
+
+    def test_coordinator_login_is_accepted(self) -> None:
+        contract = base_contract()
+        contract["coordinator"] = "ardelperal"
+        proc = run_gate(contract, base_snapshots())
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_coordinator_shape_is_validated(self) -> None:
+        contract = base_contract()
+        for bad in ("", 5, ["ardelperal"], None):
+            with self.subTest(coordinator=bad):
+                contract["coordinator"] = bad
+                proc = run_gate(contract, base_snapshots())
+                self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+                self.assertIn("coordinator", proc.stderr)
+
+
 class HostCapabilitiesTests(unittest.TestCase):
     """#303: la capacidad del host es un dato declarado en el contrato
     (host_capabilities) y verificado por relectura; el 403 de plan de un
@@ -401,6 +421,16 @@ class ExampleContractTests(unittest.TestCase):
         self.assertIn("VERDICT: PASS", proc.stdout)
 
 
+    def test_example_contract_declares_ci_red_and_its_coordinator(self) -> None:
+        # HR-89 (#1508): la etiqueta de la issue de seguimiento es de gobierno
+        # (HR-34) y el aviso se asigna al coordinador del contrato.
+        example = json.loads(EXAMPLE_CONTRACT.read_text(encoding="utf-8"))
+        labels = {item["name"]: item["class"] for item in example["labels"]}
+        self.assertEqual(labels.get("ci-red"), "host-enforced")
+        self.assertIsInstance(example.get("coordinator"), str)
+        self.assertTrue(example["coordinator"])
+
+
 class LabelDriftTests(unittest.TestCase):
     """#955: la etiqueta del host se compara con la instantánea de la fase 0 y
     con el contrato declarado, en las dos direcciones.
@@ -525,6 +555,56 @@ class LabelDriftTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
         self.assertIn("VERDICT: PASS", proc.stdout)
         self.assertNotIn("type:ci", proc.stdout)
+
+
+class DeployBackupPublisherTests(unittest.TestCase):
+    """#1705: `deploy_backup_publisher` es un objeto opcional del contrato
+    (el pin del gate de backup del deploy de APAP_WEB). Su forma se valida:
+    una forma invalida falla cerrado (exit 2) nombrando la clave."""
+
+    REAL = {"check_name": "migration-backup", "app_id": 0, "todo": "pendiente de confirmar el app_id"}
+
+    def test_real_consumer_object_is_accepted(self) -> None:
+        contract = base_contract()
+        contract["deploy_backup_publisher"] = dict(self.REAL)
+        proc = run_gate(contract, base_snapshots())
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_object_without_todo_is_accepted(self) -> None:
+        contract = base_contract()
+        contract["deploy_backup_publisher"] = {"check_name": "migration-backup", "app_id": 12345}
+        proc = run_gate(contract, base_snapshots())
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_absent_key_behaves_as_today(self) -> None:
+        proc = run_gate(base_contract(), base_snapshots())
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_invalid_shape_fails_closed_naming_the_key(self) -> None:
+        bad_objects = {
+            "app_id negativo": {"check_name": "migration-backup", "app_id": -1},
+            "app_id no entero": {"check_name": "migration-backup", "app_id": "0"},
+            "app_id booleano": {"check_name": "migration-backup", "app_id": True},
+            "check_name vacio": {"check_name": "", "app_id": 0},
+            "check_name ausente": {"app_id": 0},
+            "clave extra": {"check_name": "migration-backup", "app_id": 0, "owner": "x"},
+            "no es objeto": ["migration-backup"],
+            "todo no textual": {"check_name": "migration-backup", "app_id": 0, "todo": 7},
+        }
+        for name, bad in bad_objects.items():
+            with self.subTest(case=name):
+                contract = base_contract()
+                contract["deploy_backup_publisher"] = bad
+                proc = run_gate(contract, base_snapshots())
+                self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+                self.assertIn("deploy_backup_publisher must be", proc.stderr)
+
+    def test_unknown_root_key_still_fails_closed(self) -> None:
+        contract = base_contract()
+        contract["deploy_backup_publishr"] = dict(self.REAL)  # typo: no esta en el schema
+        proc = run_gate(contract, base_snapshots())
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("unknown keys", proc.stderr)
 
 
 if __name__ == "__main__":

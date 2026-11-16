@@ -106,7 +106,8 @@ DEFAULT_NON_UI = [
 def run_git(repo: Path, *args: str) -> str:
     proc = subprocess.run(
         ["git", "-C", str(repo), *args],
-        capture_output=True, text=True, check=False,
+        # Salida en UTF-8 sea cual sea el locale (#1601).
+        capture_output=True, encoding="utf-8", errors="replace", check=False,
     )
     if proc.returncode != 0:
         raise RuntimeError(

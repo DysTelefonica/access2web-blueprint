@@ -1,6 +1,6 @@
 # access2web-blueprint
 
-<!-- personal-skills:slice:access2web-blueprint @ vdb75524 -->
+<!-- personal-skills:slice:access2web-blueprint @ ve97f587 -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -59,7 +59,7 @@ La tabla de skills del `AGENTS.md` del consumer es un subconjunto curado; el reg
   (#380).
 - Toda issue aprobada tiene una **rama propia** con el nombre `<tipo>/<nº issue>-<kebab-slug>`, validado por el **ruleset del host** que aplica la regex de `P01_branch_name_pattern`, o por el gate `assets/branch-name/check_branch_name.py` del patrón cuando el host no declara rulesets (mecánica del HR-29 y HR-31).
 - Toda rama se desarrolla en un **worktree dedicado** bajo el layout canónico de `worktree-reorg-per-project` v2.0 (sibling-container `<project>-worktrees/<nº issue>-<tema>/`); el comando literal es `git worktree add ../<repo>-worktrees/<nº>-<tema> -b <rama-nueva>` y la limpieza usa la misma ruta.
-- Toda PR apunta a `main`. Los repos web no tienen rama de integración: `staging`, `develop` o `release/*` no reciben PR ni se mergean a `main`; lo reutilizable se recupera con `git cherry-pick` en una rama nueva desde `main`. Preproducción y UAT son entornos que despliegan desde `main`, no ramas. **Excepción temporal del dueño (2026-11-02), solo en APAP_WEB y hasta que se vacíe su cola de PR:** una cadena de 5 eslabones o más puede usar una rama integradora (`chained-pr`, `feature-branch-chain`): los eslabones se fusionan en la rama de su padre y la PR raíz entra en `main` una sola vez, con `size:exception` puesta por el coordinador.
+- Toda PR apunta a `main`. Los repos web no tienen rama de integración: `staging`, `develop` o `release/*` no reciben PR ni se mergean a `main`; lo reutilizable se recupera con `git cherry-pick` en una rama nueva desde `main`. Preproducción y UAT son entornos que despliegan desde `main`, no ramas.
 
 ### Presupuesto de revisión
 
@@ -201,7 +201,7 @@ Un agente solo para o borra los contenedores, volúmenes y redes que haya creado
 
 ### Disciplina de revisión
 
-- El CI corre **una vez, en la PR**: no hay `strict` ni cola de merge, y la rama base puede avanzar durante la vida del PR sin invalidar los checks. La red de seguridad después del merge es el workflow de `push` a `main` más un nightly diario. El merge gobernado lo aplica con `merge_freshness` en `.github/host-contract.json`: ausente u `off` (por defecto), un PR atrasado con los checks requeridos en verde se fusiona sin actualizar la rama, y el CI que despacha `post_merge_dispatch` verifica el árbol fusionado (sin `post_merge_dispatch` el atraso sigue bloqueando); `required` solo para el consumer cuyo deploy compara el árbol fusionado con el revisado (#426). Hoy ningún consumer web lo usa: APAP_WEB pasó a `off` cuando su deploy empezó a aceptar la evidencia de `HEAD^2` (APAP_WEB#2362, #3098). Con cualquier valor, si la PR y la base cambiaron el mismo fichero de `.github/workflows/`, hay que actualizar la rama: `GITHUB_TOKEN` no puede escribir workflows (#783, #1397). Con `off`, fuera de ese caso y de un conflicto (`DIRTY`), no se fusiona `main` en la rama ni se pulsa «Update branch»: cada push nuevo repite la CI entera (`agent-operating-rules`, HR-13).
+- El CI corre **una vez, en la PR**: no hay `strict` ni cola de merge, y la rama base puede avanzar durante la vida del PR sin invalidar los checks. La red de seguridad después del merge es el workflow de `push` a `main` más un nightly diario. El merge gobernado lo aplica con `merge_freshness` en `.github/host-contract.json`: ausente u `off` (por defecto), un PR atrasado con los checks requeridos en verde se fusiona sin actualizar la rama, y el CI que despacha `post_merge_dispatch` verifica el árbol fusionado (sin `post_merge_dispatch` el atraso sigue bloqueando); `required` solo para el consumer cuyo deploy compara el árbol fusionado con el revisado (#426). Hoy ningún consumer web lo usa: APAP_WEB pasó a `off` cuando su deploy empezó a aceptar la evidencia de `HEAD^2` (APAP_WEB#2362, #3098). Con cualquier valor, si la PR y la base cambiaron el mismo fichero de `.github/workflows/`, hay que actualizar la rama: `GITHUB_TOKEN` no puede escribir workflows (#783, #1397). Con `off`, fuera de ese caso y de un conflicto (`DIRTY`), no se fusiona `main` en la rama ni se pulsa «Update branch»: cada push nuevo repite la CI entera (HR-13 de las reglas de agente del dueño). Mientras el perfil pre-release esté activo (`primary_type: web` hasta la primera release), rigen sus reglas: no hay re-ejecución tras la fusión, y la red post-merge pasa a ser la canalización nocturna sobre la cabeza de main (ver «Perfil pre-release»).
 - **Rojo en CI pisa todo el merge.** Regla humana: el revisor no debe pulsar merge con ningún check rojo, ni siquiera si el rojo parece trivial. Complemento técnico: `repository-delivery-governance` HR-7 + `deterministic-quality-harness` HR-1 fail-loud atajan el escenario cuando hay branch protection automatizada.
 - **El agente no usa `--admin` ni fuerza el merge.** La decisión de fusionar es humana (HR-50) y la regla anterior es inseparable del bypass: el agente que detecte un merge bloqueado por checks rojos, por la protección del ruleset o por un SHA desactualizado **lo escala al mantenedor** (issue, comentario en el PR o canal acordado), nunca aplica `--admin`, `--force` ni equivalente en CLI; y, por la API, nunca envía `merge_method: admin` ni `sha` distinto al verificado por CI. El job de merge gobernado del consumer (HR-50, `assets/runner-controls/check_governed_merge.py`) aplica `merge` o `squash` con la identidad del bot sobre el SHA verificado, sin bandera admin; si una PR exige admin para entrar, el flujo está roto y se arregla el flujo, no se salta.
 - El job `merge-ready` signal-only que consulta `mergeable` y `reviewDecision` está retirado (no cazaba defectos): sin `strict` ni cola de merge, la barrera la aplica el ruleset del host y la red de seguridad post-merge (`push` a `main` + nightly diario), y replicarla en CI duplicaba la señal sin añadir garantía.
@@ -297,6 +297,32 @@ Referencias por nombre en prosa; ruta absoluta exacta en la delegación: al pasa
 ### Auditoría (Refs #490)
 
 - **2026-10-13:** el texto de *Disciplina de revisión* (linea 108) y la entrada de *Anti-slop* correspondiente (linea 175) ya enuncian la regla con `git merge` y la prohibición de reescritura de historia; el cambio que #490 propone como "Texto propuesto" coincide con el actual. Sin edición de fuente requerida. Si el duplicado que reporta el issue vive en la versión propagada del partial (por ejemplo el `AGENTS.md` del consumer referenciado por el issue), la causa es una propagación pendiente, no un bug del fuente.
+
+### Perfil pre-release (#1627)
+
+Este perfil rige todo proyecto con `primary_type: web` hasta su primera release. Lo fija el dueño (HR-14). Un proyecto lo declara con un fichero versionado, `.github/prerelease.json`, con dos campos: `enabled` (booleano, obligatorio) y `schema_version` (opcional, entero >= 1; si falta vale 1). El validador del catálogo acepta el fichero actual de APAP_WEB, `{"enabled": true}`. APAP_WEB no debe añadir `schema_version` ni `BOM` mientras su propio validador (`scripts/check_prerelease.py`) solo acepte `enabled`. El validador vive en el tier de gobierno ci-pattern: un consumer web lo ejecuta, con el tier instalado, con `python <ci-pattern>/assets/prerelease/check_prerelease_profile.py <fichero>`; sale con 0 si la declaración es válida y con 2 nombrando cada campo inválido. La forma completa de las reglas y las entregas pendientes están en `ci-pattern/references/prerelease-profile.md`.
+
+Reglas del perfil:
+
+1. **Día, cada PR ordinario.** Solo los gates baratos: lint, typecheck, tests unitarios, pr-gate, los ficheros e2e propios del PR y la seguridad de dependencias cuando cambian las dependencias. La integración y la ruta de actualización corren solo si el PR toca SQL o migraciones. Se fusiona en cuanto está en verde: sin deploy, sin job caro y sin re-ejecución tras la fusión.
+2. **Noche, una sola canalización sobre la cabeza de main.** Se construye la imagen y se ejecutan todos los checks caros: e2e completo, integración, ruta de actualización, Trivy y el escaneo de seguridad profundo. Se despliega a producción solo si todos están en verde sobre el mismo SHA.
+3. **Noche en rojo.** No hay deploy. Se abre una issue de máxima prioridad por cada job en rojo, y esos arreglos van antes que cualquier trabajo nuevo. La canalización nocturna se vuelve a lanzar a mano el mismo día, en cuanto esté en verde. Objetivo: al menos un deploy exitoso al día.
+4. **Migraciones y DDL.** Un deploy con migración o DDL espera siempre a una copia de seguridad verificada. La canalización nocturna nunca aplica por sí sola una migración pendiente.
+5. **Cadenas.** Como máximo tres eslabones abiertos, y cada uno se fusiona en cuanto está en verde. Un script abre cada eslabón con la etiqueta y `Refs #N`; solo la punta lleva `Closes #N`.
+6. **Nada redundante.** Ningún check corre dos veces sobre el mismo código el mismo día (PR, después push a main, después cron). Si un check es caro, corre de noche.
+7. **Fin del perfil.** El perfil deja de aplicarse en la primera release del proyecto. Al llegar la primera release, el proyecto pasa a su perfil normal (decisión del dueño).
+
+**Regla dura del dueño.** Mientras la canalización nocturna esté en rojo, no se trabaja ni se fusiona ninguna issue salvo las que arreglan ese rojo. La línea se para hasta que la ejecución nocturna salga en verde y se despliegue. Esta regla rige ya desde ahora; además, el merge gobernado la hará cumplir de forma automática.
+
+**Reglas adicionales del dueño.**
+
+- Todo paso con una regla fija es un script versionado y con tests, nunca un turno del modelo.
+- Toda automatización sale con sus tests escritos antes que el código, y el `.sh` del runner tiene modo de ensayo.
+- Una noche en rojo se vuelve a lanzar el mismo día hasta que el deploy a producción salga bien.
+- El runner nocturno se aprovisiona con un `.sh` idempotente que vive en team-skills o en infra, nunca en APAP_WEB.
+- Todo PR que toque la canalización nocturna hace una ejecución nocturna de ensayo antes de fusionarse.
+
+**Alcance de las relajaciones de cadena.** Las reglas de contexto de cadena (la tabla de contexto obligatoria) y de re-ejecución de CI tras un retarget se relajan solo mientras el perfil está activo: no se exige la tabla, y no se vuelve a ejecutar CI tras un retarget cuando la cabeza no ha cambiado. Fuera del perfil, ambas reglas rigen sin cambios.
 
 
 

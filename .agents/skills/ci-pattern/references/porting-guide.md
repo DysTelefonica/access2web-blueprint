@@ -778,6 +778,99 @@ Cierre: `ci-pattern adoption check --phase 3 <repo>` = 0.
   `assets/ci-images/check_ci_images_pinned.py` en un job de CI; las excepciones
   van en `P57_ci_image_exceptions` (referencia → motivo). Sin declaración, inerte (HR-78).
 
+- **G4.7 — Camino de actualización de las migraciones (opt-in, HR-92).** Si el
+  consumer tiene esquema y migraciones, sus tests parten de una base vacía y
+  producción actualiza un esquema existente: la primera versión de
+  APAP_WEB#3607 pasó sus tests y habría impedido arrancar a producción. El job
+  `upgrade-path` arranca la última release sobre un Postgres vacío (eso deja el
+  esquema de producción, sin datos) y después, dos veces y sin borrar la base,
+  el arranque completo del cambio (DDL, semilla y migraciones, en el orden
+  real). `UPGRADE_BOOT_COMMAND` es el contrato del consumer: arranca la app en
+  el directorio actual, espera a que responda sana, la para y sale distinto de
+  0 si no arrancó. Sin tags de release (despliegue continuo desde `main`), la
+  base es `base.sha` del PR, como en APAP_WEB#3631; con un volcado schema-only
+  de producción, el primer arranque se sustituye por su restauración. El job
+  va en el `ci.yml` del agregador `required`, en su `needs` y en
+  `required_jobs`: en un workflow propio su rojo no para el merge
+  (APAP_WEB#3645). Declare `P60_upgrade_path: on` y la fase 4 lo exige. El job solo corre cuando el PR cambia SQL o migraciones: el filtro `sql` del job `changes` decide, y en un PR ordinario queda omitido (#1627, slice 8). Un job requerido omitido solo pasa si la política lo declara:
+
+  ```json
+  {"required_jobs": ["changes", "upgrade-path"], "events": {"pull_request": {"accepted_skips": ["upgrade-path"]}}}
+  ```
+
+  ```yaml
+  # Un PR ordinario no cambia SQL ni migraciones: este job no corre (#1627, slice 8).
+  changes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      sql: ${{ steps.filter.outputs.sql }}
+    steps:
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
+        id: filter
+        with:
+          filters: |
+            sql:
+              - '**/*.sql'
+              - '**/migrations/**'
+  upgrade-path:
+    needs: changes
+    if: needs.changes.outputs.sql == 'true'
+    runs-on: ubuntu-24.04
+    # Tres arranques: más de 30 minutos es un cuelgue.
+    timeout-minutes: 30
+    services:
+      postgres:
+        # La imagen que corre producción, fijada por digest (HR-78).
+        image: postgres:17@sha256:REEMPLACE-CON-EL-DIGEST-DE-PRODUCCION
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432
+        options: --health-cmd pg_isready --health-interval 2s --health-retries 15
+    env:
+      UPGRADE_BOOT_COMMAND: ./scripts/boot_and_check.sh
+      UPGRADE_BOOTS: 2
+    steps:
+      # Sin los tags no hay última release.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - name: Resolve the last release
+        id: release
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          tag=$(git describe --tags --abbrev=0 "${PR_BASE_SHA:-HEAD^}")
+          echo "upgrade-path base: $tag"
+          echo "sha=$(git rev-parse --verify "${tag}^{commit}")" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ steps.release.outputs.sha }}
+          path: release
+          persist-credentials: false
+      - name: Upgrade the released schema twice
+        env:
+          DATABASE_URL: postgresql://postgres@127.0.0.1:${{ job.services.postgres.ports['5432'] }}/postgres
+        run: |
+          set -euo pipefail
+          (cd release && $UPGRADE_BOOT_COMMAND)
+          for boot in $(seq "$UPGRADE_BOOTS"); do
+            echo "upgrade-path: boot $boot of the change over the released schema"
+            $UPGRADE_BOOT_COMMAND
+          done
+  ```
+
+  En la revisión de una migración, su test parte del esquema actual, no de una
+  base vacía: «idempotente, dos pasadas» sobre una base vacía no prueba el
+  camino de producción. Y la base de la release deja las tablas sin filas: una
+  migración de datos necesita sus filas heredadas sembradas antes del arranque
+  del cambio (APAP_WEB#3736).
+
 Previene C3 en G4.1-G4.3: la receta de trabajo mencionaba una ruta de tests
 inexistente (`tests/test_required_jobs.py`) y el repo equivocado para la wave
 de #1160 (dijo cadete, los ficheros eran de APAP_WEB). Verifique en vivo cada

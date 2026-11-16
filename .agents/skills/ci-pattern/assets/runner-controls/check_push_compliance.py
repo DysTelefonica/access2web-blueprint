@@ -79,6 +79,8 @@ def gh_json(path: str) -> object:
 
 
 def gh_open_incident(repo: str, title: str, body: str) -> str:
+    # Sin reintento (#1592): el POST crea la issue; repetido tras un 5xx que sí
+    # se aplicó, abriría dos incidentes. Un fallo es rojo cerrado.
     try:
         text, _ = call("POST", f"repos/{repo}/issues", {"title": title, "body": body})
     except GitHubApiError as exc:
@@ -351,12 +353,7 @@ def check_verdict(repo: str, pr_number: object, head_sha: str, required: list[st
     # reutilizar la lectura que ya hizo.
     if runs is None:
         runs = fetch_check_runs(repo, pr_number, head_sha)
-    latest: dict = {}
-    for run in runs:
-        if not isinstance(run, dict) or not isinstance(run.get("name"), str):
-            continue
-        if run["name"] not in latest or run.get("id", 0) > latest[run["name"]].get("id", 0):
-            latest[run["name"]] = run
+    latest = _latest_by_name(runs)
     verdicts = []
     for name in required:
         run = latest.get(name)
@@ -374,6 +371,26 @@ def check_verdict(repo: str, pr_number: object, head_sha: str, required: list[st
             verdict = f"{verdict} [{url}]"
         verdicts.append(verdict)
     return verdicts
+
+
+def _latest_by_name(runs: list) -> dict:
+    """Check-run que decide cada nombre: el mas reciente, salvo un ``cancelled`` con gemelo (#1591).
+
+    Dos runs del mismo workflow sobre el mismo SHA compiten por ``concurrency``
+    y uno sale ``cancelled``: eso no es un veredicto del SHA, es el run que
+    perdio la carrera. Si el nombre tiene otro check-run no cancelado, decide
+    el mas reciente de esos (verde, rojo o aun en curso, que se espera). Un
+    ``cancelled`` sin gemelo sigue decidiendo y bloquea.
+    """
+    by_name: dict = {}
+    for run in runs:
+        if isinstance(run, dict) and isinstance(run.get("name"), str):
+            by_name.setdefault(run["name"], []).append(run)
+    latest = {}
+    for name, candidates in by_name.items():
+        live = [run for run in candidates if run.get("conclusion") != "cancelled"]
+        latest[name] = max(live or candidates, key=lambda run: run.get("id", 0))
+    return latest
 
 
 def _is_waitable(finding: str) -> bool:

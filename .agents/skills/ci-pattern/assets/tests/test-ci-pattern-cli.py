@@ -25,6 +25,8 @@ from pathlib import Path
 SKILL_ROOT = Path(__file__).resolve().parents[2]
 CLI_PATH = SKILL_ROOT / "assets" / "bin" / "ci-pattern"
 SKILL_DIR = SKILL_ROOT
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _fake_gh import GH_ENV, PATH_TESTS_SKIP, guard_fake_gh, install_fake_gh  # noqa: E402
 
 
 def _load_cli():
@@ -106,7 +108,8 @@ def make_repo(tmp, params=None, jobs=("lint",), extra_jobs=(), slice_name="APAP_
 
 def run_cli(argv, env_extra=None):
     out, err = io.StringIO(), io.StringIO()
-    env = dict(os.environ)
+    # #1609: a CI_PATTERN_GH exported by the user never reaches the CLI; only the test sets it.
+    env = {k: v for k, v in os.environ.items() if k != GH_ENV}
     env["CI_PATTERN_SKILL_DIR"] = str(SKILL_DIR)
     if env_extra:
         env.update(env_extra)
@@ -2058,15 +2061,15 @@ class ReportFrictionPublishTests(unittest.TestCase):
     confirmed | no_write | unknown. Un solo intento: sin reintentos."""
 
     def _fake_gh(self, tmp, config):
-        """Escribe un `gh` simulado en PATH: registra invocaciones en
-        $FAKE_GH_LOG y responde según el config JSON dado."""
+        """Escribe un `gh` simulado que la CLI recibe por `CI_PATTERN_GH`
+        (#1609): registra invocaciones en $FAKE_GH_LOG y responde según el
+        config JSON dado. Falla cerrado si el `gh` resuelto no es el simulado."""
         bindir = Path(tmp) / "bin"
-        bindir.mkdir(parents=True, exist_ok=True)
         cfg = Path(tmp) / "gh-config.json"
         cfg.write_text(json.dumps(config), encoding="utf-8")
         log = Path(tmp) / "gh-log.txt"
-        gh = bindir / "gh"
-        gh.write_text(
+        gh = install_fake_gh(
+            bindir,
             "#!/usr/bin/env python3\n"
             "import json, os, sys\n"
             "args = sys.argv[1:]\n"
@@ -2106,12 +2109,12 @@ class ReportFrictionPublishTests(unittest.TestCase):
             " 'body': body if cfg.get('list') else cfg.get('created_body', '')}))\n"
             "elif 'issue' in args and 'comment' in args:\n"
             "    i = args.index('--body-file')\n"
-            "    cfg['comments'].append(open(args[i + 1]).read())\n"
+            "    cfg['comments'].append(open(args[i + 1], encoding='utf-8').read())\n"
             "    json.dump(cfg, open(os.environ['FAKE_GH_CONFIG'], 'w'))\n"
             "    print('https://github.com/x/issues/80#issuecomment-1')\n"
             "elif 'issue' in args and 'create' in args:\n"
             "    i = args.index('--body-file')\n"
-            "    cfg['created_body'] = open(args[i + 1]).read()\n"
+            "    cfg['created_body'] = open(args[i + 1], encoding='utf-8').read()\n"
             "    cfg['created'] = True\n"
             "    json.dump(cfg, open(os.environ['FAKE_GH_CONFIG'], 'w'))\n"
             "    print(f\"https://github.com/x/issues/{cfg['create_number']}\")\n"
@@ -2122,11 +2125,10 @@ class ReportFrictionPublishTests(unittest.TestCase):
             "    json.dump(cfg, open(os.environ['FAKE_GH_CONFIG'], 'w'))\n"
             "    print('ok')\n"
             "else:\n"
-            "    sys.exit(64)\n",
-            encoding="utf-8")
-        gh.chmod(0o755)
-        return {"PATH": str(bindir) + os.pathsep + os.environ["PATH"],
-                "FAKE_GH_LOG": str(log), "FAKE_GH_CONFIG": str(cfg)}, log
+            "    sys.exit(64)\n")
+        env = {GH_ENV: str(gh), "FAKE_GH_LOG": str(log), "FAKE_GH_CONFIG": str(cfg)}
+        guard_fake_gh({**os.environ, **env}, tmp)
+        return env, log
 
     FRICTION = ["--kind", "skill-bug",
                 "--gate", "assets/required-jobs/check_required_jobs.py",
@@ -2285,6 +2287,37 @@ class ReportFrictionPublishTests(unittest.TestCase):
         self.assertEqual(before, after)
 
 
+
+    @unittest.skipIf(os.name == "nt", PATH_TESTS_SKIP)
+    def test_without_explicit_gh_the_gh_on_path_still_publishes(self):
+        # #1609: sin CI_PATTERN_GH la CLI sigue usando el `gh` del PATH.
+        with tempfile.TemporaryDirectory() as tmp:
+            env, log = self._fake_gh(tmp, {"list": [], "state": "OPEN",
+                                           "view_body": "", "comments": [],
+                                           "create_number": 91, "fail_view": False})
+            env["PATH"] = str(Path(env.pop(GH_ENV)).parent) + os.pathsep + os.environ["PATH"]
+            guard_fake_gh({k: v for k, v in {**os.environ, **env}.items() if k != GH_ENV}, tmp)
+            code, out, err = self._publish(tmp, env)
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("issue create", log.read_text(encoding="utf-8"))
+
+    @unittest.skipIf(os.name == "nt", PATH_TESTS_SKIP)
+    def test_ambient_explicit_gh_never_reaches_the_path_fallback(self):
+        # #1609: a CI_PATTERN_GH exported by the user must not slip past the guard.
+        with tempfile.TemporaryDirectory() as out:
+            decoy = install_fake_gh(Path(out), "import sys\nopen(sys.argv[0] + '.called', 'w').write('x')\nsys.exit(97)\n")
+            old = os.environ.get(GH_ENV)
+            os.environ[GH_ENV] = str(decoy)
+            try:
+                result = unittest.TestResult()
+                ReportFrictionPublishTests("test_without_explicit_gh_the_gh_on_path_still_publishes").run(result)
+            finally:
+                if old is None:
+                    os.environ.pop(GH_ENV, None)
+                else:
+                    os.environ[GH_ENV] = old
+            self.assertFalse(Path(str(decoy) + ".called").exists(), result.failures + result.errors)
+            self.assertTrue(result.wasSuccessful(), result.failures + result.errors)
 
     def test_dry_run_still_never_touches_gh(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -2580,6 +2613,55 @@ class CiImagesGatePhaseTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp, self.assertRaises(CLI.UsageError) as ctx:
             self.hr78_findings(self.make_consumer(tmp, "maybe"))
         self.assertIn("P56_ci_images_gate", str(ctx.exception))
+
+
+class UpgradePathPhaseTests(unittest.TestCase):
+    """#1561 (HR-92): con P60_upgrade_path: on, el job upgrade-path existe y es requerido."""
+
+    def make_consumer(self, tmp, p60, defined=True, required=True):
+        repo = Path(tmp) / "consumer"
+        wf = repo / ".github" / "workflows"
+        wf.mkdir(parents=True)
+        yml = "jobs:\n  unit:\n    runs-on: ubuntu-24.04\n    steps:\n      - run: echo ok\n"
+        if defined:
+            yml += "  upgrade-path:\n    runs-on: ubuntu-24.04\n    steps:\n      - run: echo ok\n"
+        (wf / "ci.yml").write_text(yml, encoding="utf-8")
+        jobs = ["unit"] + (["upgrade-path"] if required else [])
+        policy = repo / ".github" / "required-jobs-policy.json"
+        policy.write_text(json.dumps({"required_jobs": jobs}), encoding="utf-8")
+        if p60 is not None:
+            (repo / "ci-pattern.yaml").write_text(f"P60_upgrade_path: {p60}\n", encoding="utf-8")
+        return repo
+
+    def hr92_findings(self, repo):
+        decl = {"gates": [{"gate": name} for name in CLI.ADOPTION_GATES]}
+        return [f for f in CLI._check_gates_phase(repo, decl, {}) if "HR-92" in f]
+
+    def test_absent_or_off_declaration_is_inert(self):
+        for p60 in (None, "off"):
+            with tempfile.TemporaryDirectory() as tmp:
+                repo = self.make_consumer(tmp, p60, defined=False, required=False)
+                self.assertEqual(self.hr92_findings(repo), [], p60)
+
+    def test_declared_blocking_job_missing_from_required_jobs_is_a_finding(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            found = self.hr92_findings(self.make_consumer(tmp, "on", required=False))
+        self.assertEqual(found, ["fase 4: HR-92: el job upgrade-path no figura en required_jobs "
+                                 "de .github/required-jobs-policy.json"])
+
+    def test_declared_job_absent_from_every_workflow_is_a_finding(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            found = self.hr92_findings(self.make_consumer(tmp, "on", defined=False))
+        self.assertEqual(found, ["fase 4: HR-92: ningun workflow define el job upgrade-path"])
+
+    def test_wired_and_required_job_is_clean(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(self.hr92_findings(self.make_consumer(tmp, "on")), [])
+
+    def test_invalid_declaration_is_a_usage_error(self):
+        with tempfile.TemporaryDirectory() as tmp, self.assertRaises(CLI.UsageError) as ctx:
+            self.hr92_findings(self.make_consumer(tmp, "maybe"))
+        self.assertIn("P60_upgrade_path", str(ctx.exception))
 
 
 if __name__ == "__main__":

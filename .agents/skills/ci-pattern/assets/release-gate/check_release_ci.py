@@ -82,7 +82,8 @@ def git(repo, *args):
     # git del sistema por nombre y argumentos construidos aquí: no hay shell y
     # no hay entrada que no venga de las opciones de la línea de órdenes.
     argv = ["git", "-C", str(repo), *args]  # noqa: S607
-    return subprocess.run(argv, capture_output=True, text=True)  # noqa: S603
+    # Salida en UTF-8 sea cual sea el locale (#1601).
+    return subprocess.run(argv, capture_output=True, encoding="utf-8", errors="replace")  # noqa: S603
 
 
 def must_git(repo, *args) -> str:

@@ -18,6 +18,7 @@ Ejecuta sin red y sin consumer.
 """
 import importlib
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -35,6 +36,10 @@ GATE = ASSET.parent / "workflow-policy" / "check_workflow_policy.py"
 if str(ASSET.parent / "workflow-policy") not in sys.path:
     sys.path.insert(0, str(ASSET.parent / "workflow-policy"))
 policy_gate = importlib.import_module("check_workflow_policy")
+
+# El gh falso va por ruta explicita o por la guarda de _fake_gh (#1609, #1620).
+sys.path.insert(0, str(ASSET.parent / "tests"))
+from _fake_gh import RealGhRefusedError, guard_fake_gh  # noqa: E402
 
 
 def parse(text: str) -> dict:
@@ -180,8 +185,24 @@ class TestReleaseWorkflowTemplate(unittest.TestCase):
                    "GITHUB_STEP_SUMMARY": str(Path(cwd) / "summary"), **env}
         for name in drop:
             environ.pop(name, None)
+        # El paso llama a `gh` por nombre: si el gh que resolveria el PATH queda
+        # fuera de `cwd`, se niega antes de lanzar nada (#1620).
+        if re.search(r"\bgh\s", step["run"]):
+            guard_fake_gh(environ, cwd)
         return subprocess.run(["bash", str(script)], env=environ, cwd=cwd,
                               capture_output=True, text=True)
+
+    def test_con_el_gh_real_primero_en_el_path_el_paso_se_niega_sin_llamarlo(self):
+        """#1620: un gh real delante del falso no recibe ninguna llamada."""
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as real:
+            log = Path(real) / "calls"
+            sentinel = Path(real) / "gh"
+            sentinel.write_text(f'#!/bin/sh\necho "$@" >> "{log}"\nexit 0\n', encoding="utf-8")
+            sentinel.chmod(0o755)
+            with self.assertRaises(RealGhRefusedError):
+                self.run_step("release", "gh release create", tmp, RELEASE_NOTES_FILE="n.md",
+                              PATH=real + os.pathsep + os.environ.get("PATH", ""))
+            self.assertFalse(log.exists(), "el gh real recibio una llamada")
 
     # --- tag anotado frente al tag ligero que deja actions/checkout ---
 
