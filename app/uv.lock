@@ -189,7 +189,7 @@ requires-dist = [
     { name = "jinja2", specifier = "==3.1.*" },
     { name = "mypy", marker = "extra == 'dev'", specifier = "==2.4.0" },
     { name = "pip-audit", marker = "extra == 'dev'", specifier = "==2.9.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = "==9.0.*" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0,<9.3" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = "==1.4.0" },
     { name = "pytest-socket", marker = "extra == 'dev'", specifier = "==0.8.1" },
     { name = "python-multipart", specifier = "==0.0.*" },
