@@ -2,7 +2,7 @@
   "files": {
     ".github/ISSUE_TEMPLATE/config.yml": "sha256:8b09e7df09fc7534371988062769ee427af2954a02c04c763e8a8005be0f2be4",
     ".github/ISSUE_TEMPLATE/issue-canonical.yml": "sha256:b9850104a192d12cfbbd9493fb6cf4d35277ef88878edd3f9ef97009f25a67fc",
-    ".github/PULL_REQUEST_TEMPLATE.md": "sha256:5449be7c2b78b5971b2d29f9e6774b0ea7522d5c1b47243482425b82855afafa",
+    ".github/PULL_REQUEST_TEMPLATE.md": "sha256:f901dfe7aedac3f114b4dfa9189405f5650f05f4f35092b5e45b01bb97706c7c",
     ".github/env-isolation-allowlist.json": "sha256:0384fa60b06eaea1df4410b7ad1d2c06b0f50ca7893915a574d8d1afe0192b82",
     ".github/host-contract.json": "sha256:0c78e066e40ffe02969c85c4e7db16eb71647ba1222a75a5946d7d0177f9adb8",
     ".github/host-labels-snapshot.json": "sha256:09fe2ba60e590b3f61d469427e0137e84ad76a9d952f33665c953db1ed031b8b"
