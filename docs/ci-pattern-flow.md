@@ -77,7 +77,7 @@ detecta el gate de documentación operativa de `ci-pattern adoption check`.
 <!-- ci-pattern-doc:begin merge -->
 ## 6. Merge
 
-- El merge lo decide un humano con CI en verde. Un agente lo lanza solo por orden explícita y registrada de un mantenedor con cuenta de mantenedor, nunca con `--admin`.
+- El merge gobernado lo lanza el agente que lleva la issue, con el perfil del administrador que lleva la sesión, cuando la CI está en verde; nunca con `--admin`.
 - Métodos de merge permitidos (host-contract): merge commit, rebase, squash.
 
 <!-- ci-pattern-doc:end merge -->
@@ -144,7 +144,7 @@ Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. Jobs
   Hecho: ningún check en fail.
 - **8. CI en verde.** Si un check falla, aplique su receta de recuperación (sección 5), reejecute el preflight de la etapa 5 y empuje de nuevo. Si la base avanzó durante la revisión, repita la integración de la etapa 5 (merge, nunca rebase) y vuelva a comprobar: el verde de una cabeza anterior a la integración no es evidencia del resultado nuevo.
   Hecho: todos los checks en pass sobre la cabeza y la base actuales.
-- **9. Merge gobernado.** El merge lo decide un humano con CI en verde. Un agente lo lanza solo por orden explícita y registrada de un mantenedor con cuenta de mantenedor, por el camino gobernado y nunca con `--admin`. Métodos permitidos (host-contract): merge commit, rebase, squash.
+- **9. Merge gobernado.** Con la CI en verde, el agente que lleva la issue lanza el merge con el perfil del administrador que lleva la sesión, por el camino gobernado y nunca con `--admin`. Métodos permitidos (host-contract): merge commit, rebase, squash.
   Hecho: `gh pr view <número> --json state --jq .state` devuelve MERGED.
 - **10. Limpieza.** Solo después del merge verificado y sin cambios pendientes, retire el worktree local; la rama remota se conserva siempre (nunca `git push origin --delete`, `--delete-branch` ni borrado de ramas):
   `git worktree remove ../<repo>-worktrees/<número>-<tema>`
@@ -172,7 +172,7 @@ Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. Jobs
 Bloque gobernado: no lo edite a mano; se regenera desde el patrón.
 Antes de actuar, lea la parte del flujo operativo de la situación. Si un paso,
 comando, etiqueta o dato que necesita no está en este documento, NO lo invente:
-deténgase y pregunte en la issue o al mantenedor.
+deténgase y pregunte en la issue o al administrador que lleva la sesión.
 
 | Situación | Qué leer antes de actuar |
 | --- | --- |
@@ -190,7 +190,7 @@ deténgase y pregunte en la issue o al mantenedor.
 
 **Mandato de no invención:** si un paso, comando, etiqueta o dato que necesita
 no está documentado en el flujo operativo, no lo invente: deténgase y
-pregunte en la issue o al mantenedor.
+pregunte en la issue o al administrador que lleva la sesión.
 
 ## Dónde vive la documentación
 
