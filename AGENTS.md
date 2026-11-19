@@ -498,6 +498,7 @@ Es el mismo gobierno que DysTelefonica/cadete.
      `gh pr merge <N> --merge --subject "Merge PR #<N> (governed merge)"` y los checks en verde
      (#1770).
   6. Tras el merge se borran el worktree y la rama local; la rama remota se conserva.
+- **Skill del flujo:** `skills/a2w-issue-flow/SKILL.md` (este repo, no se propaga).
 - **`size:exception`.** La decide el administrador que lleva la sesión, tras responder las
   cuatro preguntas de la plantilla de PR.
 - **Precedencia.** En access2web esta orden manda sobre cualquier skill, propagada o global, y
