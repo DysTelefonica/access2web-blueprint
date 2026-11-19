@@ -1060,20 +1060,32 @@ def absent_from_completed_run(findings: list[str], runs: list, sha: str,
 
 
 PULL_REQUEST_EVENT = "pull_request"
+# #1773: los checks de PR los publican los dos eventos de PR; `pr-gate` y `pr-contract`
+# corren en `pull_request_target`. Un `workflow_dispatch` o un `push` siguen fuera (#1713).
+PULL_REQUEST_EVENTS = (PULL_REQUEST_EVENT, "pull_request_target")
 RUN_LIST_PER_PAGE = 100
 
 
 def pull_request_suite_ids(repo: str, sha: str) -> set[int]:
-    """Ids de check suite de las ejecuciones del evento `pull_request` sobre `sha` (#1713).
+    """Ids de check suite de las ejecuciones de los eventos de PR sobre `sha` (#1713, #1773).
 
-    El `required` que cuenta es el del run del PR, no el de un `workflow_dispatch` posterior
-    sobre el mismo SHA. Un fallo de lectura falla cerrado (HR-3).
+    El `required` que cuenta es el del run del PR (`pull_request` o `pull_request_target`),
+    no el de un `workflow_dispatch` posterior sobre el mismo SHA. Un fallo de lectura falla
+    cerrado (HR-3).
     """
+    suites: set[int] = set()
+    for event in PULL_REQUEST_EVENTS:
+        suites |= _event_suite_ids(repo, sha, event)
+    return suites
+
+
+def _event_suite_ids(repo: str, sha: str, event: str) -> set[int]:
+    """Ids de check suite de las ejecuciones de `event` sobre `sha`, pagina a pagina."""
     suites: set[int] = set()
     for page in range(1, MAX_PAGES + 1):
         try:
             data = get_json(f"repos/{repo}/actions/runs?head_sha={quote(sha, safe='')}"
-                            f"&event={PULL_REQUEST_EVENT}&per_page={RUN_LIST_PER_PAGE}&page={page}")
+                            f"&event={event}&per_page={RUN_LIST_PER_PAGE}&page={page}")
         except GitHubApiError as exc:
             reason = f"could not read the workflow runs of {sha[:12]} ({exc})"
             fail(f"{reason}; falla cerrado: the required check cannot be attributed to its event")

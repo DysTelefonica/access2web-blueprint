@@ -23,6 +23,7 @@ from test_push_compliance import CHECK, REPO, SHA  # noqa: E402
 
 ASSET = Path(__file__).resolve().parents[1] / "check_governed_merge.py"
 PR_SUITE = 100  # check suite del run del evento pull_request
+PRT_SUITE = 150  # check suite de un run pull_request_target (pr-gate, pr-contract; #1773)
 DISPATCH_SUITE = 200  # check suite de un workflow_dispatch posterior, mismo SHA
 TYPE_BUG = [{"name": "type:bug"}]
 
@@ -95,6 +96,27 @@ class TestRequiredFromThePullRequestRun(unittest.TestCase):
         self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
         self.assertEqual(self.merges(), [])
         self.assertIn("missing", proc.stdout)
+
+    def test_a_green_required_from_a_pull_request_target_run_is_not_missing(self):
+        # #1773: `pr-gate` y `pr-contract` los publica un workflow pull_request_target; su
+        # check suite es de la PR y cuenta. Antes salia 'missing' con el check en verde.
+        state = self.state(
+            runs=[check_run(5, "success", PRT_SUITE)],
+            workflow_runs=[workflow_run(50, "pull_request_target", PRT_SUITE)])
+        proc = self.gate(state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(len(self.merges()), 1)
+        self.assertNotIn("missing", proc.stdout)
+
+    def test_a_red_required_from_a_pull_request_target_run_blocks(self):
+        state = self.state(
+            runs=[check_run(5, "failure", PRT_SUITE), check_run(9, "success", DISPATCH_SUITE)],
+            workflow_runs=[workflow_run(50, "pull_request_target", PRT_SUITE),
+                           workflow_run(90, "workflow_dispatch", DISPATCH_SUITE)])
+        proc = self.gate(state)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(self.merges(), [])
+        self.assertIn(f'required check "{CHECK}": failure', proc.stdout)
 
     def test_an_unreadable_workflow_run_listing_fails_closed(self):
         state = self.state(

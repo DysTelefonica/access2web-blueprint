@@ -2714,9 +2714,19 @@ class GovernedMergeDocTests(unittest.TestCase):
     def test_merge_lines_include_run_command_for_the_detected_workflow(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo = self._repo(tmp, "merge.yml", invoke_asset=True)
+            (Path(repo) / ".team-skills.yaml").write_text("agent_roles: enabled\n", encoding="utf-8")
             text = "\n".join(CLI._operating_doc_merge_lines(repo, ["merge"]))
             self.assertIn("gh workflow run merge.yml", text)
             self.assertIn("por orden explícita y registrada de un mantenedor", text)
+
+    def test_merge_lines_without_roles_name_the_session_admin(self):
+        """#1768: sin roles, el comando lo lanza el agente con el perfil del administrador."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp, "merge.yml", invoke_asset=True)
+            text = "\n".join(CLI._operating_doc_merge_lines(repo, ["merge"]))
+            self.assertIn("gh workflow run merge.yml", text)
+            self.assertIn("perfil del administrador que lleva la sesión", text)
+            self.assertNotIn("mantenedor", text)
 
     def test_merge_lines_silent_without_wired_workflow(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -3097,10 +3107,12 @@ class DocFidelityTests(unittest.TestCase):
             self.assertIn("type:bug", line)
             self.assertIn("type:feature", line)
 
-    def governed_merge_repo(self, tmp):
+    def governed_merge_repo(self, tmp, roles=False):
         """Consumer con camino gobernado: runner declarado y workflow que invoca
-        el merge gobernado en SU runner."""
+        el merge gobernado en SU runner. `roles` declara `agent_roles: enabled` (#1768)."""
         repo = self.consumer_with_contract_types(tmp)
+        if roles:
+            (repo / ".team-skills.yaml").write_text("agent_roles: enabled\n", encoding="utf-8")
         host = json.loads((repo / ".github" / "host-contract.json").read_text(encoding="utf-8"))
         host["runner"] = {"label": "fixture"}
         (repo / ".github" / "host-contract.json").write_text(json.dumps(host), encoding="utf-8")
@@ -3121,10 +3133,21 @@ class DocFidelityTests(unittest.TestCase):
         """#356 (decisión del usuario, 2026-10-07): el merge gobernado lo lanza un
         mantenedor del repositorio, no «el operador»."""
         with tempfile.TemporaryDirectory() as tmp:
-            repo = self.governed_merge_repo(tmp)
+            repo = self.governed_merge_repo(tmp, roles=True)
             doc = (repo / "docs" / "ci-pattern-flow.md").read_text(encoding="utf-8")
             line = next(item for item in doc.splitlines() if "Camino gobernado" in item)
             self.assertIn("mantenedor", line)
+            self.assertNotIn("operador", line)
+
+    def test_merge_rule_without_roles_names_the_session_admin(self):
+        """#1768: sin `agent_roles: enabled` lo lanza el agente con el perfil del
+        administrador que lleva la sesion; tampoco nombra a una persona."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.governed_merge_repo(tmp)
+            doc = (repo / "docs" / "ci-pattern-flow.md").read_text(encoding="utf-8")
+            line = next(item for item in doc.splitlines() if "Camino gobernado" in item)
+            self.assertIn("administrador que lleva la sesión", line)
+            self.assertNotIn("mantenedor", line)
             self.assertNotIn("operador", line)
 
     def test_doc_names_no_command_that_the_consumer_does_not_have(self):

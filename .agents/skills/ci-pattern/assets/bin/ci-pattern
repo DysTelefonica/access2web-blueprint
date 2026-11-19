@@ -2151,6 +2151,22 @@ def _changelog_fragment_lines(repo):
             "exige uno por PR (HR-44, #665; team-skills#1093, R4)."]
 
 
+# #1768: sin roles de agentes, quien decide es el administrador que lleva la sesion.
+SESSION_ADMIN = "administrador que lleva la sesión"
+
+
+def _agent_roles_enabled(repo):
+    """#1768: el consumer conserva los roles solo con `agent_roles: enabled` en su
+    `.team-skills.yaml`; sin el fichero o sin la clave, no hay roles."""
+    if repo is None:
+        return False
+    try:
+        text = (Path(repo) / ".team-skills.yaml").read_text(encoding="utf-8")
+    except OSError:
+        return False
+    return re.search(r"(?m)^agent_roles:\s*enabled\s*(#.*)?$", text) is not None
+
+
 OPERATING_DOC_AGENTS_BLOCK = """<!-- ci-pattern-agents:begin -->
 ## Flujo operativo y mandato de no invención
 
@@ -2367,10 +2383,14 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint, repo=None):
         "(merge, nunca rebase) y vuelva a comprobar: el verde de una cabeza "
         "anterior a la integración no es evidencia del resultado nuevo.\n"
         "  Hecho: todos los checks en pass sobre la cabeza y la base actuales.",
-        "- **9. Merge gobernado.** El merge lo decide un humano con CI en verde. "
-        "Un agente lo lanza solo por orden explícita y registrada de un mantenedor "
-        "con cuenta de mantenedor, por el camino gobernado y nunca con `--admin`. "
-        "Métodos permitidos (host-contract): "
+        ("- **9. Merge gobernado.** El merge lo decide un humano con CI en verde. "
+         "Un agente lo lanza solo por orden explícita y registrada de un mantenedor "
+         "con cuenta de mantenedor, por el camino gobernado y nunca con `--admin`. "
+         if _agent_roles_enabled(repo) else
+         "- **9. Merge gobernado.** Con la CI en verde, el agente que lleva la issue "
+         f"lanza el merge con el perfil del {SESSION_ADMIN}, por el camino "
+         "gobernado y nunca con `--admin`. ")
+        + "Métodos permitidos (host-contract): "
         f"{_or_none(allowed_merges)}.\n"
         "  Hecho: `gh pr view <número> --json state --jq .state` devuelve MERGED.",
         "- **10. Limpieza.** Solo después del merge verificado y sin cambios "
@@ -2492,21 +2512,30 @@ def _integrated_tree_lines():
 
 
 def _operating_doc_merge_lines(repo, allowed_merges):
-    """#351: seccion Merge; el camino gobernado solo con declaracion."""
+    """#351: seccion Merge; el camino gobernado solo con declaracion.
+    #1768: sin `agent_roles: enabled`, el merge lo lanza el agente con el perfil
+    del administrador que lleva la sesion, con la CI en verde."""
     _or_none = lambda items: ", ".join(items) if items else "ninguno declarado"
+    roles = _agent_roles_enabled(repo)
+    if roles:
+        who = ("- El merge lo decide un humano con CI en verde. Un agente lo lanza solo por "
+               "orden explícita y registrada de un mantenedor con cuenta de mantenedor, "
+               "nunca con `--admin`.")
+    else:
+        who = (f"- El merge gobernado lo lanza el agente que lleva la issue, con el perfil del "
+               f"{SESSION_ADMIN}, cuando la CI está en verde; nunca con `--admin`.")
     lines = [
-        "- El merge lo decide un humano con CI en verde. Un agente lo lanza solo por "
-        "orden explícita y registrada de un mantenedor con cuenta de mantenedor, "
-        "nunca con `--admin`.",
+        who,
         f"- Métodos de merge permitidos (host-contract): {_or_none(allowed_merges)}.",
     ]
     gm = _governed_merge_workflow(repo)
     if gm:
         name = Path(gm).name
+        launcher = "un mantenedor" if roles else f"el agente con el perfil del {SESSION_ADMIN}"
         lines.append(
             f"- Camino gobernado: el workflow `{name}` (workflow_dispatch) "
-            "audita el PR antes de merge y exige CI en verde; lo lanza un "
-            f"mantenedor con `gh workflow run {name} -f pr=<N>`.")
+            "audita el PR antes de merge y exige CI en verde; lo lanza "
+            f"{launcher} con `gh workflow run {name} -f pr=<N>`.")
         lines += _integrated_tree_lines()
     return lines
 
@@ -2630,7 +2659,7 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
             "receta de operación local del consumer.",
         ]),
         "lifecycle": "\n".join(
-            _operating_doc_lifecycle_lines(params, host, jobs, entrypoint)),
+            _operating_doc_lifecycle_lines(params, host, jobs, entrypoint, repo)),
         "incidents": _operating_doc_incident_lines(params),
         "docs-location": _operating_doc_docs_location_lines(params),
         "agents-block": _agents_block_for(repo),
@@ -2908,6 +2937,149 @@ def _ci_images_findings(repo):
             + _required_job_findings(repo, job, hr="HR-78")
         ]
     return findings
+
+
+def _gate_assets(skill):
+    """#1742: los gates del canon, una sola fuente: cada assets/<gate>/check_*.py."""
+    return sorted(p.relative_to(skill).as_posix()
+                  for p in (skill / "assets").glob("*/check_*.py"))
+
+
+_HR_ENTRY = re.compile(r"^\s*-\s+\*\*(HR-[\d.]+)\s*[—\-–]")
+
+
+def _hr_blocks(lines):
+    """#1756: los bloques de regla de SKILL.md: cada entrada HR y sus sub-reglas.
+
+    Una entrada HR larga envuelve su cita del asset en la línea siguiente, y
+    las sub-reglas (HR-54.5) van indentadas: el bloque va de la línea de la
+    entrada hasta la entrada siguiente.
+    """
+    bloques = []
+    for line in lines:
+        m = _HR_ENTRY.match(line)
+        if m:
+            bloques.append([m.group(1), [line]])
+        elif bloques:
+            bloques[-1][1].append(line)
+    return [(hr, "\n".join(cuerpo)) for hr, cuerpo in bloques]
+
+
+def _hr_citing_gate(skill, rel):
+    """#1742 / #1756: la línea HR de SKILL.md que cita el asset del gate.
+
+    La cita puede caer en la primera línea de la entrada HR (lo que ya
+    resolví­a) o en su continuación, incluida la sub-regla indentada. Si la
+    primera línea no cita el asset, se lee el bloque entero de la entrada: se
+    prefiere la cita del fichero y, si no hay, la de su carpeta. Un gate que
+    ninguna entrada HR cita devuelve None: el aviso lo dice, sin inventar.
+    """
+    folder = Path(rel).parent.name
+    name = Path(rel).name
+    lines = (skill / "SKILL.md").read_text(encoding="utf-8").splitlines()
+    for line in lines:
+        m = re.match(r"- \*\*(HR-\d+)", line)
+        if m and f"assets/{folder}/" in line:
+            return m.group(1)
+    bloques = _hr_blocks(lines)
+    for cita in (f"assets/{folder}/{name}", f"assets/{folder}/"):
+        for hr, cuerpo in bloques:
+            if cita in cuerpo:
+                return hr
+    return None
+
+
+_SCRIPT_SUFFIXES = (".py", ".sh", ".ps1", ".js", ".ts", ".mjs", ".cjs", ".rb", ".pl")
+
+
+def _invoked_files(repo, workflow_text):
+    """#1742: ficheros del repo que un workflow invoca, con su contenido.
+
+    Un workflow ejecuta sus scripts por ruta (`python scripts/x.py`); cada token
+    de ruta que existe en el repo es un fichero invocado."""
+    found = {}
+    for token in re.findall(r"[A-Za-z0-9_][A-Za-z0-9_./-]*\.[A-Za-z0-9]+", workflow_text):
+        if not token.endswith(_SCRIPT_SUFFIXES):
+            continue
+        path = repo / token
+        if path.is_file() and path not in found:
+            found[path] = path.read_text(encoding="utf-8", errors="replace")
+    return found
+
+
+def _cites_asset(content, name):
+    """#1742: el contenido cita el asset: un token tipo ruta que TERMINA en su nombre.
+
+    La cita tiene que ser una ruta (o el nombre suelto), no una palabra que lo
+    contenga: `check_e2e_evidence.py` cita el asset; `check_e2e_evidence_helper.py`
+    no."""
+    return bool(re.search(rf"(?<![\w-])(?:[\w./-]*/)?{re.escape(name)}(?![\w.-])", content))
+
+
+def _same_gate_content(asset, content):
+    """#1742: el fichero es el asset renombrado: su contenido coincide casi entero.
+
+    Se comparan las líneas no vacías: una copia byte a byte con otro nombre
+    coincide en todas; un script que solo se le parece, en ninguna."""
+    lines = [l.strip() for l in asset.read_text(encoding="utf-8", errors="replace").splitlines()
+             if l.strip()]
+    if not lines:
+        return False
+    other = {l.strip() for l in content.splitlines() if l.strip()}
+    matched = sum(1 for l in lines if l in other)
+    return matched / len(lines) >= 0.9
+
+
+def _wired_by_invoked_file(asset, name, invoked):
+    """#1742: el gate está cableado si un fichero invocado por un workflow lo alcanza.
+
+    Dos pruebas del propio contenido del fichero, no de su nombre: que cite el
+    asset (un adaptador renombrado que lo importa) o que sea el asset copiado
+    con otro nombre. Un fichero con un nombre parecido pero sin relación con el
+    asset no cablea nada."""
+    for content in invoked.values():
+        if name in content and _cites_asset(content, name):
+            return True
+        if _same_gate_content(asset, content):
+            return True
+    return False
+
+
+def _warn_unwired_gates(repo):
+    """#1742: AVISO por stderr (no fallo) de cada gate distribuido al consumer
+    (.agents/skills/ci-pattern/<asset>) que ningún workflow invoca, ni por ruta ni
+    por nombre de fichero. Los gates que ejecuta la propia CLI no cuentan: el
+    workflow que corre `adoption check` ya los invoca."""
+    skill = skill_dir()
+    vendored = repo / ".agents" / "skills" / "ci-pattern"
+    workflows = repo / WORKFLOW_DIR
+    text = ""
+    if workflows.is_dir():
+        text = "\n".join(p.read_text(encoding="utf-8", errors="replace")
+                         for p in sorted(workflows.glob("*.y*ml")))
+    invoked = _invoked_files(repo, text)
+    cli_invoked = set(ADOPTION_GATES.values()) | set(RUNNER_BINDING_GATES.values()) \
+        | {ENV_ISOLATION_GATE, CI_IMAGES_GATE}
+    for rel in _gate_assets(skill):
+        asset = vendored / rel
+        if rel in cli_invoked or not asset.is_file():
+            continue
+        # La unidad es la carpeta del gate: un wrapper de la misma carpeta (p. ej.
+        # run_docs_links.py) o una copia adoptada en scripts/<carpeta>/ ejecuta el
+        # gate aunque su nombre no aparezca.
+        folder = re.escape(Path(rel).parent.name)
+        if rel in text or Path(rel).name in text \
+                or re.search(rf"(^|[\s'\"/]){folder}/", text, re.M):
+            continue
+        # El cableado puede ser indirecto: un fichero invocado por el workflow
+        # cita el asset (adaptador renombrado) o es el asset copiado con otro
+        # nombre. Lo prueban el contenido de ese fichero, no su nombre.
+        if _wired_by_invoked_file(asset, Path(rel).name, invoked):
+            continue
+        hr = _hr_citing_gate(skill, rel) or "sin HR"
+        print(f"AVISO {hr}: el gate {Path(rel).name} se distribuye a este consumer "
+              "y ningún workflow de .github/workflows/ lo invoca; su invariante queda "
+              "sin aplicar.", file=sys.stderr)
 
 
 def _check_gates_phase(repo, decl, contract, seal=None):
@@ -3994,22 +4166,28 @@ def _check_docs_phase(repo, decl, seal=None):
 def _agents_block_for(repo):
     """#716 (HR-69): bloque gobernado `ci-pattern-agents` de este consumer. Sin
     `docs_manifest` en su contrato es la constante canonica (byte a byte); con
-    el, anade la tabla «Donde trabajar» generada del manifiesto y del contrato."""
+    el, anade la tabla «Donde trabajar» generada del manifiesto y del contrato.
+    #1768: sin `agent_roles: enabled`, a quien se pregunta es al administrador
+    que lleva la sesion, no a un mantenedor."""
+    base = OPERATING_DOC_AGENTS_BLOCK
+    if not _agent_roles_enabled(repo):
+        base = base.replace("pregunte en la issue o al mantenedor.",
+                            f"pregunte en la issue o al {SESSION_ADMIN}.")
     try:
         contract = json.loads((Path(repo) / ADOPTION_CONTRACT_NAME).read_text(encoding="utf-8"))
     except (OSError, ValueError):
-        return OPERATING_DOC_AGENTS_BLOCK
+        return base
     if not isinstance(contract, dict) or "docs_manifest" not in contract:
-        return OPERATING_DOC_AGENTS_BLOCK
+        return base
     gate, manifest_path = _load_docs_manifest()
     rows = gate.routing_rows(gate.load_manifest(manifest_path), contract, repo)
     if not rows:
-        return OPERATING_DOC_AGENTS_BLOCK
+        return base
     table = "\n".join(f"| {when} | {read} |" for when, read, _path in rows)
     section = ("\n## Dónde trabajar\n\nAntes de actuar, vaya al documento de su situación; "
                "no deduzca dónde va el trabajo.\n\n| Si vas a… | Lee… |\n| --- | --- |\n" + table + "\n")
-    return OPERATING_DOC_AGENTS_BLOCK.replace("\n<!-- ci-pattern-agents:end -->",
-                                              section + "<!-- ci-pattern-agents:end -->")
+    return base.replace("\n<!-- ci-pattern-agents:end -->",
+                        section + "<!-- ci-pattern-agents:end -->")
 
 
 def _routed_path_findings(repo):
@@ -4802,6 +4980,7 @@ def _phase_findings(repo, n, decl, contract, seal=None):
             _check_agents_structure(repo, contract) + \
             _check_governance_seals(repo, contract)
     if n == 4:
+        _warn_unwired_gates(repo)
         return _check_gates_phase(repo, decl, contract, seal) + _check_review_budget(repo)
     if n == 5:
         # #1396: HR-55 (_check_agents_structure) la mide la fase 3; repetirla

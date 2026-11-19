@@ -5,7 +5,7 @@ license: Apache-2.0
 metadata:
   author: ardelperal
   version: 2.3
-  last_verified: 2026-11-08
+  last_verified: 2026-11-19
   scope: ['universal', 'docs']
   auto_invoke: ['auditing CI quality gates', 'setting ratchet baselines']
   tiers: ['universal', 'docs']
@@ -54,7 +54,7 @@ Detailed rationale and failure modes: [Hard-rule rationale](references/hard-rule
 | Gate has no runnable fixture | Add a fixture or remove the gate; an empty gate is a false guarantee. |
 | Gate exists only locally | Wire it into CI or delete it. |
 | CI gate is absent from `make verify` | Add it, or declare a reasoned capability-scoped exclusion. |
-| PR exceeds 400 changed lines | Split it unless the PR records `size:exception` with a reason. |
+| PR exceeds 400 changed lines | Split it; only a PR that cannot be split carries the `size:exception` label, with the four answers in its body. |
 | Dependency introduces a CVE | File an issue and link the shrink-only allowlist entry to it. |
 | Repo keeps a derived cache | Add the read-only consistency check and its nightly single-issue job (Hard Rule 20). |
 
