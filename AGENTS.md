@@ -470,7 +470,7 @@ en [`docs/ci-pattern-flow.md`](docs/ci-pattern-flow.md) y no se edita a mano. An
 migración, modelo de datos, adaptadores de PostgreSQL o issues de migración, cargue
 [`skills/coexistence-migration/SKILL.md`](skills/coexistence-migration/SKILL.md).
 
-## Orden permanente del propietario: sin roles, cada administrador de punta a punta
+### Orden permanente del propietario: sin roles, cada administrador de punta a punta
 
 Orden del propietario (2026-11-19), con sus palabras: «todo lo que hemos definido de gobierno de
 este repo sea igual (en lo que se pueda y si no adaptándolo a las características) en access2web.
