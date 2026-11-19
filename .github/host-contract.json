@@ -3,6 +3,9 @@
   "protected_branches": [
     "main"
   ],
+  "post_merge_dispatch": [
+    "push-compliance"
+  ],
   "host_capabilities": {
     "branch_protection": "available",
     "rulesets": "available",
@@ -55,7 +58,7 @@
   "governed_path": {
     "enabled": true,
     "actors": [
-      "dys-orquestador[bot]"
+      "github-actions[bot]"
     ],
     "merge_marker": "^Merge PR #\\d+ \\((safe|governed) merge\\)$"
   },

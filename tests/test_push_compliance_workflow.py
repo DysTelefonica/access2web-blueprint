@@ -1,14 +1,15 @@
 """Post-push detective of access2web-blueprint (#1359).
 
-The host contract declares `governed_path` (enabled, actors ["dys-orquestador[bot]"]), but a
+The host contract declares `governed_path` (enabled, actors ["github-actions[bot]"]), but a
 declaration nobody measures is decoration. This workflow runs the vendored canon
 `check_push_compliance.py` after every push to `main`: each pushed commit must come from a
 merged PR whose required checks (`required`, `pr-gate`) are green on its head, and that PR must
 have been merged by a governed actor (or carry the governed merge marker). A violation opens an
 incident issue and fails the job (exit 1); an unmeasurable state fails closed (exit 2).
 
-The governed merge merges with the dys-orquestador App token, so its merges trigger a normal
-`push` event: no `post_merge_dispatch` is needed for the detective to see them.
+The governed merge merges with the workflow's GITHUB_TOKEN, which does not trigger `push`, so the
+host contract dispatches this workflow after the merge (`post_merge_dispatch`, HR-817) with the
+audited range in `before` and `after`.
 """
 
 import json
@@ -44,10 +45,12 @@ def _step(job: dict, needle: str) -> dict:
     return matches[0]
 
 
-def test_triggers_on_push_to_main_only() -> None:
+def test_triggers_on_push_to_main_and_on_the_post_merge_dispatch() -> None:
     triggers = _triggers(_workflow())
-    assert set(triggers) == {"push"}
+    assert set(triggers) == {"push", "workflow_dispatch"}
     assert triggers["push"] == {"branches": ["main"]}
+    inputs = triggers["workflow_dispatch"]["inputs"]
+    assert inputs["before"]["required"] is True and inputs["after"]["required"] is True
 
 
 def test_runs_the_vendored_canon_against_the_host_contract() -> None:
@@ -85,15 +88,16 @@ def test_audits_are_serialized_without_cancelling() -> None:
     assert "${{ github.ref }}" in concurrency["group"]
 
 
-def test_contract_measured_by_the_detective_names_the_orchestrator_bot() -> None:
+def test_contract_measured_by_the_detective_names_the_workflow_token_as_merger() -> None:
     contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
     assert contract["protected_branches"] == ["main"]
     assert contract["governed_path"] == {
         "enabled": True,
-        "actors": ["dys-orquestador[bot]"],
+        "actors": ["github-actions[bot]"],
         "merge_marker": r"^Merge PR #\d+ \((safe|governed) merge\)$",
     }
     assert [c["name"] for c in contract["required_checks"]] == ["required", "pr-gate"]
+    assert contract["post_merge_dispatch"] == ["push-compliance"]
 
 
 def test_workflow_is_inventoried_as_adopted() -> None:
