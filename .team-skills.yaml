@@ -1,4 +1,4 @@
-# Auto-generado por propagate-team-skills.ps1 (catalog @ a738650e94b669af96ebad85aaa36b3c454d18e3).
+# Auto-generado por propagate-team-skills.ps1 (catalog @ 81baa481d9321c20c61df2411d58680e1527e481).
 # La lista include_skills se regenera en cada corrida; los demas campos
 # se preservan del manifest previo para no pisar hand-edits del consumer.
 project_type: web
@@ -7,14 +7,12 @@ tiers:
 overlays:
   - shared
 agents_md_path: AGENTS.md
-slice_block_sha256: e97f587f1d84d0ddb7702d1aa88ec9fadad97040eb1a938307f4cfc31e711074
+slice_block_sha256: 24c96cfcbbee7ac31dc4a3f7795079a44fcfce0b17df0e81d856d9c57903839a
 include_skills:
   - ai-slop-discipline
   - ci-pattern
   - deterministic-quality-harness
-  - github-roles
   - governed-delivery
-  - infra-disk-alerts
   - release-notes
   - repository-delivery-governance
   - worktree-reorg-per-project
