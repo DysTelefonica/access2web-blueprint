@@ -4,18 +4,27 @@ name: Post-push compliance
 # push a main con el asset canónico vendorizado `check_push_compliance.py`. Para cada commit
 # del rango empujado, la API debe mostrar un PR mergeado en main con los checks requeridos del
 # host-contract (`required`, `pr-gate`) en verde sobre su cabeza y, porque el contrato declara
-# `governed_path`, fusionado por un actor gobernado (`dys-orquestador[bot]`) o con la marca del
+# `governed_path`, fusionado por un actor gobernado (`github-actions[bot]`) o con la marca del
 # merge gobernado en el commit de merge. Si no, abre una issue de incidente con la evidencia
 # (SHA, autor, fusionador, checks) y el job falla (exit 1); un estado que no puede medir falla
 # cerrado (exit 2) sin abrir incidente.
 #
-# Solo `push`: el merge gobernado fusiona con el token de instalación de la App
-# `dys-orquestador`, y un merge con ese token sí dispara el `push` de main (al contrario que
-# GITHUB_TOKEN). Por eso el contrato no declara `post_merge_dispatch` ni este workflow
-# `workflow_dispatch`.
+# `push` para cualquier push a main, y `workflow_dispatch` para el merge gobernado: fusiona con
+# el GITHUB_TOKEN del workflow, que no dispara `push`, así que el verificador despacha este
+# workflow tras el merge (`host-contract.post_merge_dispatch`, HR-817) con el rango auditado.
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      before:
+        description: 'sha base anterior al merge (punta leida de la base)'
+        required: true
+        type: string
+      after:
+        description: 'sha fusionado tras el merge'
+        required: true
+        type: string
 
 # Serializa auditorías de pushes seguidos a main sin abortar ninguna a mitad de evidencia
 # (DysTelefonica/team-skills#800).
