@@ -469,3 +469,39 @@ El índice de skills, las lecturas obligatorias y las reglas duras del repositor
 en [`docs/ci-pattern-flow.md`](docs/ci-pattern-flow.md) y no se edita a mano. Antes de cualquier trabajo de
 migración, modelo de datos, adaptadores de PostgreSQL o issues de migración, cargue
 [`skills/coexistence-migration/SKILL.md`](skills/coexistence-migration/SKILL.md).
+
+## Orden permanente del propietario: sin roles, cada administrador de punta a punta
+
+Orden del propietario (2026-11-19), con sus palabras: «todo lo que hemos definido de gobierno de
+este repo sea igual (en lo que se pueda y si no adaptándolo a las características) en access2web.
+No quiero que ponga nada de roles, quiero que si Juan Félix entra como yo usemos nuestros gh con
+nuestro usuario. Que se pueda hacer todo de punta a punta sin contar con infra ni nada».
+Es el mismo gobierno que DysTelefonica/cadete.
+
+- **Sin roles, bots ni Apps.** El agente actúa en GitHub como el administrador que lleva la
+  sesión (hoy ardelperal o juanfelixrt23), con el `gh` de su máquina y sin ningún token de App
+  (`GH_TOKEN= GITHUB_TOKEN= gh ...`). Nunca imprime ni copia tokens, y los valores de los
+  secretos no pasan por él. Un colaborador con permiso de escritura llega hasta la PR; el merge
+  gobernado necesita el perfil de un administrador.
+- **El flujo de una issue, sin esperar a nadie:**
+  1. Issue con las seis secciones del formulario canónico; worktree propio en una rama
+     `<tipo>/<n>-<slug>` desde `main`.
+  2. Primero el test; después las pruebas locales y `make verify` antes de empujar.
+  3. Push y PR (encadenada si pasa de 400 líneas), con la tabla de tests que prueban el cierre.
+  4. CI en los runners de GitHub: el repositorio es público y la política de
+     `docs/10-runners.md` no admite runners propios.
+  5. Merge gobernado: `gh workflow run governed-merge.yml -f pr=<N>`, con `required` y
+     `pr-gate` en verde sobre la cabeza de la PR (lo exige también el ruleset de `main`). En una
+     cadena, los eslabones en orden y el siguiente se reapunta a `main` tras cada merge. Nunca
+     `--admin`. La única excepción es el caso en que el merge gobernado de `main` no puede
+     fusionar la PR que lo arregla: entonces se fusiona esa PR una vez con
+     `gh pr merge <N> --merge --subject "Merge PR #<N> (governed merge)"` y los checks en verde
+     (#1770).
+  6. Tras el merge se borran el worktree y la rama local; la rama remota se conserva.
+- **`size:exception`.** La decide el administrador que lleva la sesión, tras responder las
+  cuatro preguntas de la plantilla de PR.
+- **Precedencia.** En access2web esta orden manda sobre cualquier skill, propagada o global, y
+  sobre el bloque propagado de arriba, donde digan otra cosa: decisión humana del merge,
+  coordinador, revisor, mantenedor aparte, roles de agente o infra, o las identidades
+  `dys-agentes` y `dys-orquestador` de `github-roles` y `governed-delivery`. No cargue aquí
+  las skills de coordinación de agentes.

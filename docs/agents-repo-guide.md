@@ -164,7 +164,7 @@ misma regla cuando se lo analiza por su cuenta.
 `merge-ready` fue retirado (issue #702): quedaba completamente superado por
 `required`, que sí bloquea el merge.
 
-Pasos del revisor antes de mergear:
+Comprobaciones antes de lanzar el merge gobernado:
 
 1. Verifique que `required` y `pr-gate` pertenecen al último SHA del PR.
 2. Compruebe que las conversaciones están resueltas.
@@ -176,13 +176,13 @@ Refuerza esta disciplina con `gentle-ai review status --cwd <repo>` antes de mer
 
 ## Hard rule — flujo de entrega y merge gobernado
 
-Toda entrega pasa por una issue canónica y un PR; el merge lo lanza un mantenedor por el camino del host.
+Toda entrega pasa por una issue canónica y un PR; el merge lo lanza el administrador que lleva la sesión, con su propio `gh`, por el merge gobernado (orden permanente de `AGENTS.md`).
 
 - **Issue.** El formulario canónico (`.github/ISSUE_TEMPLATE/issue-canonical.yml`) recomienda seis secciones: `Problema y contexto`, `Evidencia verificable`, `Alcance y no objetivos`, `Criterios de aceptación`, `Plan de validación` y `Dependencias y riesgos`. `status:approved` puede ponerla cualquiera, agentes incluidos, y ningún gate la exige (`DysTelefonica/team-skills#1093`, R1/R2).
 - **Rama.** `<tipo>/<slug>` con el patrón de gentle-ai (`feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert`), sin número de issue; lo aplica el ruleset del host. La trazabilidad vive en el cuerpo del PR con `Closes #N`.
-- **PR.** El cuerpo sigue la plantilla del repositorio: `Closes #N` o `Refs #N`; `Chain Context` y la sección de tests que prueban el cierre son ayudas y su ausencia avisa, pero no bloquea (#1093 R3/HR-53). Si el diff supera las 400 líneas, el mantenedor pone la etiqueta `size:exception` tras responder las 4 preguntas de `AGENTS.md` §F.7.
+- **PR.** El cuerpo sigue la plantilla del repositorio: `Closes #N` o `Refs #N`; `Chain Context` y la sección de tests que prueban el cierre son ayudas y su ausencia avisa, pero no bloquea (#1093 R3/HR-53). Si el diff supera las 400 líneas, el administrador que lleva la sesión pone la etiqueta `size:exception` tras responder las 4 preguntas de la plantilla de PR.
 - **Checks requeridos.** `required` y `pr-gate` deben estar en verde en la PR antes de fusionar. Sin `strict` ni cola de merge, una PR que ya pasó el CI se integra aunque quede atrás de `main` (no hay que sincronizar la rama con `main` a mano); la red de seguridad tras el merge es el mismo `ci` en `push` a `main` y un `schedule` diario.
-- **Merge.** Lo lanza un mantenedor por el camino del host: el ruleset `main-maintainers-and-admins-merge` solo deja actualizar `main` a los mantenedores y administradores, y solo mediante un PR. **Ningún agente hace merge.**
+- **Merge.** Lo lanza el administrador que lleva la sesión (o el agente con su perfil) con `gh workflow run governed-merge.yml -f pr=<N>`; el workflow verifica el contrato y fusiona con su `GITHUB_TOKEN` (#1770). El ruleset `main-maintainers-and-admins-merge` exige un PR y los checks `required` y `pr-gate` en verde; los roles admin y maintain conservan la excepción. Nunca `--admin`.
 - **Rama remota.** Se conserva tras el merge; nunca se borra.
 - **Documentación.** Vive en el repositorio, bajo `docs/`.
 
