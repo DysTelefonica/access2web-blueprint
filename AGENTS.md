@@ -486,7 +486,8 @@ Es el mismo gobierno que DysTelefonica/cadete.
 - **El flujo de una issue, sin esperar a nadie:**
   1. Issue con las seis secciones del formulario canónico; worktree propio en una rama
      `<tipo>/<n>-<slug>` desde `main`.
-  2. Primero el test; después las pruebas locales y `make verify` antes de empujar.
+  2. Primero el test; después las pruebas locales con `skills/a2w-local-dev/SKILL.md`
+     (`dev.sh <n> up | test | integration | e2e | verify | down`) antes de empujar.
   3. Push y PR (encadenada si pasa de 400 líneas), con la tabla de tests que prueban el cierre.
   4. CI en los runners de GitHub: el repositorio es público y la política de
      `docs/10-runners.md` no admite runners propios.
