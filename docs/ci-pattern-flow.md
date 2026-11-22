@@ -134,10 +134,10 @@ Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. Jobs
   `git fetch origin && git merge origin/<rama-base>`
   `bash scripts/local-preflight.sh`
   Hecho: exit 0 sobre el árbol integrado.
-- **6. Pull request.** Contra la rama base de la etapa 3; cuerpo con `Refs #N` (o `Closes #N` solo en la punta de cadena), exactamente una etiqueta `type:*` orientativa (sección 4) y presupuesto de 400 líneas; si no cabe, cadena:
+- **6. Pull request.** Contra la rama base de la etapa 3; cuerpo con `Refs #N` (o `Closes #N` solo en la punta de cadena), el tipo en el título convencional `<tipo>(<ámbito>): <resumen>` y presupuesto de 400 líneas; si no cabe, cadena:
   Con `chain:partial` o en la punta de cadena (base = rama por defecto) el cuerpo declara ADEMÁS la sección **Chain Context** (HR-54) como dato: `chain`, `position` N/M, `base`, `depends-on`, `follow-up`, `starts-at`, `ends-with` y `review-budget`. Si falta o no cuadra, el gate avisa y no bloquea (team-skills#1093, R3).
-  `ci-pattern pr preflight --draft --pr-body <cuerpo-del-pr.md> --base <rama-base> --label <etiqueta>` (modo API-free: exit 0 exige cuerpo y tamaño en verde)
-  `gh pr create --base <rama-base> --head <rama-nueva> --title "<tipo>(<ámbito>): <resumen>" --body-file <cuerpo-del-pr.md> --label type:<tipo>` Elija exactamente un `type:*` de la sección 4 (convención; desde #1093 ningún gate la exige).
+  `ci-pattern pr preflight --draft --pr-body <cuerpo-del-pr.md> --base <rama-base> --label <etiqueta> --pr-title "<tipo>(<ámbito>): <resumen>"` (modo API-free: exit 0 exige cuerpo, tamaño y título en verde)
+  `gh pr create --base <rama-base> --head <rama-nueva> --title "<tipo>(<ámbito>): <resumen>" --body-file <cuerpo-del-pr.md>` El tipo lo lleva el título; la etiqueta `type:*` es opcional y ningún gate la exige.
   Hecho: `gh pr view <número> --json number,url` devuelve número y URL.
 - **7. Checks.** Consulte la tabla de checks requeridos (sección 5) y el estado del PR:
   `gh pr checks <número>`
