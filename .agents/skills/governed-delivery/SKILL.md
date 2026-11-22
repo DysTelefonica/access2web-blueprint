@@ -4,8 +4,8 @@ description: "Trigger: actualizar mi rama, abrir un pull request, encadenar PRs,
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: "1.7.0"
-  last_verified: 2026-11-19
+  version: "1.8.0"
+  last_verified: 2026-11-22
   scope: ['universal', 'ops']
   auto_invoke: ['actualizar rama', 'abrir un PR', 'encadenar PRs', 'pedir merge', 'etiquetar un PR']
   tiers: ['universal', 'ops']
@@ -61,8 +61,11 @@ Antes de `gh pr create`, ejecute `ci-pattern pr preflight --draft --pr-body <cue
    `status:approved` no es puerta: la puede poner cualquiera, agentes
    incluidos (decisión del dueño del 2026-10-23, 17:24, en los comentarios
    de #1093). Antes de actuar, el agente comprueba que la cuenta de `gh` en
-   uso administra el repositorio:
-   `gh api repos/{owner}/{repo} --jq '.permissions.maintain or .permissions.admin'`.
+   uso tiene permiso de escritura en el repositorio (`actions:write`), que
+   es lo único que exige despachar el workflow gobernado: el merge lo ejecuta
+   el `GITHUB_TOKEN` del job, con sus gates (CI en verde, SHA exacto, sin
+   `--admin`). Lo comprueba con
+   `gh api repos/{owner}/{repo} --jq '.permissions.push'`.
 
    Tras la acción, el agente relee el estado del merge con un solo intento;
    si el resultado es incierto, se detiene sin reintentar. El merge exige CI
@@ -73,8 +76,18 @@ Antes de `gh pr create`, ejecute `ci-pattern pr preflight --draft --pr-body <cue
    (`gh pr checks --watch` sale con 1 justo después del push, #1502). —
    *referencia: `ci-pattern`, flujo §«Pedir un merge».*
 
-3. **Las cadenas**: los intermedios llevan `chain:partial` y `Refs #N`;
-   solo la punta lleva `Closes #N`. El merge avanza de abajo arriba: se
+3. **Las cadenas**:
+
+   **Regla de la cadena (tres líneas).** Eslabón: `Refs #N` en el cuerpo y en
+   los commits, con `chain:partial`. Punta contra `main`: `Closes #N` y sin
+   `chain:partial`. Ejemplo: `fix(x): y (Refs #N)` es un eslabón y `fix(x): y
+   (Closes #N)` es la punta.
+
+   Una palabra de cierre en el cuerpo **o en un commit** cierra la issue al
+   fusionar: en un eslabón la cierra antes de tiempo. El merge gobernado
+   bloquea y nombra el commit y la línea que la rompen.
+
+   El merge avanza de abajo arriba: se
    re-apunta el PR siguiente sobre main. Re-apuntar no lanza la CI (dispara
    `edited`, que el CI no escucha). Bajo el perfil pre-release (#1627,
    regla 5), un re-apuntado con el head sin cambiar no necesita run: el
@@ -170,7 +183,7 @@ Reglas sin actor: valen igual con roles o sin ellos.
 - Recortar documentación, comentarios o tests para caber en las 400
   líneas: se parte el cambio, no se adelgaza el diff.
 - Que un agente ejecute el merge con la CI en rojo, saltándose el camino
-  gobernado o con una cuenta que no administra el repositorio.
+  gobernado o con una cuenta sin permiso de escritura en el repositorio.
 
 ## Qué cargar junto a esto
 

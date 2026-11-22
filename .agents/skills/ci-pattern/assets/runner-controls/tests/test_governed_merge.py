@@ -22,6 +22,10 @@ from test_push_compliance import CHECK, REPO, SHA
 
 ASSET = Path(__file__).resolve().parent.parent / "check_governed_merge.py"
 
+# #1792: otra cabeza valida de 40 hex, para comprobar que `--esperada` no
+# fusiona una cabeza distinta de la verificada.
+OTHER_SHA = "9f8e7d6c5b4a39281706f5e4d3c2b1a09876543f"
+
 # #1265: shas de arbol de 40 hex, la forma que acepta el lector compartido.
 TREE_MATCH = "1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d"
 TREE_DRIFT = "5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f7081"
@@ -57,7 +61,7 @@ def base_state() -> dict:
             # defecto sus arboles coinciden, que es el caso sano.
             "commits": {MERGED_SHA: commit_obj(MERGED_SHA, TREE_MATCH),
                         SHA: commit_obj(SHA, TREE_MATCH)},
-            "created_issues": [], "calls": [], "merges": []}
+            "created_issues": [], "calls": [], "merges": [], "merge_bodies": []}
 
 
 def run_gate(root: Path, contract_data: dict, state: dict, *extra: str,
@@ -89,6 +93,16 @@ class GovernedMergeTests(unittest.TestCase):
     def assert_merged(self, proc: subprocess.CompletedProcess, expected: bool) -> None:
         state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
         self.assertEqual(bool(state["merges"]), expected, proc.stdout + proc.stderr)
+
+    def merge_bodies(self) -> list:
+        """Los cuerpos de los PUT de merge que el gate envio (#1792)."""
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        return state.get("merge_bodies", [])
+
+    def calls(self) -> list:
+        """Las peticiones que el gate hizo al stub, como ``METODO ruta``."""
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        return state.get("calls", [])
 
     def test_green_pr_is_merged_via_api(self) -> None:
         proc = run_gate(self.root, contract(), base_state())
@@ -137,6 +151,90 @@ class GovernedMergeTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
         self.assert_merged(proc, False)
         self.assertIn("Closes", proc.stdout + proc.stderr)
+        # #1758: el hallazgo dice en que linea esta la palabra de cierre.
+        self.assertIn("body line 2", proc.stdout + proc.stderr)
+
+    def test_closes_in_an_intermediate_commit_blocks_naming_the_sha_and_the_line(self) -> None:
+        # #1758: un commit con la palabra de cierre en un eslabon cierra la issue al
+        # fusionar (APAP #4201: obligo a rehacer #4231). El hallazgo nombra el SHA y la linea.
+        state = base_state()
+        state["compares"] = {f"main...{SHA}": {"total_commits": 1, "behind_by": 0, "files": [], "commits": [
+            {"sha": "a" * 40, "commit": {"message": "fix(ci-pattern): nombra la linea\n\n"
+                                                       "Closes #4201"}}]}}
+        proc = run_gate(self.root, contract(), state)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assert_merged(proc, False)
+        self.assertIn("a" * 12, proc.stdout + proc.stderr)
+        self.assertIn("Closes #4201", proc.stdout + proc.stderr)
+
+    def test_the_chain_tip_may_carry_closes_in_the_body_and_in_a_commit(self) -> None:
+        # #1758: la punta de la cadena es la que cierra; sin `chain:partial` la
+        # palabra de cierre es legitima en el cuerpo y en los commits.
+        state = base_state()
+        state["pr_details"]["7"]["labels"] = [{"name": "type:bug"}]
+        state["pr_details"]["7"]["body"] = "Closes #303"
+        state["compares"] = {f"main...{SHA}": {"total_commits": 1, "behind_by": 0, "files": [], "commits": [
+            {"sha": "b" * 40, "commit": {"message": "fix(x): nombra la linea (Closes #303)"}}]}}
+        proc = run_gate(self.root, contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assert_merged(proc, True)
+
+    def test_prose_with_a_number_in_a_link_commit_is_not_a_closing_word(self) -> None:
+        # #1758: sin `#` GitHub no cierra nada, y una prosa como «fixes 2 flaky
+        # tests» no es un cierre: el gate no puede bloquear un eslabon por eso.
+        state = base_state()
+        state["compares"] = {f"main...{SHA}": {"total_commits": 1, "behind_by": 0, "files": [], "commits": [
+            {"sha": "d" * 40, "commit": {"message": "test: fixes 2 flaky tests"}}]}}
+        proc = run_gate(self.root, contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assert_merged(proc, True)
+
+    def test_a_link_commit_names_every_offending_line(self) -> None:
+        # #1758: el hallazgo nombra cada linea que rompe la regla, no solo la primera.
+        state = base_state()
+        state["compares"] = {f"main...{SHA}": {"total_commits": 1, "behind_by": 0, "files": [], "commits": [
+            {"sha": "e" * 40, "commit": {
+                "message": "feat: a\n\nbody\nFixes #9\nRESOLVES #10"}}]}}
+        proc = run_gate(self.root, contract(), state)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("line 4 of the message: «Fixes #9»", proc.stdout)
+        self.assertIn("line 5 of the message: «RESOLVES #10»", proc.stdout)
+
+    def test_a_closing_word_split_in_two_body_lines_still_blocks(self) -> None:
+        # #1758: GitHub lee el cuerpo entero, asi que la palabra y su referencia
+        # pueden quedar en lineas distintas; el gate tampoco las separa.
+        state = base_state()
+        state["pr_details"]["7"]["body"] = "Refs #12\nCloses\n#5"
+        proc = run_gate(self.root, contract(), state)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assert_merged(proc, False)
+        self.assertIn("body line 2", proc.stdout + proc.stderr)
+
+    def test_a_malformed_commits_listing_fails_closed(self) -> None:
+        # #1758: sin los mensajes de los commits no se puede juzgar la regla de
+        # la cadena: el gate falla cerrado, no deja pasar el eslabon en silencio.
+        state = base_state()
+        state["compares"] = {f"main...{SHA}": {"total_commits": 1, "behind_by": 0, "files": [],
+                                             "commits": {"oops": 1}}}
+        proc = run_gate(self.root, contract(), state)
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assert_merged(proc, False)
+        self.assertIn("has no valid 'commits'", proc.stderr)
+
+    def test_every_github_closing_word_in_a_link_commit_blocks(self) -> None:
+        # #1758: GitHub cierra con las nueve palabras (close, closes, closed, fix,
+        # fixes, fixed, resolve, resolves, resolved); un eslabon no puede llevar
+        # ninguna, y «fix #N» en un commit es la forma mas habitual.
+        for word in ("close", "closes", "closed", "fix", "fixes", "fixed",
+                     "resolve", "resolves", "resolved"):
+            state = base_state()
+            state["compares"] = {f"main...{SHA}": {"total_commits": 1, "behind_by": 0,
+                                                   "files": [], "commits": [
+                {"sha": "f" * 40, "commit": {"message": f"chore: x ({word} #9)"}}]}}
+            proc = run_gate(self.root, contract(), state)
+            self.assertEqual(proc.returncode, 1, f"{word}: " + proc.stdout + proc.stderr)
+            self.assert_merged(proc, False)
+            self.assertIn(f"{word} #9", proc.stdout)
 
     def test_concurrent_push_between_check_and_merge_fails_closed(self) -> None:
         # TOCTOU: el head verificado cambia antes del PUT; el sha empujado
@@ -146,6 +244,59 @@ class GovernedMergeTests(unittest.TestCase):
         proc = run_gate(self.root, contract(), state)
         self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
         self.assert_merged(proc, False)
+
+    # #1792: `--esperada` fija la cabeza que el operador verifico antes de
+    # lanzar el merge. Sin la opcion, nada cambia.
+
+    def test_without_esperada_the_merge_carries_the_head_sha(self) -> None:
+        # Sin `--esperada` el PUT lleva el head del PR, como siempre.
+        state = base_state()
+        proc = run_gate(self.root, contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assert_merged(proc, True)
+        bodies = self.merge_bodies()
+        self.assertEqual(len(bodies), 1, proc.stdout + proc.stderr)
+        self.assertEqual(bodies[0].get("sha"), SHA)
+
+    def test_esperada_matching_the_head_merges_that_sha(self) -> None:
+        state = base_state()
+        proc = run_gate(self.root, contract(), state, "--esperada", SHA)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assert_merged(proc, True)
+        bodies = self.merge_bodies()
+        self.assertEqual(len(bodies), 1, proc.stdout + proc.stderr)
+        self.assertEqual(bodies[0].get("sha"), SHA)
+
+    def test_esperada_different_from_the_head_fails_closed_before_any_call(self) -> None:
+        # La cabeza esperada no es la del PR: exit 2 sin evaluar la politica,
+        # sin leer la base y sin PUT. Solo se ha leido el PR.
+        state = base_state()
+        proc = run_gate(self.root, contract(), state, "--esperada", OTHER_SHA)
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assert_merged(proc, False)
+        self.assertEqual(self.merge_bodies(), [])
+        calls = self.calls()
+        self.assertEqual([c for c in calls if "/check-runs" in c], [])
+        self.assertEqual([c for c in calls if "/compare/" in c], [])
+        self.assertEqual([c for c in calls if c.endswith("/merge")], [])
+        # La opcion se acepto y el gate llego a leer el PR: la diferencia la
+        # vio el gate, no el parser de la CLI. Y solo se leyo el PR.
+        self.assertEqual(calls, [f"GET repos/{REPO}/pulls/7"], proc.stdout + proc.stderr)
+        self.assertIn(OTHER_SHA, proc.stdout + proc.stderr)
+
+    def test_esperada_with_a_malformed_sha_fails_closed_without_any_call(self) -> None:
+        # Formato invalido: exit 2 antes de cualquier llamada de red.
+        for bad in ("abc", "z" * 40, SHA + "0", "", "0" * 39, "0" * 41):
+            with self.subTest(valor=bad):
+                state = base_state()
+                proc = run_gate(self.root, contract(), state, "--esperada", bad)
+                self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+                self.assert_merged(proc, False)
+                self.assertEqual(self.merge_bodies(), [])
+                self.assertEqual(self.calls(), [])
+                # El motivo es el formato, no una opcion desconocida: el
+                # mensaje dice que se espera un sha de 40 hex.
+                self.assertIn("40", proc.stdout + proc.stderr)
 
     def test_draft_pr_blocks_the_merge(self) -> None:
         state = base_state()
@@ -174,10 +325,11 @@ class GovernedMergeTests(unittest.TestCase):
         """PR que cambia ci.yml y una base que cambió `base_changes` desde la bifurcacion."""
         state = base_state()
         state["compares"] = {
-            f"main...{SHA}": {"behind_by": len(base_changes),
+            f"main...{SHA}": {"behind_by": len(base_changes), "total_commits": 0, "commits": [],
                               "files": [{"filename": ".github/workflows/ci.yml"},
                                         {"filename": "README.md"}]},
-            f"{SHA}...main": {"files": [{"filename": name} for name in base_changes]}}
+            f"{SHA}...main": {"total_commits": 0, "commits": [],
+                              "files": [{"filename": name} for name in base_changes]}}
         return state
 
     def test_workflow_overlap_with_the_base_is_blocked_before_the_merge(self) -> None:
@@ -215,7 +367,10 @@ class GovernedMergeTests(unittest.TestCase):
         proc = run_gate(self.root, contract(), base_state())
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
         state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
-        self.assertEqual(sum("/compare/" in call for call in state["calls"]), 1)
+        # El solape de workflows se consulta con el compare `{head}...{base}`: si
+        # el PR no toca `ci.yml`, esa consulta no se hace (#1758: el compare de la
+        # regla de la cadena es otro y no cuenta aqui).
+        self.assertFalse(any(f"/compare/{SHA}...main" in call for call in state["calls"]))
 
     def test_malformed_compare_fails_closed(self) -> None:
         state = self.workflow_state([])

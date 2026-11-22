@@ -122,6 +122,38 @@ def validate_backup_publisher(pin: object) -> None:
            f"todo?: string}} with no other keys; {problem}")
     raise ContractError(msg)
 
+ADVISORY_CHECKS_ERROR = ("advisory_checks must be a list of non-empty glob patterns "
+                         "(the check names that do not block the merge, #1762)")
+
+
+class AdvisoryContractShapeError(ContractError):
+    """La declaracion `advisory_checks` no es una lista de globs no vacios (#1762)."""
+
+    def __init__(self) -> None:
+        super().__init__(ADVISORY_CHECKS_ERROR)
+
+
+def validate_coordinator(data: dict) -> None:
+    """`coordinator`: un login no vacio si esta declarado (HR-89)."""
+    coordinator = data.get("coordinator", "-")
+    if not isinstance(coordinator, str) or not coordinator.strip():
+        msg = "coordinator must be a non-empty GitHub login (owner of the ci-red issue, HR-89)"
+        raise ContractError(msg)
+
+
+def validate_advisory_checks(data: dict) -> None:
+    """`advisory_checks`: los nombres de check que no bloquean, como globs (#1762).
+
+    Sin la clave, nada que declarar. Con la clave, una lista de globs no vacios:
+    una forma invalida falla cerrado (exit 2, HR-3), no se ignora en silencio.
+    """
+    if "advisory_checks" not in data:
+        return
+    advisory = data["advisory_checks"]
+    if not isinstance(advisory, list) or not all(isinstance(p, str) and p.strip() for p in advisory):
+        raise AdvisoryContractShapeError()
+
+
 def validate_contract(data: object) -> dict:
     """Validate the declared contract; every structural doubt raises (exit 2)."""
     if not isinstance(data, dict) or data.get("contract_version") != 1:
@@ -133,10 +165,8 @@ def validate_contract(data: object) -> dict:
         raise ContractError("protected_branches must be a non-empty list of branch names")
     if set(data) - known:
         raise ContractError(f"contract has unknown keys: {sorted(set(data) - known)}")
-    coordinator = data.get("coordinator", "-")
-    if not isinstance(coordinator, str) or not coordinator.strip():
-        msg = "coordinator must be a non-empty GitHub login (owner of the ci-red issue, HR-89)"
-        raise ContractError(msg)
+    validate_advisory_checks(data)
+    validate_coordinator(data)
     caps = data.get("host_capabilities", {})
     if not isinstance(caps, dict) or set(caps) - set(CAPABILITIES):
         raise ContractError(

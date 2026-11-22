@@ -22,6 +22,11 @@ Regla, la misma en todo repo (decisión fijada en #1627):
   la etiqueta `prerelease:main-red` (`main_red_label`), un PR pasa solo si enlaza una de
   esas issues del MISMO repositorio. Sin issue abierta, la señal pasa. Ambas señales se
   evalúan; cualquiera puede bloquear. Se activa por defecto: no necesita ningún flag.
+- El consumer puede apagar cada señal por separado desde su `host-contract.json` (#1784):
+  la clave `stop_the_line` con un miembro booleano por señal (`night_red_enabled`,
+  `main_red_enabled`). Una señal apagada no se consulta (no se lee su etiqueta) ni bloquea;
+  el merge gobernado lo dice por `stderr`. Sin la clave, o sin un miembro, la señal sigue
+  activa: el comportamiento de hoy.
 
 Solo lee: no escribe nada en GitHub.
 """
@@ -58,6 +63,8 @@ class Target:
     label: str = NIGHT_RED_LABEL
     dispatch_marker: str | None = None
     main_red_label: str = MAIN_RED_LABEL
+    night_red_enabled: bool = True
+    main_red_enabled: bool = True
 
 
 class GitHubReader:
@@ -273,9 +280,15 @@ def evaluate(target: Target, reader, linked_refs: Callable[[], list[tuple[str, i
     Dos señales, ambas evaluadas (#1627, #1708): la nocturna y la de main en rojo.
     `linked_refs` devuelve pares (repositorio, número) de las issues que el PR enlaza; se
     llama solo cuando alguna señal está en rojo.
+
+    Una señal apagada por el consumer (#1784) no se consulta ni bloquea: su etiqueta no se
+    lee. La rama apagada se salta entera, con la lectura que solo ella necesitaba.
     """
-    branch = _default_branch(reader, target)
-    profile = profile_enabled(reader, target, branch)
-    findings = _night_findings(target, reader, branch, profile, linked_refs)
-    findings += _main_red_findings(target, reader, linked_refs)
+    findings: list[str] = []
+    if target.night_red_enabled:
+        branch = _default_branch(reader, target)
+        profile = profile_enabled(reader, target, branch)
+        findings += _night_findings(target, reader, branch, profile, linked_refs)
+    if target.main_red_enabled:
+        findings += _main_red_findings(target, reader, linked_refs)
     return findings

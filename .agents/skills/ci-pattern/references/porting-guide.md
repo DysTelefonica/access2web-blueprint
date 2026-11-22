@@ -1000,7 +1000,8 @@ gate de deriva sobre el árbol real del consumer.
 ## Fase 6 — Primer PR real como test de aceptación
 
 - **G6.1 — El primer PR real recorre el ciclo completo.** Issue canónica,
-  worktree dedicado, preflight completo, PR con etiquetas en el comando de
+  worktree dedicado, preflight completo, PR con el tipo en el título
+  convencional (HR-93) y las etiquetas que lo aplican en el comando de
   creación, CI verde, merge. La adopción no se declara terminada antes de ese
   PR; ningún ensayo con PRs de prueba lo sustituye.
 - **G6.2 — El patrón completo viaja en la skill antes de la adopción.** Todo

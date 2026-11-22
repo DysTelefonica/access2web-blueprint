@@ -1,0 +1,3 @@
+type: minor
+
+La disposición `equivalent` del inventario de adopción (#1747) permite declarar que un gate del consumer sustituye a un asset canónico, con motivo, en lugar de duplicar el gate. Cada entrada exige `target` (gate del consumer, debe existir), `canonical` (ruta relativa al repo del asset que sustituye), `reason` (no vacío), `reference` (issue `#N`/`owner/repo#N` o `fichero:línea` existente con línea dentro del fichero) y `actor` o `issue` (identidad HR-33). Cada campo que falla produce un hallazgo que nombra el artefacto y el motivo: validación fail-closed en la fase 0. El listado que informa `equivalent` como cubierto y no como `unwired` queda para el eslabón 2/2, tras #1744.

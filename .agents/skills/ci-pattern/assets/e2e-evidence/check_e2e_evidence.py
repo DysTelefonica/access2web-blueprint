@@ -28,10 +28,14 @@ Parametros del consumer:
   es case-insensitive y tilde-tolerant: ``Exencion e2e`` y
   ``Exención e2e`` casan como equivalentes (Refs #528, discrepancia 3
   del inventario).
+- ``--advise`` (#1786): UI sin e2e y sin exencion avisa por stderr y sale 0
+  en vez de 1, como ``advise`` en las comprobaciones de pr-contract. Sin la
+  bandera la regla bloquea. Las entradas invalidas siguen saliendo 2.
 
 Exit codes:
 
-- 0: limpio (sin UI, o UI con e2e, o UI con exencion justificada).
+- 0: limpio (sin UI, o UI con e2e, o UI con exencion justificada), o UI sin
+  e2e con ``--advise`` (el aviso va por stderr).
 - 1: hallazgos (UI sin e2e y sin exencion).
 - 2: entrada invalida (PR body ausente, globs malformados, git falla).
 """
@@ -218,6 +222,20 @@ def _pin_output_encoding() -> None:
         sys.stderr.reconfigure(encoding="utf-8")
 
 
+def _missing_e2e(ui_count: int, args: argparse.Namespace) -> int:
+    """UI sin flujo e2e ni exención: rojo (1); con `--advise` (#1786), aviso por stderr y 0."""
+    detail = (
+        f"{ui_count} paths de UI cambiados, sin flujo e2e "
+        f"anadido en {args.e2e_dir} y sin seccion de exencion "
+        f"'{args.exemption_section}' en el cuerpo de la PR"
+    )
+    if args.advise:
+        print(f"AVISO (advise, no bloquea): {detail}", file=sys.stderr)
+        return 0
+    print(f"FAIL: {detail}", file=sys.stderr)
+    return 1
+
+
 def main(argv: list[str]) -> int:
     _pin_output_encoding()
     parser = argparse.ArgumentParser(
@@ -240,6 +258,8 @@ def main(argv: list[str]) -> int:
                         help="Path al fichero con el cuerpo de la PR "
                              "(para verificar la seccion de exencion)")
     parser.add_argument("--exemption-section", default="## Exención e2e")
+    parser.add_argument("--advise", action="store_true",
+                        help="Avisa por stderr en vez de bloquear: sale 0 con UI sin e2e (#1786).")
     args = parser.parse_args(argv)
 
     repo = Path(args.repo).resolve()
@@ -299,13 +319,7 @@ def main(argv: list[str]) -> int:
                 f"con seccion de exencion '{args.exemption_section}'"
             )
             return 0
-    print(
-        f"FAIL: {len(ui_changes)} paths de UI cambiados, sin flujo e2e "
-        f"anadido en {args.e2e_dir} y sin seccion de exencion "
-        f"'{args.exemption_section}' en el cuerpo de la PR",
-        file=sys.stderr,
-    )
-    return 1
+    return _missing_e2e(len(ui_changes), args)
 
 
 if __name__ == "__main__":

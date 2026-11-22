@@ -45,8 +45,9 @@ class TestRequiredFromThePullRequestRun(unittest.TestCase):
         self.addCleanup(tmp.cleanup)
         self.root = Path(tmp.name)
 
-    def gate(self, state):
-        (self.root / "contract.json").write_text(json.dumps(contract()), encoding="utf-8")
+    def gate(self, state, declared=None):
+        contract_data = contract() if declared is None else declared
+        (self.root / "contract.json").write_text(json.dumps(contract_data), encoding="utf-8")
         with suites_github_stub(self.root / "state.json", state) as base:
             from _github_stub import stub_env
             env = stub_env(base)
@@ -126,6 +127,41 @@ class TestRequiredFromThePullRequestRun(unittest.TestCase):
         proc = self.gate(state)
         self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
         self.assertEqual(self.merges(), [])
+
+    def run_(self, name, conclusion):
+        return {"id": abs(hash(name)) % 999 + 1, "name": name, "status": "completed",
+                "conclusion": conclusion, "check_suite": {"id": PR_SUITE}}
+
+    def advisory_state(self, runs):
+        state = self.state(runs, [workflow_run(50, "pull_request", PR_SUITE)])
+        return state
+
+    def test_un_requerido_nunca_queda_tapado_por_un_patron(self):
+        # #1762: el patron casa con el nombre del check, pero el check es requerido.
+        declared = contract()
+        declared["advisory_checks"] = ["*"]
+        proc = self.gate(self.advisory_state([self.run_(CHECK, "failure")]), declared)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(self.merges(), [])
+
+    def test_un_espejo_advisory_no_bloquea_el_merge(self):
+        # #1762: un espejo con startup_failure no bloquea el merge gobernado.
+        declared = contract()
+        declared["advisory_checks"] = ["*-gh"]
+        state = self.advisory_state([self.run_(CHECK, "success"),
+                                      self.run_("docs-gh", "startup_failure")])
+        proc = self.gate(state, declared)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(len(self.merges()), 1)
+
+    def test_una_declaracion_invalida_falla_cerrado(self):
+        for value in ("*-gh", [3], [""], None):
+            with self.subTest(advisory_checks=value):
+                declared = contract()
+                declared["advisory_checks"] = value
+                proc = self.gate(self.advisory_state([self.run_(CHECK, "success")]), declared)
+                self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+                self.assertEqual(self.merges(), [])
 
 
 if __name__ == "__main__":

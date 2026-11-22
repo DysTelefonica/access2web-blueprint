@@ -25,11 +25,28 @@ import argparse
 import sys
 import time
 from datetime import UTC, datetime
+from pathlib import Path
+from typing import NamedTuple
 
-from check_push_compliance import FailClosedError, fail, fetch_check_runs, gh_json
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from advisory_checks import (  # noqa: E402
+    CONTRACT_PATH,
+    AdvisoryContractError,
+    read_contract,
+    split_runs,
+)
+from check_push_compliance import FailClosedError, fail, fetch_check_runs, gh_json  # noqa: E402
 
 PASSING = {"success", "skipped", "neutral"}
 ACTIONS_APP = "github-actions"
+
+
+class WaitPolicy(NamedTuple):
+    """Como se espera: la ventana de aparicion y los checks que no bloquean (#1762)."""
+
+    appear_seconds: float
+    advisory: tuple[str, ...]
+    protected: frozenset[str]
 
 
 def _age_seconds(stamp: object, now: datetime) -> float | None:
@@ -69,30 +86,49 @@ def head_sha(repo: str, pr: int) -> str:
     return sha
 
 
-def snapshot(repo: str, pr: int, sha: str, checks: list[str], appear_seconds: float) -> tuple[str, str]:
-    """(estado, detalle): estado es waiting, green o red."""
+def snapshot(repo: str, pr: int, sha: str, checks: list[str], policy: WaitPolicy) -> tuple[str, str]:
+    """(estado, detalle): estado es waiting, green o red.
+
+    #1762: los checks advisory no cuentan para el veredicto; un check requerido
+    (por `--check` o por el contrato) nunca queda tapado por un patron."""
     runs = [run for run in fetch_check_runs(repo, pr, sha) if isinstance(run, dict)]
-    if not runs:
-        return "waiting", f"no check runs yet for {sha[:12]}"
     by_name = {run.get("name"): run for run in runs}
     absent = [name for name in checks if name not in by_name]
-    if absent:
+    blocking, ignored = split_runs(runs, policy.advisory, required=policy.protected)
+    if absent and runs:
         return "waiting", "required check(s) not reported yet: " + ", ".join(absent)
-    pending = sorted(str(run.get("name")) for run in runs if run.get("status") != "completed")
+    if not blocking:
+        # No hay checks, o solo hay advisory: no hay nada que juzgar todavia, no es verde.
+        detalle = "no check runs yet" if not runs else "no blocking check run yet"
+        return "waiting", f"{detalle} for {sha[:12]}"
+    pending = sorted(str(run.get("name")) for run in blocking if run.get("status") != "completed")
     if pending:
         return "waiting", f"{len(pending)} check run(s) pending: " + ", ".join(pending)
-    starting = starting_suites(repo, sha, appear_seconds)
+    starting = starting_suites(repo, sha, policy.appear_seconds)
     if starting:
         return "waiting", f"{starting} GitHub Actions check suite(s) still starting for {sha[:12]}"
-    failed = sorted(f"{run.get('name')} ({run.get('conclusion')})" for run in runs
+    failed = sorted(f"{run.get('name')} ({run.get('conclusion')})" for run in blocking
                     if run.get("conclusion") not in PASSING)
     if failed:
         return "red", ", ".join(failed)
-    return "green", f"{len(runs)} check run(s) of {sha[:12]} passed"
+    detail = f"{len(blocking)} check run(s) of {sha[:12]} passed"
+    if ignored:
+        detail += "; advisory check(s) ignored: " + ", ".join(
+            sorted(str(run.get("name")) for run in ignored))
+    return "green", detail
 
 
 def wait(args: argparse.Namespace) -> int:
     start = time.monotonic()
+    try:
+        declared = read_contract(args.contract)
+    except AdvisoryContractError as exc:
+        raise FailClosedError(str(exc)) from exc
+    # Un check requerido nunca queda tapado por un patron advisory: lo es el que
+    # nombra la linea de comandos o el que declara el contrato del consumer. Los
+    # del contrato protegen del patron, pero no se esperan: los espera el guard
+    # que mergea, no este.
+    protected = frozenset(args.check) | frozenset(declared.required)
     sha = head_sha(args.repo, args.pr)
     last = ""
     seen_runs = False
@@ -102,7 +138,8 @@ def wait(args: argparse.Namespace) -> int:
             print(f"NOTE: the head of PR #{args.pr} moved from {sha[:12]} to {current[:12]}; "
                   "waiting on the new head")
             sha, seen_runs, last = current, False, ""
-        state, detail = snapshot(args.repo, args.pr, sha, args.check, args.appear_seconds)
+        state, detail = snapshot(args.repo, args.pr, sha, args.check,
+                       WaitPolicy(args.appear_seconds, declared.patterns, protected))
         if state == "green":
             print(f"GREEN: {detail}")
             return 0
@@ -134,6 +171,9 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--appear-seconds", type=float, default=600.0,
                         help="how long the first check runs may take to appear")
     parser.add_argument("--timeout-seconds", type=float, default=3600.0)
+    parser.add_argument("--contract", default=CONTRACT_PATH,
+                        help="host-contract del consumer, donde se declaran los checks advisory "
+                             f"(por defecto {CONTRACT_PATH}; si no existe, no hay advisory)")
     args = parser.parse_args(argv)
     if args.pr <= 0 or min(args.poll_seconds, args.appear_seconds, args.timeout_seconds) < 0:
         parser.error("--pr must be positive and the seconds must not be negative")

@@ -24,7 +24,12 @@ class _LabelledHandler(_Handler):
         by_label = self.server.state.get("issues_by_label")
         if self.command == "GET" and by_label is not None and url.path.endswith("/issues") \
                 and "labels" in query:
-            payload = json.dumps(by_label.get(query["labels"][0], [])).encode("utf-8")
+            # #1784: la etiqueta consultada queda registrada en `label_queries`, para que
+            # el test pueda afirmar que una señal apagada NO consulta su etiqueta.
+            label = query["labels"][0]
+            self.server.state.setdefault("label_queries", []).append(label)
+            _atomic_write_json(Path(self.server.state_path), self.server.state)
+            payload = json.dumps(by_label.get(label, [])).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(payload)))

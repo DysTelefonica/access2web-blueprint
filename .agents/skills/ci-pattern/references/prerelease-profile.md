@@ -33,7 +33,9 @@ de detalle; no la copie a otros sitios.
    sobre el mismo SHA.
 3. **Noche en rojo.** Sin deploy. Una issue de máxima prioridad por cada job en rojo,
    por delante de cualquier trabajo nuevo. La canalización nocturna se vuelve a lanzar
-   a mano el mismo día, en cuanto esté en verde. Objetivo: al menos un deploy exitoso
+   a mano el mismo día, en cuanto esté en verde. Dos variantes de la regla dura que sigue
+   (abajo): la del dueño por defecto, que aparca issues y congela merges, y la variante
+   `priority-issue` de APAP_WEB (#1785), que no aparca ni congela. Objetivo: al menos un deploy exitoso
    al día.
 4. **Migraciones y DDL.** El deploy espera siempre a una copia de seguridad verificada.
    La canalización nocturna nunca aplica sola una migración pendiente.
@@ -59,9 +61,47 @@ Reglas adicionales del dueño:
 
 ## Regla dura del dueño
 
-Mientras la canalización nocturna esté en rojo, no se trabaja ni se fusiona ninguna
-issue salvo las que arreglan ese rojo. La línea se para hasta que la ejecución nocturna
-salga en verde y se despliegue. Rige ya desde ahora; además, el merge gobernado la hará cumplir de forma automática.
+La regla tiene dos variantes, elegidas por consumer con la clave `nightly_red_policy` de
+`fleet/registry.json` (#1785). El texto propagado del partial web las lleva entre marcas
+`nightly-red`; sin la clave, la propagación deja el texto de hoy, byte a byte.
+
+- **Por defecto (sin clave).** Mientras la canalización nocturna esté en rojo, no se trabaja
+  ni se fusiona ninguna issue salvo las que arreglan ese rojo. La línea se para hasta que la
+  ejecución nocturna salga en verde y se despliegue. Rige ya desde ahora; además, el merge
+  gobernado la hará cumplir de forma automática.
+- **`priority-issue` (APAP_WEB, decisión de su dueño, 2026-11-21).** La noche verde es la única
+  puerta del deploy; una noche roja deja una issue prioritaria y un relanzamiento el mismo día.
+  Sin aparcar issues ni congelar merges.
+
+La parada de línea automática que da la alarma por noche roja, con su interruptor, se describe
+en #1784 (en curso, sin fusionar); esta regla no depende de ese interruptor para su texto.
+
+### Excepción declarada por el consumer (#1784)
+
+Un consumer puede apagar cada señal de la parada de línea por separado desde su
+`.github/host-contract.json`, con la clave opcional `stop_the_line`:
+
+```json
+"stop_the_line": {
+  "night_red_enabled": false,
+  "main_red_enabled": true
+}
+```
+
+- `night_red_enabled` gobierna la señal de `prerelease:night-red` (#1627) y
+  `main_red_enabled` la de `prerelease:main-red` (#1708).
+- Sin la clave, o sin un miembro, la señal sigue activa: el comportamiento de hoy.
+  Ningún consumer cambia de comportamiento sin declarar la clave.
+- Una señal apagada no se consulta (el merge gobernado no lee su etiqueta) ni bloquea
+  el merge, y el merge lo dice en una línea por `stderr`.
+- Una forma que no sea un objeto con esos miembros hace fallar cerrado el merge
+  (sale con 2): una declaración rota que se ignorase dejaría la puerta en verde
+  sin ella. La valida el merge gobernado
+  (`assets/runner-controls/check_governed_merge.py`), no el readback del host.
+
+Es la vía que usa `ardelperal/APAP_WEB`: la noche verde es su única puerta de
+deploy, así que una noche roja deja una issue prioritaria y un relanzamiento el mismo
+día, sin congelar los merges.
 
 ## Relajaciones de cadena y re-ejecución
 

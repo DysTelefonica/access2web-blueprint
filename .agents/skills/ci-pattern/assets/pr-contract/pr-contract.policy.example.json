@@ -24,6 +24,7 @@
     "commits": true,
     "ai_disclosure": true,
     "commit_identity": true,
-    "deleted_tests": true
+    "deleted_tests": true,
+    "pr_title": true
   }
 }

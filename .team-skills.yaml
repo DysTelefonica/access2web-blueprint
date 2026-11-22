@@ -1,4 +1,4 @@
-# Auto-generado por propagate-team-skills.ps1 (catalog @ 81baa481d9321c20c61df2411d58680e1527e481).
+# Auto-generado por propagate-team-skills.ps1 (catalog @ 6334711a31fd43d076efdb198166e606e16fd1f9).
 # La lista include_skills se regenera en cada corrida; los demas campos
 # se preservan del manifest previo para no pisar hand-edits del consumer.
 project_type: web

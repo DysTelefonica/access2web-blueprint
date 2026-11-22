@@ -1086,5 +1086,116 @@ class TestLocalBaseResolution(unittest.TestCase):
         self.assertIn("450 changed line(s)", result.stdout)
 
 
+# ---------------------------------------------------------------------------
+# #1753: la medida local cuenta como la API y dice el ruido de finales de linea
+# ---------------------------------------------------------------------------
+
+
+class TestEndOfLineOnlyChanges(unittest.TestCase):
+    """La cuenta local tiene que ser la de la API (y la de A1), y decirlo.
+
+    Sin esto, una conversion CRLF->LF media 308 lineas en local y 716 en CI:
+    el worker se enteraba del desvío por el rojo de CI, no por la herramienta
+    que mide (#1753).
+    """
+
+    def setUp(self) -> None:
+        import tempfile
+        self._tmp = tempfile.TemporaryDirectory()
+        self.tmp = Path(self._tmp.name)
+        self.repo = _make_repo(self.tmp)
+        # La conversion de EOL solo existe si git no normaliza al commitear.
+        _git("config", "core.autocrlf", "false", cwd=self.repo)
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    def _commit_bytes(self, files: dict[str, bytes], msg: str) -> None:
+        for rel, payload in files.items():
+            target = self.repo / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(payload)
+        _git("add", "-A", cwd=self.repo)
+        _git("commit", "-qm", msg, cwd=self.repo)
+
+    @staticmethod
+    def _crlf(lines: int) -> bytes:
+        return b"".join(f"line {index}\r\n".encode() for index in range(lines))
+
+    @staticmethod
+    def _lf(lines: int) -> bytes:
+        return b"".join(f"line {index}\n".encode() for index in range(lines))
+
+    def _run(self, *extra: str):
+        return subprocess.run(
+            [sys.executable, str(GATE), "--base-ref", "HEAD~1", *extra],
+            cwd=self.repo, capture_output=True, text=True, env=_clean_env(),
+        )
+
+    def test_eol_only_change_counts_like_the_api_and_says_it(self) -> None:
+        """Un cambio que solo es de EOL cuenta como la API y avisa."""
+        self._commit_bytes({"app/eol.py": self._crlf(3)}, "feat: crlf")
+        self._commit_bytes({"app/eol.py": self._lf(3)}, "chore:lf")
+        result = self._run()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        # La API ve 3 lineas borradas y 3 anadidas: 6, no 0.
+        self.assertIn("6 changed line(s)", result.stdout)
+        self.assertIn(
+            "6 lineas son solo finales de linea: revisa la conversion de EOL",
+            result.stdout,
+        )
+
+    def test_eol_only_change_is_reported_in_the_json_envelope(self) -> None:
+        """La cifra de EOL tambien viaja en el sobre JSON."""
+        import json
+        self._commit_bytes({"app/eol.py": self._crlf(3)}, "feat: crlf")
+        self._commit_bytes({"app/eol.py": self._lf(3)}, "chore: lf")
+        result = self._run("--json")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        envelope = json.loads(result.stdout)
+        self.assertEqual(envelope["indicators"]["changed_lines"], 6)
+        self.assertEqual(envelope["indicators"]["eol_only_lines"], 6)
+        self.assertEqual(
+            envelope["notice"],
+            "6 lineas son solo finales de linea: revisa la conversion de EOL",
+        )
+
+    def test_normal_change_does_not_say_anything_about_eol(self) -> None:
+        """Un cambio normal no inventa ruido de EOL."""
+        import json
+        self._commit_bytes({"app/plain.py": self._lf(3)}, "feat: base")
+        self._commit_bytes({"app/plain.py": self._lf(5)}, "feat: dos lineas mas")
+        result = self._run()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("2 changed line(s)", result.stdout)
+        self.assertNotIn("finales de linea", result.stdout)
+        envelope = json.loads(self._run("--json").stdout)
+        self.assertEqual(envelope["indicators"]["changed_lines"], 2)
+        self.assertEqual(envelope["indicators"]["eol_only_lines"], 0)
+        self.assertNotIn("notice", envelope)
+
+    def test_mix_of_eol_only_and_normal_change(self) -> None:
+        """En la mezcla, el aviso nombra solo las lineas que son de EOL."""
+        import json
+        self._commit_bytes(
+            {"app/eol.py": self._crlf(3), "app/plain.py": self._lf(3)},
+            "feat: base con crlf",
+        )
+        self._commit_bytes(
+            {"app/eol.py": self._lf(3), "app/plain.py": self._lf(5)},
+            "chore: lf y dos lineas mas",
+        )
+        result = self._run()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("8 changed line(s)", result.stdout)
+        self.assertIn(
+            "6 lineas son solo finales de linea: revisa la conversion de EOL",
+            result.stdout,
+        )
+        envelope = json.loads(self._run("--json").stdout)
+        self.assertEqual(envelope["indicators"]["changed_lines"], 8)
+        self.assertEqual(envelope["indicators"]["eol_only_lines"], 6)
+
+
 if __name__ == "__main__":
     unittest.main()

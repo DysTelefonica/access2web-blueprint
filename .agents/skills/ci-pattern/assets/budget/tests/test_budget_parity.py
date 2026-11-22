@@ -97,8 +97,9 @@ class ParityFixture(unittest.TestCase):
         self._tmp.cleanup()
 
     def numstat(self) -> str:
+        # Sin ``--ignore-cr-at-eol``: es el numstat que genera CI (#1753).
         return _git(self.repo, "diff", "--numstat", "--find-renames=50%",
-                    "--ignore-cr-at-eol", "main...HEAD")
+                    "main...HEAD")
 
     def origins_text(self) -> str:
         budget = _load_budget()
@@ -220,7 +221,7 @@ class TestOddTasksParity(unittest.TestCase):
 
     def test_pr_size_and_a1_count_the_same_figure(self) -> None:
         numstat = _git(self.repo, "diff", "--numstat", "--find-renames=50%",
-                       "--ignore-cr-at-eol", "main...HEAD")
+                       "main...HEAD")
         self.assertIn("odd/{notes => tasks}/r.md", numstat)
         figure = _load_budget().budget_lines(numstat)
         self.assertEqual(figure, 7 + 11 + 13 + 17 + 19)

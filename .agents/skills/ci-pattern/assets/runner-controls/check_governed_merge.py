@@ -6,7 +6,11 @@ El workflow que corre en el runner propio invoca este asset con el numero
 de PR; verifica el contrato antes de fusionar: los ``required_checks`` del
 contrato en verde sobre la cabeza del PR y ``Closes #N`` solo en el punta de
 cadena (un PR
-``chain:partial`` lo lleva en la violacion). Un check requerido que aun no
+``chain:partial`` lo lleva en la violacion). La violacion nombra la linea
+exacta del cuerpo y, en un commit, el SHA y la linea del mensaje que rompen la
+regla de la cadena (#1758): GitHub cierra la issue con una palabra de cierre del
+cuerpo O de un mensaje de commit, asi que un eslabon que la lleve la cierra al
+fusionar. Un check requerido que aun no
 existe o no ha terminado se espera hasta ``--wait-seconds`` (#787). El tamano
 no se repite aqui: lo mide ``pr-size`` (excluye lo vendorizado), y ``required``
 ya lo incluye; ``--max-lines`` se acepta e ignora por compatibilidad. Si algo falta no fusiona y
@@ -53,6 +57,11 @@ from pathlib import Path
 from typing import NamedTuple
 from urllib.parse import quote, urlencode
 
+from advisory_checks import (  # noqa: E402
+    AdvisoryContractError,
+    advisory_patterns,
+    split_runs,
+)
 from check_push_compliance import (
     SHA_RE,
     FailClosedError,
@@ -69,12 +78,20 @@ from github_rest import MAX_PAGES, GitHubApiError, call, call_con_reintento, get
 from stop_the_line import MAIN_RED_LABEL, NIGHT_RED_LABEL, GitHubReader, Target
 from stop_the_line import evaluate as stop_the_line_evaluate
 
-CLOSING = re.compile(r"\b(closes|fixes|resolves)\s+#?\d+", re.IGNORECASE)
+# Las nueve palabras de cierre de GitHub (close, closes, closed, fix, fixes,
+# fixed, resolve, resolves, resolved) seguidas de su referencia `#N`: sin la
+# referencia no hay cierre, y una prosa como «fixes 2 flaky tests» no lo es (#1758).
+CLOSING = re.compile(r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)", re.IGNORECASE)
+# La regla de la cadena en tres lineas (#1758): el eslabon lleva `Refs #N` en el
+# cuerpo y en los commits; la punta contra la rama por defecto lleva `Closes #N`.
+CHAIN_LABEL = "chain:partial"
 WORKFLOWS_DIR = ".github/workflows/"
 FORBIDDEN = 403
 RACE_CLOSED = 422  # PATCH devolvio 422 = carrera con el cierre auto por `Closes` (#835)
 WAITABLE = (": missing", ": pending")  # el CI aun no publico o no termino; un fallo no se espera
 DEFAULT_WAIT, DEFAULT_POLL = 300.0, 10.0
+# #1792: la cabeza esperada es un sha de 40 hex, como los que devuelve la API.
+EXPECTED_SHA_RX = re.compile(r"[0-9a-f]{40}")
 POST_DISPATCH_FAILED = 4  # merged, post-dispatch failed (no rollback, #817)
 # #1265: merged, the integrated tree is NOT the tree CI reviewed (no rollback).
 INTEGRATED_TREE_DRIFT = 5
@@ -88,6 +105,9 @@ VERDICT_BASE_MOVED = ("the integrated tree includes base commits the PR did not 
 # #1397: el CI corre una vez, en la PR; exigir la base al dia es opcion del consumer.
 FRESHNESS_KEY = "merge_freshness"
 FRESHNESS_OFF, FRESHNESS_REQUIRED = "off", "required"
+# #1784: el consumer apaga cada señal de la parada de línea desde su contrato.
+STOP_THE_LINE_KEY = "stop_the_line"
+STOP_THE_LINE_MEMBERS = ("night_red_enabled", "main_red_enabled")
 # #1440: workflows que verifican el arbol integrado; solo se despachan si la PR iba atrasada.
 DISPATCH_KEY, VERIFY_KEY = "post_merge_dispatch", "post_merge_verify"
 # #1279: como se dice que la medicion no se pudo hacer. Va al resumen del job
@@ -100,6 +120,13 @@ COMPARE_PAGE = 100
 WORKFLOWS_HINT = ("the token lacks the 'workflows' permission, which GITHUB_TOKEN cannot "
                   "have: GitHub refuses a merge that creates new workflow-file content; "
                   "update the PR branch onto its base or merge it as the maintainer")
+
+
+class StopTheLine(NamedTuple):
+    """Qué señales de la parada de línea aplica el gate (#1784)."""
+
+    night_red_enabled: bool = True
+    main_red_enabled: bool = True
 
 
 def gh_merge(repo: str, number: object, sha: str) -> str:
@@ -877,6 +904,50 @@ def merge_freshness(contract: dict) -> str:
     return value
 
 
+def stop_the_line_switch(contract: dict) -> StopTheLine:
+    """``stop_the_line`` del contrato: qué señales de la parada de línea se apagan (#1784).
+
+    La clave es opcional y sus miembros también: ausente la clave, o ausente un
+    miembro, deja la señal activa (el comportamiento de hoy). Cada miembro es un
+    booleano; una forma que no sea un objeto con esos miembros falla cerrado: una
+    declaración rota no se ignora en silencio (HR-3). La clave presente con valor
+    `null` es una forma rota, no una clave ausente: se distingue por presencia, no
+    por el valor.
+    """
+    if STOP_THE_LINE_KEY not in contract:
+        return StopTheLine()
+    value = contract[STOP_THE_LINE_KEY]
+    if not isinstance(value, dict):
+        fail(f"{STOP_THE_LINE_KEY} must be an object with the boolean members "
+             f"{list(STOP_THE_LINE_MEMBERS)}, got {value!r}")
+    unknown = sorted(set(value) - set(STOP_THE_LINE_MEMBERS))
+    if unknown:
+        fail(f"{STOP_THE_LINE_KEY} has unknown members {unknown}; "
+             f"expected {list(STOP_THE_LINE_MEMBERS)}")
+    flags = {}
+    for member in STOP_THE_LINE_MEMBERS:
+        flag = value.get(member, True)
+        if not isinstance(flag, bool):
+            fail(f"{STOP_THE_LINE_KEY}.{member} must be a boolean, got {flag!r}")
+        flags[member] = flag
+    return StopTheLine(night_red_enabled=flags["night_red_enabled"],
+                       main_red_enabled=flags["main_red_enabled"])
+
+
+def announce_stop_the_line(args: argparse.Namespace, switch: StopTheLine) -> None:
+    """Una línea por stderr por cada señal apagada (#1784).
+
+    El aviso dice qué se dejara de consultar, para que el operador sepa que el rojo
+    que ve en el repo no para el merge porque su consumer lo apago a proposito.
+    """
+    for label, enabled in ((args.label, switch.night_red_enabled),
+                            (getattr(args, "main_red_label", MAIN_RED_LABEL),
+                             switch.main_red_enabled)):
+        if not enabled:
+            print(f"stop-the-line: la señal «{label}» está apagada en el host-contract; "
+                  "no se consulta esa etiqueta ni bloquea el merge", file=sys.stderr)
+
+
 def freshness_reason(contract: dict, dispatch_names: list[str],
                      verify_names: list[str] | None = None) -> str | None:
     """Por que un PR atrasado no se fusiona, o None si el atraso se acepta (#1397).
@@ -1120,18 +1191,24 @@ def pull_request_check_runs(repo: str, sha: str, runs: list) -> list:
             if not isinstance(run, dict) or suite_id_of(run) is None or suite_id_of(run) in suites]
 
 
-def verdict_findings(args: argparse.Namespace, sha: str, required: list[str]) -> list[str]:
+def verdict_findings(args: argparse.Namespace, sha: str, required: list[str],
+                    advisory: tuple[str, ...] = ()) -> list[str]:
     """Veredicto de los checks requeridos, esperando (acotado) a los que aun no existen.
 
     Un merge lanzado antes de que el CI publique `required` no es un contrato
     incumplido, es una carrera (#787): se reintenta cada `--poll-seconds` hasta
     `--wait-seconds`. Un check en fallo, o cualquier otro hallazgo, no se espera.
-    """
+
+    #1762: los checks que el consumer declara advisory no cuentan para este juicio:
+    un espejo en rojo (o con `startup_failure`) no puede tapar un `required` que
+    falta, ni alargar la espera. Un check requerido nunca queda tapado por un
+    patron advisory."""
     deadline = time.monotonic() + args.wait_seconds
     while True:
         runs = pull_request_check_runs(args.repo, sha, fetch_check_runs(args.repo, args.pr, sha))
+        blocking, _ignored = split_runs(runs, advisory, required=required)
         findings = absent_from_completed_run(check_verdict(args.repo, args.pr, sha, required, runs),
-                                             runs, sha, args.repo, args.pr)
+                                             blocking, sha, args.repo, args.pr)
         waiting = [item for item in findings if item.endswith(WAITABLE)]
         if not waiting or len(waiting) != len(findings) or time.monotonic() >= deadline:
             return findings
@@ -1149,19 +1226,127 @@ def _linked_refs_or_fail(args: argparse.Namespace) -> list[tuple[str, int]]:
         raise FailClosedError(message) from exc
 
 
-def _stop_the_line_findings(args: argparse.Namespace) -> list[str]:
+def _stop_the_line_findings(args: argparse.Namespace, contract: dict) -> list[str]:
     """Gate de parada de línea (#1627): solo lee; el rojo nocturno exige una issue enlazada."""
+    switch = stop_the_line_switch(contract)
     # Un marcador vacío cuenta como ausente: "" está en cualquier título y dejaría contar todo dispatch (#1702).
     target = Target(repo=args.repo, pr=args.pr, nightly_workflow=args.nightly_workflow,
                     label=args.label, dispatch_marker=args.dispatch_marker or None,
-                    main_red_label=getattr(args, "main_red_label", MAIN_RED_LABEL))
+                    main_red_label=getattr(args, "main_red_label", MAIN_RED_LABEL),
+                    night_red_enabled=switch.night_red_enabled,
+                    main_red_enabled=switch.main_red_enabled)
     return stop_the_line_evaluate(target, GitHubReader(), lambda: _linked_refs_or_fail(args))
+
+
+def closing_matches(text: str) -> list[tuple[int, str]]:
+    """(linea, texto) de cada palabra de cierre con su issue (#1758).
+
+    La palabra y su referencia pueden quedar en lineas distintas (GitHub las
+    lee en el texto entero); la linea nombrada es la de la palabra. La
+    referencia lleva su `#`: sin ella GitHub no cierra nada, y una prosa como
+    «fixes 2 flaky tests» no es un cierre (#1758).
+    """
+    return [(text.count("\n", 0, match.start()) + 1, " ".join(match.group(0).split()))
+            for match in CLOSING.finditer(text)]
+
+
+def _commit_message(item: object) -> tuple[str, str] | None:
+    """(sha, mensaje) de un commit del compare, o None si no trae mensaje.
+
+    Del commit del compare el gate solo necesita el sha (lo usa
+    `commits_ahead`); lo que se juzga aqui es el mensaje. Un commit sin mensaje
+    legible no se juzga: no se bloquea un eslabon por un commit que no se puede
+    leer (#1758).
+    """
+    sha = item.get("sha") if isinstance(item, dict) else None
+    commit = item.get("commit") if isinstance(item, dict) else None
+    message = commit.get("message") if isinstance(commit, dict) else None
+    if not isinstance(sha, str) or not isinstance(message, str):
+        return None
+    return sha, message
+
+
+def _compare_page(repo: str, base: str, head: str, page: int) -> tuple[list, int | None]:
+    """Una pagina del compare: (commits, total_commits); el total es None si no viene."""
+    data = gh_json(f"repos/{repo}/compare/{base}...{head}?per_page={COMPARE_PAGE}&page={page}")
+    if not isinstance(data, dict):
+        fail(f"the compare {base}...{head} is not an object (fail closed)")
+    commits = data.get("commits")
+    if commits is None:
+        commits = []
+    elif not isinstance(commits, list):
+        fail(f"the compare {base}...{head} has no valid 'commits' (fail closed)")
+    count = data.get("total_commits")
+    if count is not None and (not isinstance(count, int) or isinstance(count, bool)):
+        fail(f"the compare {base}...{head} has no valid 'total_commits' (fail closed)")
+    return commits, count
+
+
+def pr_commits(repo: str, base: str, head: str) -> list[tuple[str, str]]:
+    """Los commits que la PR lleva por delante de `base`: (sha, mensaje).
+
+    Se leen del compare `base...head`, no del listado de commits de la PR: ese
+    listado trae tambien los commits que la rama recibio de la base (un `main`
+    fusionado en medio) y un eslabon no responde por los commits de `main`,
+    que pueden traer la palabra de cierre de otra punta de cadena (#1758).
+
+    El compare trae `commits` y `total_commits`: un payload sin la clave
+    `commits` no trae nada que juzgar, uno que la trae mal formada falla
+    cerrado (HR-3) y un commit sin mensaje legible no se juzga.
+    """
+    listed: list[tuple[str, str]] = []
+    seen = 0
+    total: int | None = None
+    known = 0
+    for page in range(1, MAX_PAGES + 1):
+        commits, count = _compare_page(repo, base, head, page)
+        for item in commits:
+            entry = _commit_message(item)
+            if entry is not None:
+                listed.append(entry)
+        seen += len(commits)
+        if count is not None:
+            total = count
+        if total is not None and seen >= total:
+            break
+        if len(commits) < COMPARE_PAGE or seen == known:
+            break
+        known = seen
+    if total is not None and seen < total:
+        fail(f"the compare {base}...{head} lists {seen} of {total} commits (fail closed)")
+    return listed
+
+
+def chain_closing_findings(args: argparse.Namespace, pull: dict) -> list[str]:
+    """Hallazgos de la regla de la cadena en un eslabon (#1758).
+
+    El eslabon (`chain:partial`) lleva `Refs #N` en el cuerpo y en los commits;
+    la punta contra la rama por defecto lleva `Closes #N`. El hallazgo nombra la
+    linea exacta y, en un commit, su SHA: sin eso el worker busca a ciegas
+    (APAP #4201: un commit con la palabra de cierre obligo a rehacer #4231).
+    """
+    findings = []
+    body = pull.get("body") if isinstance(pull.get("body"), str) else ""
+    for line, hit in closing_matches(body):
+        findings.append(f"Closes in an intermediate PR: only the chain tip may carry "
+                        f"closing words (body line {line}: «{hit}»)")
+    head = (pull.get("head") or {}).get("sha") if isinstance(pull.get("head"), dict) else None
+    base = default_branch(args.repo, pull) or str((pull.get("base") or {}).get("ref") or "")
+    if not isinstance(head, str) or not head or not base:
+        fail(f"PR #{args.pr} has no readable head or base to judge the chain rule "
+             "(fail closed)")
+    for sha, message in pr_commits(args.repo, base, head):
+        subject = message.splitlines()[0].strip() if message.strip() else ""
+        for line, hit in closing_matches(message):
+            findings.append(f"Closes in an intermediate PR: only the chain tip may carry "
+                            f"closing words (commit {sha[:12]}, line {line} of the "
+                            f"message: «{hit}»; subject: {subject})")
+    return findings
 
 
 def gate_findings(args: argparse.Namespace, pull: dict, contract: dict,
                   required: list[str], stale_reason: str | None) -> tuple[list[str], int]:
     """Hallazgos del gate y el atraso de la PR (0 si no se llego a medir, #1440)."""
-    body = pull.get("body") if isinstance(pull.get("body"), str) else ""
     labels = {label.get("name") for label in pull["labels"]
               if isinstance(label, dict) and isinstance(label.get("name"), str)}
     findings = []
@@ -1169,15 +1354,15 @@ def gate_findings(args: argparse.Namespace, pull: dict, contract: dict,
         findings.append(f"PR #{args.pr} is not open (state: {pull.get('state')!r})")
     if pull.get("draft") is True:
         findings.append(f"PR #{args.pr} is a draft: the governed path merges ready PRs only")
-    findings += verdict_findings(args, pull["head"]["sha"], required)
-    if "chain:partial" in labels and CLOSING.search(body):
-        findings.append("Closes in an intermediate PR: only the chain tip may carry closing words")
+    findings += verdict_findings(args, pull["head"]["sha"], required, advisory_patterns(contract))
+    if CHAIN_LABEL in labels:
+        findings += chain_closing_findings(args, pull)
     base_ref = pull["base"]["ref"]
     if base_ref not in protected_branches(contract, None) and "chain:partial" not in labels:
         findings.append(f"PR #{args.pr} targets '{base_ref}': not a branch protected by the "
                         "contract and the PR is not a chain intermediate (chain:partial)")
     if not findings:  # #1627: parada de línea del perfil pre-release (falla cerrado)
-        findings = _stop_the_line_findings(args)
+        findings = _stop_the_line_findings(args, contract)
     if not findings:  # #1597: la consulta de padres solo cuando nada mas bloquea
         findings = unmerged_parent_findings(args, pull)
     if findings:
@@ -1202,6 +1387,13 @@ def _validate_cli_args(args: argparse.Namespace) -> None:
         fail("--wait-seconds must be zero or more and --poll-seconds positive")
     if args.poll_seconds <= 0:
         fail("--wait-seconds must be zero or more and --poll-seconds positive")
+    # #1792: `--esperada` es un sha de 40 hex. El formato se comprueba aqui,
+    # antes de cualquier llamada de red (fail closed, HR-3): un valor mal
+    # formado no puede compararse con ninguna cabeza.
+    esperada = getattr(args, "esperada", None)
+    if esperada is not None and not EXPECTED_SHA_RX.fullmatch(esperada):
+        fail("--esperada must be a 40-character hex sha (got: "
+             f"'{esperada}')")
 
 
 def _resolve_post_merge_dispatch_names(contract: dict) -> list[str]:
@@ -1466,7 +1658,10 @@ def _merge_close_and_dispatch(args: argparse.Namespace, pull: dict, contract: di
     # `any(resolved.values())` seria siempre cierto (#1086).
     before = (base_tip(args.repo, pull["base"]["ref"])
               if any(target.with_range for target in resolved.values()) else None)
-    sha = gh_merge(args.repo, args.pr, pull["head"]["sha"])
+    # #1792: la cabeza que se fusiona es la verificada: la esperada si el gate
+    # la recibio (ya comprobada contra el head del PR), la del PR si no.
+    head_sha = getattr(args, "esperada", None) or pull["head"]["sha"]
+    sha = gh_merge(args.repo, args.pr, head_sha)
     print(f"MERGED: PR #{args.pr} merged by the governed path as {sha}")
     # #1265: el veredicto del arbol integrado se mide y se publica INMEDIATAMENTE
     # despues del merge, antes de cerrar y antes del dispatch: la evidencia sale
@@ -1504,14 +1699,41 @@ def run(args: argparse.Namespace) -> int:
     contract = load_json(args.contract, "contract")
     if not isinstance(contract, dict):
         fail("contract must be a JSON object")
+    try:
+        advisory_patterns(contract)
+    except AdvisoryContractError as exc:
+        fail(f"the advisory_checks declaration of the host contract is not valid: {exc}")
     required = required_checks(contract)
     dispatch_names = _resolve_post_merge_dispatch_names(contract)
     _resolve_post_merge_verify_names(contract)  # #1440: mal tipada falla cerrado antes de la API
     merge_freshness(contract)  # #1397: un valor desconocido falla cerrado antes de la API
+    # #1784: una declaración malformada falla cerrado antes de la API; el aviso sale
+    # siempre, aunque otra puerta bloquee antes (el operador ve qué señales se apagaron).
+    announce_stop_the_line(args, stop_the_line_switch(contract))
     pull = gh_json(f"repos/{args.repo}/pulls/{args.pr}")
     if not is_pull_shape(pull):
         fail(f"PR #{args.pr} is not the API pull shape")
+    # #1792: la cabeza esperada es la que el operador verifico antes de lanzar
+    # el merge. Si el PR ya no esta en esa cabeza, el merge se para aqui: sin
+    # evaluar la politica, sin leer la base y sin PUT (TOCTOU cerrado por el
+    # cliente, no solo por el 409 de la API).
+    _check_expected_head(args, pull)
     return _merge_close_and_dispatch(args, pull, contract, required, dispatch_names)
+
+
+def _check_expected_head(args: argparse.Namespace, pull: dict) -> None:
+    """Falla cerrado si la cabeza del PR no es la esperada (#1792).
+
+    Sin `--esperada` no hay nada que comprobar y el gate sigue igual. Con ella,
+    la comparacion es exacta: el PR va a esa cabeza o el merge no sale.
+    """
+    esperada = getattr(args, "esperada", None)
+    if not esperada:
+        return
+    head = pull["head"]["sha"]
+    if head != esperada:
+        fail(f"PR #{args.pr} is at head {head}, not the expected {esperada}; "
+             "nothing was merged (the verified head moved)")
 
 
 def _pin_output_encoding() -> None:
@@ -1542,6 +1764,9 @@ def main() -> int:
     parser.add_argument("--dispatch-marker", default=None,
                         help="texto que el display_title de un workflow_dispatch debe contener para contar como "
                              "noche (p. ej. suite=full); sin él, ningún dispatch cuenta")
+    parser.add_argument("--esperada", default=None,
+                        help="sha de 40 hex de la cabeza verificada (#1792); si el PR no esta en esa "
+                             "cabeza, el gate falla cerrado sin fusionar")
     args = parser.parse_args()
     try:
         code = run(args)

@@ -607,5 +607,19 @@ class DeployBackupPublisherTests(unittest.TestCase):
         self.assertIn("unknown keys", proc.stderr)
 
 
+class AdvisoryContractTests(unittest.TestCase):
+    """#1762: el validador del host-contract acepta `advisory_checks` (la forma la
+    comprueban las herramientas que lo leen, que fallan cerradas)."""
+
+    def test_la_clave_nueva_esta_en_el_esquema(self) -> None:
+        schema = json.loads((ASSET / "host-contract.schema.json").read_text(encoding="utf-8"))
+        self.assertIn("advisory_checks", schema["properties"])
+
+    def test_un_contrato_con_la_clave_es_valido(self) -> None:
+        contract = dict(base_contract(), advisory_checks=["*-gh"])
+        proc = run_gate(contract, base_snapshots())
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

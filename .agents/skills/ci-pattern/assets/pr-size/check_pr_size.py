@@ -14,8 +14,19 @@ counts: the work was authored outside the vendored subtree and the
 budget has to cover it. A rename within the vendored subtree, or a
 new file under it, is excluded.
 
-Line-ending churn is not a change a reviewer has to read, so
-``--ignore-cr-at-eol`` is enabled by default. The generated lockfiles
+The measurement counts what the GitHub API counts: the line-ending
+churn is NOT normalized away, because the gate that runs in CI (rule A1
+of ``assets/pr-contract/check_pr_contract.py``) measures the additions
+and deletions as the API reports them. A local figure that ignored
+those lines said 308 where CI said 716, and the author learned the
+divergence from the red CI, not from the tool that measures (#1753).
+When part of the counted lines only change the line ending, the tool
+says so out loud: ``N lineas son solo finales de linea: revisa la
+conversion de EOL``, with ``N`` measured by comparing the real count
+with the count that ignores the line endings. With ``--event`` the
+breakdown comes from the API, which does not say which lines only
+change the line ending: the notice belongs to the local measurement.
+The generated lockfiles
 (``uv.lock``, ``package-lock.json``, ``pnpm-lock.yaml``, ``poetry.lock`` and
 ``requirements*.lock``) are excluded too: the package manager writes them,
 not the author (#1177). So are the ODD task documents, exactly ``odd/tasks/*.md``
@@ -60,6 +71,7 @@ import sys
 import urllib.parse
 import urllib.request
 from pathlib import Path
+from typing import NamedTuple
 
 # Fuente única del presupuesto (#931): la regla la comparte con pr-contract.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "budget"))
@@ -127,7 +139,22 @@ def base_gitattributes(base_ref: str) -> str:
         return ""
 
 
+def _numstat(base_ref: str, ignore_eol: bool) -> str:
+    """``git diff --numstat`` of the range, with or without normalizing CRLF.
+
+    Two flags, one purpose: the real count is the one the API and A1
+    measure (no normalization), and the normalized one says how much of
+    that count is only the line ending (#1753).
+    """
+    args = ["diff", "--numstat", "--find-renames=50%"]
+    if ignore_eol:
+        args.append("--ignore-cr-at-eol")
+    args.append(f"{base_ref}...HEAD")
+    return _git(*args)
+
+
 def changed_lines(base_ref: str, generated_rules: GeneratedPatterns | None = None,
+                  *, ignore_eol: bool = False,
                   ) -> tuple[int, int, int, list[tuple[str, int]]]:
     """Return ``(counted_total, vendored_excluded, generated_excluded, per_file)``.
 
@@ -137,11 +164,14 @@ def changed_lines(base_ref: str, generated_rules: GeneratedPatterns | None = Non
     ``generated_excluded`` the ones the generated-lockfile rule dropped
     (#1177); they are reported apart so the message says what it left out.
     ``per_file`` is the counted breakdown, largest first.
+
+    ``ignore_eol`` normalizes CRLF away before counting. It is OFF by
+    default: the local measurement has to count what the API counts, or the
+    worker measures 308 lines where CI measures 716 (#1753).
     """
     if generated_rules is None:
         generated_rules = generated_patterns(base_gitattributes(base_ref))
-    raw = _git("diff", "--numstat", "--find-renames=50%", "--ignore-cr-at-eol",
-               f"{base_ref}...HEAD")
+    raw = _numstat(base_ref, ignore_eol)
     per_file: list[tuple[str, int]] = []
     counted = 0
     vendored = 0
@@ -480,8 +510,30 @@ def _pin_output_encoding() -> None:
         sys.stderr.reconfigure(encoding="utf-8")
 
 
-def measure(args: argparse.Namespace) -> tuple[int, int, int, list[tuple[str, int]], set[str], str]:
-    """``(counted, vendored, generated, per_file, labels, source)`` from the API (``--event``) or from git."""
+class SizeFigure(NamedTuple):
+    """The measured figure: what counts, what was left out, and the EOL noise.
+
+    One object, so the functions that carry it do not grow an argument each
+    (the ratchet of the vendorizable assets counts arguments too). A
+    ``NamedTuple`` and not a ``dataclass``: the gate is loaded by consumers
+    with ``importlib`` without registering it in ``sys.modules``, and a
+    dataclass needs that registration to exist.
+    """
+
+    counted: int
+    vendored: int
+    generated: int
+    per_file: list[tuple[str, int]]
+    eol_only: int = 0
+
+
+def measure(args: argparse.Namespace) -> tuple[SizeFigure, set[str], str]:
+    """``(figure, labels, source)``: the API (``--event``) or git.
+
+    ``eol_only`` is the number of counted lines that only change the line
+    ending; the API does not say which lines those are, so it is 0 in API
+    mode (#1753).
+    """
     rules = None
     if args.gitattributes_file:
         try:
@@ -490,32 +542,51 @@ def measure(args: argparse.Namespace) -> tuple[int, int, int, list[tuple[str, in
             raise GitattributesFileError(args.gitattributes_file, exc) from exc
         rules = generated_patterns(text)
     if args.event:
-        return (*api_changed_lines(args.event, rules or ()), "the GitHub API")
+        counted, vendored, generated, per_file, labels = api_changed_lines(args.event, rules or ())
+        return SizeFigure(counted, vendored, generated, per_file), labels, "the GitHub API"
     base_ref = args.base_ref or os.environ.get("BASE_REF") or pr_base_ref() or "origin/main"
     counted, vendored, generated, per_file = changed_lines(base_ref, rules)
-    return (counted, vendored, generated, per_file,
-            split_labels(args.labels or os.environ.get("PR_LABELS", "")), base_ref)
+    eol_only = 0
+    if counted:
+        normalized = changed_lines(base_ref, rules, ignore_eol=True)[0]
+        eol_only = max(0, counted - normalized)
+    labels = split_labels(args.labels or os.environ.get("PR_LABELS", ""))
+    return SizeFigure(counted, vendored, generated, per_file, eol_only), labels, base_ref
 
 
-def envelope_for(counted: int, vendored: int, generated: int, per_file: list,
-                 overridden: bool) -> dict:
+def eol_notice(eol_only: int) -> str:
+    """The out-loud notice: the counted lines that only change the line ending.
+
+    The author is told before CI does: a conversion of line endings looks
+    like a big diff, and it is not work to review (#1753).
+    """
+    return (f"{eol_only} lineas son solo finales de linea: "
+            "revisa la conversion de EOL")
+
+
+def envelope_for(figure: SizeFigure, overridden: bool) -> dict:
+    counted, vendored = figure.counted, figure.vendored
     passed = counted <= MAX_CHANGED_LINES or overridden
-    return {
+    envelope = {
         "gate": "pr_size",
         "status": "pass" if passed else "fail",
         "indicators": {
             "changed_lines": counted,
             "vendored_lines": vendored,
-            "generated_lines": generated,
-            "files_changed": len(per_file),
+            "generated_lines": figure.generated,
+            "eol_only_lines": figure.eol_only,
+            "files_changed": len(figure.per_file),
             "overridden": overridden,
         },
         "ceilings": {"changed_lines": MAX_CHANGED_LINES},
         "findings": [
             {"file": path, "line": 0, "detail": f"{count} changed line(s)"}
-            for path, count in per_file[:10]
+            for path, count in figure.per_file[:10]
         ] if not passed else [],
     }
+    if figure.eol_only:
+        envelope["notice"] = eol_notice(figure.eol_only)
+    return envelope
 
 
 def excluded_suffix(vendored: int, generated: int) -> str:
@@ -551,7 +622,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
-        counted, vendored, generated, per_file, labels, source = measure(args)
+        figure, labels, source = measure(args)
     except SupersededError as exc:
         if args.json:
             print(json.dumps({"gate": "pr_size", "status": "superseded", "detail": str(exc)}))
@@ -567,23 +638,36 @@ def main(argv: list[str] | None = None) -> int:
 
     overridden = has_override(labels)
     if args.json:
-        print(json.dumps(envelope_for(counted, vendored, generated, per_file, overridden), indent=2))
-        return 0 if counted <= MAX_CHANGED_LINES or overridden else 1
+        print(json.dumps(envelope_for(figure, overridden), indent=2))
+        return 0 if figure.counted <= MAX_CHANGED_LINES or overridden else 1
+    return report(figure, source, overridden)
 
-    suffix = excluded_suffix(vendored, generated)
-    if counted <= MAX_CHANGED_LINES:
-        print(f"OK    {counted} changed line(s) vs {source}, budget is {MAX_CHANGED_LINES}{suffix}")
-        return 0
-    if overridden:
+
+def report(figure: SizeFigure, source: str, overridden: bool) -> int:
+    """The human-readable verdict: the figure, what it left out, the EOL notice.
+
+    The notice never decides: it says how many of the counted lines only
+    change the line ending, so the author sees the conversion before CI
+    does (#1753).
+    """
+    counted = figure.counted
+    suffix = excluded_suffix(figure.vendored, figure.generated)
+    over_budget = counted > MAX_CHANGED_LINES
+    if over_budget and overridden:
         print(f"OK    {counted} changed line(s) vs {source} over budget{suffix}, overridden by the "
               f"'{OVERRIDE_LABEL}' label")
-        return 0
-
-    print(f"FAIL  {counted} changed line(s) vs {source}, budget is {MAX_CHANGED_LINES}{suffix}")
-    for path, count in per_file[:10]:
-        print(f"        {count:>6}  {path}")
-    print(f"        split the PR; only the project's coordinator applies the '{OVERRIDE_LABEL}' label")
-    return 1
+    elif over_budget:
+        print(f"FAIL  {counted} changed line(s) vs {source}, budget is {MAX_CHANGED_LINES}{suffix}")
+    else:
+        print(f"OK    {counted} changed line(s) vs {source}, budget is {MAX_CHANGED_LINES}{suffix}")
+    if figure.eol_only:
+        print(f"WARN  {eol_notice(figure.eol_only)}")
+    if over_budget and not overridden:
+        for path, count in figure.per_file[:10]:
+            print(f"        {count:>6}  {path}")
+        print(f"        split the PR; only the project's coordinator applies the '{OVERRIDE_LABEL}' label")
+        return 1
+    return 0
 
 
 if __name__ == "__main__":

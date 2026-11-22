@@ -74,6 +74,15 @@
       "enum": ["off", "required"],
       "description": "Optional, default off (DysTelefonica/team-skills#1397). off: CI runs once, on the PR; a PR behind its base with green required checks merges and the post-merge CI (post_merge_dispatch) verifies the integrated tree; without post_merge_dispatch or post_merge_verify (#1440) being behind still blocks. required: a PR behind its base is blocked (#787) and an integrated tree that differs from the verified head exits 5. The workflow-overlap refusal (#783) applies with either value; any other value fails closed (exit 2)."
     },
+    "stop_the_line": {
+      "type": "object",
+      "description": "Optional (DysTelefonica/team-skills#1784). Apaga por separado las señales de la parada de línea del merge gobernado. Cada miembro booleano dice si su señal sigue activa: `night_red_enabled` gobierna la etiqueta `prerelease:night-red` (#1627) y `main_red_enabled` la etiqueta `prerelease:main-red` (#1708). Sin la clave, o sin un miembro, la señal sigue activa (el comportamiento de hoy). Una señal apagada no se consulta (el merge no lee su etiqueta) ni bloquea el merge, y el merge lo dice en una línea por stderr. Una forma que no sea un objeto con esos miembros hace fallar cerrado el merge (exit 2, HR-3): una declaración rota que se ignorase dejaría la puerta en verde sin ella. La forma la valida el merge gobernado (`assets/runner-controls/check_governed_merge.py`), no este readback.",
+      "properties": {
+        "night_red_enabled": {"type": "boolean", "description": "Si la señal de rojo nocturno sigue activa. Ausente = true."},
+        "main_red_enabled": {"type": "boolean", "description": "Si la señal de main en rojo sigue activa. Ausente = true."}
+      },
+      "additionalProperties": false
+    },
     "governed_path": {
       "type": "object",
       "description": "Optional. Exige que lo que llega a una rama protegida por contrato haya entrado por el camino gobernado (DysTelefonica/team-skills#909). Un PR mergeado en una rama protegida cumple si su `merged_by.login` esta en `actors` (ruta fuerte: la plataforma la firma) o si su commit de merge casa con `merge_marker` (ruta debil, corroboracion). Sin la clave, o con `enabled: false`, el veredicto del detective no cambia. Un contrato inservible falla cerrado con exit 2 (HR-3).",
@@ -99,6 +108,11 @@
       "type": "string",
       "minLength": 1,
       "description": "Optional (DysTelefonica/team-skills#333, regla 7). Con la clave declarada, lo que llega a una rama protegida tiene que venir por el PR del tracker (modelo «rama de feature con PR tracker en borrador»). Sin declaracion el control no cambia: una cadena apilada hacia main no necesita tracker y exigirlo sin declararlo inventaria una regla que el contrato no pide. Una cadena vacia o no textual hace fallar cerrado el contrato (HR-3)."
+    },
+    "advisory_checks": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "description": "Optional (DysTelefonica/team-skills#1762, APAP_WEB#4411). Glob patterns (fnmatch) of the check run names that do NOT block the merge: the consumer's mirror jobs (for example `*-gh` on GitHub-hosted runners) can be red, or `startup_failure` when the credit runs out, without stalling the agents' merges. A required check is never shadowed by a pattern: a name in `required_checks` (or the merge guard's `--required-check`) keeps blocking. Without the key the behaviour is the same as before; an invalid shape fails closed (exit 2)."
     },
     "deploy_backup_publisher": {
       "type": "object",
