@@ -10,13 +10,13 @@ solo como ejemplo verificado.
 | # | Parámetro | Valor en ardelperal/APAP_WEB (consumer de origen; ejemplo verificado) | Dónde vive | Quién lo lee |
 |---|---|---|---|---|
 | 8 | Política de merge | Commit de fusión, rama remota conservada, sin `strict`, sin cola de merge; CI una vez en la PR; `push` a `main` más nightly diario como red de seguridad | Settings del repo | Gate de evidencia del deploy |
-| 3 | Etiquetas canónicas | `chain:partial`, `size:exception`, `type:*`, `status:approved` | Configuración de labels del repo | `type:*` y `status:approved` son convención (desde #1093 ningún gate las exige); `chain:partial` y `size:exception` los leen los gates de cadena y de tamaño |
+| 3 | Etiquetas canónicas | `chain:partial`, `size:exception`, `type:*`, `status:approved` | Configuración de labels del repo | `type:*` y `status:approved` son convención (desde #1093 ningún gate las exige; el tipo del PR sale de su título convencional, HR-93); `chain:partial` y `size:exception` los leen los gates de cadena y de tamaño |
 | 4 | Contextos de estado por SHA | `release/smoke-production`, `release/e2e-production` | Lista cerrada de contextos | `scripts/check_release_evidence.py` |
 | 5 | Rutas sensibles | Globs de auth, sesión, CSRF, migraciones y runtime (49 líneas) | `.github/release-e2e-paths.txt` | `scripts/check_release_e2e_required.py` |
 | 6 | URL de salud | `https://<host>/healthz` (expone `.revision` del deploy) | Constante del smoke | `scripts/production_smoke.py` |
 | 7 | User-Agent del smoke | Agente propio con reintentos y host de la redirección | Constante del smoke | `scripts/production_smoke.py` (403 de Cloudflare sin él) |
 | 1 | Regex de rama | `^(feat\|fix\|chore\|docs\|refactor\|perf\|test\|build\|ci\|revert)/[a-z0-9._-]+$` | Ruleset de protección de rama del repo | El ruleset del host enforza la regex; no hay gate local de nombre — la derivación de la issue por nombre de rama está retirada (A5) |
-| 2 | Presupuesto de revisión | `400` líneas (adiciones + eliminaciones del PR; los lockfiles generados —`uv.lock`, `package-lock.json`, `pnpm-lock.yaml`, `poetry.lock`, `requirements*.lock`— no cuentan, y ningún otro fichero generado queda fuera) | Constante del gate de tamaño | `assets/pr-size/check_pr_size.py`; la única excepción es la etiqueta `size:exception`, aplicada solo por el mantenedor cuando partir la PR rompería `main` (A1, #1177) |
+| 2 | Presupuesto de revisión | `400` líneas (adiciones + eliminaciones del PR; los lockfiles generados —`uv.lock`, `package-lock.json`, `pnpm-lock.yaml`, `poetry.lock`, `requirements*.lock`— no cuentan, y ningún otro fichero generado queda fuera) | Constante del gate de tamaño | `assets/pr-size/check_pr_size.py`; la única excepción es la etiqueta `size:exception`, aplicada solo por el mantenedor cuando partir la PR rompería `main` (A1, #1177). La medida local cuenta exactamente como A1 —las adiciones y eliminaciones que ve la API de GitHub— y avisa en voz alta cuando parte de las líneas contadas solo cambian el final de línea (#1753) |
 | 9 | Ruta de post-mortems | `docs/postmortems/<date>-<slug>.md` | Convención de docs del repo | HR-21 (post-mortem blameless); HR-19 (notas de release); HR-48 (la documentación del proyecto vive en su repo, y el gate de las fases 3 y 5 lo comprueba) |
 | 10 | Playbook de release | `RELEASE-<TAG>.md` en la raíz del repo | Raíz del repo | HR-22 |
 | 11 | Runbook e2e de producción | `docs/runbooks/e2e-production.md` | `docs/runbooks/` | Exclusión de §1; registro del veredicto (HR-10); el runbook es parte del arnés de evidencia y queda sujeto a HR-42 (premisas con comando de siembra o verificación) |
@@ -51,6 +51,7 @@ EAD
 | 38 | Frescura exigida en el merge gobernado | `off` (por defecto: el CI corre una vez, en la PR; un PR atrasado en verde se fusiona y el árbol integrado lo verifica el CI post-merge del parámetro 33 o del 33b más el nightly; sin ninguno de los dos el atraso sigue bloqueando) o `required` (un PR atrasado se bloquea y un árbol integrado distinto del head sale con 5; para el consumer cuyo deploy compara el árbol fusionado con el revisado, #426; APAP_WEB lo usó y está en `off` desde APAP_WEB#3098). El solape de workflows (#783) se rechaza con cualquier valor; otro valor falla cerrado (2) | `.github/host-contract.json` (`merge_freshness`) | gate `assets/runner-controls/check_governed_merge.py` (Refs #1397) |
 | 39 | Globs de UI del gate de evidencia e2e | lista de globs (por defecto `app/**`, `web/**`, `src/**`, `pages/**`, `components/**`, `views/**`, `templates/**`); sustituye a los defaults y `--ui-glob` manda sobre ella; una lista vacía o que no es de cadenas sale con 2 | `ci-pattern.yaml` (`P59_e2e_ui_globs`) | gate `assets/e2e-evidence/check_e2e_evidence.py` (fase 0, 0.6; la UI de cadete es `www/**`) |
 | 40 | Job upgrade-path bloqueante | `off` (default: inerte) u `on` (la fase 4 exige que un workflow defina el job `upgrade-path` y que figure en `required_jobs`) | `ci-pattern.yaml` (`P60_upgrade_path`) | `assets/bin/ci-pattern` (`adoption check --phase 4`); forma del job en `references/porting-guide.md`, G4.7 (HR-92) |
+| 41 | Señales de la parada de línea activas en el merge gobernado | objeto opcional con un miembro booleano por señal: `night_red_enabled` (señal `prerelease:night-red`, #1627) y `main_red_enabled` (señal `prerelease:main-red`, #1708). Sin la clave, o sin un miembro, la señal sigue activa (comportamiento de hoy). Una señal apagada no se consulta (el gate no lee su etiqueta) ni bloquea el merge, y el merge lo dice en una línea por `stderr`. Una forma que no sea un objeto con esos miembros (miembro desconocido, valor no booleano, clave presente con `null`) falla cerrado (2); la forma la valida el merge gobernado, no el readback del host | `.github/host-contract.json` (`stop_the_line`) | gate `assets/runner-controls/check_governed_merge.py` (Refs #1784) |
 origin/main
 
 El nombre de rama (parámetro 1) lo aplica el **ruleset del repo** sobre el
@@ -203,3 +204,13 @@ mal tipada. Reglas que el adoptante debe respetar:
   desconocidos.
 - **Ni claves ni subclaves duplicadas**: la subclave repetida es entrada inválida
   (exit 2), no una sobrescritura silenciosa.
+
+## Checks advisory del host-contract (`advisory_checks`, no es un parámetro)
+
+El consumer declara en `.github/host-contract.json` la clave opcional `advisory_checks`: una
+lista de patrones de nombre (globs) de los check runs que **no** bloquean el merge. La leen
+`safe_merge.py` y `wait_ci.py` (y el merge gobernado) desde el contrato del consumer; sin la
+clave no hay advisory y el comportamiento es el de siempre. Un check **requerido** nunca queda
+tapado por un patrón: si su nombre está en los requeridos, sigue bloqueando. Forma admitida:
+una lista de globs no vacíos; cualquier otra forma falla cerrado (exit 2). Referencia:
+`SKILL.md` (checks advisory) y `assets/runner-controls/advisory_checks.py`.

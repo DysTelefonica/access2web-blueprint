@@ -47,6 +47,31 @@ Si el listado o un compare fallan, o traen otra forma, falla cerrado (2) y el
 mensaje nombra la PR del compare. Límites: un padre abierto después que su hijo
 o reescrito con force-push no se detecta.
 
+## La cabeza esperada del merge: `--esperada` (#1792)
+
+`check_governed_merge.py` acepta `--esperada <sha40>`: la cabeza que el
+operador verificó antes de lanzar el merge. Sin la opción, el gate se comporta
+como siempre: lee la cabeza del PR, juzga los checks sobre ella y fusiona esa.
+
+Con la opción:
+
+- **Formato inválido** (no son 40 hex) → falla cerrado (2) **antes de cualquier
+  llamada de red**. El mensaje dice que se espera un sha de 40 hex.
+- **La cabeza del PR no es la esperada** → falla cerrado (2) en cuanto se lee el
+  PR: sin evaluar la política, sin leer la base y sin `PUT`. El mensaje nombra la
+  cabeza real y la esperada.
+- **Coinciden** → el `PUT .../merge` lleva exactamente ese sha.
+
+Es la ventana TOCTOU del lado del cliente: entre el gate del cliente y esta
+ejecución, un push deja el PR en otra cabeza y el merge no sale. La ventana
+entre la lectura del PR y el `PUT` la sigue cerrando el 409 de la API (#1592),
+que el sha enviado al PUT provoca.
+
+El cliente que lo usa es el que verifica la revisión y lanza el merge: si
+verificó el sha `abc…`, lo pasa con `--esperada abc…`. El sha se compara tal
+cual con el de la API, que es en minúsculas: un sha en mayúsculas se rechaza
+por formato.
+
 ## Parada de línea (#1627)
 
 La regla es la misma en todo repo y la decide `stop_the_line.py`, que el merge gobernado usa como un gate más.
@@ -72,6 +97,13 @@ La regla es la misma en todo repo y la decide `stop_the_line.py`, que el merge g
   repositorio; si no, sale con 1 y da el desbloqueo: `arregle main en el PR que enlaza #N; el siguiente run verde
   de main la cierra`. Se activa por defecto: la llamada del consumer no necesita ningún flag nuevo. Ambas señales
   se evalúan y cualquiera puede bloquear. Una lectura fallida de esas issues retiene (sale con 2).
+- **El consumer apaga cada señal por separado (#1784).** La clave opcional `stop_the_line` del
+  `host-contract.json` tiene un miembro booleano por señal: `night_red_enabled` para
+  `prerelease:night-red` y `main_red_enabled` para `prerelease:main-red`. Sin la clave, o sin un
+  miembro, la señal sigue activa (el comportamiento de hoy). Una señal apagada no se consulta (el gate no
+  lee su etiqueta) ni bloquea, y el merge lo dice en una línea por `stderr`. Una forma que no sea un
+  objeto con esos miembros hace fallar cerrado el merge (sale con 2): una declaración rota que se
+  ignorase dejaría la puerta en verde sin ella.
 
 ## Relanzar un run caído: el coordinador, con un solo comando (#1630)
 

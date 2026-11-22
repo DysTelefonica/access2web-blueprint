@@ -231,14 +231,40 @@
         "disposition": {
           "enum": [
             "adopted",
-            "retired"
+            "retired",
+            "equivalent"
           ],
-          "description": "Sin tercera opción: lo que no viene del patrón se elimina."
+          "description": "Sin tercera opción fuera de estas tres: lo que no viene del patrón se elimina, salvo 'equivalent' (#1747), que declara que un gate del consumer sustituye a un asset canónico con motivo."
         },
         "target": {
           "type": "string",
           "minLength": 1,
-          "description": "Obligatorio si disposition=adopted: ruta repo-relativa del artefacto del patrón que lo sustituye; debe existir."
+          "description": "Obligatorio si disposition=adopted: ruta repo-relativa del artefacto del patrón que lo sustituye; debe existir. Obligatorio si disposition=equivalent: ruta repo-relativa del gate del consumer que cubre el artefacto; debe existir."
+        },
+        "canonical": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Obligatorio si disposition=equivalent: asset canónico que el gate del consumer sustituye. Ruta relativa al repo, sin '..'."
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Obligatorio si disposition=equivalent: motivo no vacío de la equivalencia."
+        },
+        "reference": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Obligatorio si disposition=equivalent: issue (#N o owner/repo#N) o fichero:línea existente."
+        },
+        "actor": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identidad HR-33 de quien declara la equivalencia (uno de actor o issue es obligatorio si disposition=equivalent)."
+        },
+        "issue": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Identidad HR-33 alternativa a actor: número de issue positivo."
         },
         "path": {
           "type": "string",

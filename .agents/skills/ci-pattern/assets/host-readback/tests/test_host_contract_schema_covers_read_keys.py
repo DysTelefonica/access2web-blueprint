@@ -36,6 +36,7 @@ CONSUMERS = (
     ASSETS / "host-readback" / "check_host_drift.py",
     ASSETS / "runner-controls" / "check_push_compliance.py",
     ASSETS / "runner-controls" / "check_governed_merge.py",
+    ASSETS / "runner-controls" / "advisory_checks.py",
     ASSETS / "ci-red" / "report_ci_red.py",
 )
 

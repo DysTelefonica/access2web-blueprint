@@ -153,5 +153,113 @@ class CancelledTwinTest(BaseSafeMergeTest):
         self.assertIn("check 'unit': status=completed, conclusion=failure", proc.stdout)
 
 
+class AdvisoryChecksTest(BaseSafeMergeTest):
+    """#1762: los checks que el consumer declara advisory no bloquean el merge."""
+
+    def contract(self, patterns: object, required: list | None = None) -> None:
+        path = self.root / ".github" / "host-contract.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        declared = {"contract_version": 1, "advisory_checks": patterns}
+        if required is not None:
+            declared["required_checks"] = [{"name": name, "class": "documented-only"}
+                                           for name in required]
+        path.write_text(json.dumps(declared), encoding="utf-8")
+
+    def raw_contract(self, raw: bytes) -> None:
+        path = self.root / ".github" / "host-contract.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(raw)
+
+
+    def state_with_mirror(self, conclusion: str = "failure", status: str = "completed") -> dict:
+        state = base_state()
+        state["check_runs"][SHA].append(
+            {"id": 2, "name": "docs-gh", "conclusion": conclusion, "status": status})
+        return state
+
+    def test_un_espejo_en_rojo_no_bloquea_si_el_consumer_lo_declara_advisory(self) -> None:
+        self.contract(["*-gh"])
+        proc = run_gate(self.root, self.state_with_mirror(), cwd=self.root)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assert_merged(proc, True)
+
+    def test_sin_declaracion_el_comportamiento_es_el_de_siempre(self) -> None:
+        proc = run_gate(self.root, self.state_with_mirror(), cwd=self.root)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assert_merged(proc, False)
+
+    def test_un_espejo_pendiente_no_bloquea(self) -> None:
+        self.contract(["*-gh"])
+        state = self.state_with_mirror(conclusion=None, status="in_progress")
+        proc = run_gate(self.root, state, cwd=self.root)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assert_merged(proc, True)
+
+    def test_un_check_requerido_no_queda_tapado_por_un_patron_advisory(self) -> None:
+        # El patron casa con el nombre del check, pero el check es requerido: sigue bloqueando.
+        self.contract(["unit*"])
+        state = base_state()
+        state["check_runs"][SHA][0]["conclusion"] = "failure"
+        proc = run_gate(self.root, state, required_check=["unit"], cwd=self.root)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assert_merged(proc, False)
+
+    def test_una_declaracion_invalida_falla_cerrado(self) -> None:
+        self.contract("*-gh")
+        proc = run_gate(self.root, base_state(), cwd=self.root)
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assert_merged(proc, False)
+        self.assertIn("advisory_checks", proc.stdout + proc.stderr)
+
+    def test_un_contrato_que_no_es_utf8_falla_cerrado(self) -> None:
+        self.raw_contract(b'{"advisory_checks": ["\xff"]}')
+        proc = run_gate(self.root, base_state(), cwd=self.root)
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assert_merged(proc, False)
+
+    def test_un_check_requerido_del_contrato_no_queda_tapado(self) -> None:
+        # El contrato lo declara requerido: sigue bloqueando sin `--required-check`.
+        self.contract(["unit*"], required=["unit"])
+        state = base_state()
+        state["check_runs"][SHA][0]["conclusion"] = "failure"
+        proc = run_gate(self.root, state, cwd=self.root)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assert_merged(proc, False)
+        self.assertNotIn("ignored", proc.stdout)
+
+    # #1795: un required_checks mal formado falla cerrado y nombra la entrada rota:
+    # no se descarta en silencio, no da verde y no fusiona.
+
+    def required_contract(self, entries: object) -> None:
+        path = self.root / ".github" / "host-contract.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"contract_version": 1, "advisory_checks": ["*-gh"],
+                                    "required_checks": entries}), encoding="utf-8")
+
+    def assert_fails_closed(self, entries: object, must_name: str) -> None:
+        self.required_contract(entries)
+        proc = run_gate(self.root, base_state(), cwd=self.root)
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn(must_name, proc.stdout + proc.stderr)
+        self.assert_merged(proc, False)
+
+    def test_entrada_que_no_es_objeto_falla_cerrado(self) -> None:
+        self.assert_fails_closed(["unit"], "required_checks[0]")
+
+    def test_entrada_sin_name_falla_cerrado(self) -> None:
+        self.assert_fails_closed([{"class": "documented-only"}], "required_checks[0]")
+
+    def test_entrada_con_name_vacio_falla_cerrado(self) -> None:
+        self.assert_fails_closed([{"name": ""}], "required_checks[0]")
+
+    def test_required_checks_no_lista_falla_cerrado(self) -> None:
+        self.assert_fails_closed({"name": "unit"}, "required_checks")
+
+    def test_contrato_requerido_valido_no_falla_cerrado(self) -> None:
+        self.required_contract([{"name": "unit", "class": "documented-only"}])
+        proc = run_gate(self.root, base_state(), cwd=self.root)
+        self.assertNotEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

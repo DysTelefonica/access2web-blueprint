@@ -202,6 +202,18 @@ def _resolve_draft_base(base):
         raise _PreflightInputError(str(exc)) from exc
 
 
+def _gate_pr_title(title, gate):
+    """HR-93 (#1726): sin `--pr-title` no hay nada que medir."""
+    if title is None:
+        return []
+    findings, advisories = [], []
+    gate.check_pr_title({"title": title, "labels": [], "body": ""},
+                         findings, advisories)
+    out = [("pr-title", "fail", f"pr-title: {item}") for item in findings]
+    out += [("pr-title", "advisory", f"pr-title: {item}") for item in advisories]
+    return out
+
+
 def _gate_size_local(base, labels, gate):
     """Veredicto de ``pr-size`` en local, reusando su CLI canónica."""
     base_ref = _resolve_draft_base(base)
@@ -216,11 +228,13 @@ def _gate_size_local(base, labels, gate):
     return [("pr-size", "ok" if code == 0 else "fail", detail)]
 
 
-def _run_draft_preflight(body, base, labels, as_json):
-    """Ejecuta cuerpo y tamaño sin API, gh ni red."""
+def _run_draft_preflight(body, base, labels, as_json, title=None):
+    """Ejecuta cuerpo, tamaño y título sin API, gh ni red."""
     issue_spec = _load_gate("check_issue_spec", ISSUE_SPEC_GATE)
     findings = []
     _collect_issue_spec_local(findings, body, "", issue_spec)
+    findings.extend(_gate_pr_title(
+        title, _load_gate("check_pr_contract", PR_CONTRACT_GATE)))
     findings.extend(_gate_size_local(
         base, labels, _load_gate("check_pr_size", PR_SIZE_GATE)))
     return _emit(findings, as_json)
@@ -283,6 +297,7 @@ def run_preflight(  # noqa: PLR0913 — orquestador de gates; kwargs 1:1 con la 
     branch_pattern=DEFAULT_BRANCH_PATTERN, actor="", policy="",
     changed_files_file=None, with_adoption=False, repo="",
     fetch_issue=None, as_json=False, draft=False, base=None, labels=(),
+    title=None,
 ):
     """Ejecuta el preflight; devuelve el código de salida (0/1/2)."""
     try:
@@ -295,7 +310,7 @@ def run_preflight(  # noqa: PLR0913 — orquestador de gates; kwargs 1:1 con la 
             print("pr preflight: --draft exige --base", file=sys.stderr)
             return EXIT_USAGE
         try:
-            return _run_draft_preflight(body, base, labels, as_json)
+            return _run_draft_preflight(body, base, labels, as_json, title)
         except _PreflightInputError as exc:
             print(f"pr preflight: {exc}", file=sys.stderr)
             return EXIT_USAGE
@@ -306,6 +321,8 @@ def run_preflight(  # noqa: PLR0913 — orquestador de gates; kwargs 1:1 con la 
         _collect_issue_spec_local(findings, body, repository, issue_spec)
         _collect_issue_spec_remote(findings, body, repository, fetch_issue, issue_spec)
         _collect_docs_evidence(findings, body, repository, policy, changed_files_file)
+        findings.extend(_gate_pr_title(
+            title, _load_gate("check_pr_contract", PR_CONTRACT_GATE)))
         _collect_adoption(findings, with_adoption, repo)
     except _PreflightInputError as exc:
         print(f"pr preflight: {exc}", file=sys.stderr)
@@ -316,6 +333,8 @@ def run_preflight(  # noqa: PLR0913 — orquestador de gates; kwargs 1:1 con la 
 def _build_parser():
     p = argparse.ArgumentParser(prog="ci-pattern pr preflight", description=__doc__)
     p.add_argument("--pr-body", required=True)
+    p.add_argument("--pr-title", default=None,
+                   help="Título del PR (HR-93: de él sale el tipo).")
     p.add_argument("--draft", action="store_true",
                    help="Modo API-free de cuerpo y tamaño; exige --base.")
     p.add_argument("--base", default=None,
@@ -400,7 +419,7 @@ def main(argv=None):
     if args.draft:
         return run_preflight(
             body_file=args.pr_body, draft=True, base=args.base,
-            labels=args.label, as_json=args.as_json)
+            labels=args.label, as_json=args.as_json, title=args.pr_title)
     args = _resolve_defaults(args)
     issue_spec = _load_gate("check_issue_spec_main", ISSUE_SPEC_GATE)
     fetch_issue = _make_fetcher(args, issue_spec)
@@ -419,7 +438,7 @@ def main(argv=None):
         branch=args.branch, branch_pattern=args.branch_pattern, actor=args.actor,
         policy=args.policy, changed_files_file=args.changed_files_file,
         with_adoption=args.with_adoption, repo=args.repo,
-        fetch_issue=fetch_issue, as_json=args.as_json)
+        fetch_issue=fetch_issue, as_json=args.as_json, title=args.pr_title)
 
 
 if __name__ == "__main__":

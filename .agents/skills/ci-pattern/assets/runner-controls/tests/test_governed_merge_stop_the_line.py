@@ -21,6 +21,10 @@ from test_governed_merge import base_state, contract, pull  # noqa: E402
 
 ASSET = Path(__file__).resolve().parents[1] / "check_governed_merge.py"
 
+#: Distingue «la clave no está» de «la clave está con valor null»: la segunda es una
+#: forma inválida y falla cerrado; la primera deja las señales activas (#1784).
+ABSENT = object()
+
 PROFILE = ".github/prerelease.json"
 REPO = "DysTelefonica/team-skills"
 NIGHT_LABEL = "prerelease:night-red"
@@ -242,6 +246,135 @@ class TestMainRedThroughTheInterface(unittest.TestCase):
         proc = self.gate(self.state())
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
         self.assertEqual(len(self.merges()), 1)
+
+
+class TestStopTheLineSwitchThroughTheInterface(unittest.TestCase):
+    """#1784: el consumer apaga cada señal de la parada de línea desde su contrato.
+
+    La declaración vive en `.github/host-contract.json` (la misma ruta que el
+    merge gobernado ya lee): la clave `stop_the_line` con un miembro booleano
+    por señal (`night_red_enabled`, `main_red_enabled`). Sin la clave —o sin
+    un miembro— la señal sigue activa (el comportamiento de hoy). Una señal
+    apagada no se consulta y no bloquea; el merge lo dice por `stderr`. Una
+    forma inválida falla cerrado (2).
+    """
+
+    APAP_ARGS = ["--repo", REPO, "--contract", ".github/host-contract.json", "--pr", "7",
+                 "--max-lines", "400", "--nightly-workflow", "ci.yml",
+                 "--dispatch-marker", "night-redispatch"]
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.root = Path(tmp.name)
+        (self.root / ".github").mkdir()
+
+    def write_contract(self, declaration=ABSENT):
+        data = contract()
+        if declaration is not ABSENT:
+            data["stop_the_line"] = declaration
+        (self.root / ".github" / "host-contract.json").write_text(
+            json.dumps(data), encoding="utf-8")
+
+    def gate(self, state, declaration=ABSENT):
+        self.write_contract(declaration)
+        with labelled_github_stub(self.root / "state.json", state) as base:
+            env = stub_env(base)
+            env.pop("GITHUB_STEP_SUMMARY", None)
+            return subprocess.run([sys.executable, str(ASSET), *self.APAP_ARGS], cwd=self.root,
+                                  capture_output=True, text=True, env=env, timeout=60)
+
+    def state(self, night_red_issues=(), main_red_issues=(), linked=()):
+        """Issues abiertas por etiqueta: la nocturna en `NIGHT_LABEL`, la de main en `MAIN_RED_LABEL`.
+
+        La nocturna está en rojo de verdad (una ejecución `schedule` completada en
+        fallo), así que la señal nocturna solo deja de bloquear si el consumer la
+        apaga de verdad.
+        """
+        state = base_state()
+        state["pr_details"] = {"7": pull(labels=TYPE_BUG)}
+        state["issues_by_label"] = {
+            NIGHT_LABEL: [{"number": n, "state": "open"} for n in night_red_issues],
+            MAIN_RED_LABEL: [{"number": n, "state": "open"} for n in main_red_issues]}
+        state["runs"] = [night()]
+        state["closing_refs"] = [{"number": n, "state": "open",
+                                  "repository": {"nameWithOwner": REPO}} for n in linked]
+        return state
+
+    def merges(self):
+        return json.loads((self.root / "state.json").read_text(encoding="utf-8"))["merges"]
+
+    def label_queries(self):
+        """Las etiquetas que el gate consultó de verdad (el stub las registra)."""
+        return json.loads((self.root / "state.json").read_text(encoding="utf-8")).get(
+            "label_queries", [])
+
+    def api_calls(self):
+        """Las llamadas a la API que el gate hizo (el stub las registra)."""
+        return json.loads((self.root / "state.json").read_text(encoding="utf-8")).get("calls", [])
+
+    def test_without_the_key_both_signals_still_block(self):
+        """Sin la clave, el comportamiento es el de hoy: ambas señales bloquean."""
+        proc = self.gate(self.state(night_red_issues=[11], main_red_issues=[21]))
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(self.merges(), [])
+        self.assertIn(NIGHT_LABEL, proc.stdout)
+        self.assertIn(MAIN_RED_LABEL, proc.stdout)
+
+    def test_the_night_red_signal_switched_off_does_not_query_its_label(self):
+        """Con `night_red_enabled` apagada, el gate no consulta `prerelease:night-red` ni bloquea."""
+        proc = self.gate(self.state(night_red_issues=[11], main_red_issues=[21]),
+                         {"night_red_enabled": False})
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(self.merges(), [])
+        self.assertNotIn(NIGHT_LABEL, self.label_queries())
+        self.assertIn(MAIN_RED_LABEL, self.label_queries())
+        self.assertIn(NIGHT_LABEL, proc.stderr)
+
+    def test_the_main_red_signal_switched_off_does_not_query_its_label(self):
+        """Con `main_red_enabled` apagada, el gate no consulta `prerelease:main-red` ni bloquea."""
+        proc = self.gate(self.state(night_red_issues=[11], main_red_issues=[21]),
+                         {"main_red_enabled": False})
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(self.merges(), [])
+        self.assertNotIn(MAIN_RED_LABEL, self.label_queries())
+        self.assertIn(NIGHT_LABEL, self.label_queries())
+        self.assertIn(MAIN_RED_LABEL, proc.stderr)
+
+    def test_both_signals_switched_off_let_the_merge_through(self):
+        """Con las dos señales apagadas, nada bloquea y el merge sale."""
+        proc = self.gate(self.state(night_red_issues=[11], main_red_issues=[21]),
+                         {"night_red_enabled": False, "main_red_enabled": False})
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(len(self.merges()), 1)
+        self.assertEqual(self.label_queries(), [])
+
+    def test_the_notice_appears_even_when_another_gate_blocks_first(self):
+        """El aviso se dice siempre: si otra puerta bloquea, el operador sigue viendo el interruptor."""
+        state = self.state(night_red_issues=[11])
+        state["pr_details"] = {"7": pull(labels=TYPE_BUG, draft=True)}
+        proc = self.gate(state, {"night_red_enabled": False})
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(self.merges(), [])
+        self.assertIn(NIGHT_LABEL, proc.stderr)
+
+    def test_a_malformed_declaration_fails_closed(self):
+        """Una forma inválida no se ignora en silencio: el merge falla cerrado (2)."""
+        for declaration in ("night-red", {"night_red_enabled": "no"}, {"unknown_signal": False},
+                            None, [], 0, {"night_red_enabled": None}):
+            with self.subTest(declaration=declaration):
+                proc = self.gate(self.state(night_red_issues=[11], main_red_issues=[21]),
+                                  declaration)
+                self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+                self.assertEqual(self.merges(), [])
+                self.assertIn("stop_the_line", proc.stderr)
+
+    def test_a_malformed_declaration_fails_before_any_api_call(self):
+        """La forma se valida antes de la API: una declaración rota no gasta una llamada."""
+        proc = self.gate(self.state(night_red_issues=[11]), {"night_red_enabled": "no"})
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertEqual(self.label_queries(), [])
+        self.assertEqual(self.api_calls(), [])
 
 
 if __name__ == "__main__":

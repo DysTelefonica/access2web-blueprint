@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Suite del liveness gate (F3, #396, HR-3/HR-21)."""
+import json
 import subprocess
 import sys
 import tempfile
@@ -123,6 +124,66 @@ class TestLivenessConfig(unittest.TestCase):
         p = _gate(r)
         self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
         self.assertIn("OK", p.stdout)
+
+
+class TestReviewDefects(unittest.TestCase):
+    """Defectos hallados al cablear el gate en APAP (#4282): un comentario no es
+    liveness, solo cuentan los jobs de primer nivel y un gate declarado en
+    required_jobs tiene que invocarlo algun workflow."""
+
+    SEC = "jobs:\n  security:\n    runs-on: ubuntu-latest\n    steps:\n      - run: pip-audit\n"
+
+    def _with_liveness(self, r):
+        (r / "assets" / "gate-liveness").mkdir(parents=True)
+        (r / "assets" / "gate-liveness" / "README.md").write_text("# config\n", encoding="utf-8")
+
+    def test_comment_mentioning_liveness_does_not_count(self):
+        r = _mk_repo({"ci.yml": "# liveness: aviso tras 24h (pendiente)\n" + self.SEC})
+        p = _gate(r)
+        self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+        self.assertIn("FINDING", p.stdout)
+
+    def test_real_liveness_step_still_counts(self):
+        wf = self.SEC.replace("      - run: pip-audit\n",
+                              "      - name: liveness alert\n        run: pip-audit\n")
+        r = _mk_repo({"ci.yml": wf})
+        p = _gate(r)
+        self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+        self.assertIn("OK", p.stdout)
+
+    def test_nested_keys_are_not_jobs(self):
+        wf = ("jobs:\n  lint:\n    runs-on: ubuntu-latest\n    env:\n"
+              "      deploy-token: x\n    steps:\n      - run: echo\n")
+        r = _mk_repo({"ci.yml": wf})
+        p = _gate(r)
+        self.assertEqual(p.returncode, 2, p.stdout + p.stderr)
+        self.assertNotIn("deploy-token", p.stdout)
+
+    def test_declared_required_job_not_invoked_is_finding(self):
+        r = _mk_repo({"ci.yml": self.SEC})
+        self._with_liveness(r)
+        (r / ".github" / "required-jobs-policy.json").write_text(
+            json.dumps({"required_jobs": ["security", "deploy-gate"]}), encoding="utf-8")
+        p = _gate(r)
+        self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+        self.assertIn("FINDING", p.stdout)
+        self.assertIn("deploy-gate", p.stdout)
+
+    def test_declared_required_job_invoked_passes(self):
+        r = _mk_repo({"ci.yml": self.SEC})
+        self._with_liveness(r)
+        (r / ".github" / "required-jobs-policy.json").write_text(
+            json.dumps({"required_jobs": ["security"]}), encoding="utf-8")
+        p = _gate(r)
+        self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+
+    def test_unreadable_policy_is_invalid(self):
+        r = _mk_repo({"ci.yml": self.SEC})
+        self._with_liveness(r)
+        (r / ".github" / "required-jobs-policy.json").write_text("{no json", encoding="utf-8")
+        p = _gate(r)
+        self.assertEqual(p.returncode, 2, p.stdout + p.stderr)
+        self.assertIn("INVALID", p.stdout)
 
 
 class TestThresholdConfig(unittest.TestCase):

@@ -268,5 +268,46 @@ class E2eEvidenceGateTests(unittest.TestCase):
         self.assertEqual(code, 0, out + err)
 
 
+class E2eAdviseModeTests(unittest.TestCase):
+    """#1786: `--advise` convierte el rojo «UI sin e2e» en aviso por stderr; exit 0."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory(prefix="e2e-advise.")
+        self.addCleanup(self._tmp.cleanup)
+        self.repo = make_repo(self._tmp.name, BASE_FILES)
+
+    def test_advise_turns_ui_without_e2e_into_advice_with_exit_0(self) -> None:
+        add_commit(self.repo, {"app/pages/Home.tsx": "// cambio de UI\n"}, "ui change")
+        proc = run_gate(self.repo, "--head", "HEAD", "--advise")
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stderr)
+        self.assertIn("sin flujo e2e", proc.stderr)
+
+    def test_without_advise_ui_without_e2e_still_blocks(self) -> None:
+        add_commit(self.repo, {"app/pages/Home.tsx": "// cambio de UI\n"}, "ui change")
+        proc = run_gate(self.repo, "--head", "HEAD")
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertNotIn("AVISO", proc.stderr)
+
+    def test_advise_with_a_flow_or_without_ui_stays_silent_and_exit_0(self) -> None:
+        add_commit(self.repo, {"app/pages/Home.tsx": "// cambio de UI\n",
+                               "tests/e2e_ci/home.spec.ts": "test('home', () => {});\n"},
+                   "ui con flujo")
+        proc = run_gate(self.repo, "--head", "HEAD", "--advise")
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertNotIn("AVISO", proc.stderr)
+
+    def test_advise_does_not_hide_an_invalid_body_file_exit_2(self) -> None:
+        add_commit(self.repo, {"app/pages/Home.tsx": "// cambio de UI\n"}, "ui change")
+        proc = run_gate(self.repo, "--head", "HEAD", "--advise",
+                        "--pr-body-file", str(Path(self._tmp.name) / "no-existe.md"))
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+
+    def test_advise_takes_no_value_so_a_value_exits_2(self) -> None:
+        add_commit(self.repo, {"app/pages/Home.tsx": "// cambio de UI\n"}, "ui change")
+        proc = run_gate(self.repo, "--head", "HEAD", "--advise", "yes")
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

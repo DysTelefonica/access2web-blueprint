@@ -1,0 +1,3 @@
+type: minor
+
+La regla 2 de `governed-delivery` exige el permiso mínimo para despachar el merge gobernado: la cuenta de `gh` en uso necesita permiso de escritura en el repositorio (`actions:write`), que es lo que exige `gh workflow run`. Ya no pide ser mantenedor ni administrador (`team-skills#1797`). El merge lo ejecuta el `GITHUB_TOKEN` del job, con sus gates (CI en verde con `wait_ci.py`, SHA exacto, camino gobernado, nunca `--admin`); la orden registrada de un mantenedor sigue siendo obligatoria en la variante con roles. El texto propagado (partials `web` y `governance/ci-pattern`) y el documento operativo generado quedan coherentes con la regla.

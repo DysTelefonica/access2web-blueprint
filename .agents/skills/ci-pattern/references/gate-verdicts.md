@@ -16,7 +16,7 @@ verificado se marca. Las fricciones citadas se detallan en
 | Gate | Veredicto | Test que lo ve fallar | Base |
 |---|---|---|---|
 | `required` (agregador) | Se queda, reforzado | Suite de paridad del asset (`assets/required-jobs/`) | Falla cerrado con matriz de skips esperados; causa raíz separada de skips en cascada (F-003, ardelperal/APAP_WEB#1118) |
-| `pr-size` | Se retira de CI (#1396) | — | El presupuesto lo mide solo A1 de `pr-contract`; ver «Medición en cadete». Antes: excepción como campo de datos del cuerpo, no etiqueta (ardelperal/APAP_WEB#1141; R2) |
+| `pr-size` | Se retira de CI (#1396) | — | El presupuesto lo mide solo A1 de `pr-contract`; ver «Medición en cadete». La medida local cuenta como A1 (misma cifra que la API) y avisa de las líneas que solo cambian el final de línea (#1753). Antes: excepción como campo de datos del cuerpo, no etiqueta (ardelperal/APAP_WEB#1141; R2) |
 | `branch-name` | Aviso, no bloquea (R10 de team-skills#1093) | — | El ruleset del repo aplica `^(feat\|fix\|chore\|docs\|refactor\|test)/[a-z0-9._-]+$` cuando existe. En un host sin rulesets el gate mide y avisa con `AVISO`, sin fallar el PR. |
 | `pr-contract` HR-7 (palabras de cierre) | Avisa de cada cierre y bloquea solo `Refs #N` con una palabra de cierre sobre el mismo `#N` (#1613 S5; sustituye el «avisa y no bloquea» de #1172 y la expectativa «passes» de #840) | `assets/pr-contract/tests/test_closing_mentions.py` y `test_pr_contract.py` | El aviso cita la línea y nombra la issue; un cierre de otro repositorio con el mismo número solo avisa (exit 0) |
 | `issue-spec` | Se queda, mensaje a mejorar | Sin verificar | Trazabilidad determinista rama + etiquetas + cierre (B4, B11) |

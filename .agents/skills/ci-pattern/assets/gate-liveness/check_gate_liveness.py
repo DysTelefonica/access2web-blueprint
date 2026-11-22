@@ -17,6 +17,7 @@ Salida:
 Exit: 0 OK/skip, 1 finding, 2 invalid/empty.
 """
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -37,19 +38,38 @@ def _find_yamls(repo: Path) -> list[Path]:
     return out
 
 
+def _yaml_code(text: str) -> str:
+    """Quita los comentarios YAML: un '#' al inicio de linea o tras blanco abre
+    comentario. Un comentario no es un uso real del vocabulario de liveness."""
+    out = []
+    for line in text.splitlines():
+        m = re.search(r"(^|\s)#", line)
+        out.append(line[:m.start()] if m else line)
+    return "\n".join(out)
+
+
 def _extract_jobs(content: str) -> list[str]:
-    jobs, in_jobs = [], False
+    """Ids de job de PRIMER nivel: las claves a la indentacion del primer job
+    bajo la clave `jobs:` de columna 0. Las claves anidadas (name, run, env...)
+    no son gates."""
+    jobs, in_jobs, job_indent = [], False, None
     for line in content.splitlines():
-        if re.match(r"^jobs\s*:", line.strip()):
-            in_jobs = True
+        if re.match(r"^jobs\s*:", line):
+            in_jobs, job_indent = True, None
             continue
-        if in_jobs:
-            if line.strip() and not line[0:1].isspace() and not line[0:1] == '\t':
-                in_jobs = False
-                continue
-            m = re.match(r"^\s{2,}(\w[\w-]*):\s*(.*)$", line)
-            if m:
-                jobs.append(m.group(1))
+        if not in_jobs:
+            continue
+        if line.strip() and not line[0].isspace():
+            in_jobs = False
+            continue
+        m = re.match(r"^(\s+)(\w[\w-]*):", line)
+        if not m:
+            continue
+        indent = len(m.group(1).expandtabs(2))
+        if job_indent is None:
+            job_indent = indent
+        if indent == job_indent:
+            jobs.append(m.group(2))
     return jobs
 
 
@@ -72,7 +92,8 @@ def _has_liveness(repo: Path) -> bool:
         if d.is_dir():
             return True
     for wf in _find_yamls(repo):
-        if any(kw in wf.read_text(encoding="utf-8").lower() for kw in _KW_LIV):
+        if any(kw in _yaml_code(wf.read_text(encoding="utf-8")).lower()
+               for kw in _KW_LIV):
             return True
     for f in repo.rglob("*.json"):
         if ".git" in str(f):
@@ -97,6 +118,30 @@ def _detect_gates(repo: Path) -> list[dict]:
     return gates
 
 
+def _required_jobs(repo: Path) -> tuple[list[str], str | None]:
+    """Gates declarados en `.github/required-jobs-policy.json` (`required_jobs`).
+    Devuelve (nombres, error): error a None si el repo no declara politica o si
+    la politica es legible; si no, el motivo por el que no se puede leer."""
+    path = repo / ".github" / "required-jobs-policy.json"
+    if not path.is_file():
+        return [], None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return [], f"no se puede leer {path.name}: {exc}"
+    names = data.get("required_jobs") if isinstance(data, dict) else None
+    if not isinstance(names, list) or not all(isinstance(n, str) for n in names):
+        return [], f"{path.name}: required_jobs debe ser una lista de nombres de job"
+    return list(names), None
+
+
+def _defined_jobs(repo: Path) -> set[str]:
+    out: set[str] = set()
+    for wf in _find_yamls(repo):
+        out.update(_extract_jobs(wf.read_text(encoding="utf-8")))
+    return out
+
+
 def _pin_output_encoding() -> None:
     """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
     if hasattr(sys.stdout, "reconfigure"):
@@ -113,10 +158,24 @@ def main() -> int:
     p.add_argument("--check", action="store_true")
     a = p.parse_args()
 
+    required, policy_error = _required_jobs(a.repo)
+    if policy_error is not None:
+        print(f"INVALID: política required_jobs no legible en {a.repo}: {policy_error}")
+        return 2
+    defined = _defined_jobs(a.repo) if required else set()
+    uninvoked = [n for n in required if n not in defined]
+
     gates = _detect_gates(a.repo)
-    if not gates:
+    if not gates and not uninvoked:
         print(f"SKIP: no se detectaron gates fail-closed en {a.repo}")
         return 2
+
+    if uninvoked:
+        print(f"FINDING: {len(uninvoked)} gate(s) declarado(s) en required_jobs "
+              "que ningún workflow invoca.")
+        for name in uninvoked:
+            print(f"  - {name} (required_jobs) sin job en .github/workflows")
+        return 1
 
     if not _has_liveness(a.repo):
         print(f"FINDING: {len(gates)} gate(s) fail-closed sin umbral de aviso "

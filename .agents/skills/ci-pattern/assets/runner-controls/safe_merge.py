@@ -23,12 +23,28 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import NamedTuple
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from advisory_checks import (  # noqa: E402
+    CONTRACT_PATH,
+    AdvisoryContractError,
+    read_contract,
+    split_runs,
+)
 
 GH_TIMEOUT = 30
 GIT_TIMEOUT = 5
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 CLOSING = re.compile(r"\b(closes|fixes|resolves)\s+#?\d+", re.IGNORECASE)
 REFS = re.compile(r"\brefs\s+#\d+", re.IGNORECASE)
+
+
+class AdvisoryPolicy(NamedTuple):
+    """Lo que declara el host-contract: los patrones advisory y los checks protegidos."""
+
+    advisory: tuple[str, ...]
+    protected: set[str]
 
 
 class MergeFailClosedError(Exception):
@@ -41,6 +57,12 @@ class MergeFailClosedError(Exception):
 
     def __init__(self, *details: object) -> None:
         super().__init__(self.template.format(*details))
+
+
+class AdvisoryDeclarationError(MergeFailClosedError):
+    """La declaracion `advisory_checks` del host-contract no tiene una forma valida (#1762)."""
+
+    template = "the advisory_checks declaration is not valid: {0}"
 
 
 class GhCallFailedError(MergeFailClosedError):
@@ -314,11 +336,15 @@ def base_findings(repo: str, number: int, pull: dict,
     return findings, default_branch, behind
 
 
-def ci_findings(repo: str, number: int, head_sha: str, required: set[str]) -> list[str]:
+def ci_findings(repo: str, number: int, head_sha: str, required: set[str],
+                policy: AdvisoryPolicy | None = None) -> list[str]:
     """Step 4: every deciding check-run on the head is green and the required ones exist.
 
     The deciding run of a name is its newest non-cancelled one (#1598); a cancelled run
-    decides only when every run of that name is cancelled, and then it blocks."""
+    decides only when every run of that name is cancelled, and then it blocks.
+
+    #1762: the checks the consumer declares advisory are listed and ignored; a
+    required name (by CLI or by the contract) is never advisory, so it keeps blocking."""
     check_runs_data = gh_json(
         f"repos/{repo}/commits/{head_sha}/check-runs"
         "?filter=latest&per_page=100"
@@ -335,7 +361,14 @@ def ci_findings(repo: str, number: int, head_sha: str, required: set[str]) -> li
     missing = required - {run["name"] for run in latest.values()}
     if missing:
         findings.append(f"required check(s) missing: {', '.join(sorted(missing))}")
-    for name, run in latest.items():
+    declared = policy if policy is not None else AdvisoryPolicy((), required)
+    blocking, ignored = split_runs(list(latest.values()), declared.advisory,
+                                   required=declared.protected)
+    if ignored:
+        print("NOTE: advisory check(s) ignored (declared in the host-contract): "
+              + ", ".join(sorted(str(run.get("name")) for run in ignored)))
+    for run in blocking:
+        name = run["name"]
         status = run.get("status", "pending")
         conclusion = run.get("conclusion", "pending")
         if status != "completed" or conclusion not in ("success", "neutral", "skipped"):
@@ -374,6 +407,9 @@ def parse_args() -> argparse.Namespace:
                              "acepta: el CI corre una vez, en la PR, #1397)")
     parser.add_argument("--check-only", action="store_true",
                         help="solo verifica; no fusiona")
+    parser.add_argument("--contract", default=CONTRACT_PATH,
+                        help="host-contract del consumer, donde se declaran los checks advisory "
+                             f"(por defecto {CONTRACT_PATH}; si no existe, no hay advisory)")
     return parser.parse_args()
 
 
@@ -385,12 +421,22 @@ def run(args: argparse.Namespace) -> int:
         if not args.repo:
             raise RepoUnresolvedError()
     pull = load_pull(args.repo, args.pr)
+    try:
+        declared = read_contract(args.contract)
+    except AdvisoryContractError as exc:
+        raise AdvisoryDeclarationError(str(exc)) from exc
+    # Un check requerido nunca queda tapado por un patron advisory: lo es el que
+    # nombra la linea de comandos o el que declara el contrato del consumer. Los
+    # del contrato protegen del patron, pero no se exigen: eso es del guard que
+    # mergea, no de este.
+    protected = set(args.required_check) | set(declared.required)
     body = pull.get("body") if isinstance(pull.get("body"), str) else ""
     labels = {label.get("name") for label in pull["labels"]
               if isinstance(label, dict) and isinstance(label.get("name"), str)}
     findings, default_branch, _behind = base_findings(args.repo, args.pr, pull,
                                                      args.require_fresh)
-    findings += ci_findings(args.repo, args.pr, pull["head"]["sha"], set(args.required_check))
+    findings += ci_findings(args.repo, args.pr, pull["head"]["sha"], set(args.required_check),
+                             AdvisoryPolicy(declared.patterns, protected))
     findings += chain_findings(args.pr, labels, body)
     if findings:
         for f in findings:

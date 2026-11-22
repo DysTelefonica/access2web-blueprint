@@ -62,7 +62,7 @@ def make_event(tmp, body=None, labels=None, base="main", base_sha=None, head_sha
             "head": {"ref": "feature/x", "sha": head_sha or "0" * 40},
             "labels": [{"name": item} for item in (labels or [])],
             "body": body,
-            "title": "test PR",
+            "title": "feat: test PR",
         },
         "repository": {"default_branch": "main"},
     }
@@ -913,7 +913,7 @@ class IssueLinkGateTests(unittest.TestCase):
 
 ALL_CHECKS = ("closes", "chain_context", "issue_links", "closure_tests",
               "docs_evidence", "budget", "commits", "ai_disclosure",
-              "commit_identity", "deleted_tests")
+              "commit_identity", "deleted_tests", "pr_title")
 ONLY_DOCS = {name: False for name in ALL_CHECKS if name != "docs_evidence"}
 DOCS_EVIDENCE = {"pages": [{"page": "docs/p.md", "covers": ["f.txt"]}], "checklists": {}}
 
@@ -1256,7 +1256,7 @@ class LiveApiTests(unittest.TestCase):
                 "base": {"ref": "main", "sha": "0" * 40},
                 "head": {"ref": "feature/x", "sha": "1" * 40},
                 "labels": [{"name": n} for n in (payload_labels or [])],
-                "body": payload_body, "title": "test",
+                "body": payload_body, "title": "feat: test",
             },
             "repository": {"full_name": LIVE_REPO, "default_branch": "main"},
         }
@@ -1586,6 +1586,7 @@ class CommitIdentityTests(unittest.TestCase):
         """HR-3: sin la API viva no mide nada; con el resto apagado el gate sale 2."""
         policy = self._policy()
         policy["checks"]["closes"] = False
+        policy["checks"]["pr_title"] = False
         proc = self._run(policy, self._unlinked(), live=False)
         self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
         self.assertIn("ninguna", proc.stderr)

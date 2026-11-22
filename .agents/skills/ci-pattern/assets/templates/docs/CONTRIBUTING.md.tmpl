@@ -44,7 +44,7 @@ Las etiquetas del repo viven en `.github/host-contract.json` (HR-34).
 Las que importan al abrir una PR:
 
 - `type:*` — una (`type:feature`, `type:bug`, `type:docs`,
-  `type:refactor`, `type:chore`). Es una convención de clasificación:
+  `type:refactor`, `type:chore`). Es una convención de clasificación y el tipo sale del título convencional del PR (HR-93):
   desde #1093 ningún gate la exige, ni en la issue ni en la PR.
 - `status:approved` — la puede poner cualquiera, agentes incluidos
   (decisión del dueño del 2026-10-23, en #1093). Es la convención que
@@ -119,7 +119,14 @@ los tenga configurados los declara en su política o falla el gate.
 El cuerpo de la PR cierra la issue que la motiva. Use la forma canónica:
 
 - Una PR simple: `Closes #<nº>` en su propia línea.
-- Una PR encadenada (eslabón): `Refs #<nº-issue-padre>`; solo la punta
-  lleva `Closes`.
+
+Regla de la cadena (tres líneas). Eslabón: `Refs #N` en el cuerpo y en los
+commits, con `chain:partial`. Punta contra `main`: `Closes #N` y sin
+`chain:partial`. Ejemplo: `fix(x): y (Refs #N)` es un eslabón y `fix(x): y
+(Closes #N)` es la punta.
+
+Una palabra de cierre en el cuerpo **o en un commit** cierra la issue al
+fusionar: en un eslabón la cierra antes de tiempo. El merge gobernado bloquea y
+nombra el commit y la línea que la rompen.
 
 Una PR sin enlace a la issue no es trazable: el revisor la devuelve.

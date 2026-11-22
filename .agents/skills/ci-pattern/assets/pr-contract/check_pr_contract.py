@@ -23,6 +23,11 @@ from pathlib import Path
 # Fuente única del presupuesto (#931): la regla A1 la comparte con pr-size.
 # A1 es el único check de tamaño en CI (#1396): pr-size es medida local.
 # Las exclusiones (lockfiles, `odd/tasks/*.md` de #1611, generados) viven allí.
+# Exención de Dependabot (#1726): su título lo genera GitHub; es la misma
+# exención que el gate de rama concede a sus ramas.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "dependabot"))
+from dependabot import is_dependabot_pr  # noqa: E402
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "budget"))
 from vendored_budget import (  # noqa: E402
     VENDORED_ROOTS,
@@ -68,7 +73,7 @@ class UnknownChecksError(ChecksConfigError):
 
 class NonBooleanChecksError(ChecksConfigError, TypeError):
     def __init__(self, names):
-        super().__init__(f"`checks` exige valores booleanos; no lo son: {', '.join(names)}")
+        super().__init__(f"`checks` exige true, false o \"advise\"; no lo son: {', '.join(names)}")
 
 
 class NoActiveChecksError(ChecksConfigError):
@@ -158,7 +163,9 @@ def fetch_pr_live(data, pr):
         raise _GITHUB_REST.GitHubApiError(_PULL_NOT_OBJECT_MSG)
     labels = [{"name": str(item.get("name", ""))} for item in live_labels
               if isinstance(item, dict)]
-    return labels, pull.get("body") or ""
+    # El título llega tal cual: si la API no lo trae, `None` significa «no se
+    # mide», no «el PR no tiene título».
+    return labels, pull.get("body") or "", pull.get("title")
 
 
 def _same_file(a, b):
@@ -199,7 +206,69 @@ def read_data_file(path):
 
 CHECK_NAMES = ("closes", "chain_context", "issue_links", "closure_tests",
                "docs_evidence", "budget", "commits", "ai_disclosure",
-               "commit_identity", "deleted_tests")
+               "commit_identity", "deleted_tests", "pr_title")
+
+#: Tipos convencionales del título de una PR (#1726, decisión del propietario del
+#: 2026-11-16): el vocabulario del gate de rama y el de los commits (HR-14).
+PR_TITLE_TYPES = ("build", "chore", "ci", "docs", "feat", "fix", "perf",
+                   "refactor", "revert", "style", "test")
+
+#: El vocabulario de los hosts no es el de los títulos: `type:feature` es `feat` y
+#: `type:bug` es `fix`. Sin esta equivalencia, avisaría toda PR de la flota.
+PR_TITLE_LABEL_ALIASES = {"feature": "feat", "bug": "fix"}
+
+PR_TITLE_RX = re.compile(
+    r"^(?P<type>" + "|".join(PR_TITLE_TYPES) + r")(?:\([^)]+\))?!?: \S")
+
+
+def pr_title_type(title):
+    """Tipo convencional del título de la PR; `None` si el título no lo es."""
+    if not isinstance(title, str):
+        return None
+    match = PR_TITLE_RX.match(title.strip())
+    return match.group("type") if match else None
+
+
+def check_pr_title(pr, findings, advisories):
+    """HR-93 (#1726): el tipo de la PR sale de su título convencional.
+
+    Un título convencional válido basta para el merge; uno que no lo es bloquea
+    con el motivo nombrado; y si una etiqueta lo contradice, manda el título."""
+    title = pr.get("title")
+    if is_dependabot_pr((pr.get("user") or {}).get("login"),
+                        (pr.get("head") or {}).get("ref")):
+        # El título de un PR de Dependabot lo genera GitHub («Bump ...»).
+        print("PR-CONTRACT: HR-93 no se mide: el PR es de Dependabot y su título "
+              "lo genera GitHub.", file=sys.stderr)
+        return None
+    ptype = pr_title_type(title)
+    if ptype is None:
+        if title is None:
+            # Sin título no hay nada que medir (payload local): se dice y no se
+            # bloquea, como HR-88 con su `--diff-file`.
+            print("PR-CONTRACT: HR-93 no se mide: el payload no trae el título del PR.",
+                  file=sys.stderr)
+            return None
+        if not title.strip():
+            findings.append("HR-93: el PR no tiene título: el tipo de la PR sale "
+                            "de su título convencional.")
+            return None
+        findings.append(
+            f"HR-93: el título del PR no es convencional: «{title}». El tipo de la PR "
+            f"sale del título (decisión del propietario, 2026-11-16): debe empezar por "
+            f"«<tipo>: » o «<tipo>(<ámbito>): » con tipo en "
+            f"{', '.join(PR_TITLE_TYPES)}.")
+        return None
+    for label in pr.get("labels", []):
+        name = label.get("name") if isinstance(label, dict) else None
+        if not isinstance(name, str) or not name.startswith("type:"):
+            continue
+        family = PR_TITLE_LABEL_ALIASES.get(name.split(":", 1)[1], name.split(":", 1)[1])
+        if family != ptype:
+            advisories.append(
+                f"HR-93: la etiqueta {name} contradice el título «{title}» (tipo {ptype}); "
+                "manda el título: la etiqueta `type:*` es opcional y no la exige el contrato.")
+    return ptype
 
 # #1113: comprobaciones que #1093 (R1/R2) retiraron del gate. `labels` estuvo
 # en CHECK_NAMES hasta 938754363; `required_labels` era su campo de politica
@@ -209,6 +278,8 @@ CHECK_NAMES = ("closes", "chain_context", "issue_links", "closure_tests",
 # NUNCA existio sigue siendo un error de configuracion (exit 2): la deteccion
 # de erratas no se pierde.
 RETIRED_CHECK_NAMES = ("labels", "required_labels")
+# #1786: valor de checks que corre la comprobación y solo avisa.
+ADVISE = "advise"
 
 
 def active_checks(policy):
@@ -232,7 +303,8 @@ def active_checks(policy):
     if typos:
         raise UnknownChecksError(typos, CHECK_NAMES)
     bad = sorted(name for name, value in config.items()
-                 if name not in RETIRED_CHECK_NAMES and not isinstance(value, bool))
+                 if name not in RETIRED_CHECK_NAMES and not isinstance(value, bool)
+                 and value != ADVISE)
     if bad:
         raise NonBooleanChecksError(bad)
     active = {name for name in CHECK_NAMES if config.get(name, True)}
@@ -244,10 +316,41 @@ def active_checks(policy):
     return active
 
 
+def advise_checks(policy):
+    """#1786: nombres de `checks` con el valor `"advise"`: corren y solo avisan."""
+    config = policy.get("checks")
+    if not isinstance(config, dict):
+        return set()
+    return {name for name, value in config.items() if value == ADVISE}
+
+
+def _sinks(policy, verdict):
+    """#1786: name -> (lista de bloqueo, lista de aviso). Un control en `advise`
+    escribe en ambas listas `verdict.advised`: corre y se imprime por stderr, pero
+    no cambia el exit code."""
+    advised = advise_checks(policy)
+    return {
+        name: (verdict.advised, verdict.advised) if name in advised
+        else (verdict.findings, verdict.advisories)
+        for name in CHECK_NAMES
+    }
+
+
 def _anchor_exists(text, anchor):
     slugs = {re.sub(r"[^\w\- ]", "", m.group(1)).strip().lower().replace(" ", "-")
              for m in re.finditer(r"^#{1,6}\s+(.*?)\s*#*$", text, re.M)}
     return anchor.lower() in slugs
+
+
+def _required_checklists(ptype, label_types, checklists):
+    """Claves de checklist que el PR debe enlazar (HR-93): las de su tipo."""
+    keys = [f"type:{ptype}"] if ptype else []
+    keys += [f"type:{label}" for label, title in PR_TITLE_LABEL_ALIASES.items()
+             if title == ptype]
+    for key in keys:
+        if key in checklists:
+            return {key}
+    return {key for key in label_types if key in checklists}
 
 
 def check_docs_evidence(pr, repo, files, policy, advisories):
@@ -276,13 +379,15 @@ def check_docs_evidence(pr, repo, files, policy, advisories):
                 f"HR-64: el PR toca {', '.join(touched)}, cubierto por {entry['page']}, y ni "
                 "cambia la pagina ni lleva la seccion «Documentación» con el motivo.")
     body = pr.get("body") or ""
-    types = {label["name"] for label in pr.get("labels", [])}
+    label_types = {label["name"] for label in pr.get("labels", [])}
+    required = _required_checklists(pr_title_type(pr.get("title")), label_types,
+                                     checklists)
     for label, link in sorted(checklists.items()):
         path, _, anchor = link.partition("#")
         target = Path(repo) / path
         if not target.is_file() or (anchor and not _anchor_exists(target.read_text(encoding="utf-8"), anchor)):
             advisories.append(f"HR-64: la checklist de {label} apunta a {link} y no existe.")
-        elif label in types and link not in body:
+        elif label in required and link not in body:
             advisories.append(f"HR-64: el cuerpo del PR ({label}) no enlaza su checklist {link}.")
 
 
@@ -1255,12 +1360,16 @@ def check_issue_links(pr, data, findings):
 class Verdict:
     """Lo que el gate acumula: `findings` bloquean, `advisories` avisan.
 
+    #1786: `advised` son los hallazgos de un control en `advise`: salen por
+    stderr y no cambian el exit code.
+
     #1172: un mismo objeto lleva las dos listas, para que las comprobaciones
     que assinan a una de ellas no crezcan en argumentos (PLR0913).
     """
 
     findings: list = field(default_factory=list)
     advisories: list = field(default_factory=list)
+    advised: list = field(default_factory=list)
     warnings: list = field(default_factory=list)  # HR-88 (#1509): `::warning::`
 
 
@@ -1349,20 +1458,27 @@ def _pr_level_checks(active, data, pr, ctx, verdict):
     _repo, policy = ctx
     base_ref = pr.get("base", {}).get("ref", "main")
     default_branch = data.get("repository", {}).get("default_branch", "main")
+    sinks = _sinks(policy, verdict)
     # #1172: HR-7 avisa (no bloquea), como HR-53, HR-64, HR-54 y la asistencia
     # de IA. El enlace a la issue lo sigue exigiendo `issue-spec`.
     if "closes" in active:
-        check_closes(pr, base_ref, default_branch, policy, verdict.advisories)
-        check_closing_mentions(pr, data, verdict.findings, verdict.advisories)
+        _, notes = sinks["closes"]
+        check_closes(pr, base_ref, default_branch, policy, notes)
+        check_closing_mentions(pr, data, sinks["closes"][0], notes)
     # #1093 R3/R9: Chain Context y Asistencia de IA avisan; no bloquean.
     if "chain_context" in active:
-        check_chain_context(pr, base_ref, default_branch, policy, verdict.advisories)
+        check_chain_context(pr, base_ref, default_branch, policy, sinks["chain_context"][1])
     if "closes" in active:
-        check_chain_closes(pr, data, policy, verdict.advisories)
+        check_chain_closes(pr, data, policy, sinks["closes"][1])
     if "issue_links" in active:
-        check_issue_links(pr, data, verdict.findings)
+        check_issue_links(pr, data, sinks["issue_links"][0])
+    # HR-93 (#1726): el tipo de la PR sale de su titulo convencional; bloquea
+    # si el titulo no lo es (HR-92: check nuevo que bloquea, dentro del job
+    # `pr-gate`, que ya es requerido). Va por su sink (#1786): advise lo avisa.
+    if "pr_title" in active:
+        check_pr_title(pr, sinks["pr_title"][0], sinks["pr_title"][1])
     if "ai_disclosure" in active:
-        check_ai_disclosure(pr, verdict.advisories)
+        check_ai_disclosure(pr, sinks["ai_disclosure"][1])
 
 
 def closure_data(repo, texts, policy):
@@ -1384,10 +1500,13 @@ def _range_checks(active, pr, ctx, texts, verdict):
     El resto sigue bloqueando. Los avisos se acumulan en el veredicto que
     recibe el llamante."""
     repo, policy = ctx
+    sinks = _sinks(policy, verdict)
     if "closure_tests" in active:
-        check_closure_tests(pr, closure_data(repo, texts, policy), policy, verdict.advisories)
+        check_closure_tests(pr, closure_data(repo, texts, policy), policy,
+                            sinks["closure_tests"][1])
     if "docs_evidence" in active:
-        check_docs_evidence(pr, repo, texts["changed_files"].split(), policy, verdict.advisories)
+        check_docs_evidence(pr, repo, texts["changed_files"].split(), policy,
+                            sinks["docs_evidence"][1])
     if "budget" in active:
         origins = parse_origins(texts["origins_file"]) if "origins_file" in texts else None
         figure = BudgetFigure(
@@ -1396,13 +1515,13 @@ def _range_checks(active, pr, ctx, texts, verdict):
             vendored=vendored_lines(texts["numstat_file"]),
             origins_supplied=origins is not None,
         )
-        check_budget(pr, figure, policy, verdict.findings)
+        check_budget(pr, figure, policy, sinks["budget"][0])
     if "commits" in active:
-        check_commits(texts["commits_file"], policy, verdict.findings)
+        check_commits(texts["commits_file"], policy, sinks["commits"][0])
         # HR-7 (#1056) sobre el mismo texto: cuelga de `commits` porque comparte
         # el fichero de datos, así la política lo apaga con la clave que ya usa
         # para HR-14 y el contrato `checks` no crece. #1172: avisa.
-        check_closing_in_commits(texts["commits_file"], pr, policy, verdict.advisories)
+        check_closing_in_commits(texts["commits_file"], pr, policy, sinks["commits"][1])
     if "deleted_tests" in active:
         _deleted_tests_check(pr, ctx, texts, verdict)
 
@@ -1463,19 +1582,10 @@ def main(argv=None):
     if off:
         print(f"PR-CONTRACT: apagadas por política: {', '.join(off)}", file=sys.stderr)
 
-    # #938/#996: etiquetas y cuerpo se leen por API (vivos) o del payload (congelado al abrir).
-    if use_live_api(args.event_file, pr, os.environ):
-        try:
-            live_labels, live_body = fetch_pr_live(data, pr)
-        except _GITHUB_REST.GitHubApiError as exc:
-            print(f"ERROR: {exc}; {OBSOLETE_NOTE}", file=sys.stderr)
-            return 2
-        pr_with_live = dict(pr)
-        pr_with_live["labels"] = live_labels
-        pr_with_live["body"] = live_body
-    else:
-        pr_with_live = pr
-
+    pr_with_live, error = _pr_with_live_data(args, data, pr, active)
+    if error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        return 2
     identity, pr_commits, error = _load_commit_identity(args, data, pr, policy, active)
     texts = None
     if not error:
@@ -1493,11 +1603,35 @@ def main(argv=None):
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
     if pr_commits is not None:
-        check_commit_identity(pr_commits, identity, verdict.findings, verdict.advisories)
+        sinks_ci = _sinks(policy, verdict)["commit_identity"]
+        check_commit_identity(pr_commits, identity, sinks_ci[0], sinks_ci[1])
     # HR-31: el gate procesa el estado actual sin importar la acción
     # (opened, edited, labeled, unlabeled, synchronize).
-    return _verdict(verdict.findings, pr, action_text=data.get("action", "opened"),
-                    advisories=verdict.advisories, warnings=verdict.warnings)
+    return _verdict(verdict, pr, action_text=data.get("action", "opened"))
+
+
+def _pr_with_live_data(args, data, pr, active):
+    """(PR con los datos vivos o los del payload, error).
+
+    #938/#996: etiquetas, cuerpo y título se leen por API o del payload. API
+    caída, error (HR-3); y con `pr_title` como única comprobación activa y sin
+    título, tampoco se mide nada: error (HR-3)."""
+    if not use_live_api(args.event_file, pr, os.environ):
+        pr_data = pr
+    else:
+        try:
+            live_labels, live_body, live_title = fetch_pr_live(data, pr)
+        except _GITHUB_REST.GitHubApiError as exc:
+            return pr, f"{exc}; {OBSOLETE_NOTE}"
+        pr_data = dict(pr)
+        pr_data["labels"] = live_labels
+        pr_data["body"] = live_body
+        pr_data["title"] = live_title
+    if active - {"commit_identity", "deleted_tests"} == {"pr_title"} \
+            and pr_data.get("title") is None:
+        return pr_data, ("la única comprobación activa es `pr_title` y el payload no "
+                         "trae el título del PR; no se mide nada (HR-3)")
+    return pr_data, None
 
 
 def _load_commit_identity(args, data, pr, policy, active):
@@ -1520,13 +1654,17 @@ def _load_commit_identity(args, data, pr, policy, active):
     return identity, commits, error
 
 
-def _verdict(findings, pr, *, action_text, advisories=(), warnings=()):
+def _verdict(verdict, pr, *, action_text):
     """Imprime los avisos (#1093: no cambian el veredicto) y el veredicto:
-    0 (OK) o 1 (hallazgos)."""
-    for advisory in advisories:
+    0 (OK) o 1 (hallazgos). Los hallazgos de un control en `advise` (#1786)
+    salen por stderr y tampoco cambian el exit code."""
+    for advisory in verdict.advisories:
         print(f"AVISO (no bloquea): {advisory}")
-    for warning in warnings:
+    for item in verdict.advised:
+        print(f"AVISO (advise, no bloquea): {item}", file=sys.stderr)
+    for warning in verdict.warnings:
         print(f"::warning::{warning}")
+    findings = verdict.findings
     if findings:
         print(f"FAIL: contrato de PR con {len(findings)} hallazgo(s):")
         for f in findings:

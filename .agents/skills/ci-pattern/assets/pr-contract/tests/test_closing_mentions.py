@@ -43,6 +43,7 @@ def run_gate(body, labels=(), base="main"):
         event.write_text(json.dumps({
             "action": "opened",
             "pull_request": {"number": 7, "base": {"ref": base}, "body": body,
+                             "title": "feat: x",
                              "labels": [{"name": name} for name in labels]},
             "repository": {"full_name": REPO, "default_branch": "main"},
         }), encoding="utf-8")

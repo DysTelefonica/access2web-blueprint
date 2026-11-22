@@ -35,6 +35,12 @@ despliegue. Luego busca si el consumer tiene configuraciÃ³n de liveness:
 - MenciÃ³n de `liveness` en un workflow, o
 - Archivo JSON con key `liveness_threshold` / `alert_after` / `stale_threshold`
 
+Reglas de revisión (#4282 de APAP):
+
+- Un comentario YAML (`# liveness ...`) no cuenta como configuración: se quita antes de buscar el vocabulario. Un uso real (un `name:` o un `run:` con la palabra) sí cuenta.
+- Solo cuentan los ids de job de primer nivel bajo `jobs:`. Las claves anidadas (`name`, `run`, `env`...) no son gates.
+- Un gate declarado en `.github/required-jobs-policy.json` (`required_jobs`) tiene que definirlo algún workflow; si no, el gate sale en rojo con su nombre. Una política ilegible es `INVALID` (exit 2).
+
 ## Configurar
 
 Para resolver el FINDING, crea un directorio `assets/gate-liveness/` en el

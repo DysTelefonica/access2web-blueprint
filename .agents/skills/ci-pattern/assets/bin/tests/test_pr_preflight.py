@@ -172,6 +172,28 @@ class BranchNameParityTests(unittest.TestCase):
         self.assertIn("pattern", err.lower())
 
 
+class PrTitleParityTests(unittest.TestCase):
+    """HR-93 (#1726): el preflight mide el título del PR como lo mide la CI."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.preflight = _load("pr_preflight_under_test_prtitle", PREFLIGHT)
+        cls.tmp = tempfile.mkdtemp()
+
+    def test_the_title_is_measured_like_the_ci_does(self):
+        bf = _body_file(self.tmp, "Closes #12\n")
+        code, _, err = _invoke(self.preflight,
+                               dict(body_file=bf, title="feat(pr): el tipo va aquí"))
+        self.assertEqual(code, 0, err)
+        self.assertNotIn("pr-title", err)
+        code, _, err = _invoke(self.preflight,
+                               dict(body_file=bf, title="el tipo va aquí"))
+        self.assertEqual(code, 1, err)
+        self.assertIn("[pr-title] pr-title: HR-93", err)
+        code, _, err = _invoke(self.preflight, dict(body_file=bf, title=""))
+        self.assertEqual(code, 1, err)
+
+
 class IssueSpecLocalParityTests(unittest.TestCase):
     """Mismos casos que ``ReferenceFormTests`` del gate."""
 

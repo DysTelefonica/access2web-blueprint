@@ -1,6 +1,10 @@
 {
   "contract_version": 1,
   "coordinator": "coordinador",
+  "stop_the_line": {
+    "night_red_enabled": true,
+    "main_red_enabled": true
+  },
   "host_capabilities": {
     "branch_protection": "unavailable",
     "rulesets": "unavailable",
@@ -29,6 +33,9 @@
       "name": "required",
       "class": "documented-only"
     }
+  ],
+  "advisory_checks": [
+    "*-gh"
   ],
   "merge_methods": {
     "allow_merge_commit": {

@@ -1793,6 +1793,70 @@ def _is_canonical_pattern_target(target, repo=None, declared=()):
             and target in _referenced_governance_scripts(repo, refs))
 
 
+# #1747: disposición 'equivalent' — el gate del consumer sustituye a un asset
+# canónico. Cada campo se valida fail-closed: un campo ausente o que no cumple
+# su regla es un hallazgo con su motivo, nunca un pase silencioso.
+EQUIVALENT_REFERENCE_ISSUE = re.compile(
+    r"^(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#[1-9][0-9]*$")
+EQUIVALENT_REFERENCE_LINE = re.compile(r"^(?P<file>[^:\s]+):(?P<line>[1-9][0-9]*)$")
+
+
+def _is_safe_relpath(value):
+    path = PurePosixPath(value)
+    return (not path.is_absolute() and ".." not in path.parts
+            and "\\" not in value)
+
+
+def _equivalent_reference_findings(prefix, reference, repo):
+    if not isinstance(reference, str) or not reference.strip():
+        return [f"{prefix}: sin 'reference' (issue #N o fichero:línea)"]
+    ref = reference.strip()
+    if EQUIVALENT_REFERENCE_ISSUE.match(ref):
+        return []
+    located = EQUIVALENT_REFERENCE_LINE.match(ref)
+    if located is None:
+        return [f"{prefix}: 'reference' {reference!r} no es issue (#N o "
+                "owner/repo#N) ni fichero:línea"]
+    rel = located.group("file")
+    if not _is_safe_relpath(rel) or not (repo / rel).is_file():
+        return [f"{prefix}: 'reference' apunta a '{rel}', que no existe en el repo"]
+    lines = (repo / rel).read_text(encoding="utf-8", errors="replace").splitlines()
+    if int(located.group("line")) > len(lines):
+        return [f"{prefix}: 'reference' {ref} apunta más allá del fin de "
+                f"'{rel}' ({len(lines)} líneas)"]
+    return []
+
+
+def _equivalent_findings(artifact, entry, repo):
+    prefix = f"fase 0: '{artifact}' equivalent"
+    findings = []
+    target = entry.get("target")
+    if not isinstance(target, str) or not target.strip():
+        findings.append(f"{prefix}: sin 'target' no vacío (el gate del consumer)")
+    elif not _is_safe_relpath(target.strip()) or not (repo / target.strip()).is_file():
+        findings.append(f"{prefix}: el gate '{target}' no existe en el repo")
+    canonical = entry.get("canonical")
+    if not isinstance(canonical, str) or not canonical.strip():
+        findings.append(f"{prefix}: sin 'canonical' no vacío "
+                        "(el asset canónico que sustituye)")
+    elif not _is_safe_relpath(canonical.strip()):
+        findings.append(f"{prefix}: 'canonical' {canonical!r} debe ser una ruta "
+                        "relativa al repo sin '..'")
+    reason = entry.get("reason")
+    if not isinstance(reason, str) or not reason.strip():
+        findings.append(f"{prefix}: sin 'reason' no vacío: la equivalencia exige motivo")
+    findings.extend(_equivalent_reference_findings(
+        prefix, entry.get("reference"), repo))
+    actor = entry.get("actor")
+    issue = entry.get("issue")
+    has_actor = isinstance(actor, str) and bool(actor.strip())
+    has_issue = isinstance(issue, int) and not isinstance(issue, bool) and issue > 0
+    if not (has_actor or has_issue):
+        findings.append(f"{prefix}: sin 'actor' no vacío ni 'issue' entero positivo "
+                        "(identidad HR-33)")
+    return findings
+
+
 def _check_phase_zero(repo, decl, seal=None):
     findings = []
     declared_paths = _declared_governed_paths(decl)
@@ -1800,7 +1864,7 @@ def _check_phase_zero(repo, decl, seal=None):
     if not isinstance(inventory, list) or not inventory:
         return [
             "fase 0: 'inventory' debe ser una lista no vacía: cada artefacto de "
-            "gobierno del destino con su destino (adopted/retired), sin tercera opción"
+            "gobierno del destino con su destino (adopted/retired/equivalent)"
         ]
     for entry in inventory:
         if not isinstance(entry, dict):
@@ -1811,11 +1875,14 @@ def _check_phase_zero(repo, decl, seal=None):
         if not isinstance(artifact, str) or not artifact.strip():
             findings.append("fase 0: entrada de inventario sin 'artifact' no vacío")
             continue
-        if disposition not in ("adopted", "retired"):
+        if disposition not in ("adopted", "retired", "equivalent"):
             findings.append(
                 f"fase 0: '{artifact}' tiene disposición inválida {disposition!r}; "
-                "solo 'adopted' o 'retired' (lo que no viene del patrón se elimina)"
+                "solo 'adopted', 'retired' o 'equivalent' (lo que no viene del patrón "
+                "se elimina)"
             )
+        elif disposition == "equivalent":
+            findings.extend(_equivalent_findings(artifact, entry, repo))
         elif disposition == "retired":
             # #306: el gobierno ajeno se ELIMINA en la fase 3; la fase 0 solo
             # registra la eliminación confirmada (removal_confirmed). La
@@ -2321,9 +2388,11 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint, repo=None):
     # Backticks pares: el flag va dentro del span de código y la nota fuera.
     issue_type_note = (" Elija exactamente un `type:*` de la sección 4."
                        if type_label_flag else "")
-    pr_type_note = (" Elija exactamente un `type:*` de la sección 4 "
-                    "(convención; desde #1093 ningún gate la exige)."
-                    if type_label_flag else "")
+    # #1726 (HR-93): el tipo de la PR sale de su título convencional; la etiqueta
+    # `type:*` es opcional y no la exige el contrato de merge (nunca lo exigio:
+    # #1093, R1). El comando de la PR no lleva la bandera.
+    pr_type_note = (" El tipo lo lleva el título; la etiqueta `type:*` es "
+                    "opcional y ningún gate la exige.")
     return [f"Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. "
             f"Jobs requeridos que debe ver en verde antes del merge: {_or_none(sorted(jobs))}.",
         "- **1. Issue.** Con el formulario del consumer (sección 1), busque duplicados "
@@ -2359,8 +2428,8 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint, repo=None):
         f"  `bash {entrypoint}`\n"
         "  Hecho: exit 0 sobre el árbol integrado.",
         f"- **6. Pull request.** Contra la rama base de la etapa 3; cuerpo con "
-        f"`Refs #N` (o `Closes #N` solo en la punta de cadena), exactamente una "
-        f"etiqueta `type:*` orientativa (sección 4) y presupuesto de "
+        f"`Refs #N` (o `Closes #N` solo en la punta de cadena), el tipo en el "
+        f"título convencional `<tipo>(<ámbito>): <resumen>` y presupuesto de "
         f"{params['P06_review_budget_lines']} líneas; si no cabe, cadena:\n"
         "  Con `chain:partial` o en la punta de cadena (base = rama por "
         "defecto) el cuerpo declara ADEMÁS la sección **Chain Context** (HR-54) "
@@ -2368,10 +2437,10 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint, repo=None):
         "`starts-at`, `ends-with` y `review-budget`. Si falta o no cuadra, el gate "
         "avisa y no bloquea (team-skills#1093, R3).\n"
         "  `ci-pattern pr preflight --draft --pr-body <cuerpo-del-pr.md> --base "
-        "<rama-base> --label <etiqueta>` (modo API-free: exit 0 exige cuerpo y "
-        "tamaño en verde)\n"
+        "<rama-base> --label <etiqueta> --pr-title \"<tipo>(<ámbito>): <resumen>\"` "
+        "(modo API-free: exit 0 exige cuerpo, tamaño y título en verde)\n"
         "  `gh pr create --base <rama-base> --head <rama-nueva> "
-        f"--title \"<tipo>(<ámbito>): <resumen>\" --body-file <cuerpo-del-pr.md>{type_label_flag}`{pr_type_note}\n"
+        f"--title \"<tipo>(<ámbito>): <resumen>\" --body-file <cuerpo-del-pr.md>`{pr_type_note}\n"
         "  Hecho: `gh pr view <número> --json number,url` devuelve número y URL.",
         "- **7. Checks.** Consulte la tabla de checks requeridos (sección 5) y el "
         "estado del PR:\n"
@@ -2384,8 +2453,9 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint, repo=None):
         "anterior a la integración no es evidencia del resultado nuevo.\n"
         "  Hecho: todos los checks en pass sobre la cabeza y la base actuales.",
         ("- **9. Merge gobernado.** El merge lo decide un humano con CI en verde. "
-         "Un agente lo lanza solo por orden explícita y registrada de un mantenedor "
-         "con cuenta de mantenedor, por el camino gobernado y nunca con `--admin`. "
+         "Un agente lo despacha solo por orden explícita y registrada de un mantenedor "
+         "con cuenta con permiso de escritura en el repositorio, por el camino gobernado "
+         "y nunca con `--admin`. "
          if _agent_roles_enabled(repo) else
          "- **9. Merge gobernado.** Con la CI en verde, el agente que lleva la issue "
          f"lanza el merge con el perfil del {SESSION_ADMIN}, por el camino "
@@ -2518,9 +2588,9 @@ def _operating_doc_merge_lines(repo, allowed_merges):
     _or_none = lambda items: ", ".join(items) if items else "ninguno declarado"
     roles = _agent_roles_enabled(repo)
     if roles:
-        who = ("- El merge lo decide un humano con CI en verde. Un agente lo lanza solo por "
-               "orden explícita y registrada de un mantenedor con cuenta de mantenedor, "
-               "nunca con `--admin`.")
+        who = ("- El merge lo decide un humano con CI en verde. Un agente lo despacha solo por "
+               "orden explícita y registrada de un mantenedor con cuenta con permiso de "
+               "escritura en el repositorio, nunca con `--admin`.")
     else:
         who = (f"- El merge gobernado lo lanza el agente que lleva la issue, con el perfil del "
                f"{SESSION_ADMIN}, cuando la CI está en verde; nunca con `--admin`.")

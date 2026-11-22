@@ -101,6 +101,9 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
         if state.get("head_changed") and "sha" in body:
             return 409, {"message": "Head branch was modified"}, {}
         state["merges"].append(path)
+        # #1792: el cuerpo del PUT se registra para poder fijar el sha que
+        # el gate fusiona (la ruta sola no dice que sha se envió).
+        state.setdefault("merge_bodies", []).append(dict(body))
         return 200, {"sha": MERGED_SHA, "merged": True, "message": "Pull Request successfully merged"}, {}
     if method == "POST" and "/actions/workflows/" in path and path.endswith("/dispatches"):
         # #817/#933: post-merge dispatch (`gh workflow run` directo). El cuerpo trae

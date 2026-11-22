@@ -28,6 +28,10 @@ GREEN = {job: "success" for job in np.REQUIRED_JOBS}
 PROFILE_OK = {"schema_version": 1, "enabled": True}
 RUN_PATH = f"repos/{REPO}/actions/runs/{RUN}"
 JOBS_PATH = f"{RUN_PATH}/jobs"
+RUNS_PATH = f"repos/{REPO}/actions/runs"
+#: La revision desplegada en produccion y un sha verde mas antiguo que la punta.
+DEPLOYED = "5c4b3a2918f7e6d5c4b3a291807f6e5d4c3b2a19"
+CANDIDATE = "2b1a0918273645546372819aabbccddeeff0011"
 
 
 def jobs_payload(conclusions: dict) -> dict:
@@ -77,6 +81,66 @@ class DecideTest(unittest.TestCase):
                 self.assertEqual(got, deploy, reason)
                 for part in parts:
                     self.assertIn(part, reason)
+
+
+def green_run(run_id: int, sha: str, path: str = ".github/workflows/ci.yml") -> dict:
+    """Una ejecucion en verde sobre ``sha`` (la evidencia de que ese sha esta en verde)."""
+    return {"id": run_id, "head_sha": sha, "status": "completed", "conclusion": "success",
+            "name": "ci", "path": path}
+
+
+def compares(*specs) -> dict:
+    """Las comparaciones de la API: cada rango ``base...head`` con su estado."""
+    return {f"{base}...{head}": {"status": status} for base, head, status in specs}
+
+
+def candidate_state(runs=None, compares=None, deployed=DEPLOYED, jobs=None) -> dict:
+    """El estado del stub: la punta, la revision desplegada, la evidencia y las comparaciones."""
+    state = base_state()
+    state["api"][RUNS_PATH] = {"workflow_runs": [green_run(1, CANDIDATE)] if runs is None else runs}
+    state["api"][f"repos/{REPO}/actions/runs/1/jobs"] = jobs_payload(GREEN if jobs is None else jobs)
+    state["deployments"] = [{"id": 7, "sha": deployed, "environment": "production"}]
+    state["deployment_statuses"] = {"7": [{"state": "success"}]}
+    state["compares"] = {} if compares is None else compares
+    return state
+
+
+#: (nombre, evidencia, jobs de la evidencia, comparaciones, candidato esperado).
+CANDIDATE_CASES = [
+    ("el verde mas reciente que desciende de la punta",
+     [green_run(1, CANDIDATE)], GREEN,
+     compares((SHA, CANDIDATE, "behind"), (DEPLOYED, CANDIDATE, "ahead")), CANDIDATE),
+    ("un sha fuera de la historia de la punta no es candidato",
+     [green_run(1, CANDIDATE)], GREEN, compares((SHA, CANDIDATE, "ahead")), SHA),
+    ("un candidato que no desciende de la revision desplegada se descarta",
+     [green_run(1, CANDIDATE)], GREEN,
+     compares((SHA, CANDIDATE, "behind"), (DEPLOYED, CANDIDATE, "behind")), SHA),
+    ("sin evidencia verde el candidato es la punta",
+     [], GREEN, {}, SHA),
+    ("una ejecucion en rojo no es evidencia",
+     [green_run(1, CANDIDATE)], {**GREEN, "e2e-full": "failure"},
+     compares((SHA, CANDIDATE, "behind"), (DEPLOYED, CANDIDATE, "ahead")), SHA),
+    ("las ejecuciones de la propia nocturna no son evidencia",
+     [green_run(1, CANDIDATE, ".github/workflows/nightly-pipeline.yml")], GREEN,
+     compares((SHA, CANDIDATE, "behind"), (DEPLOYED, CANDIDATE, "ahead")), SHA),
+]
+
+#: (nombre, comparaciones, jobs de la ejecucion, migraciones, codigo esperado, motivo esperado).
+GATE_CASES = [
+    ("el candidato verde que desciende de la revision desplegada despliega",
+     compares((SHA, CANDIDATE, "behind"), (DEPLOYED, CANDIDATE, "ahead")), GREEN, "0", 0, "DEPLOY: "),
+    ("un candidato que no desciende de la revision desplegada retiene",
+     compares((SHA, CANDIDATE, "behind"), (DEPLOYED, CANDIDATE, "behind")), GREEN, "0", 2,
+     "refusing to roll back"),
+    ("un candidato fuera de la historia de la punta retiene",
+     compares((SHA, CANDIDATE, "ahead")), GREEN, "0", 2, "not in the history of the main head"),
+    ("un job en rojo sobre el candidato retiene",
+     compares((SHA, CANDIDATE, "behind"), (DEPLOYED, CANDIDATE, "ahead")),
+     {**GREEN, "trivy": "failure"}, "0", 2, "trivy=failure"),
+    ("una migracion pendiente retiene",
+     compares((SHA, CANDIDATE, "behind"), (DEPLOYED, CANDIDATE, "ahead")), GREEN, "2", 2,
+     "2 pending migration"),
+]
 
 
 class ProfileTest(unittest.TestCase):
@@ -313,6 +377,80 @@ class PlanCliTest(unittest.TestCase):
                 self.assertEqual(proc.stdout, message + "\n")
                 self.assertEqual(proc.stderr, "")
                 self.assertEqual(calls, [])
+
+
+class CandidateCliTest(unittest.TestCase):
+    """La eleccion del sha de deploy: el verde mas reciente que descienda de la punta (#1724)."""
+
+    def setUp(self) -> None:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.profile = Path(tmp.name) / "prerelease.json"
+        self.profile.write_text(json.dumps(PROFILE_OK), encoding="utf-8")
+
+    def candidate(self, state: dict, extra: tuple = ()):
+        """Ejecuta `candidate` contra el servidor stub; devuelve (proceso, llamadas)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            state_file = Path(tmp) / "state.json"
+            with github_stub(state_file, state) as base:
+                env = stub_env(base)
+                env["PATH"] = ""
+                args = ["candidate", "--repo", REPO, "--profile", str(self.profile), *extra]
+                proc = subprocess.run([sys.executable, str(ASSET), *args], env=env,  # noqa: S603
+                                      capture_output=True, text=True, encoding="utf-8", timeout=60)
+                return proc, list(state["calls"])
+
+    def test_the_candidate_table(self) -> None:
+        for name, runs, jobs, cmp, expected in CANDIDATE_CASES:
+            with self.subTest(case=name):
+                proc, _ = self.candidate(candidate_state(runs=runs, jobs=jobs, compares=cmp))
+                self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+                self.assertIn(f"CANDIDATE: {expected}", proc.stdout)
+
+    def test_it_names_the_deployed_revision(self) -> None:
+        state = candidate_state(compares=compares((SHA, CANDIDATE, "behind"),
+                                                  (DEPLOYED, CANDIDATE, "ahead")))
+        proc, _ = self.candidate(state)
+        self.assertIn(f"DEPLOYED: {DEPLOYED}", proc.stdout)
+
+    def test_an_unreadable_state_holds_with_a_named_reason(self) -> None:
+        state = candidate_state()
+        state["deployments_error"] = True
+        proc, _ = self.candidate(state)
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertTrue(proc.stdout.startswith("HOLD: "), proc.stdout)
+
+
+class PlanCandidateTest(unittest.TestCase):
+    """El gate con candidato: en la historia de la punta, descendiente de la desplegada y verde."""
+
+    def setUp(self) -> None:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.profile = Path(tmp.name) / "prerelease.json"
+        self.profile.write_text(json.dumps(PROFILE_OK), encoding="utf-8")
+
+    def plan(self, state: dict, pending: str = "0"):
+        """Ejecuta `plan --candidate` contra el servidor stub; devuelve (proceso, llamadas)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            state_file = Path(tmp) / "state.json"
+            with github_stub(state_file, state) as base:
+                env = stub_env(base)
+                env["PATH"] = ""
+                args = ["plan", "--repo", REPO, "--run", str(RUN), "--profile", str(self.profile),
+                        "--pending-migrations", pending, "--candidate", CANDIDATE]
+                proc = subprocess.run([sys.executable, str(ASSET), *args], env=env,  # noqa: S603
+                                      capture_output=True, text=True, encoding="utf-8", timeout=60)
+                return proc, list(state["calls"])
+
+    def test_the_gate_table(self) -> None:
+        for name, cmp, jobs, pending, code, reason in GATE_CASES:
+            with self.subTest(case=name):
+                state = candidate_state(compares=cmp)
+                state["api"][JOBS_PATH] = jobs_payload(jobs)
+                proc, _ = self.plan(state, pending=pending)
+                self.assertEqual(proc.returncode, code, proc.stdout + proc.stderr)
+                self.assertIn(reason, proc.stdout.splitlines()[-1])
 
 
 if __name__ == "__main__":

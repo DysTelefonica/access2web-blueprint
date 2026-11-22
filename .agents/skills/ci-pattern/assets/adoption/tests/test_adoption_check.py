@@ -655,6 +655,101 @@ def cadete_phase0_contract():
     }
 
 
+class PhaseZeroEquivalentTests(unittest.TestCase):
+    """#1747: disposición 'equivalent' (gate del consumer que sustituye a un
+    asset canónico). Cada campo se valida fail-closed con su motivo."""
+
+    def _check(self, tmp, **overrides):
+        entry = {
+            "artifact": "deploy-policy",
+            "disposition": "equivalent",
+            "target": "scripts/gate.py",
+            "canonical": "deploy-review/check_deploy_policy.py",
+            "reason": "el gate del consumer cubre la misma política de evidencia",
+            "reference": ".github/workflows/ci.yml:1",
+            "actor": "dys-agentes",
+        }
+        for key, value in overrides.items():
+            if value is None:
+                entry.pop(key, None)
+            else:
+                entry[key] = value
+        contract = complete_contract(upto=0)
+        contract["phases"]["0"]["inventory"].append(entry)
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        (repo / "scripts").mkdir(exist_ok=True)
+        (repo / "scripts" / "gate.py").write_text("print('gate')\n", encoding="utf-8")
+        return run_cli(["adoption", "check", "--phase", "0", str(repo)])
+
+    def test_valid_equivalent_passes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, out, err = self._check(tmp)
+            self.assertEqual(code, 0, out + err)
+
+    def test_valid_equivalent_with_issue_identity_passes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, out, err = self._check(tmp, actor=None, issue=1747)
+            self.assertEqual(code, 0, out + err)
+
+    def test_missing_target_fails_naming_it(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, _, err = self._check(tmp, target="scripts/absent.py")
+            self.assertEqual(code, 1)
+            self.assertIn("deploy-policy", err)
+            self.assertIn("scripts/absent.py", err)
+
+    def test_target_is_required(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, _, err = self._check(tmp, target=None)
+            self.assertEqual(code, 1)
+            self.assertIn("'target'", err)
+
+    def test_empty_reason_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, _, err = self._check(tmp, reason="   ")
+            self.assertEqual(code, 1)
+            self.assertIn("'reason'", err)
+
+    def test_missing_reference_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, _, err = self._check(tmp, reference=None)
+            self.assertEqual(code, 1)
+            self.assertIn("'reference'", err)
+
+    def test_reference_line_beyond_file_end_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, _, err = self._check(tmp, reference=".github/workflows/ci.yml:99999")
+            self.assertEqual(code, 1)
+            self.assertIn("ci.yml", err)
+            self.assertIn("fin", err)
+
+    def test_reference_neither_issue_nor_location_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, _, err = self._check(tmp, reference="vaya por ahí")
+            self.assertEqual(code, 1)
+            self.assertIn("'reference'", err)
+
+    def test_missing_hr33_identity_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, _, err = self._check(tmp, actor=None)
+            self.assertEqual(code, 1)
+            self.assertIn("HR-33", err)
+
+    def test_canonical_escaping_repo_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, _, err = self._check(tmp, canonical="../fuera/check.py")
+            self.assertEqual(code, 1)
+            self.assertIn("'canonical'", err)
+
+    def test_schema_documents_equivalent_fields(self):
+        schema = json.loads((SKILL_ROOT / "assets" / "adoption"
+                             / "adoption-contract.schema.json").read_text(encoding="utf-8"))
+        entry = schema["$defs"]["inventory_entry"]
+        self.assertIn("equivalent", entry["properties"]["disposition"]["enum"])
+        for field in ("canonical", "reason", "reference", "actor", "issue"):
+            self.assertIn(field, entry["properties"], field)
+
+
 class Phase0CatalogTests(unittest.TestCase):
     """#311: el catálogo canónico de la fase 0 es DATO declarado por el
     patrón y representa los artefactos consumer-side (scripts de gate,
@@ -3722,23 +3817,17 @@ class OperatingDocAuditHolesTests(unittest.TestCase):
                     "un agente que copiara la receta la aplicaría a todo: "
                     "use el marcador literal `--label type:<tipo>`")
 
-    def test_gh_pr_create_carries_type_label_marker(self):
-        """S2: etapa 6 lleva `gh pr create ... --label type:<tipo>` como
-        MARCADOR LITERAL. Misma regla que S1: NUNCA concreta la etiqueta."""
+    def test_gh_pr_create_does_not_carry_a_type_label(self):
+        """#1726 (HR-93): el tipo de la PR sale de su título convencional.
+
+        La etapa 6 lleva el tipo en el título (`<tipo>(<ámbito>): <resumen>`) y
+        NO lleva `--label type:<tipo>`: la etiqueta es opcional (#1093, R1)."""
         with tempfile.TemporaryDirectory() as tmp:
-            repo = make_docs_repo(tmp)
-            text = self._generate(repo)
-            lifecycle = _lifecycle_section(text)
-            self.assertIn("gh pr create", lifecycle)
-            self.assertIn(
-                "--label type:<tipo>", lifecycle,
-                "la etapa 6 del doc no lleva el marcador literal "
-                "`--label type:<tipo>` (S2)")
-            for forbidden in ("--label type:bug", "--label type:feature"):
-                self.assertNotIn(
-                    forbidden, lifecycle,
-                    f"la etapa 6 del doc concreta una etiqueta ({forbidden!r}); "
-                    "use el marcador literal `--label type:<tipo>`")
+            lifecycle = _lifecycle_section(self._generate(make_docs_repo(tmp)))
+            pr_lines = [line for line in lifecycle.splitlines() if "gh pr create" in line]
+            self.assertEqual(len(pr_lines), 1, pr_lines)
+            self.assertNotIn("--label", pr_lines[0])
+            self.assertIn("<tipo>(<ámbito>): <resumen>", lifecycle)
 
     def test_no_type_label_when_host_contract_omits_type(self):
         """S1/S2 (inverso): sin etiquetas `type:*` en el host-contract, los
