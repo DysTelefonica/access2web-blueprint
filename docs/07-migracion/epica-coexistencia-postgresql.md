@@ -48,6 +48,7 @@ El documento es vivo: cambia cuando se descubre que una fase o una hipótesis ll
 | 26 | Se retira la cola local de correo de Contratos. `GestionContratos_datos` tiene su propia `TbCorreosEnviados` (204 filas de 2023-2024, 184 sin enviar): la clase `Correo` que la escribe no se instancia en ningún sitio y ningún proceso de Automatización abre ese backend. Issue de la fase 1: [CONTRATOS#2](https://github.com/DysTelefonica/CONTRATOS/issues/2). La cola local de Solicitudes HPS queda abierta: tiene emisor propio en producción y un diseño con recordatorios que la cola común no soporta (ver [clasificación de las tablas](fase-0/clasificacion-tablas.md)). |
 | 27 | AGEDO ya no se usa (propietario, 2026-11-05: «agedo no se usa ahora ya»). Deja de ser consumidor permanente: los vínculos de su backend ya no cuentan como uso y `tbUsuarios` de `Lanzadera_Datos`, que solo vinculaba AGEDO, pasa a huérfana. Sigue en pie la otra parte de la decisión 14: las tablas de `AGEDO20_Datos` que leen aplicaciones del alcance (`TbDocumentos`, `TbDocumentosID`, `TbDocExpProceso`) llegan a PostgreSQL. Tareas sigue en uso. |
 | 28 | El propietario valida la evidencia de la fase 0 (2026-11-15): la fase pasa a `revisada` y con ella se habilita la fase 1, el saneamiento en Access, aplicación a aplicación y en el orden de la decisión 24. Validar la evidencia no es aplicarla: los cambios en el legacy los aplica el propietario, y cada punto abierto del [cierre de la fase 0](fase-0/cierre.md) sigue bloqueando su propia fase. |
+| 29 | No hay consumidores de los datos fuera de los fronts Access y de los scripts de `DysTelefonica/Automatizacion`: ningún Excel, informe ni herramienta externa (propietario, 2026-11-24: «no hay nadie»). Cada front trabaja contra sus backends y, a veces, contra alguna tabla propia del front; una tabla que vive en un front no la usa ningún otro front. Para la evidencia de no uso del [protocolo de huérfanas](#protocolo-de-huérfanas) basta con cruzar los fronts, sus backends y los scripts de Automatización, y una tabla o un vínculo del front se evalúa solo con el código de ese front. Vale para toda la migración. |
 | 12 | La Lanzadera es la primera aplicación en coexistir, porque alberga el control de permisos del resto de herramientas y tiene a todos los usuarios y sus permisos (`Lanzadera_Datos`). El ensayo de la fase 3 se hace con una copia de `Lanzadera_Datos` en preproducción, no con una isla. Ver [Cambios de rumbo](#cambios-de-rumbo). El alcance del ensayo queda sustituido por la decisión 19. |
 
 ## Modelo de coexistencia
@@ -197,7 +198,7 @@ R-1 se confirma en los backends y se refuta en los fronts, con las excepciones m
 
 ### Fase 1. Saneamiento en Access
 
-**Estado:** en curso (2026-11-15), habilitada por la validación de la fase 0 (decisión 28). El trabajo empieza por las acciones de cada aplicación, en el orden de la decisión 24, con su issue en el repositorio de la aplicación. Los cambios en el legacy los aplica el propietario, no el agente.
+**Estado:** en curso (2026-11-15), habilitada por la validación de la fase 0 (decisión 28). El trabajo empieza por las acciones de cada aplicación, en el orden de la decisión 24, con su issue en el repositorio de la aplicación. Los cambios en el legacy los aplica el propietario, no el agente. Las issues llevan la etiqueta `saneamiento:coexistencia`; el orden y el procedimiento para aplicarlas en producción están en el [plan de aplicación](fase-1/plan-aplicacion.md).
 
 **Objetivo.** Mejorar la estructura de datos en el legacy, backend a backend y antes de migrar cada uno, para que la web no empiece sobre tablas con defectos inaceptables (decisión 11). Los cambios se hacen sobre `.accdb` y son reversibles.
 
@@ -292,7 +293,7 @@ Las tablas mal ubicadas **no se mueven físicamente en el legacy**. Se registra 
 
 El propietario borra en el legacy; el agente aporta la evidencia.
 
-1. **Evidencia de no uso.** Cruce de los vínculos de todos los backends, búsqueda en el `src` del front propietario (CodeGraph o búsqueda de texto, incluido el SQL dinámico) y fecha del último cambio de datos si existe. Aviso expreso de dos riesgos: consumidores fuera de Access (Excel, informes, scripts programados) y tablas de uso anual.
+1. **Evidencia de no uso.** Cruce de los vínculos de todos los backends, búsqueda en el `src` del front propietario (CodeGraph o búsqueda de texto, incluido el SQL dinámico) y fecha del último cambio de datos si existe. Aviso expreso de dos riesgos: los scripts programados de `DysTelefonica/Automatizacion`, que abren backends, y las tablas de uso anual. No hay otros consumidores fuera de Access, como Excel o informes externos, y una tabla del front solo la usa ese front (decisión 29).
 2. **Cuarentena.** Copia de seguridad y renombrado a `zzBAJA_<tabla>`, o traslado a un `.accdb` de archivo.
 3. **Borrado definitivo.** Tras un periodo sin incidencias (por ejemplo, un cierre mensual completo) y antes de migrar ese backend.
 
