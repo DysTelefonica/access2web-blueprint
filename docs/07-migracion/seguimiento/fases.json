@@ -1,0 +1,43 @@
+{
+  "phases": [
+    {
+      "id": 0,
+      "name": "Inventario",
+      "status": "revisada",
+      "tasks": [
+        {"title": "Inventario de las once aplicaciones del alcance (fase-0/catalogo-aplicaciones.md)", "done": true},
+        {"title": "Catálogo de accionables con su coste medido (fase-0/catalogo-accionables.md)", "done": true},
+        {"title": "Comprobaciones de datos del grupo (a) contra la copia de referencia (fase-0/comprobaciones-grupo-a.md)", "done": true},
+        {"title": "Validación del propietario de la evidencia de la fase 0, 2026-11-15 (fase-0/cierre.md, decisión 28)", "done": true}
+      ]
+    },
+    {
+      "id": 1,
+      "name": "Saneamiento en Access",
+      "status": "en curso",
+      "tasks": [
+        {"title": "Ensayo del cambio de IDCorreo en una copia, con el perfil production-test de Automatización", "done": false},
+        {"title": "Confirmar el perfil de Automatización que usa el servidor real", "done": false},
+        {"title": "Validación del plan de aplicación por el propietario (fase-1/plan-aplicacion.md)", "done": false}
+      ],
+      "issues": {
+        "label": "saneamiento:coexistencia",
+        "block_a": {"name": "Bloque A. IDCorreo", "title_contains": "IDCorreo"},
+        "groups": [
+          {"name": "Lanzadera", "repos": ["Lanzadera"]},
+          {"name": "Expedientes", "repos": ["Expedientes"]},
+          {"name": "Condor", "repos": ["condor"]},
+          {"name": "Seguridad", "repos": ["seguridad"]},
+          {"name": "HPS", "repos": ["HPS"]},
+          {"name": "Solicitudes HPS", "repos": ["HPS_SOLICITUDES"]},
+          {"name": "Gestión de Riesgos", "repos": ["GESTION_RIESGOS"]},
+          {"name": "No Conformidades", "repos": ["No_conformidades"]},
+          {"name": "Registros", "repos": ["REGISTROS"]},
+          {"name": "Brass", "repos": ["BRASS"]},
+          {"name": "APGEDYS", "repos": ["AGEDYS", "AGEDYS_ECO"]},
+          {"name": "Transversal", "repos": ["access2web-blueprint", "Automatizacion", "CONTRATOS"]}
+        ]
+      }
+    }
+  ]
+}
