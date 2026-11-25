@@ -88,5 +88,13 @@
         {"title": "Reversión probada: rehabilitar el botón de Access", "done": false}
       ]
     }
+  ],
+  "hitos": [
+    {"id": "2026-12", "name": "Vía de entrega en verde y arranque del saneamiento", "start": "2026-12-01", "end": "2026-12-31", "semana_estimada": "2026-12-21", "replanificaciones": [], "groups": ["Bloque A. IDCorreo"], "tasks": [{"title": "Primera versión publicada de access2web-blueprint", "done": false}]},
+    {"id": "2027-01", "name": "Saneamiento de las primeras aplicaciones y Citrix validado en local", "start": "2027-01-01", "end": "2027-01-31", "semana_estimada": null, "replanificaciones": [], "groups": ["Lanzadera", "Expedientes", "Condor", "Seguridad"]},
+    {"id": "2027-02", "name": "Saneamiento del bloque central y acceso a datos preparado", "start": "2027-02-01", "end": "2027-02-28", "semana_estimada": null, "replanificaciones": [], "groups": ["HPS", "Solicitudes HPS", "Gestión de Riesgos", "No Conformidades", "Registros"], "phases": [2]},
+    {"id": "2027-03", "name": "Saneamiento completo", "start": "2027-03-01", "end": "2027-03-31", "semana_estimada": null, "replanificaciones": [], "groups": ["Brass", "APGEDYS", "Transversal"]},
+    {"id": "2027-04", "name": "Ensayo en Citrix con todos los datos", "start": "2027-04-01", "end": "2027-04-30", "semana_estimada": null, "replanificaciones": [], "groups": [], "phases": [3]},
+    {"id": "2027-05", "name": "Listos para el traslado", "start": "2027-05-01", "end": "2027-05-31", "semana_estimada": null, "replanificaciones": [], "groups": [], "phases": [4]}
   ]
 }

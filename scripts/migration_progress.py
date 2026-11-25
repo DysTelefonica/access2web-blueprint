@@ -270,9 +270,9 @@ def render_html(phases: list[dict[str, Any]], date: str) -> str:
     return "\n".join(lines) + "\n"
 
 
-def parse_args(argv: list[str]) -> argparse.Namespace:
+def build_parser(description: str | None) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+        description=description, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument("--gh", default="gh", help="gh executable (default: gh)")
     parser.add_argument("--from-json", type=Path, help="read the gh search JSON from this file")
@@ -281,7 +281,20 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     parser.add_argument("--phases", type=Path, default=TRACKING_DIR / "fases.json")
     parser.add_argument("--out-dir", type=Path, default=TRACKING_DIR)
-    return parser.parse_args(argv)
+    return parser
+
+
+def issue_labels(definition: dict[str, Any]) -> list[str]:
+    return [p["issues"]["label"] for p in definition["phases"] if "issues" in p]
+
+
+def write_report(phases: list[dict[str, Any]], date: str, out_dir: Path) -> None:
+    outputs = {
+        "avance.md": render_markdown(phases, date),
+        "avance.html": render_html(phases, date),
+    }
+    for name, content in outputs.items():
+        (out_dir / name).write_text(content, encoding="utf-8", newline="\n")
 
 
 def load_issues(args: argparse.Namespace, label: str) -> list[Issue]:
@@ -294,20 +307,14 @@ def load_issues(args: argparse.Namespace, label: str) -> list[Issue]:
 def generate(args: argparse.Namespace) -> list[dict[str, Any]]:
     datetime.date.fromisoformat(args.date)
     definition = read_json(args.phases)
-    labels = [p["issues"]["label"] for p in definition["phases"] if "issues" in p]
-    issues = [issue for label in labels for issue in load_issues(args, label)]
+    issues = [issue for label in issue_labels(definition) for issue in load_issues(args, label)]
     phases = build_phases(definition, issues)
-    outputs = {
-        "avance.md": render_markdown(phases, args.date),
-        "avance.html": render_html(phases, args.date),
-    }
-    for name, content in outputs.items():
-        (args.out_dir / name).write_text(content, encoding="utf-8", newline="\n")
+    write_report(phases, args.date, args.out_dir)
     return phases
 
 
 def main(argv: list[str]) -> int:
-    args = parse_args(argv)
+    args = build_parser(__doc__).parse_args(argv)
     try:
         phases = generate(args)
     except (ProgressError, ValueError, KeyError) as exc:
