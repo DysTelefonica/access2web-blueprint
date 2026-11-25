@@ -3,8 +3,220 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="stylesheet" href="../../uat/assets/style-base.css" />
-<link rel="stylesheet" href="cronograma-hitos.css" />
+<style>
+/* style-base.css — estado-planificacion-update skill v2.
+   Custom properties baseline (not Telefónica brand tokens).
+   Visual contract: any HTML referencing this file renders identical to the
+   inline style of examples/lanzadera-mvp-2026-08-09.html. */
+:root {
+  --color-brand: #0066CC; --color-brand-dark: #003D7A;
+  --color-text-primary: #1A1A1A; --color-text-secondary: #5C5C5C;
+  --color-background: #FFFFFF; --color-surface: #F5F7FA;
+  --color-surface-strong: #E8EEF5; --color-border: #D4DBE3;
+  --color-success: #2E7D32; --color-warning: #ED6C02;
+  --color-danger: #C62828; --color-info: #0277BD;
+  --color-violet: #6A1B9A; --color-grey: #757575;
+  --radius-card: 12px; --radius-chip: 24px; --radius-input: 8px;
+  --shadow-card: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--color-text-primary); background: var(--color-surface);
+  line-height: 1.55; -webkit-font-smoothing: antialiased;
+}
+.page { max-width: 1180px; margin: 0 auto; padding: var(--space-7) var(--space-5) var(--space-7); }
+.hero {
+  background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-dark) 100%);
+  color: #fff; border-radius: var(--radius-card);
+  padding: var(--space-6) var(--space-6); margin-bottom: var(--space-5);
+  box-shadow: var(--shadow-card);
+}
+.hero .eyebrow {
+  text-transform: uppercase; letter-spacing: .08em;
+  font-size: 12px; opacity: .85; font-weight: 600;
+}
+.hero h1 {
+  font-size: clamp(22px, 3vw, 30px); line-height: 1.2;
+  margin: var(--space-3) 0 var(--space-3); font-weight: 700;
+}
+.hero p.lead { font-size: 16px; opacity: .95; max-width: 920px; margin: 0; }
+section.card {
+  background: var(--color-background); border: 1px solid var(--color-border);
+  border-radius: var(--radius-card); padding: var(--space-6);
+  margin-bottom: var(--space-5); box-shadow: var(--shadow-card);
+}
+section.card h2 {
+  font-size: 18px; margin: 0 0 var(--space-4);
+  color: var(--color-brand-dark); font-weight: 700;
+}
+section.card h3 {
+  font-size: 15px; margin: var(--space-4) 0 var(--space-3);
+  color: var(--color-text-primary); font-weight: 700;
+}
+section.card p { margin: 0 0 var(--space-4); }
+section.card p:last-child { margin-bottom: 0; }
+section.card ul, section.card ol { padding-left: var(--space-5); margin: 0 0 var(--space-4); }
+section.card li { margin-bottom: var(--space-2); }
+.legend {
+  display: flex; flex-wrap: wrap; gap: var(--space-3);
+  margin-bottom: var(--space-4); font-size: 13px;
+}
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.rag-pill {
+  display: inline-block; padding: 3px 10px;
+  border-radius: var(--radius-chip); font-size: 12px;
+  font-weight: 700; white-space: nowrap;
+}
+.rag-green  { background: #E8F5E9; color: var(--color-success); }
+.rag-amber  { background: #FFF3E0; color: var(--color-warning); }
+.rag-red    { background: #FFEBEE; color: var(--color-danger); }
+.rag-grey   { background: var(--color-surface-strong); color: var(--color-text-secondary); }
+.rag-violet { background: #F3E5F5; color: var(--color-violet); }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th, .data-table td {
+  text-align: left; padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border); vertical-align: top;
+}
+.data-table th {
+  background: var(--color-surface); color: var(--color-brand-dark);
+  font-weight: 700; font-size: 12px;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.data-table tbody tr:hover { background: var(--color-surface); }
+.data-table code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px; background: var(--color-surface-strong);
+  padding: 1px 6px; border-radius: 4px;
+}
+.gantt {
+  width: 100%; border-collapse: collapse; font-size: 11px;
+  margin-top: var(--space-3); table-layout: fixed;
+}
+.gantt th, .gantt td {
+  border: 1px solid var(--color-border); padding: 2px 0;
+  text-align: center; min-width: 16px; height: 22px;
+}
+.gantt th.pr-label, .gantt td.pr-label {
+  text-align: left; padding: 2px 8px; min-width: 130px;
+  font-weight: 600; font-size: 12px;
+  background: var(--color-surface); color: var(--color-brand-dark);
+  position: sticky; left: 0; z-index: 1;
+}
+.gantt thead th {
+  background: var(--color-surface-strong); color: var(--color-text-secondary);
+  font-size: 9px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .02em;
+}
+.gantt thead th.month-boundary {
+  background: var(--color-surface); color: var(--color-brand-dark); font-weight: 700;
+}
+.gantt td.bar-empty { background: #FAFAFA; }
+.gantt td.bar-grey { background: var(--color-grey); color: #fff; font-weight: 600; }
+.gantt td.bar-planned { background: var(--color-grey); color: #fff; font-weight: 600; }
+.gantt td.bar-active { background: var(--color-brand); color: #fff; font-weight: 600; }
+.gantt td.bar-green { background: var(--color-success); color: #fff; font-weight: 600; }
+.gantt td.bar-amber { background: var(--color-warning); color: #fff; font-weight: 600; }
+.gantt td.bar-red { background: var(--color-danger); color: #fff; font-weight: 600; }
+.gantt td.bar-violet { background: var(--color-violet); color: #fff; font-weight: 600; }
+.gantt td.partial-fill {
+  background: repeating-linear-gradient(45deg, transparent 0 4px, rgba(255,255,255,.35) 4px 8px);
+}
+.gantt-meta {
+  display: flex; flex-wrap: wrap; gap: var(--space-4);
+  font-size: 12px; color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
+}
+.gantt-meta strong { color: var(--color-brand-dark); }
+.footer-note {
+  font-size: 12px; color: var(--color-text-secondary);
+  margin-top: var(--space-5); text-align: center;
+}
+.commit-sha {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px; background: var(--color-surface-strong);
+  padding: 1px 6px; border-radius: 4px;
+}
+.commit-list { font-size: 12px; color: var(--color-text-secondary); }
+.callout {
+  border-left: 4px solid var(--color-info); background: #E3F2FD;
+  padding: var(--space-3) var(--space-4); border-radius: 6px;
+  font-size: 14px; margin: var(--space-3) 0;
+}
+.callout.warn { border-color: var(--color-warning); background: #FFF8E1; }
+.callout.danger { border-color: var(--color-danger); background: #FFEBEE; }
+.callout.violet { border-color: var(--color-violet); background: #F3E5F5; }
+.callout strong { color: var(--color-brand-dark); }
+.stat-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-3); margin: var(--space-3) 0 var(--space-4);
+}
+.stat-cell {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: 8px; padding: var(--space-3) var(--space-4);
+}
+.stat-cell .label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--color-text-secondary); font-weight: 600;
+}
+.stat-cell .value {
+  font-size: 22px; font-weight: 700;
+  color: var(--color-brand-dark); margin-top: 2px;
+}
+.stat-cell .sub { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+.stack-diagram {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px; background: var(--color-surface-strong);
+  padding: var(--space-3) var(--space-4); border-radius: 6px;
+  white-space: pre; overflow-x: auto; margin: var(--space-3) 0;
+}
+/* Components of cronograma-hitos.html. Tokens come from docs/uat/assets/style-base.css. */
+.card {
+  background: var(--color-background); border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card); padding: var(--space-6); margin-bottom: var(--space-5);
+}
+.card h2 { margin: 0 0 var(--space-4); font-size: 20px; }
+.rule {
+  border-left: 4px solid var(--color-brand); background: var(--color-surface-strong);
+  padding: var(--space-4) var(--space-5); border-radius: var(--radius-input);
+  font-size: 17px; margin: 0;
+}
+.flow { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: stretch; margin-top: var(--space-4); }
+.flow .step {
+  flex: 1 1 150px; border: 1px solid var(--color-border); border-radius: var(--radius-input);
+  padding: var(--space-3); background: var(--color-surface);
+}
+.flow .step b { display: block; color: var(--color-brand-dark); }
+.flow .step small { color: var(--color-text-secondary); }
+.flow .step.irrev { border-color: var(--color-danger); }
+.flow .arrow { align-self: center; color: var(--color-grey); font-size: 20px; }
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline li {
+  display: grid; grid-template-columns: 130px 1fr; gap: var(--space-4);
+  padding: var(--space-4) 0; border-bottom: 1px solid var(--color-border);
+}
+.timeline li:last-child { border-bottom: 0; }
+.timeline .month { font-weight: 700; color: var(--color-brand-dark); }
+.timeline h3 { margin: 0 0 var(--space-1); font-size: 17px; }
+.timeline p { margin: 0; color: var(--color-text-secondary); }
+.timeline .gate { margin-top: var(--space-2); font-size: 14px; color: var(--color-text-primary); }
+.timeline li.key { background: var(--color-surface-strong); border-radius: var(--radius-input); padding-left: var(--space-3); padding-right: var(--space-3); }
+.timeline li.after .month { color: var(--color-danger); }
+.status { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--space-3); }
+.status div { border: 1px solid var(--color-border); border-radius: var(--radius-input); padding: var(--space-3); }
+.status strong { display: block; margin: var(--space-2) 0 var(--space-1); }
+.status span.note { font-size: 14px; color: var(--color-text-secondary); }
+.decide ol { margin: 0; padding-left: var(--space-5); }
+.decide li { margin-bottom: var(--space-2); }
+table.risks { width: 100%; border-collapse: collapse; }
+table.risks th, table.risks td { text-align: left; padding: var(--space-3); border-bottom: 1px solid var(--color-border); vertical-align: top; }
+table.risks th { background: var(--color-surface); }
+@media (max-width: 640px) { .timeline li { grid-template-columns: 1fr; gap: var(--space-1); } }
+@media print { body { background: #fff; } .card { box-shadow: none; border: 1px solid var(--color-border); } }
+</style>
 <title>Access2Web: hitos de diciembre de 2026 a mayo de 2027</title>
 </head>
 <body>
@@ -29,6 +241,27 @@
     <span class="arrow" aria-hidden="true">→</span>
     <div class="step"><b>5. Pasar a la web</b><small>Aplicación a aplicación, con vuelta atrás por botón</small></div>
   </div>
+</section>
+
+<section class="card" aria-labelledby="sec-saneamiento">
+  <h2 id="sec-saneamiento">Qué es el saneamiento</h2>
+  <p>Es poner en orden los datos de las aplicaciones Access actuales antes de pasarlos a la base de datos nueva. Las aplicaciones funcionan, pero sus datos arrastran defectos de años que una base de datos moderna no admite o que harían fallar a la web:</p>
+  <ul>
+    <li>tablas en las que ninguna columna identifica cada fila de forma única;</li>
+    <li>números que cada aplicación calcula a mano y que se pueden repetir cuando dos usuarios guardan a la vez;</li>
+    <li>fechas guardadas como texto y relaciones entre tablas que nadie controla;</li>
+    <li>tablas que ya no usa ninguna aplicación.</li>
+  </ul>
+  <p><strong>Un ejemplo.</strong> Cada correo que envían las aplicaciones recibe un número que la propia aplicación calcula como «el último más uno». Cuando dos personas guardan al mismo tiempo, los dos correos reciben el mismo número: ya hay 19 casos. El saneamiento hace que ese número lo asigne la base de datos, y las once aplicaciones dejan de calcularlo.</p>
+  <p><strong>Cómo se hace.</strong> Son unas 190 correcciones pequeñas, repartidas por las once aplicaciones. Cada una se prueba antes en una copia, se aplica fuera de horario con los procesos automáticos parados y se puede deshacer con la copia de seguridad. Las tablas sin uso no se borran de entrada: se apartan y solo se eliminan tras un mes sin incidencias.</p>
+  <h3>Por qué tiene que ir antes que Citrix y PostgreSQL</h3>
+  <ol>
+    <li><strong>Sin sanear, las aplicaciones Access no pueden trabajar sobre la base nueva.</strong> Access solo puede modificar una tabla de PostgreSQL si cada fila tiene un identificador único. Las tablas que no lo tienen quedan en solo lectura: el ensayo de abril fallaría en cuanto un usuario intentara guardar.</li>
+    <li><strong>El traslado de los datos no tiene vuelta atrás.</strong> Es el único paso irreversible del plan. Un defecto que entre en la base nueva se queda en ella, y a partir de ahí lo heredan Access y la web a la vez.</li>
+    <li><strong>Hoy los defectos ya cuestan.</strong> Cuando dos correos reciben el mismo número, el segundo falla al guardarse y no se envía, sin que nadie se entere. Sanear corrige esto también en las aplicaciones actuales, no solo de cara al futuro.</li>
+    <li><strong>Ahora es barato; después, caro.</strong> En Access cada cambio se prueba en una copia y se deshace restaurando la copia de seguridad. Después del traslado habría que corregir sobre datos en uso, compartidos por dos sistemas, y sin esa red.</li>
+  </ol>
+  <div class="callout warn"><strong>En resumen:</strong> mover ahora a Citrix y PostgreSQL unos datos sin sanear es trasladar los problemas a un sitio del que ya no se pueden sacar. El saneamiento es lo que convierte el ensayo de abril y el traslado posterior en pasos seguros.</div>
 </section>
 
 <section class="card" aria-labelledby="sec-hitos">
@@ -107,7 +340,7 @@
   <h2 id="sec-decidir">Lo que hay que decidir</h2>
   <ol>
     <li><strong>Aprobar el orden:</strong> saneamiento completo antes de cualquier paso a PostgreSQL o a Citrix.</li>
-    <li><strong>Tiempo del propietario:</strong> los cambios en Access los aplica una persona, fuera de horario y con los procesos automáticos parados.</li>
+    <li><strong>Tiempo del equipo:</strong> los cambios en Access los aplican a mano, uno a uno, solo dos personas (Andrés y Juan Félix), fuera de horario y con los procesos automáticos parados.</li>
     <li><strong>Versiones en prueba de usuario:</strong> en cinco aplicaciones hay una versión pendiente de aceptación; decidir si el saneamiento sale sobre ella o en la siguiente.</li>
     <li><strong>Qué es éxito en mayo:</strong> la coexistencia sigue en exploración y dirección mantiene el corte único; el ensayo de abril es la evidencia para decidir.</li>
   </ol>
@@ -118,7 +351,7 @@
   <table class="risks">
     <thead><tr><th scope="col">Riesgo</th><th scope="col">Qué hacemos</th></tr></thead>
     <tbody>
-      <tr><td><span class="rag-pill rag-red">Alto</span> El saneamiento depende de una persona</td><td>El equipo prepara cada cambio y su comprobación; la aplicación queda en pasos mecánicos, agrupados por aplicación.</td></tr>
+      <tr><td><span class="rag-pill rag-red">Alto</span> El saneamiento depende de dos personas, Andrés y Juan Félix, que aplican los cambios uno a uno</td><td>Cada cambio llega preparado con su comprobación, para que aplicarlo sea un paso mecánico; se agrupan por aplicación y se reparten entre los dos. Una baja o un pico de trabajo de cualquiera de ellos retrasa el hito del mes.</td></tr>
       <tr><td><span class="rag-pill rag-red">Alto</span> La cola de correo la usan las once aplicaciones</td><td>Se ensaya el cambio en una copia antes de producción y se hace con los envíos automáticos pausados.</td></tr>
       <tr><td><span class="rag-pill rag-amber">Medio</span> Citrix sin validar</td><td>Se valida la plataforma en local en enero, sin datos, para no descubrir problemas en el ensayo de abril.</td></tr>
       <tr><td><span class="rag-pill rag-amber">Medio</span> Un mes no se cierra</td><td>El hito se desplaza al mes siguiente y se explica por qué; el orden no cambia.</td></tr>
@@ -126,7 +359,7 @@
   </table>
 </section>
 
-<p class="footer-note">Access2Web · fuentes: <a href="../epica-coexistencia-postgresql.md">épica de coexistencia</a> (decisiones 11, 18, 19 y 24; tabla de fases) y <a href="../fase-1/plan-aplicacion.md">plan de aplicación del saneamiento</a> · propuesta de calendario pendiente de aprobación.</p>
+<p class="footer-note">Access2Web · fuentes: <a href="https://github.com/DysTelefonica/access2web-blueprint/blob/main/docs/07-migracion/epica-coexistencia-postgresql.md">épica de coexistencia</a> (decisiones 11, 18, 19 y 24; tabla de fases) y <a href="https://github.com/DysTelefonica/access2web-blueprint/blob/main/docs/07-migracion/fase-1/plan-aplicacion.md">plan de aplicación del saneamiento</a> · propuesta de calendario pendiente de aprobación.</p>
 </div>
 </body>
 </html>
