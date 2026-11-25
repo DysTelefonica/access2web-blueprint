@@ -1,25 +1,24 @@
 #!/usr/bin/env python3
-"""Report the status of each migration milestone (issue #1802).
+"""Generate the weekly progress report by milestone for management (issue #1802).
 
 Reads the milestones (``hitos``) and phases of
-``docs/07-migracion/seguimiento/fases.json`` and the issues labelled for phase 1,
-and writes:
+``docs/07-migracion/seguimiento/fases.json``, the issues labelled for phase 1 and
+the open ``bloqueado``, ``riesgo`` and ``decision:gerencia`` issues, and writes:
 
-- ``semanal/AAAA-MM-DD.json``: the snapshot of the cut, one line per record, no
-  issue bodies;
+- ``semanal/AAAA-MM-DD.json``: the snapshot of the cut, one line per record,
+  compared next week;
 - ``semanal/AAAA-MM-DD.html``: one self-contained page for management;
 - ``avance.md`` and ``avance.html``, the internal view of ``migration_progress.py``.
 
-It prints one line per milestone: done/total, estimated week and status.
-
-A milestone counts its issues, the static tasks of its ``phases`` and its own
-``tasks``. It is declared closed only when all its work is done and the cut
-reaches its estimated week (``semana_estimada``, or the week of its last
-``replanificaciones`` entry); past its first estimated week with work pending it
-is delayed. The management view is a funnel: the current milestone is the first
-one not declared closed, and future milestones show no figures. Every phase-1
-group must belong to exactly one milestone; everything is validated before
-anything is written.
+The management view is a funnel. The current milestone is the first one not
+declared closed, and a milestone is declared closed only when all its work is done
+and the cut reaches its estimated week (``semana_estimada``, or the week of its
+last ``replanificaciones`` entry). A milestone counts its issues, the static tasks of
+its ``phases`` and its own ``tasks``. Future milestones show no figures; done and new
+issues are listed only for the current and closed milestones; a milestone past its
+first estimated week with work pending is delayed. Every phase-1 group must
+belong to exactly one milestone; everything is validated before anything is
+written.
 
 Exit codes:
     0  report written
@@ -33,16 +32,20 @@ import html
 import json
 import re
 import sys
+from pathlib import Path
 from typing import Any
 
 import migration_progress as mp
 
+BLUEPRINT = "access2web-blueprint"
+FLAG_LABELS = ("bloqueado", "riesgo", "decision:gerencia")
 WEEK = datetime.timedelta(days=7)
 MOTIVO_MAX = 200
 NO_MOTIVO = "sin motivo indicado"
-PROBLEM_HEADING = "### Problema y contexto"
 NO_DELAY_MOTIVO = "motivo pendiente de indicar"
 FIRST_CUT = "Primer corte, sin comparación."
+PROBLEM_HEADING = "### Problema y contexto"
+SNAPSHOT_NAME = re.compile(r"^\d{4}-\d{2}-\d{2}\.json$")
 STYLE_SOURCES = (
     mp.ROOT / "docs" / "uat" / "assets" / "style-base.css",
     mp.TRACKING_DIR / "avance.css",
@@ -58,20 +61,35 @@ STATUS_PILL = {
     "en preparación": "rag-grey",
     "retrasado": "rag-red",
 }
+RISK_PILL = {"alto": "rag-red", "medio": "rag-amber", "bajo": "rag-green", "sin nivel": "rag-grey"}
 
 Issue = mp.Issue
+Snapshot = dict[str, Any]
 Week = datetime.date | None
 
 
 # --- input -----------------------------------------------------------------------------------
 
 
-def load_input(args: Any, definition: dict[str, Any]) -> list[Issue]:
-    """Phase-1 issues, from ``--from-json`` or from GitHub."""
+def with_repo(issue: Issue) -> Issue:
+    return {**issue, "repository": {"name": BLUEPRINT}}
+
+
+def fetch_flagged(gh: str, label: str) -> list[Issue]:
+    command = [gh, "issue", "list", "-R", f"DysTelefonica/{BLUEPRINT}", "--label", label]
+    command += ["--state", "open", "--limit", str(mp.SEARCH_LIMIT), "--json"]
+    command += ["number,state,title,url,body,createdAt,closedAt,labels,comments"]
+    return [with_repo(issue) for issue in mp.run_gh(command)]
+
+
+def load_input(args: Any, definition: dict[str, Any]) -> tuple[list[Issue], dict[str, list[Issue]]]:
+    """Phase-1 issues plus the open flagged issues of this repository, by label."""
     if args.from_json is not None:
-        issues: list[Issue] = mp.read_json(args.from_json)["issues"]
-        return issues
-    return [i for label in mp.issue_labels(definition) for i in mp.fetch_issues(args.gh, label)]
+        data = mp.read_json(args.from_json)
+        flagged = {label: [with_repo(i) for i in data.get(label, [])] for label in FLAG_LABELS}
+        return data["issues"], flagged
+    issues = [i for label in mp.issue_labels(definition) for i in mp.fetch_issues(args.gh, label)]
+    return issues, {label: fetch_flagged(args.gh, label) for label in FLAG_LABELS}
 
 
 def label_names(issue: Issue) -> list[str]:
@@ -91,6 +109,19 @@ def motivo(issue: Issue) -> str:
         return NO_MOTIVO
     section = re.split(r"^#{1,3} ", parts[1], maxsplit=1, flags=re.MULTILINE)[0]
     return first_sentence(section) or NO_MOTIVO
+
+
+def blocker_reason(issue: Issue) -> str:
+    comments = issue.get("comments") or []
+    return first_sentence(comments[-1]["body"]) if comments else motivo(issue)
+
+
+def collect_flags(issues: list[Issue], flagged: dict[str, list[Issue]]) -> dict[str, list[Issue]]:
+    """Add the open phase-1 issues labelled ``bloqueado``; each issue appears once."""
+    blocked = [i for i in issues if not mp.is_done(i) and "bloqueado" in label_names(i)]
+    unique = {mp.issue_ref(i): i for i in [*blocked, *flagged["bloqueado"]]}
+    merged = {**flagged, "bloqueado": list(unique.values())}
+    return {label: mp.sort_issues(items) for label, items in merged.items()}
 
 
 # --- milestones ------------------------------------------------------------------------------
@@ -151,10 +182,10 @@ def build_hito(
         "percent": 100 * done / total if total else 0.0,
         "planned": planned,
         "week": planned[-1],
+        "replans": hito.get("replanificaciones", []),
         "phases": hito.get("phases", []),
         "tasks": hito.get("tasks", []),
         "refs": {mp.issue_ref(issue) for issue in items},
-        "replans": hito.get("replanificaciones", []),
         "label": f"{MONTHS[start.month - 1].capitalize()} {start.year}: {hito['name']}",
     }
     return {**item, "status": hito_status(item, cut)}
@@ -172,7 +203,7 @@ def current_hito(hitos: list[dict[str, Any]]) -> dict[str, Any] | None:
     return next((hito for hito in hitos if hito["status"] != "cerrado"), None)
 
 
-# --- snapshot -------------------------------------------------------------------------------
+# --- snapshot and comparison -----------------------------------------------------------------
 
 
 def issue_entry(issue: Issue, hito: str | None) -> dict[str, Any]:
@@ -191,10 +222,18 @@ def issue_entry(issue: Issue, hito: str | None) -> dict[str, Any]:
 
 
 def make_snapshot(
-    date: str, phases: list[dict[str, Any]], hitos: list[dict[str, Any]], issues: list[Issue]
-) -> dict[str, Any]:
+    date: str,
+    phases: list[dict[str, Any]],
+    hitos: list[dict[str, Any]],
+    issues: list[Issue],
+    flags: dict[str, list[Issue]],
+) -> Snapshot:
     hito_of = {ref: hito["id"] for hito in hitos for ref in hito["refs"]}
     task_hito = {phase: hito["id"] for hito in hitos for phase in hito["phases"]}
+
+    def entries(items: list[Issue]) -> list[dict[str, Any]]:
+        return [issue_entry(i, hito_of.get(mp.issue_ref(i))) for i in mp.sort_issues(items)]
+
     tasks = [
         {"phase": p["id"], "hito": task_hito.get(p["id"]), "title": t["title"], "done": t["done"]}
         for p in phases
@@ -205,11 +244,11 @@ def make_snapshot(
         for h in hitos
         for t in h["tasks"]
     ]
-    entries = [issue_entry(i, hito_of.get(mp.issue_ref(i))) for i in mp.sort_issues(issues)]
-    return {"date": date, "issues": entries, "tasks": tasks}
+    flagged = {label: entries(items) for label, items in flags.items()}
+    return {"date": date, "issues": entries(issues), "tasks": tasks, **flagged}
 
 
-def compact_json(snapshot: dict[str, Any]) -> str:
+def compact_json(snapshot: Snapshot) -> str:
     """One record per line, so a weekly snapshot stays a few hundred lines."""
     parts = []
     for key, value in snapshot.items():
@@ -219,6 +258,45 @@ def compact_json(snapshot: dict[str, Any]) -> str:
         else:
             parts.append(f"  {json.dumps(key)}: {json.dumps(value, ensure_ascii=False)}")
     return "{\n" + ",\n".join(parts) + "\n}\n"
+
+
+def previous_snapshot(weekly_dir: Path, date: str) -> Snapshot | None:
+    if not weekly_dir.is_dir():
+        return None
+    names = sorted(
+        p.name for p in weekly_dir.iterdir() if SNAPSHOT_NAME.match(p.name) and p.stem < date
+    )
+    return mp.read_json(weekly_dir / names[-1]) if names else None
+
+
+def done_this_week(snapshot: Snapshot, previous: Snapshot, visible: set[str]) -> list[str]:
+    closed_before = {r["key"] for r in previous["issues"] if r["state"] == "closed"}
+    done_before = {(t["phase"], t["title"]) for t in previous["tasks"] if t["done"]}
+    issues = [
+        r["title"]
+        for r in snapshot["issues"]
+        if r["hito"] in visible and r["state"] == "closed" and r["key"] not in closed_before
+    ]
+    tasks = [
+        t["title"]
+        for t in snapshot["tasks"]
+        if t["hito"] in visible and t["done"] and (t["phase"], t["title"]) not in done_before
+    ]
+    return issues + tasks
+
+
+def new_this_week(snapshot: Snapshot, previous: Snapshot, visible: set[str]) -> list[str]:
+    seen = {r["key"] for r in previous["issues"]}
+    return [
+        with_motivo(r["title"], r["motivo"])
+        for r in snapshot["issues"]
+        if r["hito"] in visible and r["key"] not in seen
+    ]
+
+
+def risk_level(issue: Issue) -> str:
+    levels = [name.split(":", 1)[1] for name in label_names(issue) if name.startswith("riesgo:")]
+    return levels[0] if levels else "sin nivel"
 
 
 # --- HTML ------------------------------------------------------------------------------------
@@ -232,14 +310,20 @@ def pill(text: str, css: str) -> str:
     return f'<span class="rag-pill {css}">{esc(text)}</span>'
 
 
+def with_motivo(title: str, reason: str) -> str:
+    return f'{esc(title)}<span class="motivo">Motivo: {esc(reason)}</span>'
+
+
 def card(title: str, body: list[str]) -> list[str]:
     return [f'<section class="card"><h2>{esc(title)}</h2>', *body, "</section>"]
 
 
-def item_list(items: list[str] | None) -> list[str]:
+def item_list(items: list[str] | None, empty: str) -> list[str]:
     """Items are HTML already escaped; ``None`` means there is no previous snapshot."""
     if items is None:
         return [f'<p class="empty">{esc(FIRST_CUT)}</p>']
+    if not items:
+        return [f'<p class="empty">{esc(empty)}</p>']
     return ['<ul class="items">', *(f"<li>{item}</li>" for item in items), "</ul>"]
 
 
@@ -255,12 +339,13 @@ def week_text(week: Week) -> str:
     return f"semana {week_of(week)}"
 
 
-def replan_lines(hito: dict[str, Any]) -> list[str]:
+def replan_lines(hito: dict[str, Any], since: str) -> list[str]:
     weeks = hito["planned"]
     return [
         esc(f"Replanificado: de la semana {week_of(weeks[n])} a la {week_of(weeks[n + 1])}")
         + f" — {esc(replan['motivo'])}"
         for n, replan in enumerate(hito["replans"])
+        if replan["fecha"] > since
     ]
 
 
@@ -276,7 +361,7 @@ def delay_lines(hito: dict[str, Any]) -> list[str]:
     ]
 
 
-def current_section(hito: dict[str, Any] | None) -> list[str]:
+def current_section(hito: dict[str, Any] | None, since: str) -> list[str]:
     if hito is None:
         return card("Hito actual", ['<p class="empty">Todos los hitos están cerrados.</p>'])
     head = (
@@ -287,7 +372,7 @@ def current_section(hito: dict[str, Any] | None) -> list[str]:
         f"<td>{pill(hito['status'], STATUS_PILL[hito['status']])}</td>"
         f"<td>{esc(week_text(hito['week']))}</td>"
     )
-    replans = replan_lines(hito)
+    replans = replan_lines(hito, since)
     return card(
         "Hito actual",
         [
@@ -296,7 +381,7 @@ def current_section(hito: dict[str, Any] | None) -> list[str]:
             mp.progress_row(hito["label"], hito["done"], hito["total"], extra),
             "</tbody></table>",
             *delay_lines(hito),
-            *(item_list(replans) if replans else []),
+            *(item_list(replans, "") if replans else []),
         ],
     )
 
@@ -319,11 +404,8 @@ def summary_table(hitos: list[dict[str, Any]], visible: set[str]) -> list[str]:
     ]
 
 
-def render_weekly(hitos: list[dict[str, Any]], cut: datetime.date) -> str:
+def render_weekly(report: dict[str, Any]) -> str:
     css = "\n".join(path.read_text(encoding="utf-8") for path in STYLE_SOURCES)
-    current = current_hito(hitos)
-    visible = {hito["id"] for hito in hitos if hito["status"] == "cerrado"}
-    visible |= {current["id"]} if current else set()
     lines = [
         "<!doctype html>",
         '<html lang="es">',
@@ -336,15 +418,21 @@ def render_weekly(hitos: list[dict[str, Any]], cut: datetime.date) -> str:
         "<body>",
         '<div class="page">',
         '<header class="hero" role="banner">',
-        f'<div class="eyebrow">Fecha de corte: {esc(long_date(cut))}</div>',
+        f'<div class="eyebrow">Fecha de corte: {esc(long_date(report["cut"]))}</div>',
         "<h1>Seguimiento semanal de la migración</h1>",
         '<p class="lead">Avance del hito en curso a partir de las tareas del proyecto: '
         "una tarea cerrada cuenta como hecha.</p>",
         "</header>",
-        *current_section(current),
-        *card("Todos los hitos", summary_table(hitos, visible)),
-        *card("Hecho esta semana", item_list(None)),
-        *card("Nuevas esta semana", item_list(None)),
+        *current_section(report["current"], report["since"]),
+        *card("Todos los hitos", summary_table(report["hitos"], report["visible"])),
+        *card("Hecho esta semana", item_list(report["done"], "Nada cerrado esta semana.")),
+        *card("Nuevas esta semana", item_list(report["new"], "Ninguna tarea nueva esta semana.")),
+        *card("Bloqueos", item_list(report["blockers"], "Sin bloqueos abiertos.")),
+        *card("Riesgos", item_list(report["risks"], "Sin riesgos abiertos.")),
+        *card(
+            "Decisiones que necesitamos",
+            item_list(report["decisions"], "Sin decisiones pendientes."),
+        ),
         '<p class="generated">Informe generado a partir de las tareas; no se edita a mano.</p>',
         "</div>",
         "</body>",
@@ -356,17 +444,56 @@ def render_weekly(hitos: list[dict[str, Any]], cut: datetime.date) -> str:
 # --- report ----------------------------------------------------------------------------------
 
 
+def risk_items(risks: list[Issue], previous: Snapshot | None) -> list[str]:
+    known = {r["key"] for r in previous["riesgo"]} if previous else None
+    items = []
+    for issue in risks:
+        level = risk_level(issue)
+        is_new = known is not None and mp.issue_ref(issue) not in known
+        mark = f" {pill('nuevo', 'rag-violet')}" if is_new else ""
+        items.append(f"{pill(level, RISK_PILL.get(level, 'rag-grey'))} {esc(issue['title'])}{mark}")
+    return items
+
+
+def build_report(
+    hitos: list[dict[str, Any]],
+    flags: dict[str, list[Issue]],
+    snapshot: Snapshot,
+    previous: Snapshot | None,
+) -> dict[str, Any]:
+    current = current_hito(hitos)
+    visible = {hito["id"] for hito in hitos if hito["status"] == "cerrado"}
+    visible |= {current["id"]} if current else set()
+    return {
+        "cut": datetime.date.fromisoformat(snapshot["date"]),
+        "hitos": hitos,
+        "visible": visible,
+        "current": current,
+        "since": previous["date"] if previous else "",
+        "done": None
+        if previous is None
+        else [esc(t) for t in done_this_week(snapshot, previous, visible)],
+        "new": None if previous is None else new_this_week(snapshot, previous, visible),
+        "blockers": [with_motivo(i["title"], blocker_reason(i)) for i in flags["bloqueado"]],
+        "risks": risk_items(flags["riesgo"], previous),
+        "decisions": [with_motivo(i["title"], motivo(i)) for i in flags["decision:gerencia"]],
+    }
+
+
 def generate(args: Any) -> list[dict[str, Any]]:
     cut = datetime.date.fromisoformat(args.date)
     definition = mp.read_json(args.phases)
     validate_hitos(definition)
-    issues = load_input(args, definition)
+    issues, flagged = load_input(args, definition)
     phases = mp.build_phases(definition, issues)
     hitos = build_hitos(definition, phases, cut)
-    snapshot = make_snapshot(args.date, phases, hitos, issues)
-    page = render_weekly(hitos, cut)
-    mp.write_report(phases, args.date, args.out_dir)
+    flags = collect_flags(issues, flagged)
     weekly_dir = args.out_dir / "semanal"
+    snapshot = make_snapshot(args.date, phases, hitos, issues, flags)
+    page = render_weekly(
+        build_report(hitos, flags, snapshot, previous_snapshot(weekly_dir, args.date))
+    )
+    mp.write_report(phases, args.date, args.out_dir)
     weekly_dir.mkdir(exist_ok=True)
     (weekly_dir / f"{args.date}.json").write_text(
         compact_json(snapshot), encoding="utf-8", newline="\n"

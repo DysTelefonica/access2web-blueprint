@@ -28,6 +28,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parent.parent
 TRACKING_DIR = ROOT / "docs" / "07-migracion" / "seguimiento"
 SEARCH_LIMIT = 1000
+GH_TIMEOUT_SECONDS = 120
 COMMAND = "python scripts/migration_progress.py"
 STATUS_PILL = {"revisada": "rag-green", "hecha": "rag-green", "en curso": "rag-amber"}
 
@@ -39,33 +40,44 @@ class ProgressError(Exception):
     """Input that makes the report impossible to generate faithfully."""
 
 
-def fetch_issues(gh: str, label: str) -> list[Issue]:
-    # Without --state, gh search returns open and closed issues alike.
-    command = [
-        gh,
-        "search",
-        "issues",
-        "--owner",
-        "DysTelefonica",
-        "--label",
-        label,
-        "--limit",
-        str(SEARCH_LIMIT),
-        "--json",
-        "repository,number,state,title,url,body,createdAt,closedAt,labels",
-    ]
+def run_gh(command: list[str]) -> list[Issue]:
+    """Run a gh listing command; a result at the limit is treated as truncated."""
     try:
         result = subprocess.run(
-            command, capture_output=True, text=True, encoding="utf-8", check=False
+            command,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+            timeout=GH_TIMEOUT_SECONDS,
         )
-    except OSError as exc:
+    except (OSError, subprocess.TimeoutExpired) as exc:
         raise ProgressError(f"cannot run gh: {exc}") from exc
     if result.returncode != 0:
-        raise ProgressError(f"gh search failed: {result.stderr.strip()}")
+        raise ProgressError(f"gh {command[1]} failed: {result.stderr.strip()}")
     issues: list[Issue] = json.loads(result.stdout)
     if len(issues) >= SEARCH_LIMIT:
-        raise ProgressError(f"gh search returned {len(issues)} issues: result truncated")
+        raise ProgressError(f"gh returned {len(issues)} issues: result truncated")
     return issues
+
+
+def fetch_issues(gh: str, label: str) -> list[Issue]:
+    # Without --state, gh search returns open and closed issues alike.
+    return run_gh(
+        [
+            gh,
+            "search",
+            "issues",
+            "--owner",
+            "DysTelefonica",
+            "--label",
+            label,
+            "--limit",
+            str(SEARCH_LIMIT),
+            "--json",
+            "repository,number,state,title,url,body,createdAt,closedAt,labels",
+        ]
+    )
 
 
 def read_json(path: Path) -> Any:
