@@ -229,7 +229,7 @@ table.risks th { background: var(--color-surface); }
 
 <section class="card" aria-labelledby="sec-rule">
   <h2 id="sec-rule">La regla del orden</h2>
-  <p class="rule"><strong>Primero se sanea, después se mueve.</strong> Toda mejora de la estructura de datos se hace en Access, con sus aplicaciones adaptadas, antes de que ese backend pase a PostgreSQL, para que la web nunca empiece sobre tablas con defectos. Superado el saneamiento, se ensaya en Citrix el paso de <strong>todos</strong> los backends a la vez; no hay un ensayo previo solo con la Lanzadera.</p>
+  <p class="rule"><strong>Primero se sanea, después se mueve.</strong> Los datos de cada aplicación se preparan en Access, con su aplicación adaptada, antes de pasar al almacén común (PostgreSQL). Superado el saneamiento, se ensaya en Citrix el paso de <strong>todos</strong> los backends a la vez; no hay un ensayo previo solo con la Lanzadera.</p>
   <div class="flow" aria-label="Fases de la migración en orden">
     <div class="step"><b>1. Sanear</b><small>Corregir los datos en Access, aplicación a aplicación</small></div>
     <span class="arrow" aria-hidden="true">→</span>
@@ -244,24 +244,28 @@ table.risks th { background: var(--color-surface); }
 </section>
 
 <section class="card" aria-labelledby="sec-saneamiento">
-  <h2 id="sec-saneamiento">Qué es el saneamiento</h2>
-  <p>Es poner en orden los datos de las aplicaciones Access actuales antes de pasarlos a la base de datos nueva. Las aplicaciones funcionan, pero sus datos arrastran defectos de años que una base de datos moderna no admite o que harían fallar a la web:</p>
+  <h2 id="sec-saneamiento">Qué es el saneamiento y por qué va primero</h2>
+  <p><strong>Cómo funcionan hoy las aplicaciones.</strong> Cada una de las once aplicaciones tiene dos piezas:</p>
   <ul>
-    <li>tablas en las que ninguna columna identifica cada fila de forma única;</li>
-    <li>números que cada aplicación calcula a mano y que se pueden repetir cuando dos usuarios guardan a la vez;</li>
-    <li>fechas guardadas como texto y relaciones entre tablas que nadie controla;</li>
-    <li>tablas que ya no usa ninguna aplicación.</li>
+    <li><strong>La parte que ve el usuario</strong> (técnicamente, el <em>front</em>): las pantallas, los botones y los informes con los que trabaja cada día.</li>
+    <li><strong>El almacén de datos</strong> (el <em>backend</em>): el archivo donde se guarda todo lo que el usuario registra. Hoy cada aplicación tiene sus propios archivos de datos, separados de los de las demás.</li>
   </ul>
-  <p><strong>Un ejemplo.</strong> Cada correo que envían las aplicaciones recibe un número que la propia aplicación calcula como «el último más uno». Cuando dos personas guardan al mismo tiempo, los dos correos reciben el mismo número: ya hay 19 casos. El saneamiento hace que ese número lo asigne la base de datos, y las once aplicaciones dejan de calcularlo.</p>
-  <p><strong>Cómo se hace.</strong> Son unas 190 correcciones pequeñas, repartidas por las once aplicaciones. Cada una se prueba antes en una copia, se aplica fuera de horario con los procesos automáticos parados y se puede deshacer con la copia de seguridad. Las tablas sin uso no se borran de entrada: se apartan y solo se eliminan tras un mes sin incidencias.</p>
-  <h3>Por qué tiene que ir antes que Citrix y PostgreSQL</h3>
+  <p>El plan es juntar todos esos almacenes en <strong>uno solo, común y moderno</strong> (PostgreSQL), y que las pantallas de cada aplicación pasen a trabajar contra él. El usuario seguirá viendo las mismas pantallas; lo que cambia es dónde se guardan sus datos.</p>
+
+  <h3>Qué es sanear</h3>
+  <p>Es <strong>preparar los almacenes actuales para que encajen en el almacén nuevo</strong>. Access y PostgreSQL organizan los datos con reglas distintas, y el almacén nuevo es más exigente: antes de juntar los datos hay que adaptarlos a su forma de trabajar.</p>
+  <p>Cada adaptación toca <strong>las dos piezas</strong> de la aplicación: se ajusta el almacén de datos y se adapta la parte que ve el usuario para que siga funcionando con él. Si se cambiara solo una, la aplicación dejaría de funcionar. El trabajo está identificado y repartido por las once aplicaciones.</p>
+
+  <h3>Cómo se asegura que no se rompe nada</h3>
+  <p><strong>Nada se sube a producción hasta que el técnico asignado a esa aplicación ha pasado las pruebas UAT</strong> (pruebas de aceptación): se repite el trabajo habitual de la aplicación y se comprueba que todo funciona igual que antes del saneamiento y que no se ha roto nada. Además, antes de cada cambio se guarda una copia de seguridad para poder volver atrás.</p>
+
+  <h3>Por qué hay que hacerlo antes de Citrix y del almacén nuevo</h3>
   <ol>
-    <li><strong>Sin sanear, las aplicaciones Access no pueden trabajar sobre la base nueva.</strong> Access solo puede modificar una tabla de PostgreSQL si cada fila tiene un identificador único. Las tablas que no lo tienen quedan en solo lectura: el ensayo de abril fallaría en cuanto un usuario intentara guardar.</li>
-    <li><strong>El traslado de los datos no tiene vuelta atrás.</strong> Es el único paso irreversible del plan. Un defecto que entre en la base nueva se queda en ella, y a partir de ahí lo heredan Access y la web a la vez.</li>
-    <li><strong>Hoy los defectos ya cuestan.</strong> Cuando dos correos reciben el mismo número, el segundo falla al guardarse y no se envía, sin que nadie se entere. Sanear corrige esto también en las aplicaciones actuales, no solo de cara al futuro.</li>
-    <li><strong>Ahora es barato; después, caro.</strong> En Access cada cambio se prueba en una copia y se deshace restaurando la copia de seguridad. Después del traslado habría que corregir sobre datos en uso, compartidos por dos sistemas, y sin esa red.</li>
+    <li><strong>Sin esta preparación, las aplicaciones no pueden trabajar con el almacén nuevo.</strong> El ensayo de abril necesita que los datos ya tengan la forma que el almacén nuevo exige.</li>
+    <li><strong>El traslado de los datos no tiene vuelta atrás.</strong> Es el único paso irreversible del plan, así que los datos tienen que llegar ya preparados.</li>
+    <li><strong>Ahora es sencillo y reversible; después, no.</strong> Hoy cada adaptación se prueba y se puede deshacer. Después del traslado habría que hacerla con los datos en uso por dos sistemas a la vez y sin esa red de seguridad.</li>
   </ol>
-  <div class="callout warn"><strong>En resumen:</strong> mover ahora a Citrix y PostgreSQL unos datos sin sanear es trasladar los problemas a un sitio del que ya no se pueden sacar. El saneamiento es lo que convierte el ensayo de abril y el traslado posterior en pasos seguros.</div>
+  <div class="callout warn"><strong>En resumen:</strong> preparar primero los datos es lo que hace seguros el ensayo de abril y el traslado posterior.</div>
 </section>
 
 <section class="card" aria-labelledby="sec-hitos">
@@ -271,8 +275,8 @@ table.risks th { background: var(--color-surface); }
       <div class="month">Diciembre 2026</div>
       <div>
         <h3>Vía de entrega en verde y arranque del saneamiento</h3>
-        <p>CI en verde y primera versión publicada. El saneamiento empieza por el cambio que toca a las once aplicaciones: el identificador de la cola de correo (<code>IDCorreo</code>), primero en el backend común y después en cada aplicación.</p>
-        <p class="gate">Puerta: el cambio de <code>IDCorreo</code> ensayado en una copia antes de tocar producción.</p>
+        <p>CI en verde y primera versión publicada. El saneamiento empieza por el cambio común a las once aplicaciones: el envío de correos, primero en el almacén compartido y después en cada aplicación.</p>
+        <p class="gate">Puerta: el cambio del envío de correos, con sus pruebas UAT superadas antes de subir a producción.</p>
       </div>
     </li>
     <li>
@@ -295,7 +299,7 @@ table.risks th { background: var(--color-surface); }
       <div class="month">Marzo 2027</div>
       <div>
         <h3>Saneamiento completo</h3>
-        <p>Brass y APGEDYS, y las tablas sin uso retiradas a cuarentena. Con esto termina la fase de saneamiento en las once aplicaciones.</p>
+        <p>Brass y APGEDYS. Con esto termina la fase de saneamiento en las once aplicaciones.</p>
         <p class="gate">Puerta: ningún dato pasa a PostgreSQL antes de cerrar este hito.</p>
       </div>
     </li>
@@ -340,7 +344,7 @@ table.risks th { background: var(--color-surface); }
   <h2 id="sec-decidir">Lo que hay que decidir</h2>
   <ol>
     <li><strong>Aprobar el orden:</strong> saneamiento completo antes de cualquier paso a PostgreSQL o a Citrix.</li>
-    <li><strong>Tiempo del equipo:</strong> los cambios en Access los aplican a mano, uno a uno, solo dos personas (Andrés y Juan Félix), fuera de horario y con los procesos automáticos parados.</li>
+    <li><strong>Tiempo del equipo:</strong> los cambios en Access los aplican a mano, uno a uno, solo dos personas (Andrés y Juan Félix). Cada cambio pasa antes las pruebas UAT del técnico de su aplicación.</li>
     <li><strong>Versiones en prueba de usuario:</strong> en cinco aplicaciones hay una versión pendiente de aceptación; decidir si el saneamiento sale sobre ella o en la siguiente.</li>
     <li><strong>Qué es éxito en mayo:</strong> la coexistencia sigue en exploración y dirección mantiene el corte único; el ensayo de abril es la evidencia para decidir.</li>
   </ol>
@@ -352,7 +356,7 @@ table.risks th { background: var(--color-surface); }
     <thead><tr><th scope="col">Riesgo</th><th scope="col">Qué hacemos</th></tr></thead>
     <tbody>
       <tr><td><span class="rag-pill rag-red">Alto</span> El saneamiento depende de dos personas, Andrés y Juan Félix, que aplican los cambios uno a uno</td><td>Cada cambio llega preparado con su comprobación, para que aplicarlo sea un paso mecánico; se agrupan por aplicación y se reparten entre los dos. Una baja o un pico de trabajo de cualquiera de ellos retrasa el hito del mes.</td></tr>
-      <tr><td><span class="rag-pill rag-red">Alto</span> La cola de correo la usan las once aplicaciones</td><td>Se ensaya el cambio en una copia antes de producción y se hace con los envíos automáticos pausados.</td></tr>
+      <tr><td><span class="rag-pill rag-red">Alto</span> El envío de correos lo comparten las once aplicaciones</td><td>Se prueba antes en una copia y pasa las pruebas UAT de cada aplicación antes de subir a producción.</td></tr>
       <tr><td><span class="rag-pill rag-amber">Medio</span> Citrix sin validar</td><td>Se valida la plataforma en local en enero, sin datos, para no descubrir problemas en el ensayo de abril.</td></tr>
       <tr><td><span class="rag-pill rag-amber">Medio</span> Un mes no se cierra</td><td>El hito se desplaza al mes siguiente y se explica por qué; el orden no cambia.</td></tr>
     </tbody>
