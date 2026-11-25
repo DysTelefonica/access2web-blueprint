@@ -38,7 +38,7 @@ Se reproduce con `scripts/dysflow-erd/collect-usage.ps1` y `scripts/dysflow-erd/
 | `Gestion_Riesgos_Datos` | 29 | 5 | · | · | 30 | · | · |
 | `Gestion_Brass_Gestion_Datos` | 50 | · | · | · | 7 | · | · |
 | `Expedientes_datos` | 23 | 15 | · | · | 9 | · | · |
-| `NoConformidades_Datos` | 19 | 2 | · | · | 15 | · | · |
+| `NoConformidades_Datos` | 19 | 2 | · | · | 14 | · | · |
 | `Seguridad_datos` | 26 | · | · | · | 10 | · | · |
 | `Lanzadera_Datos` | 9 | 4 | 1 | · | 21 | · | · |
 | `GestionContratos_datos` | 16 | 3 | · | · | 1 | · | · |
@@ -51,7 +51,9 @@ Se reproduce con `scripts/dysflow-erd/collect-usage.ps1` y `scripts/dysflow-erd/
 | `Tareas_datos1` | · | · | · | · | · | · | 4 |
 | `Control_Cambios_datos` | · | · | · | · | · | 3 | · |
 | `Correos_datos` | · | · | · | · | · | 1 | · |
-| **Total** | **247** | **44** | **2** | **0** | **164** | **6** | **72** |
+| **Total** | **247** | **44** | **2** | **0** | **163** | **6** | **72** |
+
+`TbNCARAvisos` de `NoConformidades_Datos` no cuenta en ninguna clase: no la usa ninguna aplicación del alcance, pero la consume Automatización (ver «Tablas huérfanas»).
 
 ## Tablas mal ubicadas
 
@@ -64,10 +66,14 @@ Se reproduce con `scripts/dysflow-erd/collect-usage.ps1` y `scripts/dysflow-erd/
 
 Ninguna aplicación del alcance, ni AGEDO ni Tareas, las usa. Entre paréntesis, las filas en la copia de referencia. Antes de ponerlas en cuarentena se aplica el [protocolo de huérfanas](../epica-coexistencia-postgresql.md#protocolo-de-huérfanas): este análisis no ve consumidores fuera de Access (Excel, informes o scripts programados).
 
+La clasificación solo miró los fronts. Desde #1808 la evidencia de no uso cruza también el código de Automatización (decisión 29): los VBS y PS1 de `bats/` y `config/uat-bundle-manifest.json` de `DysTelefonica/Automatizacion` en `v3.1.0` = `main` = `9cb6fb5`. De las 164 huérfanas, solo `TbNCARAvisos` tiene consumidor y sale de la lista.
+
+- **`TbNCARAvisos` no es huérfana** (432 filas). La lee y la escribe `bats/NoConformidades_bat.vbs` de Automatización, en el paso de No Conformidades de la tarea `Automatizacion-Diaria`, por la conexión `AUTOMATIZACION_NO_CONFORMIDADES_DATABASE`: filtra los avisos ya enviados (`:421-431`, `:494-534`) y registra cada aviso enviado con `ID = Max(ID) + 1` (`:604`, `:619-693`). Es el registro de avisos enviados: vaciarla reenvía todos los avisos vigentes y renombrarla a `zzBAJA_` rompe el paso de No Conformidades. Además la exige el doctor de Automatización (`config/uat-bundle-manifest.json`).
+
 - **`AGEDYS_DATOS`** (57): `TbAmbitoConsultas` (2), `TbAuxExp` (40), `TbAuxExpedientesUsuario` (0), `TbAuxExpedientesVivos` (40), `TbAuxGTV` (40), `TbAuxIDFactura` (4923), `TbAuxPilar` (56), `TbAuxPilar1` (18), `TbAuxPrado` (468), `TbAvalesAnexo` (32), `TbAvalesCancelacion` (187), `TbAvalesDatosGenerales` (1), `TbAvalesDatosGeneralesNuevos` (1), `TbAvalesFacturasClienteVinculo` (6), `TbAvalesInicio` (185), `TbAvalesInicioNuevo` (56), `TbAvalesObtencionAvalYDeposito` (132), `TbAvalesSolicitudSIADE` (151), `TbCestasTiposDocumentos` (0), `TbComunicados` (0), `TbComunicadosUsuario` (0), `TbConexiones` (24), `TbConexionesAGEDYSECO` (9), `TbConexionesAGEDYSTEC` (15), `TbConsultasOpciones` (6), `TbCorreoDiferidoNotas` (117), `TbCriteriosSuministrador` (6), `TbCSS` (1), `TbDatosEconomicosExpedientes` (91), `TbDireccionesSuministradores` (1), `TbDPDPlantillasParaCartaSolicitudDeOFerta` (9), `TbDpDPrepCartaOfAcepPrincipal` (860), `TbExpedientes_1` (463), `TbExpedientesAutorizaciones` (0), `TbExpedientesDocRequeridos` (158), `TbExpedientesProrrogas` (20), `TbFacturaInformeMatFalsicado` (0), `TbFacturasDetalleSinPedido` (2), `TbHerramientaDocAyuda` (10), `TbNPedidoAntes` (1499), `TbNPedidosHistorica` (1), `TbNuevosProductos` (407), `TbProductos_antes` (424), `TbProductosObsoletos` (25), `TbProductosParaBusqueda` (63), `TbProyectosDocumentosParaPedidoOrdinario` (0), `TbProyectosHistoricos` (2047), `TbSTGParametrosParaFormulario` (15), `TbSuministradoresDireccion` (24), `TbSuministradoresListaFavoritos` (0), `TbSuministradoresPuntuacion` (2450), `TbTareasTecnicasExplicaciones` (8), `TbTempDPDHTML` (193), `TbTiposImpositivos` (8), `TbTiposPedido` (3), `TbUsuariosEnvioTareas` (21), `TbVisadoFacturas` (1307).
 - **`Gestion_Riesgos_Datos`** (30): `TbAnexosAntigua` (2), `TbAuxSumExp` (6), `TbFelix` (47), `TbIDAccionPlanContingencia` (251), `TbIDAccionPlanMitigacion` (1074), `TbIDAnexos` (107), `TbIDBibliotecaRiesgos` (51), `TbIDCorreosEnviados` (264), `TbIDDocumentos` (27), `TbIDEdiciones` (209), `TbIDLog` (1077), `TbIDPlanContingencia` (154), `TbIDPlanMitigacion` (640), `TbIDProyectos` (71), `TbIDRiesgos` (889), `TbIDRiesgosAIntegrar` (58), `TbIDTareas` (53), `TbLog` (5817), `TbOrigenesRiesgosDetalles` (5), `TbProyectosResponsablesCalidad` (39), `TbProyectosSuministradores` (2), `TbProyectosTipo` (0), `TbRiesgosPorTipoProyecto` (0), `TbTablas` (41), `TbTareas` (36), `TbValoresPosiblesContingencia` (4), `TbValoresPosiblesEstadoRiesgo` (7), `TbValoresPosiblesMitigacion` (4), `TbValoresPosiblesPlazoCalidadCosteVulnerabilidad` (5), `TbValoresPosiblesValoracion` (4).
 - **`Lanzadera_Datos`** (21): `Tb0HerramientaDocAyuda` (4), `TbAplicacionesEdiciones` (1262), `TbAplicacionesEdicionesCambios` (1364), `TbAplicacionesEstados` (6), `TbAplicacionesParametros` (60), `TbAplicacionesPerfiles` (34), `TbAplicacionesVideos` (0), `TbConexiones` (24), `TbCuestionarioPreguntas` (0), `TbCuestionarios` (0), `TbCuestionaroRespuestas` (0), `TbDetalleVersiones` (28), `TbParametros` (53), `TbPermisos` (205), `TbTablasAVincular` (411), `TbUbicaciones` (8), `TbUsuarioAplicacionesSolicitud` (0), `TbUsuarioConfiguracion` (14), `tbUsuarios` (156), `TbUsuariosTareasDiarias` (8), `TbVideosCuestionario` (0).
-- **`NoConformidades_Datos`** (15): `TbAnexos` (228), `TbAuditoriaLog` (0), `TbCacheIndicadoresProyectoDetalle` (0), `TbCacheIndicadoresProyectoHeader` (0), `TbCacheListadoNC` (0), `TbConexiones` (0), `TbConfiguracion` (1), `TbConsultasPorFechas` (8), `TbNCARAvisos` (432), `TbNCInformacionRAC` (2), `TbNCInformacionRACAnexos` (1), `TbNoConformidadesIngresoPorLotesDetalle` (166), `TbNoConformidadesIngresoPorLotesPrincipal` (1), `TbNoConformidadesIngresoPorLotesTemporal` (166), `TbTareasExplicaciones` (10).
+- **`NoConformidades_Datos`** (14): `TbAnexos` (228), `TbAuditoriaLog` (0), `TbCacheIndicadoresProyectoDetalle` (0), `TbCacheIndicadoresProyectoHeader` (0), `TbCacheListadoNC` (0), `TbConexiones` (0), `TbConfiguracion` (1), `TbConsultasPorFechas` (8), `TbNCInformacionRAC` (2), `TbNCInformacionRACAnexos` (1), `TbNoConformidadesIngresoPorLotesDetalle` (166), `TbNoConformidadesIngresoPorLotesPrincipal` (1), `TbNoConformidadesIngresoPorLotesTemporal` (166), `TbTareasExplicaciones` (10).
 - **`Seguridad_datos`** (10): `Tb0AdjuntosIndexaciones` (1), `Tb0Conexiones` (3), `Tb0RegistrosPendientes` (2), `Tb0TipoRegistrosDescripcion` (21), `Tb0TipoRegistroUso` (0), `Tb0Vinculo` (0), `TbAuditorias` (0), `TbBuzonTEOficio` (0), `TbCarta` (0), `TbRecibosMP` (0).
 - **`Expedientes_datos`** (9): `Copia de TbExpedientes` (0), `Copia de TbExpedientesConEntidades` (365), `E2E_export_20260723_142133_lista` (89), `TbAusExpPostAGEDO` (203), `TbAuxEstadosMartina` (143), `TbAuxNemotecnico` (0), `TbExpAGEDYS1` (116), `TbExpedientesCadenaContratacion` (0), `TbJefaturas` (3).
 - **`Gestion_Brass_Gestion_Datos`** (7): `TbAuxManteniminetosPreventivosCalendario` (93), `TbCausaFin` (4), `TbGuiaConciliaciones` (0), `TbRepuestosTipo` (3), `TbResultadoVerificacion` (3), `TbSistema` (2), `TbTipoAsistencia` (4).
@@ -129,6 +135,6 @@ Estos nombres podían referirse a dos tablas. Se resolvieron mirando qué conexi
 ## Límites
 
 - Un nombre construido en tiempo de ejecución (concatenado o leído de datos) no se detecta, salvo el catálogo de Seguridad.
-- No se ven consumidores fuera de Access: Excel, informes ni scripts programados.
+- No se ven consumidores fuera de Access: Excel, informes ni scripts programados. Los scripts de Automatización se cruzan aparte (#1808, decisión 29).
 - Los módulos de test no cuentan como uso.
 - Las filas de los fronts son las del front publicado; en producción cada usuario tiene su copia.

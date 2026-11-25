@@ -5,7 +5,7 @@
 | Fase | Nombre | Estado | Hechas | Total |
 |---|---|---|---|---|
 | 0 | Inventario | revisada | 4 | 4 |
-| 1 | Saneamiento en Access | en curso | 6 | 189 |
+| 1 | Saneamiento en Access | en curso | 12 | 190 |
 | 2 | Unificar el acceso a datos | pendiente | 0 | 5 |
 | 3 | Ensayo en Citrix con todos los backends | revisada (diseño revisado, pendiente de ejecutar) | 0 | 7 |
 | 4 | Traslado único de todos los datos a PostgreSQL | pendiente | 0 | 5 |
@@ -22,7 +22,7 @@
 
 ## Fase 1. Saneamiento en Access
 
-**Estado:** en curso · **Hechas:** 6/189
+**Estado:** en curso · **Hechas:** 12/190
 
 ### Preparación
 
@@ -62,19 +62,19 @@
 - [x] [Lanzadera#35](https://github.com/DysTelefonica/Lanzadera/issues/35) test: dejar en verde la suite base sobre el binario de producción
 - [x] [Lanzadera#39](https://github.com/DysTelefonica/Lanzadera/issues/39) feat: módulo de migraciones del backend ejecutable por entorno (local, pruebas, producción)
 
-### Expedientes (0/14)
+### Expedientes (6/14)
 
-- [ ] [Expedientes#278](https://github.com/DysTelefonica/Expedientes/issues/278) refactor: retirar los códigos de compras de expediente
-- [ ] [Expedientes#282](https://github.com/DysTelefonica/Expedientes/issues/282) refactor: dejar `TbExpedientesAnualidades` única en `Expedientes_datos`
+- [x] [Expedientes#278](https://github.com/DysTelefonica/Expedientes/issues/278) refactor: retirar los códigos de compras de expediente
+- [x] [Expedientes#282](https://github.com/DysTelefonica/Expedientes/issues/282) refactor: dejar `TbExpedientesAnualidades` única en `Expedientes_datos`
 - [ ] [Expedientes#283](https://github.com/DysTelefonica/Expedientes/issues/283) refactor: declarar clave primaria en las seis tablas que no la tienen
 - [ ] [Expedientes#284](https://github.com/DysTelefonica/Expedientes/issues/284) refactor: resolver las tres escrituras del front en tablas de otro backend
-- [ ] [Expedientes#285](https://github.com/DysTelefonica/Expedientes/issues/285) refactor: retirar del front los cuatro vínculos que su código no usa
+- [x] [Expedientes#285](https://github.com/DysTelefonica/Expedientes/issues/285) refactor: retirar del front los cuatro vínculos que su código no usa
 - [ ] [Expedientes#286](https://github.com/DysTelefonica/Expedientes/issues/286) refactor: aislar el vínculo TbExpedientes1
-- [ ] [Expedientes#287](https://github.com/DysTelefonica/Expedientes/issues/287) refactor: obtener el SQL de las once consultas guardadas del backend y mapear sus tablas
-- [ ] [Expedientes#288](https://github.com/DysTelefonica/Expedientes/issues/288) refactor: reconciliar TbExpedientesDatosAGEDYS
+- [x] [Expedientes#287](https://github.com/DysTelefonica/Expedientes/issues/287) refactor: obtener el SQL de las once consultas guardadas del backend y mapear sus tablas
+- [x] [Expedientes#288](https://github.com/DysTelefonica/Expedientes/issues/288) refactor: reconciliar TbExpedientesDatosAGEDYS
 - [ ] [Expedientes#289](https://github.com/DysTelefonica/Expedientes/issues/289) refactor: sustituir el generador DameID (máximo más uno) por una identidad
 - [ ] [Expedientes#290](https://github.com/DysTelefonica/Expedientes/issues/290) refactor: declarar la integridad referencial que falta hacia TbUsuariosAplicaciones
-- [ ] [Expedientes#291](https://github.com/DysTelefonica/Expedientes/issues/291) refactor: revisar el RowSource residual de Form_FormE2ECola y las rutinas dormidas del Instalador
+- [x] [Expedientes#291](https://github.com/DysTelefonica/Expedientes/issues/291) refactor: revisar el RowSource residual de Form_FormE2ECola y las rutinas dormidas del Instalador
 - [ ] [Expedientes#292](https://github.com/DysTelefonica/Expedientes/issues/292) refactor: decidir el destino de TbAuxEstadosMartina
 - [ ] [Expedientes#293](https://github.com/DysTelefonica/Expedientes/issues/293) refactor: poner en cuarentena las 9 tablas huérfanas de Expedientes_datos
 - [ ] [Expedientes#294](https://github.com/DysTelefonica/Expedientes/issues/294) refactor: poner en cuarentena las 25 tablas que el VBA del front no usa
@@ -161,7 +161,7 @@
 - [ ] [No_conformidades#194](https://github.com/DysTelefonica/No_conformidades/issues/194) refactor: revisar las 4 consultas guardadas del backend (ColumnaFalta
 - [ ] [No_conformidades#195](https://github.com/DysTelefonica/No_conformidades/issues/195) refactor: decidir cómo se reproduce la comparación sin distinguir mayúsculas
 - [ ] [No_conformidades#196](https://github.com/DysTelefonica/No_conformidades/issues/196) refactor: decidir dónde vive TbConfiguracionBackends (tabla de arranque del front
-- [ ] [No_conformidades#197](https://github.com/DysTelefonica/No_conformidades/issues/197) refactor: poner en cuarentena las 15 tablas huérfanas de NoConformidades_Datos
+- [ ] [No_conformidades#197](https://github.com/DysTelefonica/No_conformidades/issues/197) refactor: poner en cuarentena las 14 tablas huérfanas de NoConformidades_Datos
 - [ ] [No_conformidades#198](https://github.com/DysTelefonica/No_conformidades/issues/198) refactor: poner en cuarentena TbTipologiaAux del front (23 filas
 
 ### Registros (0/20)
@@ -241,7 +241,7 @@
 - [ ] [AGEDYS_ECO#30](https://github.com/DysTelefonica/AGEDYS_ECO/issues/30) refactor: decidir el destino de Option Compare Database y de los 215 recordsets sin opciones de
 - [ ] [AGEDYS_ECO#31](https://github.com/DysTelefonica/AGEDYS_ECO/issues/31) refactor: poner en cuarentena las 3 tablas del front sin uso (TbAuxExpPrado
 
-### Transversal (1/11)
+### Transversal (1/12)
 
 - [ ] [access2web-blueprint#1752](https://github.com/DysTelefonica/access2web-blueprint/issues/1752) refactor: localizar el front de Tareas o declarar el backend como material archivado
 - [ ] [access2web-blueprint#1753](https://github.com/DysTelefonica/access2web-blueprint/issues/1753) refactor: fijar clave primaria en TbAperturas (7 800 filas) y en las otras tres tablas de SICA
@@ -251,6 +251,7 @@
 - [ ] [access2web-blueprint#1759](https://github.com/DysTelefonica/access2web-blueprint/issues/1759) refactor: revisar si SICA y Control de cambios siguen teniendo consumidor
 - [ ] [access2web-blueprint#1760](https://github.com/DysTelefonica/access2web-blueprint/issues/1760) refactor: revisar la matriz de vínculos de la lanzadera para este par de backends
 - [x] [access2web-blueprint#1790](https://github.com/DysTelefonica/access2web-blueprint/issues/1790) docs(migracion): plan de aplicación del saneamiento de la fase 1 y decisión 29
+- [ ] [access2web-blueprint#1808](https://github.com/DysTelefonica/access2web-blueprint/issues/1808) docs(migracion): incorporar a Automatización en las cuarentenas y en el bloque A del saneamiento
 - [ ] [CONTRATOS#1](https://github.com/DysTelefonica/CONTRATOS/issues/1) refactor: dejar de registrar aperturas en la Lanzadera
 - [ ] [CONTRATOS#2](https://github.com/DysTelefonica/CONTRATOS/issues/2) refactor: retirar la cola local de correo y la clase Correo sin uso
 - [ ] [CONTRATOS#3](https://github.com/DysTelefonica/CONTRATOS/issues/3) refactor: poner en cuarentena las 1 tablas huérfanas de GestionContratos_datos
