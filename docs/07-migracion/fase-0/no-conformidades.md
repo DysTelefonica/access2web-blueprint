@@ -100,7 +100,7 @@ Clasificación según la [épica](../epica-coexistencia-postgresql.md#clasificac
 | Tabla | Filas | Observación |
 |---|---|---|
 | `TbAnexos` | 228 | La tabla de anexos anterior a `TbNCDocumentos`; la relación `TbNoConformidadesTbAnexos` sigue declarada |
-| `TbNCARAvisos` | 432 | Avisos por acción correctiva, con referencias a ids de correo |
+| `TbNCARAvisos` | 432 | Avisos por acción correctiva, con referencias a ids de correo. No es huérfana: la lee y la escribe Automatización (`bats/NoConformidades_bat.vbs:421-431`, `:494-534`, `:604`, `:619-693`, en `9cb6fb5`), y la exige su doctor; sale de N1 (#1808) |
 | `TbNoConformidadesIngresoPorLotesTemporal` | 166 | Entrada masiva por Excel |
 | `TbNoConformidadesIngresoPorLotesDetalle` | 166 | Entrada masiva por Excel, sin clave primaria |
 | `TbNoConformidadesIngresoPorLotesPrincipal` | 1 | Entrada masiva por Excel |
@@ -129,7 +129,7 @@ Ninguna se aplica: la puerta de descubrimiento global sigue cerrada (#1576).
 
 | Id | Propuesta | Grupo (fase 1) | Comprobación previa | Reversión |
 |---|---|---|---|---|
-| N1 | Poner en cuarentena las 15 tablas propias sin referencias del backend, renombrándolas a `zzBAJA_<tabla>`. Para `TbNCInformacionRAC` y `TbNCInformacionRACAnexos` hay que quitar antes las relaciones `TbNoConformidadesTbNCInformacionRAC` y `TbNCInformacionRACTbNCInformacionRACAnexos`. | Imprescindible | Confirmar que ningún otro front ni la web las leen (grafo de vínculos de todos los backends) y que no hay consumidores fuera de Access: informes, Excel o tareas programadas. Antes, copia de seguridad validada y recuento de filas en producción, porque 10 de las 15 tienen datos. | Quitar el prefijo y volver a declarar las relaciones. |
+| N1 | Poner en cuarentena las 14 tablas propias sin referencias del backend, renombrándolas a `zzBAJA_<tabla>`; `TbNCARAvisos` sale porque la usa Automatización (#1808). Para `TbNCInformacionRAC` y `TbNCInformacionRACAnexos` hay que quitar antes las relaciones `TbNoConformidadesTbNCInformacionRAC` y `TbNCInformacionRACTbNCInformacionRACAnexos`. | Imprescindible | Confirmar que ningún otro front ni la web las leen (grafo de vínculos de todos los backends) y que no hay consumidores fuera de Access: informes, Excel o tareas programadas. Antes, copia de seguridad validada y recuento de filas en producción, porque 9 de las 14 tienen datos. | Quitar el prefijo y volver a declarar las relaciones. |
 | N2 | Revisar `TbAnexosAuditoria` y `TbAnexosNCAuditorias`: su único lector es `Instalador.bas:126` y `:170`, un módulo de migración de una sola vez. Propuesta: ejecutarla en producción y retirarlas después. | Imprescindible | Comprobar que la copia de `TbDocumentosAuditorias` de producción tiene los anexos migrados: las filas de `TbDocumentosAuditorias` deben coincidir con las de `TbAnexosAuditoria` unidas por `IDAuditoria` y nombre de archivo. | Reponer las tablas desde la copia. |
 | N3 | Declarar clave primaria en `TbCorreosEnviados`, la única tabla viva sin clave que escribe esta aplicación. Sin clave no es actualizable por ODBC. | Imprescindible | La tabla vive en `Correos_datos.accdb`: acordar el cambio con su dueño. Verificar duplicados: `SELECT IDCorreo FROM TbCorreosEnviados GROUP BY IDCorreo HAVING COUNT(*) > 1` debe devolver 0 filas. | Quitar la clave. |
 | N4 | Sustituir el generador `MAX + 1` (`constructor.getID`, `src/modules/constructor.bas:1196-1209`) por una identidad. Afecta a 18 llamadas sobre 16 tablas: `TbNCAccionCorrectivas`, `TbNCAccionesRealizadas`, `TbNCAuditoriaAccionCorrectivas`, `TbNCAuditoriaAccionesRealizadas`, `TbAuditorias`, `TbDocumentosAuditorias`, `TbNCDocumentos`, `TbLog`, `TbLogAuditoria`, `TbNoConformidades`, `TbNoConformidadesAuditoria`, `TbReplanificacionesProyecto`, `TbReplanificacionesAuditoria`, `TbTiposNCProyectos`, `TbCorreosEnviados` y `TbRiesgosNC`. | Imprescindible | La lectura de `MAX` no reserva el identificador. Probar dos inserciones simultáneas sin colisiones y medir el hueco de ids por tabla: si el hueco es grande, el cambio de tipo de columna no es trivial. | Volver al generador actual. |
@@ -169,7 +169,7 @@ Referencias: número de apariciones del nombre exacto de la tabla en `src/` de l
 | `TbLog` | IDLog | 4745 | 6 | 17 | propia |
 | `TbLogAuditoria` | IDLog | 689 | 5 | 11 | propia |
 | `TbLogCache` | IDLog | 5542 | 7 | 7 | propia |
-| `TbNCARAvisos` | ID | 432 | 0 | 0 | candidata a huérfana (N1) |
+| `TbNCARAvisos` | ID | 432 | 0 | 0 | no es huérfana: la lee y la escribe Automatización (`bats/NoConformidades_bat.vbs`, registro de avisos enviados, #1808) |
 | `TbNCAccionCorrectivas` | IDAccionCorrectiva | 656 | 123 | 47 | propia |
 | `TbNCAccionesRealizadas` | IDAccionRealizada | 1684 | 121 | 42 | propia |
 | `TbNCAuditoriaAccionCorrectivas` | IDAccionCorrectiva | 88 | 73 | 33 | propia |
@@ -215,7 +215,7 @@ Referencias: número de apariciones del nombre exacto de la tabla en `src/` de l
 
 1. El SQL de las 4 consultas guardadas del backend: el ERD exporta nombre y tipo, no la sentencia. El SQL de las 3 del front sí se conoce, por `src/queries/`.
 2. Si las 15 tablas sin referencias las consume otra aplicación: exige el grafo de vínculos de todos los backends, la tarea global de la fase 0.
-3. Si esas mismas tablas tienen consumidores fuera de Access: informes en Excel, tareas programadas o consultas externas. El [protocolo de huérfanas](../epica-coexistencia-postgresql.md#protocolo-de-huérfanas) lo exige antes de borrar nada.
+3. Si esas mismas tablas tienen consumidores fuera de Access: informes en Excel, tareas programadas o consultas externas. El [protocolo de huérfanas](../epica-coexistencia-postgresql.md#protocolo-de-huérfanas) lo exige antes de borrar nada. Resuelto para las tareas programadas (#1808): de las 15, Automatización solo usa `TbNCARAvisos`.
 4. El dueño real de `TbRiesgosNC` y `TbCorreosEnviados`: requiere las fichas de Gestión de Riesgos y de Correos.
 5. La paridad entre `src/` y el binario se apoya en el `verify_code` que registra el roadmap (`docs/no_conformidades/roadmap.md:25`), no en una comprobación hecha en esta sesión. Las expresiones de propiedad de formulario que no se exportan a `src` quedan sin revisar.
 6. La ausencia de macros y de `AutoExec` es la regla del propietario, no una comprobación de esta sesión: no se inspeccionó el proyecto VBA del binario más allá del `src` exportado.
