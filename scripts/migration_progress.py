@@ -2,9 +2,9 @@
 """Generate the migration progress report from GitHub issues (issue #1794).
 
 Reads the phase definition (``docs/07-migracion/seguimiento/fases.json``) and the
-issues labelled for phase 1, and writes ``avance.md`` (full checklist).
-Done/pending is never edited by hand: a closed issue counts as done; static
-tasks carry their own flag.
+issues labelled for phase 1, and writes ``avance.md`` (full checklist) and
+``avance.html`` (aggregates for management). Done/pending is never edited by
+hand: a closed issue counts as done; static tasks carry their own flag.
 
 Everything is validated before anything is written: an issue from a repository
 that no group maps fails the run and leaves the output directory untouched.
@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import html
 import json
 import subprocess
 import sys
@@ -28,6 +29,7 @@ ROOT = Path(__file__).resolve().parent.parent
 TRACKING_DIR = ROOT / "docs" / "07-migracion" / "seguimiento"
 SEARCH_LIMIT = 1000
 COMMAND = "python scripts/migration_progress.py"
+STATUS_PILL = {"revisada": "rag-green", "hecha": "rag-green", "en curso": "rag-amber"}
 
 Issue = dict[str, Any]
 Group = dict[str, Any]
@@ -180,6 +182,94 @@ def render_markdown(phases: list[dict[str, Any]], date: str) -> str:
     return "\n".join(lines).rstrip("\n") + "\n"
 
 
+def progress_row(name: str, done: int, total: int, extra: str = "") -> str:
+    percent = round(100 * done / total) if total else 0
+    return (
+        f'<tr><th scope="row">{html.escape(name)}</th>{extra}'
+        f'<td><progress value="{done}" max="{total}">{percent} %</progress></td>'
+        f'<td class="num">{done}/{total}</td><td class="num">{percent} %</td></tr>'
+    )
+
+
+def html_phase_table(phases: list[dict[str, Any]]) -> list[str]:
+    rows = []
+    for phase in phases:
+        # A status note qualifies the status ("revisada" design, not yet executed): grey.
+        pill = (
+            "rag-grey" if phase.get("status_note") else STATUS_PILL.get(phase["status"], "rag-grey")
+        )
+        status = f'<td><span class="rag-pill {pill}">{html.escape(status_text(phase))}</span></td>'
+        rows.append(
+            progress_row(f"{phase['id']}. {phase['name']}", phase["done"], phase["total"], status)
+        )
+    head = "<tr><th>Fase</th><th>Estado</th><th>Avance</th><th>Hechas</th><th>%</th></tr>"
+    return [
+        '<table class="data-table progress-table">',
+        f"<thead>{head}</thead><tbody>",
+        *rows,
+        "</tbody></table>",
+    ]
+
+
+def html_group(group: Group) -> list[str]:
+    done, total = counts(group["issues"], [])
+    items = [
+        f'<li class="{"done" if is_done(i) else "open"}"><a href="{html.escape(i["url"])}">'
+        f"{html.escape(issue_ref(i))}</a> {html.escape(i['title'])}</li>"
+        for i in group["issues"]
+    ]
+    return [
+        progress_row(group["name"], done, total),
+        f'<tr class="detail"><td colspan="4"><details><summary>Issues</summary><ul>'
+        f"{''.join(items)}</ul></details></td></tr>",
+    ]
+
+
+def html_groups(phases: list[dict[str, Any]]) -> list[str]:
+    lines = []
+    for phase in (p for p in phases if p["groups"]):
+        lines += [
+            f'<section class="card"><h2>Fase {phase["id"]}: avance por aplicación</h2>',
+            '<table class="data-table progress-table"><thead><tr><th>Grupo</th>'
+            "<th>Avance</th><th>Hechas</th><th>%</th></tr></thead><tbody>",
+        ]
+        for group in phase["groups"]:
+            lines += html_group(group)
+        lines += ["</tbody></table></section>"]
+    return lines
+
+
+def render_html(phases: list[dict[str, Any]], date: str) -> str:
+    lines = [
+        "<!doctype html>",
+        '<html lang="es">',
+        "<head>",
+        '<meta charset="utf-8" />',
+        '<meta name="viewport" content="width=device-width, initial-scale=1" />',
+        '<link rel="stylesheet" href="../../uat/assets/style-base.css" />',
+        '<link rel="stylesheet" href="avance.css" />',
+        "<title>Access2Web: avance de la migración por fases</title>",
+        "</head>",
+        "<body>",
+        '<div class="page">',
+        '<header class="hero" role="banner">',
+        f'<div class="eyebrow">Épica #1545 · Fecha de corte: {html.escape(date)}</div>',
+        "<h1>Avance de la migración por fases</h1>",
+        '<p class="lead">Generado a partir de las issues de GitHub: una issue cerrada cuenta como '
+        'hecha. La lista completa de subtareas está en <a href="avance.md">avance.md</a>.</p>',
+        "</header>",
+        '<section class="card"><h2>Avance por fase</h2>',
+        *html_phase_table(phases),
+        "</section>",
+        *html_groups(phases),
+        f'<p class="generated">Generado con <code>{COMMAND}</code>. No se edita a mano.</p>',
+        "</div>",
+        "</body>",
+        "</html>",
+    ]
+    return "\n".join(lines) + "\n"
+
+
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -207,7 +297,10 @@ def generate(args: argparse.Namespace) -> list[dict[str, Any]]:
     labels = [p["issues"]["label"] for p in definition["phases"] if "issues" in p]
     issues = [issue for label in labels for issue in load_issues(args, label)]
     phases = build_phases(definition, issues)
-    outputs = {"avance.md": render_markdown(phases, args.date)}
+    outputs = {
+        "avance.md": render_markdown(phases, args.date),
+        "avance.html": render_html(phases, args.date),
+    }
     for name, content in outputs.items():
         (args.out_dir / name).write_text(content, encoding="utf-8", newline="\n")
     return phases

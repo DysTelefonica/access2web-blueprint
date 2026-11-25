@@ -38,6 +38,55 @@
           {"name": "Transversal", "repos": ["access2web-blueprint", "Automatizacion", "CONTRATOS"]}
         ]
       }
+    },
+    {
+      "id": 2,
+      "name": "Unificar el acceso a datos",
+      "status": "pendiente",
+      "tasks": [
+        {"title": "Adaptar a ODBC sin DSN getdb() con OpenDatabase y clave (Lanzadera)", "done": false},
+        {"title": "Adaptar a ODBC sin DSN la revinculación desde TbTablasAVincular (aplicaciones antiguas)", "done": false},
+        {"title": "Adaptar a ODBC sin DSN el resolvedor propio de cada aplicación moderna", "done": false},
+        {"title": "Adaptar a ODBC sin DSN la apertura directa de Lanzadera_Datos con ruta escrita en el código (11 fronts)", "done": false},
+        {"title": "Cambio de .accdb a PostgreSQL, y vuelta, solo por configuración, demostrado fuera de producción en cada front", "done": false}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Ensayo en Citrix con todos los backends",
+      "status": "revisada",
+      "status_note": "diseño revisado, pendiente de ejecutar",
+      "tasks": [
+        {"title": "Validación local de Citrix con RDS Session Host (H-3, primer paso)", "done": false},
+        {"title": "Ensayo completo en preproducción con todos los backends sobre PostgreSQL", "done": false},
+        {"title": "Conversión de tipos verificada", "done": false},
+        {"title": "Tablas vinculadas actualizables (con clave primaria)", "done": false},
+        {"title": "Todas las aplicaciones Access funcionando sobre PostgreSQL", "done": false},
+        {"title": "Rendimiento aceptable en Citrix", "done": false},
+        {"title": "Hipótesis H-1, H-3 y H-4 confirmadas o refutadas con evidencia", "done": false}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Traslado único de todos los datos a PostgreSQL",
+      "status": "pendiente",
+      "tasks": [
+        {"title": "Plan del traslado", "done": false},
+        {"title": "Repetición del ensayo de la fase 3 con una copia reciente de producción", "done": false},
+        {"title": "Reapuntado de los consumidores que no migran: AGEDO, Tareas y el envío de correos del servidor (decisiones 14 y 16)", "done": false},
+        {"title": "Decisión sobre cada despliegue de prueba que comparte la unidad de red con producción", "done": false},
+        {"title": "Traslado único en producción", "done": false}
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Expedientes a web",
+      "status": "pendiente",
+      "tasks": [
+        {"title": "Entregables del corte que fija la coexistencia de Expedientes (03-aplicaciones/expedientes/prd/coexistencia.md)", "done": false},
+        {"title": "Botón de Expedientes deshabilitado en la Lanzadera Access y habilitado en la web", "done": false},
+        {"title": "Reversión probada: rehabilitar el botón de Access", "done": false}
+      ]
     }
   ]
 }

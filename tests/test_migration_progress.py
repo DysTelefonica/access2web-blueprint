@@ -2,8 +2,9 @@
 
 The report is never edited by hand: ``scripts/migration_progress.py`` reads the
 phase definition (``docs/07-migracion/seguimiento/fases.json``) and the issues
-labelled ``saneamiento:coexistencia``, and writes ``avance.md``. These tests
-feed the issues with ``--from-json`` so no network call is made.
+labelled ``saneamiento:coexistencia``, and writes ``avance.md`` and
+``avance.html``. These tests feed the issues with ``--from-json`` so no network
+call is made.
 """
 
 from __future__ import annotations
@@ -50,8 +51,12 @@ def _run(tmp_path: Path, issues: list[dict[str, object]]) -> subprocess.Complete
     )
 
 
-def _markdown(tmp_path: Path) -> str:
-    return (tmp_path / "out" / "avance.md").read_text(encoding="utf-8")
+def _outputs(tmp_path: Path) -> tuple[str, str]:
+    out_dir = tmp_path / "out"
+    return (
+        (out_dir / "avance.md").read_text(encoding="utf-8"),
+        (out_dir / "avance.html").read_text(encoding="utf-8"),
+    )
 
 
 SAMPLE = [
@@ -64,7 +69,7 @@ SAMPLE = [
 def test_a_closed_issue_counts_as_done_and_groups_carry_their_totals(tmp_path: Path) -> None:
     result = _run(tmp_path, SAMPLE)
     assert result.returncode == 0, result.stderr
-    markdown = _markdown(tmp_path)
+    markdown, _ = _outputs(tmp_path)
     assert "### Lanzadera (1/2)" in markdown
     assert "### Expedientes (0/1)" in markdown
     assert (
@@ -83,7 +88,7 @@ def test_an_idcorreo_issue_goes_to_block_a_whatever_its_repo(tmp_path: Path) -> 
     ]
     result = _run(tmp_path, issues)
     assert result.returncode == 0, result.stderr
-    markdown = _markdown(tmp_path)
+    markdown, _ = _outputs(tmp_path)
     block_a = markdown.split("### Bloque A. IDCorreo (1/2)", 1)[1].split("###", 1)[0]
     assert "[BRASS#7]" in block_a
     assert "[access2web-blueprint#1741]" in block_a
@@ -101,11 +106,36 @@ def test_an_issue_from_an_unmapped_repo_fails_naming_it_and_writes_nothing(
     assert list((tmp_path / "out").iterdir()) == []
 
 
+def test_phases_two_to_five_list_their_subtasks_as_pending(tmp_path: Path) -> None:
+    result = _run(tmp_path, SAMPLE)
+    assert result.returncode == 0, result.stderr
+    markdown, _ = _outputs(tmp_path)
+    assert "| 2 | Unificar el acceso a datos | pendiente | 0 | 5 |" in markdown
+    assert "| 3 | Ensayo en Citrix con todos los backends | revisada" in markdown
+    assert "| 4 | Traslado único de todos los datos a PostgreSQL | pendiente | 0 | 5 |" in markdown
+    assert "| 5 | Expedientes a web | pendiente | 0 | 3 |" in markdown
+    assert "- [ ] Traslado único en producción" in markdown
+    assert "- [ ] Reversión probada: rehabilitar el botón de Access" in markdown
+
+
 def test_the_summary_row_of_phase_one_adds_static_tasks_and_issues(tmp_path: Path) -> None:
     result = _run(tmp_path, SAMPLE)
     assert result.returncode == 0, result.stderr
-    markdown = _markdown(tmp_path)
+    markdown, _ = _outputs(tmp_path)
     assert "| 0 | Inventario | revisada | 4 | 4 |" in markdown
     assert "| 1 | Saneamiento en Access | en curso | 1 | 6 |" in markdown
     assert "No edite este fichero a mano" in markdown
     assert "2026-11-25" in markdown
+
+
+def test_the_html_shows_progress_per_group_and_escapes_issue_text(tmp_path: Path) -> None:
+    issues = [*SAMPLE, _issue("condor", 9, "open", "fix: <script>alert(1)</script>")]
+    result = _run(tmp_path, issues)
+    assert result.returncode == 0, result.stderr
+    _, page = _outputs(tmp_path)
+    assert '<progress value="1" max="2"' in page
+    assert "Lanzadera" in page
+    assert "&lt;script&gt;alert(1)&lt;/script&gt;" in page
+    assert "<script>" not in page
+    assert 'href="avance.md"' in page
+    assert 'href="../../uat/assets/style-base.css"' in page
