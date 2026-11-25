@@ -73,6 +73,7 @@ def _run(
 
 
 IDCORREO = "refactor: dejar de calcular IDCorreo al encolar correos"
+PROBLEM = "### Problema y contexto\n\n{}\n\n### Evidencia verificable\n\nOtra cosa."
 CLOSED_DECEMBER = "semana del 21 de diciembre de 2026"
 
 
@@ -147,6 +148,32 @@ def test_a_hito_past_its_week_with_pending_work_is_delayed_even_after_a_replan(
     assert result.returncode == 0, result.stderr
     assert result.stdout.startswith("Hito 2026-12: 0/1 (0 %)")
     assert ", retrasado" in result.stdout.splitlines()[0]
+
+
+def test_the_snapshot_has_one_line_per_record_and_no_issue_bodies(tmp_path: Path) -> None:
+    closed = _issue("BRASS", 7, "closed", IDCORREO, PROBLEM.format("Correo duplicado. Más."))
+    closed["closedAt"] = "2026-11-24T10:00:00Z"
+    issues = [closed, *(_issue("HPS", n, "open", "fix", PROBLEM.format("x.")) for n in range(30))]
+    # gh search reports the zero time as closedAt of an open issue.
+    issues[1]["closedAt"] = "0001-01-01T00:00:00Z"
+    assert _run(tmp_path, {"issues": issues}, "2026-11-25").returncode == 0
+    text = (tmp_path / "out" / "semanal" / "2026-11-25.json").read_text(encoding="utf-8")
+    snapshot = json.loads(text)
+    records = sum(len(v) for v in snapshot.values() if isinstance(v, list))
+    assert len(text.splitlines()) <= records + 15
+    assert '"body"' not in text and "Problema y contexto" not in text
+    assert snapshot["issues"][0] == {
+        "key": "BRASS#7",
+        "state": "closed",
+        "hito": "2026-12",
+        "title": IDCORREO,
+        "url": "https://github.com/DysTelefonica/BRASS/issues/7",
+        "createdAt": "2026-11-20T09:00:00Z",
+        "closedAt": "2026-11-24T10:00:00Z",
+        "labels": [],
+        "motivo": "Correo duplicado.",
+    }
+    assert snapshot["issues"][1]["closedAt"] is None
 
 
 def test_a_phase_one_group_in_no_hito_fails_naming_it_and_writes_nothing(tmp_path: Path) -> None:

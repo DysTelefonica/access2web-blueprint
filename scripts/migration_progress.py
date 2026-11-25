@@ -52,7 +52,7 @@ def fetch_issues(gh: str, label: str) -> list[Issue]:
         "--limit",
         str(SEARCH_LIMIT),
         "--json",
-        "repository,number,state,title,url",
+        "repository,number,state,title,url,body,createdAt,closedAt,labels",
     ]
     try:
         result = subprocess.run(
