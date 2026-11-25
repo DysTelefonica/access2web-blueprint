@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="../../uat/assets/style-base.css" />
+<link rel="stylesheet" href="cronograma-hitos.css" />
+<title>Access2Web: hitos de diciembre de 2026 a mayo de 2027</title>
+</head>
+<body>
+<div class="page">
+<header class="hero" role="banner">
+  <div class="eyebrow">Reunión de dirección · 25 de noviembre de 2026 · Épica #1545</div>
+  <h1>Seis meses en alto nivel: primero sanear los datos de Access; después, Citrix y PostgreSQL</h1>
+  <p class="lead">Ningún dato pasa a PostgreSQL ni se ensaya en Citrix hasta que el saneamiento de las once aplicaciones esté terminado. Mientras tanto, la web de Lanzadera y Expedientes se sigue construyendo en paralelo. Los meses son ventanas de trabajo, no fechas comprometidas: al cierre de cada mes se revisa lo cerrado y se recalcula lo que viene.</p>
+</header>
+
+<section class="card" aria-labelledby="sec-rule">
+  <h2 id="sec-rule">La regla del orden</h2>
+  <p class="rule"><strong>Primero se sanea, después se mueve.</strong> Toda mejora de la estructura de datos se hace en Access, con sus aplicaciones adaptadas, antes de que ese backend pase a PostgreSQL, para que la web nunca empiece sobre tablas con defectos. Superado el saneamiento, se ensaya en Citrix el paso de <strong>todos</strong> los backends a la vez; no hay un ensayo previo solo con la Lanzadera.</p>
+  <div class="flow" aria-label="Fases de la migración en orden">
+    <div class="step"><b>1. Sanear</b><small>Corregir los datos en Access, aplicación a aplicación</small></div>
+    <span class="arrow" aria-hidden="true">→</span>
+    <div class="step"><b>2. Preparar el acceso</b><small>Cada aplicación cambia de Access a PostgreSQL solo con configuración</small></div>
+    <span class="arrow" aria-hidden="true">→</span>
+    <div class="step"><b>3. Ensayar en Citrix</b><small>Todos los backends sobre PostgreSQL, en preproducción</small></div>
+    <span class="arrow" aria-hidden="true">→</span>
+    <div class="step irrev"><b>4. Trasladar</b><small>Todos los datos de una vez. Único paso sin vuelta atrás</small></div>
+    <span class="arrow" aria-hidden="true">→</span>
+    <div class="step"><b>5. Pasar a la web</b><small>Aplicación a aplicación, con vuelta atrás por botón</small></div>
+  </div>
+</section>
+
+<section class="card" aria-labelledby="sec-hitos">
+  <h2 id="sec-hitos">Los hitos, mes a mes</h2>
+  <ol class="timeline">
+    <li>
+      <div class="month">Diciembre 2026</div>
+      <div>
+        <h3>Vía de entrega en verde y arranque del saneamiento</h3>
+        <p>CI en verde y primera versión publicada. El saneamiento empieza por el cambio que toca a las once aplicaciones: el identificador de la cola de correo (<code>IDCorreo</code>), primero en el backend común y después en cada aplicación.</p>
+        <p class="gate">Puerta: el cambio de <code>IDCorreo</code> ensayado en una copia antes de tocar producción.</p>
+      </div>
+    </li>
+    <li>
+      <div class="month">Enero 2027</div>
+      <div>
+        <h3>Saneamiento de las primeras aplicaciones y Citrix validado en local</h3>
+        <p>Lanzadera, Expedientes, Condor y Seguridad, en ese orden. En paralelo se valida la plataforma Citrix en local (servidor multisesión, varios usuarios a la vez), <strong>sin mover ningún dato</strong>.</p>
+        <p class="gate">Puerta: las aplicaciones saneadas, publicadas y funcionando con sus usuarios.</p>
+      </div>
+    </li>
+    <li>
+      <div class="month">Febrero 2027</div>
+      <div>
+        <h3>Saneamiento del bloque central y acceso a datos preparado</h3>
+        <p>HPS con Solicitudes HPS, Gestión de Riesgos con No Conformidades, y Registros. Cada aplicación queda lista para cambiar de Access a PostgreSQL solo por configuración, demostrado fuera de producción.</p>
+        <p class="gate">Puerta: el cambio de configuración, de ida y de vuelta, probado en cada aplicación.</p>
+      </div>
+    </li>
+    <li class="key">
+      <div class="month">Marzo 2027</div>
+      <div>
+        <h3>Saneamiento completo</h3>
+        <p>Brass y APGEDYS, y las tablas sin uso retiradas a cuarentena. Con esto termina la fase de saneamiento en las once aplicaciones.</p>
+        <p class="gate">Puerta: ningún dato pasa a PostgreSQL antes de cerrar este hito.</p>
+      </div>
+    </li>
+    <li>
+      <div class="month">Abril 2027</div>
+      <div>
+        <h3>Ensayo en Citrix con todos los datos</h3>
+        <p>En preproducción, todos los backends sobre PostgreSQL y las aplicaciones Access funcionando dentro de Citrix, sin ningún fichero Access de datos.</p>
+        <p class="gate">Puerta: todas las aplicaciones funcionan con un rendimiento aceptable.</p>
+      </div>
+    </li>
+    <li>
+      <div class="month">Mayo 2027</div>
+      <div>
+        <h3>Listos para el traslado</h3>
+        <p>Plan de traslado aprobado y repetición del ensayo con una copia reciente de producción. Dirección decide con evidencia entre la coexistencia y el corte único.</p>
+        <p class="gate">Puerta: decisión de dirección sobre el camino.</p>
+      </div>
+    </li>
+    <li class="after">
+      <div class="month">Después de mayo</div>
+      <div>
+        <h3>Traslado único y paso a la web</h3>
+        <p>Todos los datos a PostgreSQL de una vez, el único paso irreversible. Después, cada aplicación pasa a la web cuando está lista, empezando por Lanzadera y Expedientes.</p>
+      </div>
+    </li>
+  </ol>
+  <div class="callout"><strong>En paralelo durante los seis meses:</strong> la web de Lanzadera y de Expedientes se sigue desarrollando y probando. No tiene hitos de uso real hasta que los datos estén saneados y trasladados.</div>
+</section>
+
+<section class="card" aria-labelledby="sec-hoy">
+  <h2 id="sec-hoy">Dónde estamos hoy</h2>
+  <div class="status">
+    <div><span class="rag-pill rag-green">Hecho</span><strong>Inventario</strong><span class="note">Las once aplicaciones analizadas; validado por el propietario el 15 de noviembre.</span></div>
+    <div><span class="rag-pill rag-amber">En curso</span><strong>Saneamiento</strong><span class="note">182 tareas identificadas en los repositorios de las aplicaciones; plan de aplicación propuesto el 24 de noviembre.</span></div>
+    <div><span class="rag-pill rag-grey">Pendiente</span><strong>Acceso a datos</strong><span class="note">Preparar las aplicaciones para cambiar de Access a PostgreSQL por configuración.</span></div>
+    <div><span class="rag-pill rag-grey">Pendiente</span><strong>Ensayo y traslado</strong><span class="note">Solo después del saneamiento completo.</span></div>
+  </div>
+</section>
+
+<section class="card decide" aria-labelledby="sec-decidir">
+  <h2 id="sec-decidir">Lo que hay que decidir</h2>
+  <ol>
+    <li><strong>Aprobar el orden:</strong> saneamiento completo antes de cualquier paso a PostgreSQL o a Citrix.</li>
+    <li><strong>Tiempo del propietario:</strong> los cambios en Access los aplica una persona, fuera de horario y con los procesos automáticos parados.</li>
+    <li><strong>Versiones en prueba de usuario:</strong> en cinco aplicaciones hay una versión pendiente de aceptación; decidir si el saneamiento sale sobre ella o en la siguiente.</li>
+    <li><strong>Qué es éxito en mayo:</strong> la coexistencia sigue en exploración y dirección mantiene el corte único; el ensayo de abril es la evidencia para decidir.</li>
+  </ol>
+</section>
+
+<section class="card" aria-labelledby="sec-riesgos">
+  <h2 id="sec-riesgos">Riesgos y respuesta</h2>
+  <table class="risks">
+    <thead><tr><th scope="col">Riesgo</th><th scope="col">Qué hacemos</th></tr></thead>
+    <tbody>
+      <tr><td><span class="rag-pill rag-red">Alto</span> El saneamiento depende de una persona</td><td>El equipo prepara cada cambio y su comprobación; la aplicación queda en pasos mecánicos, agrupados por aplicación.</td></tr>
+      <tr><td><span class="rag-pill rag-red">Alto</span> La cola de correo la usan las once aplicaciones</td><td>Se ensaya el cambio en una copia antes de producción y se hace con los envíos automáticos pausados.</td></tr>
+      <tr><td><span class="rag-pill rag-amber">Medio</span> Citrix sin validar</td><td>Se valida la plataforma en local en enero, sin datos, para no descubrir problemas en el ensayo de abril.</td></tr>
+      <tr><td><span class="rag-pill rag-amber">Medio</span> Un mes no se cierra</td><td>El hito se desplaza al mes siguiente y se explica por qué; el orden no cambia.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<p class="footer-note">Access2Web · fuentes: <a href="../epica-coexistencia-postgresql.md">épica de coexistencia</a> (decisiones 11, 18, 19 y 24; tabla de fases) y <a href="../fase-1/plan-aplicacion.md">plan de aplicación del saneamiento</a> · propuesta de calendario pendiente de aprobación.</p>
+</div>
+</body>
+</html>
