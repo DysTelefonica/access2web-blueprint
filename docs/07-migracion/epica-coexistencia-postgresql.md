@@ -158,6 +158,8 @@ El nombre de cada aplicación se resuelve con su identificador en `TbAplicacione
 | 4 | Traslado único de todos los datos a PostgreSQL | pendiente |
 | 5 | Expedientes a web | pendiente |
 
+Los hitos de diciembre de 2026 a mayo de 2027, en alto nivel y en este orden, están en el [cronograma para dirección](presentacion/cronograma-hitos.html) (#1792).
+
 ### Fase 0. Inventario
 
 **Estado:** revisada (2026-11-15). El criterio de terminado se cumple con evidencia: ver el [cierre de la fase 0](fase-0/cierre.md), con lo que queda abierto y en qué fase se resuelve. El propietario validó esa evidencia el 2026-11-15 (decisión 28), con lo que la fase 1 queda habilitada. Validar la evidencia no es aplicarla: hasta que el propietario aplique un cambio en el legacy, el inventario sigue siendo de solo lectura.
