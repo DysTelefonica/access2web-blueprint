@@ -3,8 +3,10 @@
 
 Reads the milestones (``hitos``) and phases of
 ``docs/07-migracion/seguimiento/fases.json`` and the issues labelled for phase 1,
-writes ``avance.md`` and ``avance.html`` as ``migration_progress.py`` does, and
-prints one line per milestone: done/total, estimated week and status.
+writes ``avance.md`` and ``avance.html`` as ``migration_progress.py`` does, writes
+the snapshot of the cut to ``semanal/AAAA-MM-DD.json`` (one line per record, no
+issue bodies), and prints one line per milestone: done/total, estimated week and
+status.
 
 A milestone counts its issues, the static tasks of its ``phases`` and its own
 ``tasks``. It is declared closed only when all its work is done and the cut
@@ -21,12 +23,17 @@ Exit codes:
 from __future__ import annotations
 
 import datetime
+import json
+import re
 import sys
 from typing import Any
 
 import migration_progress as mp
 
 WEEK = datetime.timedelta(days=7)
+MOTIVO_MAX = 200
+NO_MOTIVO = "sin motivo indicado"
+PROBLEM_HEADING = "### Problema y contexto"
 MONTHS = (
     "enero", "febrero", "marzo", "abril", "mayo", "junio",
     "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
@@ -45,6 +52,25 @@ def load_input(args: Any, definition: dict[str, Any]) -> list[Issue]:
         issues: list[Issue] = mp.read_json(args.from_json)["issues"]
         return issues
     return [i for label in mp.issue_labels(definition) for i in mp.fetch_issues(args.gh, label)]
+
+
+def label_names(issue: Issue) -> list[str]:
+    return sorted(label["name"] for label in issue.get("labels", []))
+
+
+def first_sentence(text: str) -> str:
+    flat = " ".join(text.split())
+    match = re.match(r"(.+?[.!?])(?:\s|$)", flat)
+    sentence = match.group(1) if match else flat
+    return sentence if len(sentence) <= MOTIVO_MAX else sentence[: MOTIVO_MAX - 1] + "…"
+
+
+def motivo(issue: Issue) -> str:
+    parts = (issue.get("body") or "").split(PROBLEM_HEADING, 1)
+    if len(parts) < 2:
+        return NO_MOTIVO
+    section = re.split(r"^#{1,3} ", parts[1], maxsplit=1, flags=re.MULTILINE)[0]
+    return first_sentence(section) or NO_MOTIVO
 
 
 # --- milestones ------------------------------------------------------------------------------
@@ -104,6 +130,9 @@ def build_hito(
         "percent": 100 * done / total if total else 0.0,
         "planned": planned,
         "week": planned[-1],
+        "phases": hito.get("phases", []),
+        "tasks": hito.get("tasks", []),
+        "refs": {mp.issue_ref(issue) for issue in items},
     }
     return {**item, "status": hito_status(item, cut)}
 
@@ -114,6 +143,55 @@ def build_hitos(
     groups = {g["name"]: g["issues"] for p in phases for g in p["groups"]}
     hitos = [build_hito(hito, groups, phases, cut) for hito in definition["hitos"]]
     return sorted(hitos, key=lambda hito: hito["start"])
+
+
+# --- snapshot -------------------------------------------------------------------------------
+
+
+def issue_entry(issue: Issue, hito: str | None) -> dict[str, Any]:
+    return {
+        "key": mp.issue_ref(issue),
+        "state": str(issue["state"]).lower(),
+        "hito": hito,
+        "title": issue["title"],
+        "url": issue["url"],
+        "createdAt": issue.get("createdAt", ""),
+        # gh search reports the zero time as the closedAt of an open issue.
+        "closedAt": issue.get("closedAt") if mp.is_done(issue) else None,
+        "labels": label_names(issue),
+        "motivo": motivo(issue),
+    }
+
+
+def make_snapshot(
+    date: str, phases: list[dict[str, Any]], hitos: list[dict[str, Any]], issues: list[Issue]
+) -> dict[str, Any]:
+    hito_of = {ref: hito["id"] for hito in hitos for ref in hito["refs"]}
+    task_hito = {phase: hito["id"] for hito in hitos for phase in hito["phases"]}
+    tasks = [
+        {"phase": p["id"], "hito": task_hito.get(p["id"]), "title": t["title"], "done": t["done"]}
+        for p in phases
+        for t in p.get("tasks", [])
+    ]
+    tasks += [
+        {"phase": None, "hito": h["id"], "title": t["title"], "done": t["done"]}
+        for h in hitos
+        for t in h["tasks"]
+    ]
+    entries = [issue_entry(i, hito_of.get(mp.issue_ref(i))) for i in mp.sort_issues(issues)]
+    return {"date": date, "issues": entries, "tasks": tasks}
+
+
+def compact_json(snapshot: dict[str, Any]) -> str:
+    """One record per line, so a weekly snapshot stays a few hundred lines."""
+    parts = []
+    for key, value in snapshot.items():
+        if isinstance(value, list):
+            rows = ",\n".join("    " + json.dumps(row, ensure_ascii=False) for row in value)
+            parts.append(f"  {json.dumps(key)}: [\n{rows}\n  ]" if rows else f'  "{key}": []')
+        else:
+            parts.append(f"  {json.dumps(key)}: {json.dumps(value, ensure_ascii=False)}")
+    return "{\n" + ",\n".join(parts) + "\n}\n"
 
 
 # --- text ------------------------------------------------------------------------------------
@@ -138,9 +216,16 @@ def generate(args: Any) -> list[dict[str, Any]]:
     cut = datetime.date.fromisoformat(args.date)
     definition = mp.read_json(args.phases)
     validate_hitos(definition)
-    phases = mp.build_phases(definition, load_input(args, definition))
+    issues = load_input(args, definition)
+    phases = mp.build_phases(definition, issues)
     hitos = build_hitos(definition, phases, cut)
+    snapshot = make_snapshot(args.date, phases, hitos, issues)
     mp.write_report(phases, args.date, args.out_dir)
+    weekly_dir = args.out_dir / "semanal"
+    weekly_dir.mkdir(exist_ok=True)
+    (weekly_dir / f"{args.date}.json").write_text(
+        compact_json(snapshot), encoding="utf-8", newline="\n"
+    )
     return hitos
 
 
