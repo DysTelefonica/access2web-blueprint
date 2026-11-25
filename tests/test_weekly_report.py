@@ -349,3 +349,12 @@ def test_a_phase_one_group_in_no_hito_fails_naming_it_and_writes_nothing(tmp_pat
     assert result.returncode == 2
     assert "Condor" in result.stderr
     assert list((tmp_path / "out").iterdir()) == []
+
+
+def test_criterion_5_the_local_skill_is_linked_from_the_local_part_of_agents_md() -> None:
+    agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    local = agents.split("<!-- /personal-skills:slice:access2web-blueprint -->", 1)[1]
+    assert "skills/a2w-seguimiento-semanal/SKILL.md" in local
+    assert "informe semanal" in local
+    skill = (ROOT / "skills" / "a2w-seguimiento-semanal" / "SKILL.md").read_text(encoding="utf-8")
+    assert "description: 'Trigger: informe semanal, reunión semanal con la gerencia" in skill

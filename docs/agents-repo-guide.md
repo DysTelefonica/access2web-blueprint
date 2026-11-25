@@ -61,6 +61,7 @@ These skills are **mandatory** — load them before any work in their scope:
 | `architecture-guardrails` | Cambios estructurales en `app/`, `tests/`, `openspec/`; decisiones D-<n>. | `skills/architecture-guardrails/SKILL.md` (este repo) |
 | `a2w-issue-flow` | Llevar una issue de punta a punta: PR, CI, merge gobernado, cadenas y limpieza. | `skills/a2w-issue-flow/SKILL.md` (este repo) |
 | `a2w-local-dev` | Probar una issue en local: stack por issue, tests, integración, e2e y `make verify`, igual en Linux que en WSL. | `skills/a2w-local-dev/SKILL.md` (este repo) |
+| `a2w-seguimiento-semanal` | Informe semanal para la gerencia: avance del hito, retrasos, bloqueos, riesgos y decisiones. | `skills/a2w-seguimiento-semanal/SKILL.md` (este repo) |
 | `coexistence-migration` | Migración, modelo de datos, adaptadores de PostgreSQL o DDL, backends legacy, issues de migración. | `skills/coexistence-migration/SKILL.md` (este repo) |
 | `lanzadera-testing-strategy` | Clasificar test nuevo en Categoría 1–5; revisar capa de un test; decidir mock vs. fake; debate sobre `auth_bypass`. | `skills/lanzadera-testing-strategy/SKILL.md` (este repo) |
 | `repository-delivery-governance` | Auditar o cambiar CI/CD, issues, PRs, labels, protección de ramas, permisos de merge, artefactos, despliegue o rollback. | `~/.agents/skills/repository-delivery-governance/SKILL.md` (`DysTelefonica/team-skills`) |
