@@ -1,11 +1,11 @@
 # Avance de la migración por fases
 
-> Fichero generado. No edite este fichero a mano: se regenera con `python scripts/migration_progress.py` a partir de `fases.json` y de las issues de GitHub. Fecha de corte: 2026-11-25.
+> Fichero generado. No edite este fichero a mano: se regenera con `python scripts/migration_progress.py` a partir de `fases.json` y de las issues de GitHub. Fecha de corte: 2026-11-26.
 
 | Fase | Nombre | Estado | Hechas | Total |
 |---|---|---|---|---|
 | 0 | Inventario | revisada | 4 | 4 |
-| 1 | Saneamiento en Access | en curso | 12 | 190 |
+| 1 | Saneamiento en Access | en curso | 14 | 190 |
 | 2 | Unificar el acceso a datos | pendiente | 0 | 5 |
 | 3 | Ensayo en Citrix con todos los backends | revisada (diseño revisado, pendiente de ejecutar) | 0 | 7 |
 | 4 | Traslado único de todos los datos a PostgreSQL | pendiente | 0 | 5 |
@@ -22,7 +22,7 @@
 
 ## Fase 1. Saneamiento en Access
 
-**Estado:** en curso · **Hechas:** 12/190
+**Estado:** en curso · **Hechas:** 14/190
 
 ### Preparación
 
@@ -36,7 +36,7 @@
 - [ ] [access2web-blueprint#1741](https://github.com/DysTelefonica/access2web-blueprint/issues/1741) refactor(platform): IDCorreo autonumérico y clave primaria en TbCorreosEnviados de Correos_datos
 - [ ] [AGEDYS#5](https://github.com/DysTelefonica/AGEDYS/issues/5) refactor: dejar de calcular IDCorreo al encolar correos
 - [ ] [AGEDYS_ECO#12](https://github.com/DysTelefonica/AGEDYS_ECO/issues/12) refactor: dejar de calcular IDCorreo al encolar correos
-- [ ] [Automatizacion#53](https://github.com/DysTelefonica/Automatizacion/issues/53) fix(correo): dejar de calcular IDCorreo y soportar IDCorreo autonumérico en las colas de correo
+- [ ] [Automatizacion#53](https://github.com/DysTelefonica/Automatizacion/issues/53) fix(correo): comprobar EnviarCorreoNoEnviado con IDCorreo autonumérico en la cola común (requisito previo de access2web-blueprint#1741)
 - [ ] [condor#29](https://github.com/DysTelefonica/condor/issues/29) refactor: dejar de calcular IDCorreo al encolar correos
 - [ ] [Expedientes#279](https://github.com/DysTelefonica/Expedientes/issues/279) refactor: dejar de calcular IDCorreo al encolar correos
 - [ ] [GESTION_RIESGOS#338](https://github.com/DysTelefonica/GESTION_RIESGOS/issues/338) refactor: dejar de calcular IDCorreo al encolar correos
@@ -62,12 +62,12 @@
 - [x] [Lanzadera#35](https://github.com/DysTelefonica/Lanzadera/issues/35) test: dejar en verde la suite base sobre el binario de producción
 - [x] [Lanzadera#39](https://github.com/DysTelefonica/Lanzadera/issues/39) feat: módulo de migraciones del backend ejecutable por entorno (local, pruebas, producción)
 
-### Expedientes (6/14)
+### Expedientes (7/14)
 
 - [x] [Expedientes#278](https://github.com/DysTelefonica/Expedientes/issues/278) refactor: retirar los códigos de compras de expediente
 - [x] [Expedientes#282](https://github.com/DysTelefonica/Expedientes/issues/282) refactor: dejar `TbExpedientesAnualidades` única en `Expedientes_datos`
 - [ ] [Expedientes#283](https://github.com/DysTelefonica/Expedientes/issues/283) refactor: declarar clave primaria en las seis tablas que no la tienen
-- [ ] [Expedientes#284](https://github.com/DysTelefonica/Expedientes/issues/284) refactor: resolver las tres escrituras del front en tablas de otro backend
+- [x] [Expedientes#284](https://github.com/DysTelefonica/Expedientes/issues/284) refactor: resolver las tres escrituras del front en tablas de otro backend
 - [x] [Expedientes#285](https://github.com/DysTelefonica/Expedientes/issues/285) refactor: retirar del front los cuatro vínculos que su código no usa
 - [ ] [Expedientes#286](https://github.com/DysTelefonica/Expedientes/issues/286) refactor: aislar el vínculo TbExpedientes1
 - [x] [Expedientes#287](https://github.com/DysTelefonica/Expedientes/issues/287) refactor: obtener el SQL de las once consultas guardadas del backend y mapear sus tablas
@@ -241,7 +241,7 @@
 - [ ] [AGEDYS_ECO#30](https://github.com/DysTelefonica/AGEDYS_ECO/issues/30) refactor: decidir el destino de Option Compare Database y de los 215 recordsets sin opciones de
 - [ ] [AGEDYS_ECO#31](https://github.com/DysTelefonica/AGEDYS_ECO/issues/31) refactor: poner en cuarentena las 3 tablas del front sin uso (TbAuxExpPrado
 
-### Transversal (1/12)
+### Transversal (2/12)
 
 - [ ] [access2web-blueprint#1752](https://github.com/DysTelefonica/access2web-blueprint/issues/1752) refactor: localizar el front de Tareas o declarar el backend como material archivado
 - [ ] [access2web-blueprint#1753](https://github.com/DysTelefonica/access2web-blueprint/issues/1753) refactor: fijar clave primaria en TbAperturas (7 800 filas) y en las otras tres tablas de SICA
@@ -251,7 +251,7 @@
 - [ ] [access2web-blueprint#1759](https://github.com/DysTelefonica/access2web-blueprint/issues/1759) refactor: revisar si SICA y Control de cambios siguen teniendo consumidor
 - [ ] [access2web-blueprint#1760](https://github.com/DysTelefonica/access2web-blueprint/issues/1760) refactor: revisar la matriz de vínculos de la lanzadera para este par de backends
 - [x] [access2web-blueprint#1790](https://github.com/DysTelefonica/access2web-blueprint/issues/1790) docs(migracion): plan de aplicación del saneamiento de la fase 1 y decisión 29
-- [ ] [access2web-blueprint#1808](https://github.com/DysTelefonica/access2web-blueprint/issues/1808) docs(migracion): incorporar a Automatización en las cuarentenas y en el bloque A del saneamiento
+- [x] [access2web-blueprint#1808](https://github.com/DysTelefonica/access2web-blueprint/issues/1808) docs(migracion): incorporar a Automatización en las cuarentenas y en el bloque A del saneamiento
 - [ ] [CONTRATOS#1](https://github.com/DysTelefonica/CONTRATOS/issues/1) refactor: dejar de registrar aperturas en la Lanzadera
 - [ ] [CONTRATOS#2](https://github.com/DysTelefonica/CONTRATOS/issues/2) refactor: retirar la cola local de correo y la clase Correo sin uso
 - [ ] [CONTRATOS#3](https://github.com/DysTelefonica/CONTRATOS/issues/3) refactor: poner en cuarentena las 1 tablas huérfanas de GestionContratos_datos
