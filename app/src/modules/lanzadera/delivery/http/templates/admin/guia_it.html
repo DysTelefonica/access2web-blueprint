@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}Guía IT · Citrix y Linux{% endblock %}
+{% block heading %}Lanzadera · admin{% endblock %}
+{% block head %}{% include "admin/_guia_it_styles.html" %}{% endblock %}
+{% macro t(key, label=None) %}<a class="guia-it__term" href="#g-{{ key }}">{% if label %}{{ label }}{% else %}{{ caller() }}{% endif %}</a>{% endmacro %}
+{% macro terms(keys) %}<p class="guia-it__muted">Glosario: {% for key in keys %}{{ t(key, glossary_terms[key]) }}{% if not loop.last %} · {% endif %}{% endfor %}</p>{% endmacro %}
+{% block content %}
+<div class="guia-it">
+  <nav class="guia-it__toc" aria-label="Secciones de la guía">
+    <a href="#hoy">Hoy</a>
+    <a href="#escenarios">Escenarios</a>
+    <a href="#red">Red</a>
+    <a href="#windows">Windows y Citrix</a>
+    <a href="#linux">Linux y datos</a>
+    <a href="#validacion">Validación</a>
+    <a href="#entrega">Entrega</a>
+    <a href="#glosario">Glosario</a>
+    <a href="#fuentes">Fuentes</a>
+  </nav>
+  <div class="guia-it__body">
+    <section class="guia-it__hero" aria-labelledby="guia-titulo">
+      <div class="guia-it__eyebrow">Preparación técnica · propuesta en ensayo</div>
+      <h2 id="guia-titulo">Citrix, Linux y coexistencia</h2>
+      <p>Dos lanzaderas, un entorno de ensayo aislado y un posible PostgreSQL común. La producción actual no se modifica.</p>
+    </section>
+
+    <section class="mds-card" id="hoy">
+      <h3>Qué debe dejar listo IT hoy</h3>
+      <p>Prepare capacidad, red, perfiles y almacenamiento aislados para que desarrollo ensaye con copias. Registre responsables, nombres y pruebas pendientes, y entregue el traspaso exportado.</p>
+      <p class="guia-it__callout guia-it__callout--warn"><strong>Preparado ≠ validado.</strong> La {{ t("coexistencia", "coexistencia") }} es una propuesta de viabilidad, no una autorización de migración. No ejecute el {{ t("traslado", "traslado") }} de producción durante el aprovisionamiento. {{ t("hipotesis", "H-3 (perfil) y H-4 (anexos)") }} siguen sin demostrar.</p>
+      <ol>
+        <li>Confirme licencias de {{ t("citrix", "Citrix") }}, {{ t("multisesion", "Windows multisesión") }}, Access o {{ t("runtime", "Access Runtime") }} y el controlador {{ t("odbc", "ODBC") }}; dominio ({{ t("ad", "AD") }}), {{ t("dns", "DNS") }}, {{ t("ca", "certificados") }}, hora y permisos.</li>
+        <li>Dimensione con IT las sesiones concurrentes, CPU, RAM y disco, y mida después en un ensayo multisesión. Esta guía no fija capacidad.</li>
+        <li>Separe producción, {{ t("preproduccion", "preproducción") }} y desarrollo en bases, almacenamiento, cuentas, DNS y permisos. Las copias no envían correos ni ejecutan tareas programadas sin aprobación expresa.</li>
+        <li>Reciba de desarrollo el artefacto de despliegue y el plan de pruebas; el {% call t("docker") %}<code>docker-compose.yml</code>{% endcall %} local no es una receta de producción.</li>
+      </ol>
+    </section>
+
+    <section class="mds-card" id="escenarios">
+      <h3>Arquitectura por escenario</h3>
+      <p>Seleccione un escenario para destacarlo. Sin JavaScript se muestran todos y al imprimir se incluyen todos.</p>
+      <div class="guia-it__controls" role="group" aria-label="Seleccionar escenario">
+        {% for scenario in scenarios %}
+        <button type="button" class="mds-button mds-button--secondary" data-scenario="{{ scenario.key }}" aria-pressed="false">{{ scenario.label }}</button>
+        {% endfor %}
+        <button type="button" class="mds-button mds-button--secondary" data-scenario="todos" aria-pressed="true">Todos</button>
+      </div>
+      {% for scenario in scenarios %}
+      <div class="guia-it__scenario" data-panel="{{ scenario.key }}">
+        <h4>{{ scenario.title }} <span class="mds-tag">{{ scenario.tag }}</span></h4>
+        <p>{{ scenario.summary }}</p>
+        {{ terms(scenario.terms) }}
+      </div>
+      {% endfor %}
+    </section>
+
+    <section class="mds-card" id="red">
+      <h3>Flujos de red que IT debe autorizar</h3>
+      <p>Restrinja por origen, destino y entorno. Los puertos son destinos concretos, no una orden de abrirlos de forma general.</p>
+      <div class="guia-it__table-wrap">
+        <table class="mds-table">
+          <thead><tr><th scope="col">Origen → destino</th><th scope="col">Transporte</th><th scope="col">Condición</th><th scope="col">Glosario</th></tr></thead>
+          <tbody>
+            {% for flow in flows %}
+            <tr><td>{{ flow.route }}</td><td>{{ flow.transport }}</td><td>{{ flow.condition }}</td><td>{% for key in flow.terms %}{{ t(key, glossary_terms[key]) }}{% if not loop.last %}, {% endif %}{% endfor %}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p>PostgreSQL no se expone a los puestos de usuario ni a Internet. <code>app/Dockerfile</code> confía por defecto en cualquier {{ t("proxy", "proxy") }}: en un entorno compartido, restrinja las {{ t("cabeceras", "cabeceras reenviadas") }} al proxy real y bloquee el acceso directo al puerto de la aplicación.</p>
+    </section>
+
+    <section class="mds-card" id="windows">
+      <h3>01 · Servidor Windows y Citrix</h3>
+      <ol>
+        <li>Prepare Windows multisesión y la publicación Citrix con dominio, DNS, hora sincronizada, licencias y acceso al recurso SMB. Pruebe con cuentas de prueba separadas antes de incorporar usuarios.</li>
+        <li>Instale Access o Access Runtime compatible con los ACCDE desplegados. La arquitectura ({{ t("bitness", "bitness x86/x64") }}) de Office o Runtime, de los {{ t("accde", "ACCDE") }} y del controlador {{ t("psqlodbc", "psqlODBC") }} Unicode debe coincidir con lo instalado: compruébela, no la suponga.</li>
+        <li>Publique la Lanzadera Access y el navegador corporativo como recursos distintos. Autorice ACCDE solo desde rutas aprobadas, sin desactivar la {{ t("macros", "protección de macros") }} de forma general.</li>
+        <li>Configure un {{ t("perfil", "perfil persistente") }} por usuario con {{ t("upm", "Citrix UPM") }} <em>o</em> {{ t("upm", "FSLogix") }}, según elija y valide IT; no los combine sin probarlo. Conserve completa la carpeta {% call t("appdata") %}<code>%APPDATA%\Aplicaciones DYSN\&lt;NombreCarpetaTemporal&gt;</code>{% endcall %}, con permisos privados, tras el cierre de sesión, el reinicio del host y el cambio de {{ t("vda", "VDA") }}. No la sustituya por {% call t("temp") %}<code>%TEMP%</code>{% endcall %} ni por {% call t("temp") %}<code>%LOCALAPPDATA%</code>{% endcall %} sin adaptar y probar el código.</li>
+      </ol>
+      <p><strong>Cómo funciona hoy:</strong> <code>ParaLanzadera.accdb</code> copia la {{ t("lanzadera", "Lanzadera") }} a la carpeta del usuario. Si la versión publicada en el {% call t("ini") %}<code>.ini</code>{% endcall %} sube, se copian el {{ t("front", "front") }} y los iconos a esa carpeta del perfil y se ejecuta el front privado. Por eso la copia y su versión deben sobrevivir juntas entre sesiones: así la Lanzadera compara la última versión que el usuario tiene con la que ofrece.</p>
+      <div class="guia-it__callout">
+        <p><strong>H-3 pendiente.</strong> Registre el resultado de cada prueba:</p>
+        <ul>
+          {% for test in profile_tests %}<li>{{ test }}</li>{% endfor %}
+        </ul>
+      </div>
+      <p>ODBC no adapta por sí solo el VBA, las consultas ni los vínculos: desarrollo entrega la revinculación de cada front y {{ t("backend", "backend") }} y valida lecturas, escrituras y concurrencia sobre copias antes de cualquier corte.</p>
+    </section>
+
+    <section class="mds-card" id="linux">
+      <h3>02 · Linux, web y PostgreSQL</h3>
+      <ol>
+        <li>Reserve una máquina Linux en la misma red con cuentas de servicio mínimas, DNS y certificados; separe los datos persistentes del sistema y dimensione el disco según el crecimiento medido.</li>
+        <li>Prepare {{ t("postgresql", "PostgreSQL") }} con volumen duradero y cuentas de mínimo privilegio por entorno, acceso restringido por red y {{ t("tls", "TLS") }} con verificación del nombre. Acuerde {{ t("rpo", "RPO y RTO") }}, {{ t("offline", "copias fuera de línea") }} en otro host, retención y una prueba de restauración; {{ t("pitr", "PITR") }} si se provisiona y se prueba. Una copia sin restauración ensayada no cuenta como copia.</li>
+        <li>Prepare un {{ t("proxy", "proxy") }} {{ t("https", "HTTPS") }} y el servicio de aplicación interno. No hay todavía un procedimiento verificado de proxy ni de copias de producción en el repositorio.</li>
+        <li>Pida a desarrollo un manifiesto de despliegue revisado: {{ t("digest", "imagen fijada por digest") }}, nombres de {{ t("variables", "variables de entorno") }} sin valores, {{ t("migraciones", "migraciones") }} y su orden, {{ t("health", "sondas de salud") }}, usuario de servicio, volúmenes y política de proxy confiable. <code>/health</code> indica que la aplicación responde; no prueba datos ni conectividad completa. Los secretos se suministran desde el almacén aprobado, nunca en esta guía, en registros ni en argumentos.</li>
+        <li>Acuerde el acceso de Linux a {% call t("anexos") %}<code>ANEXOS</code>{% endcall %} con {{ t("acl", "ACL") }} y cuentas mínimas, sin escritura para todos ni almacenamiento temporal. H-4 requiere ensayo y decisión.</li>
+      </ol>
+      <p>{{ t("d93", "D93") }}: el {{ t("esquema", "esquema") }} <code>&lt;app&gt;_legacy</code> guarda las tablas compartidas con Access y <code>&lt;app&gt;</code> las que solo usa la web. Lo legacy no depende de lo web y no hay sincronización entre copias. Cualquier reversión web sigue un plan revisado que protege los datos compartidos; esta guía no incluye borrados de esquema.</p>
+    </section>
+
+    <section class="mds-card" id="validacion">
+      <h3>03 · Ensayo y diagnóstico</h3>
+      <p>Con copias aisladas y los cambios de acceso entregados por desarrollo, ensaye todas las aplicaciones y backends: identidad y permisos actuales, vínculos actualizables, lecturas y escrituras, concurrencia, consultas y documentos. Compruebe la separación de entornos y que el correo y los procesos en segundo plano siguen desactivados hasta su aprobación.</p>
+      <p>Ensaye también el cambio de botón entre lanzaderas y su reversión; esa reversión no devuelve los datos a ACCDB. Ante un fallo, detenga el cambio, conserve la evidencia y aplique el plan de recuperación aprobado.</p>
+      <h4>Comprobaciones de solo lectura</h4>
+      <p class="guia-it__muted">Sustituya los marcadores por nombres aprobados, sin credenciales. La comprobación TCP no prueba TLS ni autorización.</p>
+      {% for command in commands %}
+      <pre id="guia-cmd-{{ command.key }}">{{ command.text }}</pre>
+      <button type="button" class="mds-button mds-button--secondary" data-copy="guia-cmd-{{ command.key }}">{{ command.label }}</button>
+      {% endfor %}
+      <p>Diagnóstico: un DNS o una hora incorrectos invalidan certificados; un puerto TCP abierto no demuestra autenticación; revise el nombre del certificado y la CA sin desactivar {{ t("verify-full", "verify-full") }}. Ante un error de perfil, compare usuario, VDA, ruta resuelta y versión; ante un error de anexos, revise el montaje y las ACL sin exponer documentos.</p>
+    </section>
+
+    <section class="mds-card" id="entrega">
+      <h3>Lista de entrega</h3>
+      <p><strong>Preparado ≠ validado.</strong> Marque un punto solo con evidencia; una marca no autoriza producción. Los datos se guardan únicamente en este navegador. No introduzca contraseñas, tokens, datos personales ni secretos.</p>
+      <p id="guia-progress" class="guia-it__status" aria-live="polite">Progreso disponible al activar JavaScript.</p>
+      <div>
+        {% for check in checks %}
+        <label class="guia-it__check"><input type="checkbox" data-check value="{{ check.key }}">{{ check.label }}</label>
+        {% endfor %}
+      </div>
+      <label class="guia-it__field">DNS de ensayo (sin secretos; ejemplo: ensayo.ejemplo.invalid)
+        <input id="guia-host" type="text" autocomplete="off" placeholder="ensayo.ejemplo.invalid">
+      </label>
+      <label class="guia-it__field">Notas no sensibles y validaciones pendientes
+        <textarea id="guia-notes" rows="4"></textarea>
+      </label>
+      <p class="guia-it__muted">El botón de descarga genera el {{ t("json", "JSON de traspaso") }} con las marcas y notas.</p>
+      <div class="guia-it__controls">
+        <button type="button" class="mds-button" id="guia-export">Descargar traspaso JSON</button>
+        <button type="button" class="mds-button mds-button--secondary" id="guia-print">Imprimir guía</button>
+      </div>
+      <p id="guia-feedback" role="status" aria-live="polite">Sin JavaScript, anote los resultados por separado e imprima con el navegador.</p>
+    </section>
+
+    <section class="mds-card" id="glosario">
+      <h3>Glosario</h3>
+      <p>Cada término subrayado de la guía enlaza aquí. Use «Atrás» en el navegador para volver al punto de lectura.</p>
+      <dl class="guia-it__glossary">
+        {% for entry in glossary|sort(attribute="term") %}
+        <dt id="g-{{ entry.key }}">{{ entry.term }}</dt>
+        <dd>{{ entry.definition }}</dd>
+        {% endfor %}
+      </dl>
+    </section>
+
+    <section class="mds-card" id="fuentes">
+      <h3>Fuentes</h3>
+      <ul>
+        {% for source in sources %}<li><code>{{ source }}</code></li>{% endfor %}
+      </ul>
+    </section>
+  </div>
+</div>
+{% include "admin/_guia_it_script.html" %}
+{% endblock %}
