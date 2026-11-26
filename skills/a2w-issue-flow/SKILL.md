@@ -30,6 +30,7 @@ Use this skill for any access2web issue, from the moment it is picked up until i
 5. **CI**: wait until every check of the current head has finished (`gh pr checks <N>`, no `pending`), all green.
 6. **Merge**: governed merge (HR-3), then `gh run watch <id> --exit-status` and `gh pr view <N> --json state`. In a chain, after each merge retarget the next link (`gh pr edit <M> --base main`), merge `origin/main` into its branch, push by SHA and wait for its full CI.
 7. **Cleanup**: once the PR is `MERGED`, `git worktree remove` and `git branch -D` of the local branch; the remote branch stays.
+8. **Progress report**: when the closed issue, in any repository, carries `saneamiento:coexistencia` or changes a phase or milestone of `docs/07-migracion/seguimiento/fases.json`, run `python scripts/migration_progress.py` from an up-to-date `main` and merge the new cut through its own `docs(migracion)` PR the same day (#1825). The owner requires the progress of every phase to be current in `main`.
 
 ## Decision Gates
 
@@ -39,6 +40,8 @@ Use this skill for any access2web issue, from the moment it is picked up until i
 | The governed merge cannot merge the PR that fixes the governed merge itself, or reports checks `missing` that the API shows green on the head | Merge that PR once with the admin's profile: `gh pr merge <N> --merge --subject "Merge PR #<N> (governed merge)"`, with every check green. The owner's standing authorization (2026-11-19); `push-compliance` accepts the marker |
 | A link cannot be split below 400 lines without breaking `main` | Answer the four questions of `## Excepción de tamaño` in the PR body, then label it `size:exception` yourself |
 | A check is red | Fix it in the branch; a red check is never merged |
+| An issue of the sanitation closes in another repository (Expedientes, Automatización…) | The agent of that repository tells the owner; the access2web session regenerates the report (step 8) |
+| `migration_progress.py` exits 2 | An issue sits in a repository that no group of `fases.json` maps: map it in `fases.json` in the same PR, never edit `avance.md` by hand |
 
 ## Output Contract
 
