@@ -1,0 +1,1694 @@
+# Inventario de requisitos de HPS para Calidad (issue #1494).
+# Esquema y reglas de redacción: docs/07-migracion/inventario-requisitos.md.
+#
+# Títulos de formulario: la ventana principal sustituye su título por
+# «Usuario conectado: <nombre>» y las fichas de usuario por «EDICIÓN DE <nombre>»;
+# el título guardado contiene nombres de personas, así que la parte variable se
+# escribe entre « ». Los paneles que se cargan dentro de la ventana principal o de
+# la ficha de un usuario usan el texto de la opción del menú lateral que los abre.
+#
+# Roles: solo entran en la aplicación los administradores y los técnicos de HPS
+# (ver HPS-F001). Ninguna funcionalidad distingue entre ambos perfiles, así que
+# «roles: []» significa «cualquier usuario con acceso». Lo que limita las acciones
+# de modificación es el modo de trabajo elegido al entrar (solo lectura o
+# lectura/escritura), que se recoge como regla en cada funcionalidad.
+#
+# Los botones que solo muestran un icono se identifican por su texto de ayuda o,
+# si no lo tienen, por su función («icono de Excel», «icono de borrar campo»).
+
+aplicacion: HPS
+prefijo: HPS
+repositorio: DysTelefonica/HPS
+rama: main
+commit: dc194f4cacf0c7db9388c6d01e0aecc7a8547663
+
+formularios:
+  - interno: Form_FormExpedientesBusqueda
+    titulo: EXPEDIENTES REGISTRADOS
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial
+    titulo: GESTIÓN DE HPS
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial00Principal
+    titulo: "Usuario conectado: «usuario»"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial01Lateral
+    titulo: ""
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial02ConsultasPrincipal
+    titulo: Usuarios HPS
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial03ConsultasContratistas
+    titulo: Usuarios HPS (consulta por jurídica de contratación)
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial03ConsultasDatos
+    titulo: Usuarios HPS (lista de resultados)
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial03ConsultasEmpresaUsuario
+    titulo: Usuarios HPS (consulta por empresa del usuario)
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial03ConsultasEstado
+    titulo: Usuarios HPS (consulta por estado)
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial03ConsultasGrado
+    titulo: Usuarios HPS (consulta por grado)
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial03ConsultasJuridicaTramitacion
+    titulo: Usuarios HPS (consulta por jurídica que tramita)
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial03ConsultasMotivoHPS
+    titulo: Usuarios HPS (consulta por motivo HPS)
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial03ConsultasNombre
+    titulo: Usuarios HPS (consulta por nombre o DNI)
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial03ConsultasProyectoAsignado
+    titulo: Usuarios HPS (consulta por proyecto asignado)
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial05Configuracion
+    titulo: Configuración
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial06BusquedaGlobal
+    titulo: BÚSQUEDA GLOBAL
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial07UsuariosSICA
+    titulo: Usuarios SICA
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial07UsuariosSICADatos
+    titulo: Usuarios SICA (lista de resultados)
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial08UsuariosHistoricos
+    titulo: Usuarios Históricos
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial08UsuariosHistoricosDatos
+    titulo: Usuarios Históricos (lista de resultados)
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormInicial09Indicadores
+    titulo: Indicadores
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuario00Principal
+    titulo: EDICIÓN DE «usuario»
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuario01Lateral
+    titulo: ""
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuario02Alta
+    titulo: ALTA DE USUARIO
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuario02Anexos
+    titulo: Anexos
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuario02DatosObservacion
+    titulo: OBSERVACIÓN
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuario02DatosObservacionHistorico
+    titulo: OBSERVACIÓN
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuario02Edicion
+    titulo: Gral.
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuario02HPS
+    titulo: HPS
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuario07SICAAlta
+    titulo: ALTA DE USUARIO SICA
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuario07SICAEdicion
+    titulo: DETALLE USUARIO SICA («usuario»)
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuarioHistorico00Principal
+    titulo: HISTÓRICO DETALLE DE «usuario»
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuarioHistorico01Lateral
+    titulo: ""
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuarioHistorico02Anexos
+    titulo: Anexos
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuarioHistorico02Edicion
+    titulo: Gral.
+    estado: cubierto
+    motivo: ""
+  - interno: Form_Formulario1
+    titulo: CONSULTAS
+    estado: no aplicable
+    motivo: >-
+      formulario sin uso; ningún formulario ni código lo abre en el commit fijado y su único código
+      son líneas de depuración comentadas (muestra de colores y botones)
+
+features:
+  # ---------------------------------------------------------------------------
+  # Acceso a la aplicación
+  # ---------------------------------------------------------------------------
+  - id: HPS-F001
+    area: Acceso
+    nombre: Preparar la aplicación al abrirla
+    descripcion: >-
+      Al abrir HPS, la ventana inicial identifica al usuario, comprueba su permiso, detecta si está en la
+      oficina y sincroniza la copia local de los datos antes de dejar elegir el modo de trabajo.
+    formulario: GESTIÓN DE HPS
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      La ventana muestra «Situación de los datos» (En Oficina o En Local) y «Acceso a Red Telefónica», y
+      habilita los botones de acceso que correspondan.
+    tecnico:
+      formulario: Form_FormInicial
+      control: Form_Load / Form_Timer
+      evidencia:
+        - "src/forms/Form_FormInicial.cls:151"
+        - "src/forms/Form_FormInicial.cls:17"
+        - "src/modules/VariablesEntorno.bas:301"
+      prd: prd/formularios/Form_FormInicial.md
+    reglas:
+      - id: HPS-F001-R01
+        descripcion: Al abrirse, los dos botones de acceso quedan desactivados hasta que termina la carga inicial.
+        evidencia: ["src/forms/Form_FormInicial.cls:157"]
+      - id: HPS-F001-R02
+        descripcion: La aplicación considera que el usuario está en la oficina cuando el equipo tiene una dirección de la subred de la oficina.
+        evidencia: ["src/modules/Funciones Generales.bas:2758"]
+      - id: HPS-F001-R03
+        descripcion: Fuera de la oficina, la aplicación solo continúa si alcanza la carpeta de aplicaciones de la red corporativa; si no, el error es «Se ha de estar conectado al menos al CARU».
+        evidencia: ["src/modules/VariablesEntorno.bas:342", "src/modules/VariablesEntorno.bas:353"]
+      - id: HPS-F001-R04
+        descripcion: El usuario se identifica por el correo recibido al lanzar la aplicación o, si no hay, por el usuario de Windows del equipo; si no se identifica, el error es «No se ha podido determinar el usuario que está usando la herramienta».
+        evidencia: ["src/modules/VariablesEntorno.bas:375", "src/modules/VariablesEntorno.bas:393"]
+      - id: HPS-F001-R05
+        descripcion: Solo pueden abrir la aplicación los usuarios que son administradores o técnicos de HPS (aplicación 17) en la Lanzadera; el resto recibe «El usuario no tiene permiso para abrir la aplicación».
+        evidencia: ["src/modules/VariablesEntorno.bas:402", "src/modules/VariablesEntorno.bas:405", "src/classes/Usuario.cls:72"]
+      - id: HPS-F001-R06
+        descripcion: Es administrador quien está marcado como administrador general en la Lanzadera o como administrador de esta aplicación.
+        evidencia: ["src/classes/Usuario.cls:79", "src/classes/UsuarioAplicacionPermisos.cls:67"]
+      - id: HPS-F001-R07
+        descripcion: Antes de habilitar los botones se sincroniza la copia local de usuarios HPS, usuarios SICA, usuarios históricos y suministradores con la base central.
+        evidencia: ["src/forms/Form_FormInicial.cls:37", "src/modules/Mod_StartupCacheInitialization.bas:103"]
+      - id: HPS-F001-R08
+        descripcion: Si la sincronización falla se muestra «Error en la carga» con el detalle y los botones de acceso siguen desactivados.
+        evidencia: ["src/forms/Form_FormInicial.cls:39"]
+      - id: HPS-F001-R09
+        descripcion: En la oficina se habilitan los dos botones de acceso; fuera de la oficina solo se habilita «Acceso Solo lectura».
+        evidencia: ["src/forms/Form_FormInicial.cls:57", "src/forms/Form_FormInicial.cls:70"]
+      - id: HPS-F001-R10
+        descripcion: Se considera que hay meses de preaviso de renovación igual a 9; este valor alimenta los cálculos de «a punto de caducar».
+        evidencia: ["src/modules/VariablesEntorno.bas:332"]
+      - id: HPS-F001-R11
+        descripcion: Cualquier error no previsto en la aplicación se comunica por correo a los administradores de la herramienta con el formulario, el equipo, la versión y si se está en la oficina.
+        evidencia: ["src/modules/Funciones Generales.bas:76", "src/modules/Funciones Generales.bas:125", "src/modules/Funciones Generales.bas:139"]
+        # posible defecto: los destinatarios del correo de error están fijos en el código y uno de ellos es una cuenta personal externa.
+
+  - id: HPS-F002
+    area: Acceso
+    nombre: Entrar en modo lectura y escritura
+    descripcion: Abre la ventana principal permitiendo dar de alta, modificar y borrar información.
+    formulario: GESTIÓN DE HPS
+    control: Acceso Lectura/Escritura
+    tipo: botón
+    roles: []
+    resultado: La aplicación queda en modo «Lectura/Escritura» y se abre la ventana principal.
+    tecnico:
+      formulario: Form_FormInicial
+      control: ComandoAccesoEscritura
+      evidencia: ["src/forms/Form_FormInicial.cls:84"]
+      prd: prd/formularios/Form_FormInicial.md
+    reglas:
+      - id: HPS-F002-R01
+        descripcion: Solo se puede entrar en modo escritura desde la oficina; fuera de ella el botón está desactivado y, si se invoca, el error es «No estamos en la oficina».
+        evidencia: ["src/forms/Form_FormInicial.cls:70", "src/modules/Funciones Generales.bas:46"]
+      - id: HPS-F002-R02
+        descripcion: Antes de abrir la ventana principal se cierran todas las ventanas abiertas de la aplicación.
+        evidencia: ["src/forms/Form_FormInicial.cls:88", "src/modules/Funciones Generales.bas:2362"]
+
+  - id: HPS-F003
+    area: Acceso
+    nombre: Entrar en modo solo lectura
+    descripcion: Abre la ventana principal solo para consultar; los botones de alta, edición y borrado quedan desactivados.
+    formulario: GESTIÓN DE HPS
+    control: Acceso Solo lectura
+    tipo: botón
+    roles: []
+    resultado: La aplicación queda en modo «Solo lectura» y se abre la ventana principal.
+    tecnico:
+      formulario: Form_FormInicial
+      control: ComandoAccesoLectura
+      evidencia: ["src/forms/Form_FormInicial.cls:107"]
+      prd: prd/formularios/Form_FormInicial.md
+    reglas:
+      - id: HPS-F003-R01
+        descripcion: Fuera de la oficina solo entran los usuarios incluidos en la lista de permitidos en local; el resto recibe «No está incluido entre los usuarios a los que se les permite entrar desde casa».
+        evidencia: ["src/forms/Form_FormInicial.cls:112", "src/classes/Usuario.cls:51"]
+      - id: HPS-F003-R02
+        descripcion: Antes de abrir la ventana principal se cierran todas las ventanas abiertas de la aplicación.
+        evidencia: ["src/forms/Form_FormInicial.cls:118"]
+
+  - id: HPS-F004
+    area: Acceso
+    nombre: Salir de la aplicación
+    descripcion: Cierra HPS desde la ventana inicial tras pedir confirmación.
+    formulario: GESTIÓN DE HPS
+    control: Salir
+    tipo: botón
+    roles: []
+    resultado: La aplicación se cierra sin guardar cambios de diseño.
+    tecnico:
+      formulario: Form_FormInicial
+      control: ComandoSalir
+      evidencia: ["src/forms/Form_FormInicial.cls:138"]
+      prd: prd/formularios/Form_FormInicial.md
+    reglas:
+      - id: HPS-F004-R01
+        descripcion: Se pregunta «¿Deseas salir de la aplicación» y solo se cierra si el usuario responde Sí.
+        evidencia: ["src/forms/Form_FormInicial.cls:141"]
+
+  # ---------------------------------------------------------------------------
+  # Ventana principal y menú lateral
+  # ---------------------------------------------------------------------------
+  - id: HPS-F005
+    area: Ventana principal
+    nombre: Mostrar la ventana principal con el menú lateral
+    descripcion: >-
+      La ventana principal muestra el menú lateral con la versión, dónde están los datos, el modo de escritura
+      y los contadores de HPS, y abre por defecto la lista de usuarios HPS.
+    formulario: "Usuario conectado: «usuario»"
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: Se ve el menú lateral con los contadores al día y el panel «Usuarios HPS» abierto.
+    tecnico:
+      formulario: Form_FormInicial00Principal
+      control: Form_Load
+      evidencia:
+        - "src/forms/Form_FormInicial00Principal.cls:82"
+        - "src/forms/Form_FormInicial01Lateral.cls:25"
+      prd: prd/formularios/Form_FormInicial00Principal.md
+    reglas:
+      - id: HPS-F005-R01
+        descripcion: El título de la ventana es «Usuario conectado» seguido del nombre del usuario.
+        evidencia: ["src/forms/Form_FormInicial00Principal.cls:121"]
+      - id: HPS-F005-R02
+        descripcion: El menú lateral muestra «Versión», «Datos en» (Oficina o Local) y «Modo Escritura» (Sí o No).
+        evidencia: ["src/forms/Form_FormInicial01Lateral.cls:32", "src/classes/Entorno.cls:2012", "src/classes/Entorno.cls:2035"]
+      - id: HPS-F005-R03
+        descripcion: Al abrirse se recalculan los contadores del menú lateral y se selecciona «Usuarios HPS».
+        evidencia: ["src/forms/Form_FormInicial01Lateral.cls:36", "src/forms/Form_FormInicial01Lateral.cls:62"]
+      - id: HPS-F005-R04
+        descripcion: Si la carga de la ventana principal falla, se muestra el error y la aplicación se cierra.
+        evidencia: ["src/forms/Form_FormInicial00Principal.cls:127", "src/forms/Form_FormInicial00Principal.cls:134"]
+
+  - id: HPS-F006
+    area: Ventana principal
+    nombre: Ver los contadores de HPS en el menú lateral
+    descripcion: >-
+      El menú lateral muestra cuántos usuarios hay en cada situación de seguimiento (a punto de caducar, caducados,
+      irregulares, requieren curso, solicitados y pendientes de cada convocatoria) y lleva a la lista al pulsarlos.
+    formulario: "Usuario conectado: «usuario»"
+    control: A.P.Caducar | Caducados | Irregular | Req. Curso | Solicitados | contadores de convocatorias
+    tipo: menú
+    roles: []
+    resultado: >-
+      Al pulsar un contador se abre el panel de indicadores (o de usuarios HPS en el caso de «Irregular»)
+      filtrado por esa situación.
+    tecnico:
+      formulario: Form_FormInicial01Lateral
+      control: lblHPSAPuntoDeCaducar, lblHPSCaducados, lblHPSEstadoIrregular, lblRequiereCurso, lblSolicitados, lblRequiereCursoPte*
+      evidencia:
+        - "src/forms/Form_FormInicial01Lateral.cls:343"
+        - "src/modules/Funciones Generales.bas:1449"
+        - "src/modules/Mod_Indicadores_Contadores.bas:39"
+      prd: prd/formularios/Form_FormInicial01Lateral.md
+    reglas:
+      - id: HPS-F006-R01
+        descripcion: Los contadores de indicadores se calculan con las mismas reglas que las listas del panel «Indicadores» (ver HPS-F025 a HPS-F031).
+        evidencia: ["src/modules/Mod_Indicadores_Contadores.bas:55", "src/modules/Mod_Indicadores_Contadores.bas:129"]
+      - id: HPS-F006-R02
+        descripcion: Mientras se recalculan, los contadores muestran «?».
+        evidencia: ["src/modules/Mod_Indicadores_Contadores.bas:57", "src/modules/Mod_Indicadores_Contadores.bas:94"]
+      - id: HPS-F006-R03
+        descripcion: El contador «Irregular» cuenta los usuarios con al menos un HPS en estado irregular según la copia local (ver HPS-F013).
+        evidencia: ["src/modules/Funciones Generales.bas:1465", "src/classes/Entorno.cls:1602", "src/modules/Constructor.bas:2121"]
+      - id: HPS-F006-R04
+        descripcion: Pulsar «Irregular» abre «Usuarios HPS» con la consulta por estado y el estado «Irregular» ya seleccionado.
+        evidencia: ["src/forms/Form_FormInicial01Lateral.cls:357", "src/forms/Form_FormInicial01Lateral.cls:375"]
+      - id: HPS-F006-R05
+        descripcion: Pulsar cualquier otro contador abre «Indicadores» y pulsa el botón del indicador correspondiente solo si ese botón está activo.
+        evidencia: ["src/forms/Form_FormInicial01Lateral.cls:345", "src/forms/Form_FormInicial01Lateral.cls:383"]
+      - id: HPS-F006-R06
+        descripcion: Los tres contadores numéricos sin texto corresponden a pendientes de primera convocatoria, de segunda convocatoria y de correo al Jefe de Seguridad, según su texto de ayuda.
+        evidencia: ["src/forms/Form_FormInicial01Lateral.form.txt:1889", "src/forms/Form_FormInicial01Lateral.form.txt:1918", "src/forms/Form_FormInicial01Lateral.form.txt:1947"]
+
+  - id: HPS-F007
+    area: Ventana principal
+    nombre: Navegar por el menú lateral
+    descripcion: Cambia el panel central entre Usuarios HPS, Usuarios SICA, Usuarios Históricos, Indicadores y Configuración.
+    formulario: "Usuario conectado: «usuario»"
+    control: Usuarios HPS | Usuarios SICA | Usuarios Históricos | Indicadores | Configuración
+    tipo: menú
+    roles: []
+    resultado: El panel central muestra la sección elegida y la opción queda marcada como seleccionada.
+    tecnico:
+      formulario: Form_FormInicial01Lateral
+      control: lblUsuariosHPS, lblUsuariosSICA, lblUsuariosHistoricos, lblIndicadores, lblConfiguracion
+      evidencia: ["src/forms/Form_FormInicial01Lateral.cls:273"]
+      prd: prd/formularios/Form_FormInicial01Lateral.md
+    reglas:
+      - id: HPS-F007-R01
+        descripcion: Al volver a «Usuarios HPS» se reinicia la consulta por estado y se limpia el estado elegido.
+        evidencia: ["src/forms/Form_FormInicial01Lateral.cls:312", "src/forms/Form_FormInicial01Lateral.cls:323"]
+      - id: HPS-F007-R02
+        descripcion: Si ya se está en «Usuarios HPS», pulsarlo de nuevo solo reinicia la consulta cuando venía de un contador (Irregular, A.P.Caducar o Caducados).
+        evidencia: ["src/forms/Form_FormInicial01Lateral.cls:325"]
+      - id: HPS-F007-R03
+        descripcion: Si el panel elegido ya está abierto no se vuelve a cargar.
+        evidencia: ["src/forms/Form_FormInicial01Lateral.cls:408", "src/forms/Form_FormInicial01Lateral.cls:428"]
+
+  - id: HPS-F008
+    area: Ventana principal
+    nombre: Ver el semáforo del usuario seleccionado
+    descripcion: Al moverse por la lista de usuarios HPS o SICA, el menú lateral muestra un semáforo verde o rojo para el usuario seleccionado.
+    formulario: "Usuario conectado: «usuario»"
+    control: semáforo del menú lateral
+    tipo: automático
+    roles: []
+    resultado: Semáforo verde si el usuario tiene algún HPS activo y no requiere curso; rojo en cualquier otro caso.
+    tecnico:
+      formulario: Form_FormInicial01Lateral
+      control: ImagenSemaforo
+      evidencia:
+        - "src/modules/Funciones Generales.bas:2816"
+        - "src/classes/DatosLocal.cls:375"
+        - "src/forms/Form_FormInicial03ConsultasDatos.cls:12"
+    reglas:
+      - id: HPS-F008-R01
+        descripcion: El semáforo es verde si el usuario tiene al menos un HPS activo y no requiere curso; en otro caso es rojo.
+        evidencia: ["src/classes/DatosLocal.cls:392"]
+      - id: HPS-F008-R02
+        descripcion: Si no hay usuario seleccionado el semáforo se oculta.
+        evidencia: ["src/modules/Funciones Generales.bas:2833"]
+      - id: HPS-F008-R03
+        descripcion: En la lista de usuarios SICA el semáforo corresponde al usuario HPS vinculado.
+        evidencia: ["src/forms/Form_FormInicial07UsuariosSICADatos.cls:11"]
+
+  - id: HPS-F009
+    area: Ventana principal
+    nombre: Cambiar el modo de trabajo
+    descripcion: Vuelve a la ventana inicial para elegir de nuevo entre solo lectura y lectura/escritura.
+    formulario: "Usuario conectado: «usuario»"
+    control: Pasar a Lectura
+    tipo: botón
+    roles: []
+    resultado: Se cierra el menú lateral y se abre la ventana «GESTIÓN DE HPS».
+    tecnico:
+      formulario: Form_FormInicial01Lateral
+      control: ComandoCambiarEstado
+      evidencia: ["src/forms/Form_FormInicial01Lateral.cls:5"]
+      prd: prd/formularios/Form_FormInicial01Lateral.md
+    reglas:
+      - id: HPS-F009-R01
+        descripcion: En modo escritura el botón se llama «Pasar a Lectura» y está activo; en modo solo lectura se llama «Pasar a Escritura» y está desactivado.
+        evidencia: ["src/forms/Form_FormInicial01Lateral.cls:44", "src/forms/Form_FormInicial01Lateral.cls:50"]
+        # posible defecto: en modo solo lectura el botón invita a «Pasar a Escritura» pero no se puede pulsar.
+
+  - id: HPS-F010
+    area: Ventana principal
+    nombre: Buscar una palabra en toda la aplicación desde la cabecera
+    descripcion: Escribe una palabra en la cabecera de la ventana principal y abre la búsqueda global con ella.
+    formulario: "Usuario conectado: «usuario»"
+    control: Buscar
+    tipo: botón
+    roles: []
+    resultado: Se abre «BÚSQUEDA GLOBAL» con la palabra y sus resultados.
+    tecnico:
+      formulario: Form_FormInicial00Principal
+      control: ComandoBuscar / PalabraClave
+      evidencia: ["src/forms/Form_FormInicial00Principal.cls:43", "src/forms/Form_FormInicial00Principal.cls:138"]
+      prd: prd/formularios/Form_FormInicial00Principal.md
+    reglas:
+      - id: HPS-F010-R01
+        descripcion: Pulsar Intro en la palabra clave equivale a pulsar «Buscar».
+        evidencia: ["src/forms/Form_FormInicial00Principal.cls:139"]
+      - id: HPS-F010-R02
+        descripcion: Si la palabra está vacía se abre la búsqueda global sin resultados.
+        evidencia: ["src/forms/Form_FormInicial00Principal.cls:60"]
+      - id: HPS-F010-R03
+        descripcion: La búsqueda aplica las reglas de HPS-F032.
+        evidencia: ["src/forms/Form_FormInicial00Principal.cls:62"]
+
+  - id: HPS-F011
+    area: Ventana principal
+    nombre: Actualizar los datos desde la ventana principal
+    descripcion: Vuelve a sincronizar la copia local con la base central y recalcula los contadores.
+    formulario: "Usuario conectado: «usuario»"
+    control: Actualizar
+    tipo: botón
+    roles: []
+    resultado: La copia local de usuarios HPS, SICA, históricos y suministradores queda al día y los contadores se recalculan.
+    tecnico:
+      formulario: Form_FormInicial00Principal
+      control: ComandoActualizar
+      evidencia: ["src/forms/Form_FormInicial00Principal.cls:15"]
+      prd: prd/formularios/Form_FormInicial00Principal.md
+    reglas:
+      - id: HPS-F011-R01
+        descripcion: Se sincronizan las diferencias de usuarios HPS, se revisan los HPS cuya fecha de concesión ha cambiado y se regeneran completas las copias de usuarios SICA, históricos y suministradores.
+        evidencia: ["src/modules/Mod_StartupCacheInitialization.bas:104", "src/modules/Mod_StartupCacheInitialization.bas:338"]
+      - id: HPS-F011-R02
+        descripcion: Si el plan de actualización no cubre alguna de las copias locales, se detiene con «El plan de actualización no regenera la caché local» y la lista de copias que faltan.
+        evidencia: ["src/modules/Mod_StartupCacheInitialization.bas:296", "src/modules/Mod_StartupCacheInitialization.bas:325"]
+      - id: HPS-F011-R03
+        descripcion: Al terminar se recalculan los contadores del menú lateral.
+        evidencia: ["src/forms/Form_FormInicial00Principal.cls:26"]
+
+  - id: HPS-F012
+    area: Ventana principal
+    nombre: Cerrar la ventana principal
+    descripcion: Cierra la ventana principal.
+    formulario: "Usuario conectado: «usuario»"
+    control: Salir
+    tipo: botón
+    roles: []
+    resultado: La ventana principal se cierra sin pedir confirmación.
+    tecnico:
+      formulario: Form_FormInicial00Principal
+      control: cmdSalir
+      evidencia: ["src/forms/Form_FormInicial00Principal.cls:10"]
+      prd: prd/formularios/Form_FormInicial00Principal.md
+    reglas:
+      - id: HPS-F012-R01
+        descripcion: La ventana se cierra sin confirmación.
+        evidencia: ["src/forms/Form_FormInicial00Principal.cls:11"]
+
+  # ---------------------------------------------------------------------------
+  # Estado de los HPS (cálculo común)
+  # ---------------------------------------------------------------------------
+  - id: HPS-F013
+    area: Estado de los HPS
+    nombre: Calcular el estado de cada HPS
+    descripcion: >-
+      Para cada HPS de un usuario (Nacional, OTAN, ESA y UE) la aplicación calcula si está activo, a punto de
+      caducar, caducado, solicitado, de baja o irregular, y con ello su estado. Este cálculo alimenta las consultas,
+      los contadores, el semáforo y la ficha HPS.
+    formulario: Usuarios HPS
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: Cada HPS tiene un estado calculado y, si procede, un motivo de irregularidad.
+    tecnico:
+      formulario: Form_FormInicial03ConsultasDatos
+      control: DatosHPSCalculados
+      evidencia:
+        - "src/modules/Funciones Generales.bas:1632"
+        - "src/classes/Entorno.cls:1429"
+    reglas:
+      - id: HPS-F013-R01
+        descripcion: Un HPS está de baja si tiene fecha de baja; un HPS de baja no cuenta como activo, solicitado, a punto de caducar ni caducado.
+        evidencia: ["src/modules/Funciones Generales.bas:1669", "src/modules/Funciones Generales.bas:1683", "src/modules/Funciones Generales.bas:1692"]
+      - id: HPS-F013-R02
+        descripcion: Un HPS está activo si tiene fecha de concesión y de caducidad y la caducidad es hoy o posterior.
+        evidencia: ["src/modules/Funciones Generales.bas:1674"]
+      - id: HPS-F013-R03
+        descripcion: Un HPS está solicitado si tiene fecha de solicitud.
+        evidencia: ["src/modules/Funciones Generales.bas:1697"]
+      - id: HPS-F013-R04
+        descripcion: Un HPS está a punto de caducar si su caducidad es hoy o posterior y no más de 9 meses en adelante.
+        evidencia: ["src/modules/Funciones Generales.bas:1717"]
+      - id: HPS-F013-R05
+        descripcion: Un HPS está caducado si tiene fecha de concesión y de caducidad y la caducidad es anterior a hoy.
+        evidencia: ["src/modules/Funciones Generales.bas:1747"]
+      - id: HPS-F013-R06
+        descripcion: Un HPS está marcado como «no renovar» cuando su campo de renovación vale «No».
+        evidencia: ["src/modules/Funciones Generales.bas:1971"]
+      - id: HPS-F013-R07
+        descripcion: Un HPS está pendiente de renovación si está solicitado, tiene fecha de caducidad y no está marcado como «no renovar».
+        evidencia: ["src/modules/Funciones Generales.bas:1754"]
+      - id: HPS-F013-R08
+        descripcion: Un HPS es irregular si está marcado como «no renovar» y a la vez solicitado.
+        evidencia: ["src/modules/Funciones Generales.bas:1909"]
+      - id: HPS-F013-R09
+        descripcion: Un HPS con fecha de concesión y sin fecha de caducidad es irregular con el motivo «HPS Con Fecha de Caducidad y no de Concesión».
+        evidencia: ["src/modules/Funciones Generales.bas:1916"]
+        # posible defecto: el texto del motivo dice lo contrario de la condición comprobada (hay concesión y falta caducidad).
+      - id: HPS-F013-R10
+        descripcion: Un HPS cuya fecha de concesión es posterior a la de caducidad es irregular con el motivo «HPS Con Fecha de Caducidad anterior a la de Concesión».
+        evidencia: ["src/modules/Funciones Generales.bas:1923"]
+      - id: HPS-F013-R11
+        descripcion: Un HPS con fecha de caducidad y sin fecha de concesión es irregular con el motivo «HPS Con Fecha de Concesión y no de Caducidad».
+        evidencia: ["src/modules/Funciones Generales.bas:1931"]
+        # posible defecto: el texto del motivo dice lo contrario de la condición comprobada (hay caducidad y falta concesión).
+      - id: HPS-F013-R12
+        descripcion: Un HPS con fechas de concesión y caducidad cuyo grado no está en la lista de grados de su tipo es irregular («HPS Con Fecha de Concesión y de Caducidad sin Grado reconocido»).
+        evidencia: ["src/modules/Funciones Generales.bas:1935"]
+      - id: HPS-F013-R13
+        descripcion: Un HPS concedido con fecha de solicitud anterior a la de concesión es irregular («HPS Activo con Fecha de solicitud anterior a la de concesión»).
+        evidencia: ["src/modules/Funciones Generales.bas:1943"]
+      - id: HPS-F013-R14
+        descripcion: Un HPS solicitado que además tiene fecha de baja es irregular («HPS Con Fecha de Solicitud y con fecha de baja»).
+        evidencia: ["src/modules/Funciones Generales.bas:1950"]
+      - id: HPS-F013-R15
+        descripcion: Un HPS solicitado cuyo grado no está en la lista de grados de su tipo es irregular («HPS Con Fecha de Solicitud sin Grado reconocido»).
+        evidencia: ["src/modules/Funciones Generales.bas:1956"]
+      - id: HPS-F013-R16
+        descripcion: Para calcular la irregularidad el HPS debe tener al menos uno de estos datos (concesión, caducidad, grado, solicitud, renovación o baja); si no, el cálculo da el error «Se necesita al menos uno de los siguientes tados…».
+        evidencia: ["src/modules/Funciones Generales.bas:1890"]
+      - id: HPS-F013-R17
+        descripcion: >-
+          El estado se asigna en este orden: Baja; Irregular; A punto de Caducar (con Renovación No, sin solicitud o con
+          solicitud); Caducada (con Renovación No, sin solicitud o con solicitud); Activo con Solicitud; Activo sin Solicitud;
+          Caducada con Renovación No (no activo y marcado «no renovar»); Solicitud Nueva; Pendiente de Renovación.
+        evidencia: ["src/modules/Funciones Generales.bas:1783", "src/classes/Entorno.cls:1442"]
+        # posible defecto: el estado «Activo Renovación NO» nunca se asigna, porque todo HPS activo ya ha quedado como «Activo con Solicitud» o «Activo sin Solicitud».
+      - id: HPS-F013-R18
+        descripcion: Los meses que faltan para renovar se calculan como meses entre hoy y la fecha de caducidad.
+        evidencia: ["src/modules/Funciones Generales.bas:1966"]
+      - id: HPS-F013-R19
+        descripcion: >-
+          En la copia local de cada usuario solo se marca «a punto de caducar» o «caducado» en el HPS no dado de baja
+          con la caducidad más próxima; si el usuario está de baja no se marca ninguno.
+        evidencia: ["src/modules/Funciones Generales.bas:1589", "src/modules/Funciones Generales.bas:1608", "src/modules/Funciones Generales.bas:1621"]
+      - id: HPS-F013-R20
+        descripcion: Si el usuario está de baja, sus HPS no se marcan como activos, a punto de caducar, caducados, solicitados ni pendientes de renovación, y no se calcula su estado.
+        evidencia: ["src/modules/Funciones Generales.bas:4410", "src/modules/Funciones Generales.bas:4415"]
+      - id: HPS-F013-R21
+        descripcion: Un usuario está de baja si tiene fecha de baja propia; si no, si alguno de sus HPS tiene fecha de baja (se toma la más antigua); si no, si tiene un HPS marcado «no renovar» ya caducado (se toma su caducidad).
+        evidencia: ["src/classes/UsuarioHPS.cls:252", "src/classes/UsuarioHPS.cls:967", "src/classes/UsuarioHPS.cls:985"]
+
+  # ---------------------------------------------------------------------------
+  # Usuarios HPS: consultas y lista
+  # ---------------------------------------------------------------------------
+  - id: HPS-F014
+    area: Usuarios HPS
+    nombre: Elegir el tipo de consulta de usuarios HPS
+    descripcion: >-
+      La lista de la izquierda ofrece las consultas guardadas; al elegir una se muestran sus campos de filtro y la
+      lista de usuarios HPS.
+    formulario: Usuarios HPS
+    control: lista de consultas
+    tipo: lista
+    roles: []
+    resultado: Aparecen los filtros de la consulta elegida y la lista con todos los usuarios HPS de la copia local.
+    tecnico:
+      formulario: Form_FormInicial02ConsultasPrincipal
+      control: ListaConsultas
+      evidencia:
+        - "src/forms/Form_FormInicial02ConsultasPrincipal.cls:222"
+        - "src/forms/Form_FormInicial02ConsultasPrincipal.cls:286"
+        - "src/classes/Entorno.cls:1554"
+      prd: prd/formularios/Form_FormInicial02ConsultasPrincipal.md
+    reglas:
+      - id: HPS-F014-R01
+        descripcion: Los nombres de las consultas se leen de la base de datos y se numeran con dos cifras.
+        evidencia: ["src/forms/Form_FormInicial02ConsultasPrincipal.cls:299", "src/modules/Constructor.bas:3067"]
+      - id: HPS-F014-R02
+        descripcion: >-
+          Cada consulta abre un juego de filtros: 1 Estado, 2 Jurídica de contratación, 3 Proyecto asignado, 4 Nombre o DNI,
+          5 Grado, 6 Empresa del usuario, 7 Jurídica que tramita y 8 Motivo HPS.
+        evidencia: ["src/classes/Entorno.cls:1566"]
+      - id: HPS-F014-R03
+        descripcion: Si la consulta elegida no tiene juego de filtros asociado se muestra «No se han encontrado datos de la consulta nº …».
+        evidencia: ["src/forms/Form_FormInicial02ConsultasPrincipal.cls:258"]
+      - id: HPS-F014-R04
+        descripcion: Si se elige una línea que no es una consulta, se vacían filtros y lista y se desactivan el icono de Excel, «Anexos» y el botón de detalle.
+        evidencia: ["src/forms/Form_FormInicial02ConsultasPrincipal.cls:229"]
+      - id: HPS-F014-R05
+        descripcion: Al abrir el panel se selecciona automáticamente la primera consulta.
+        evidencia: ["src/forms/Form_FormInicial02ConsultasPrincipal.cls:207"]
+      - id: HPS-F014-R06
+        descripcion: La lista de usuarios se lee de la copia local, no de la base central.
+        evidencia: ["src/forms/Form_FormInicial03ConsultasDatos.cls:29", "src/modules/Filtro.bas:28"]
+      - id: HPS-F014-R07
+        descripcion: Al moverse por la lista, el usuario de la fila queda como usuario seleccionado para los botones del panel.
+        evidencia: ["src/forms/Form_FormInicial03ConsultasDatos.cls:13"]
+
+  - id: HPS-F015
+    area: Usuarios HPS
+    nombre: Filtrar usuarios HPS por estado del HPS
+    descripcion: Filtra la lista por el estado de cualquiera de los HPS del usuario. El filtro de estado aparece en todas las consultas.
+    formulario: Usuarios HPS (consulta por estado)
+    control: Estado
+    tipo: campo
+    roles: []
+    resultado: La lista muestra solo los usuarios con algún HPS en el estado elegido.
+    tecnico:
+      formulario: Form_FormInicial03ConsultasEstado
+      control: ComboEstadoHPS
+      evidencia:
+        - "src/forms/Form_FormInicial03ConsultasEstado.cls:14"
+        - "src/modules/Filtro.bas:163"
+      prd: prd/formularios/Form_FormInicial03ConsultasEstado.md
+    reglas:
+      - id: HPS-F015-R01
+        descripcion: >-
+          Los estados ofrecidos son Activo, A punto de Caducar, Caducada, Baja, Solicitada, Irregular, Sin Orden de
+          Renovación, No Posee y Pendiente de Renovación.
+        evidencia: ["src/classes/Entorno.cls:1366", "src/modules/Funciones Generales.bas:1242"]
+      - id: HPS-F015-R02
+        descripcion: Un usuario aparece si al menos uno de sus HPS (Nacional, OTAN, UE o ESA) cumple el estado elegido.
+        evidencia: ["src/modules/Filtro.bas:186"]
+      - id: HPS-F015-R03
+        descripcion: «No Posee» muestra los usuarios a los que les falta al menos uno de los cuatro tipos de HPS.
+        evidencia: ["src/modules/Filtro.bas:198"]
+      - id: HPS-F015-R04
+        descripcion: «Sin Orden de Renovación» muestra los usuarios con algún HPS cuyo campo de renovación vale «Sí».
+        evidencia: ["src/modules/Filtro.bas:201"]
+        # posible defecto: el nombre del estado sugiere HPS sin orden de renovar, pero el filtro selecciona los que tienen renovación «Sí».
+      - id: HPS-F015-R05
+        descripcion: Si el estado escrito no está en la lista, el error es «No existe el estado indicado».
+        evidencia: ["src/modules/Filtro.bas:181"]
+      - id: HPS-F015-R06
+        descripcion: El icono de borrar campo junto a «Estado» quita el filtro de estado y vuelve a filtrar.
+        evidencia: ["src/forms/Form_FormInicial03ConsultasEstado.cls:9"]
+      - id: HPS-F015-R07
+        descripcion: En las demás consultas el filtro de estado se combina con el filtro propio de la consulta mediante «y».
+        evidencia: ["src/modules/Filtro.bas:104"]
+
+  - id: HPS-F016
+    area: Usuarios HPS
+    nombre: Filtrar usuarios HPS por jurídica de contratación
+    descripcion: Filtra la lista por la cadena de contratistas del expediente del usuario.
+    formulario: Usuarios HPS (consulta por jurídica de contratación)
+    control: Jurídica Contratación
+    tipo: campo
+    roles: []
+    resultado: La lista muestra los usuarios cuya cadena de contratistas coincide exactamente con la elegida.
+    tecnico:
+      formulario: Form_FormInicial03ConsultasContratistas
+      control: CadenaContratistas
+      evidencia: ["src/forms/Form_FormInicial03ConsultasContratistas.cls:47"]
+      prd: prd/formularios/Form_FormInicial03ConsultasContratistas.md
+    reglas:
+      - id: HPS-F016-R01
+        descripcion: La lista desplegable ofrece las cadenas de contratistas existentes.
+        evidencia: ["src/forms/Form_FormInicial03ConsultasContratistas.cls:79", "src/modules/Funciones Generales.bas:1156"]
+      - id: HPS-F016-R02
+        descripcion: La coincidencia es exacta con la cadena elegida.
+        evidencia: ["src/modules/Filtro.bas:142", "src/modules/Filtro.bas:149"]
+      - id: HPS-F016-R03
+        descripcion: Cada icono de borrar campo quita su filtro y vuelve a filtrar.
+        evidencia: ["src/forms/Form_FormInicial03ConsultasContratistas.cls:6"]
+
+  - id: HPS-F017
+    area: Usuarios HPS
+    nombre: Filtrar usuarios HPS por proyecto asignado
+    descripcion: Filtra la lista por el expediente (proyecto) asignado al usuario.
+    formulario: Usuarios HPS (consulta por proyecto asignado)
+    control: P.Asignado
+    tipo: campo
+    roles: []
+    resultado: La lista muestra los usuarios asignados al expediente elegido.
+    tecnico:
+      formulario: Form_FormInicial03ConsultasProyectoAsignado
+      control: ComboProyectoAsignado
+      evidencia: ["src/forms/Form_FormInicial03ConsultasProyectoAsignado.cls:7"]
+      prd: prd/formularios/Form_FormInicial03ConsultasProyectoAsignado.md
+    reglas:
+      - id: HPS-F017-R01
+        descripcion: La lista ofrece los expedientes que tienen asignado algún usuario actual o histórico, identificados por su nemotécnico o, si no tiene, por su código.
+        evidencia:
+          - "src/forms/Form_FormInicial03ConsultasProyectoAsignado.cls:116"
+          - "src/forms/Form_FormInicial03ConsultasProyectoAsignado.cls:128"
+          - "src/forms/Form_FormInicial03ConsultasProyectoAsignado.cls:148"
+      - id: HPS-F017-R02
+        descripcion: El filtro compara el expediente asignado del usuario con el elegido.
+        evidencia: ["src/modules/Filtro.bas:138"]
+
+  - id: HPS-F018
+    area: Usuarios HPS
+    nombre: Filtrar usuarios HPS por nombre o DNI
+    descripcion: Filtra la lista por una parte del nombre completo o por un DNI exacto.
+    formulario: Usuarios HPS (consulta por nombre o DNI)
+    control: Nombre | DNI
+    tipo: campo
+    roles: []
+    resultado: La lista muestra los usuarios cuyo nombre completo contiene el texto escrito y, si se elige, con ese DNI.
+    tecnico:
+      formulario: Form_FormInicial03ConsultasNombre
+      control: Nombre, ComboDNI
+      evidencia: ["src/forms/Form_FormInicial03ConsultasNombre.cls:6"]
+      prd: prd/formularios/Form_FormInicial03ConsultasNombre.md
+    reglas:
+      - id: HPS-F018-R01
+        descripcion: El nombre se busca como texto contenido en «nombre apellido 1 apellido 2».
+        evidencia: ["src/modules/Filtro.bas:134"]
+      - id: HPS-F018-R02
+        descripcion: El filtro por nombre se aplica al salir del campo.
+        evidencia: ["src/forms/Form_FormInicial03ConsultasNombre.cls:47"]
+      - id: HPS-F018-R03
+        descripcion: La lista de DNI ofrece los DNI de los usuarios actuales y la coincidencia es exacta.
+        evidencia: ["src/forms/Form_FormInicial03ConsultasNombre.cls:107", "src/modules/Constructor.bas:2940"]
+      - id: HPS-F018-R04
+        descripcion: El texto del nombre se usa tal como se escribe, sin tratar caracteres especiales.
+        evidencia: ["src/forms/Form_FormInicial03ConsultasNombre.cls:15", "src/forms/Form_FormInicial03ConsultasNombre.cls:16"]
+        # posible defecto: el texto preparado para la consulta se sobrescribe con el texto original, así que un apóstrofo en el nombre rompe el filtro.
+
+
+  - id: HPS-F019
+    area: Usuarios HPS
+    nombre: Filtrar usuarios HPS por grado y especialidad
+    descripcion: Filtra la lista por el grado de cada tipo de HPS (Nacional, OTAN, UE, ESA) y por especialidad.
+    formulario: Usuarios HPS (consulta por grado)
+    control: Nac. | OTAN | UE | ESA | Y/O | Especialidad
+    tipo: campo
+    roles: []
+    resultado: La lista muestra los usuarios que cumplen los grados elegidos, combinados con «y» u «o».
+    tecnico:
+      formulario: Form_FormInicial03ConsultasGrado
+      control: ComboGradoNacional, ComboGradoOtan, ComboGradoUE, ComboGradoESA, ComboYO, Especialidad
+      evidencia: ["src/forms/Form_FormInicial03ConsultasGrado.cls:100", "src/modules/Filtro.bas:214"]
+      prd: prd/formularios/Form_FormInicial03ConsultasGrado.md
+    reglas:
+      - id: HPS-F019-R01
+        descripcion: Cada lista de grado ofrece los grados configurados para su tipo de HPS; si falta la lista de algún tipo, el error es «No se ha podido obtener la lista de los distintos grados de HPS …».
+        evidencia: ["src/forms/Form_FormInicial03ConsultasGrado.cls:194", "src/forms/Form_FormInicial03ConsultasGrado.cls:202"]
+      - id: HPS-F019-R02
+        descripcion: El selector «Y/O» empieza en «O»; con «Y» se exigen todos los grados elegidos y con «O» basta uno.
+        evidencia: ["src/forms/Form_FormInicial03ConsultasGrado.cls:242", "src/modules/Filtro.bas:261"]
+      - id: HPS-F019-R03
+        descripcion: Elegir «No Posee» en un tipo muestra los usuarios cuyo HPS de ese tipo tiene el estado «No Posee».
+        evidencia: ["src/modules/Filtro.bas:266"]
+      - id: HPS-F019-R04
+        descripcion: La especialidad se busca en cualquiera de los cuatro HPS y se combina con los grados mediante el mismo «Y/O».
+        evidencia: ["src/modules/Filtro.bas:294", "src/modules/Filtro.bas:336"]
+
+  - id: HPS-F020
+    area: Usuarios HPS
+    nombre: Filtrar usuarios HPS por empresa del usuario
+    descripcion: Filtra la lista por la empresa a la que pertenece el usuario.
+    formulario: Usuarios HPS (consulta por empresa del usuario)
+    control: Empresa del Usuario
+    tipo: campo
+    roles: []
+    resultado: La lista muestra los usuarios de la empresa elegida.
+    tecnico:
+      formulario: Form_FormInicial03ConsultasEmpresaUsuario
+      control: IDEmpresaUsuario
+      evidencia: ["src/forms/Form_FormInicial03ConsultasEmpresaUsuario.cls:51"]
+      prd: prd/formularios/Form_FormInicial03ConsultasEmpresaUsuario.md
+    reglas:
+      - id: HPS-F020-R01
+        descripcion: La lista solo ofrece las empresas con nombre que tienen algún usuario actual o histórico, con su nombre y CIF.
+        evidencia:
+          - "src/forms/Form_FormInicial03ConsultasEmpresaUsuario.cls:134"
+          - "src/forms/Form_FormInicial03ConsultasEmpresaUsuario.cls:143"
+          - "src/forms/Form_FormInicial03ConsultasEmpresaUsuario.cls:165"
+      - id: HPS-F020-R02
+        descripcion: El filtro compara por el nombre de la empresa elegida.
+        evidencia: ["src/forms/Form_FormInicial03ConsultasEmpresaUsuario.cls:67"]
+
+  - id: HPS-F021
+    area: Usuarios HPS
+    nombre: Filtrar usuarios HPS por jurídica que tramita
+    descripcion: Filtra la lista por la empresa que tramita el HPS del usuario.
+    formulario: Usuarios HPS (consulta por jurídica que tramita)
+    control: Jurídica que Tramita
+    tipo: campo
+    roles: []
+    resultado: La lista muestra los usuarios cuyo HPS tramita la empresa elegida.
+    tecnico:
+      formulario: Form_FormInicial03ConsultasJuridicaTramitacion
+      control: IDEmpresaHPS
+      evidencia: ["src/forms/Form_FormInicial03ConsultasJuridicaTramitacion.cls:8"]
+      prd: prd/formularios/Form_FormInicial03ConsultasJuridicaTramitacion.md
+    reglas:
+      - id: HPS-F021-R01
+        descripcion: La lista ofrece solo las empresas tramitadoras, con su nemotécnico y CIF.
+        evidencia: ["src/forms/Form_FormInicial03ConsultasJuridicaTramitacion.cls:85", "src/modules/Funciones Generales.bas:1127"]
+      - id: HPS-F021-R02
+        descripcion: El filtro compara por el nombre de la empresa elegida.
+        evidencia: ["src/forms/Form_FormInicial03ConsultasJuridicaTramitacion.cls:17"]
+      - id: HPS-F021-R03
+        descripcion: Si se borra la empresa, el filtro de empresa anterior se mantiene.
+        evidencia: ["src/forms/Form_FormInicial03ConsultasJuridicaTramitacion.cls:18"]
+        # posible defecto: al vaciar «Jurídica que Tramita» no se quita el filtro de empresa que había.
+
+  - id: HPS-F022
+    area: Usuarios HPS
+    nombre: Filtrar usuarios HPS por motivo
+    descripcion: Filtra la lista por el motivo por el que el usuario necesita el HPS.
+    formulario: Usuarios HPS (consulta por motivo HPS)
+    control: Motivo HPS
+    tipo: campo
+    roles: []
+    resultado: La lista muestra los usuarios con el motivo elegido.
+    tecnico:
+      formulario: Form_FormInicial03ConsultasMotivoHPS
+      control: ComboMotivoHPS
+      evidencia: ["src/forms/Form_FormInicial03ConsultasMotivoHPS.cls:5"]
+      prd: prd/formularios/Form_FormInicial03ConsultasMotivoHPS.md
+    reglas:
+      - id: HPS-F022-R01
+        descripcion: La lista ofrece los motivos ya usados por los usuarios actuales y la coincidencia es exacta.
+        evidencia: ["src/forms/Form_FormInicial03ConsultasMotivoHPS.cls:76", "src/modules/Constructor.bas:2943"]
+
+  - id: HPS-F023
+    area: Usuarios HPS
+    nombre: Exportar la lista de usuarios HPS a Excel
+    descripcion: Genera un Excel con la lista de usuarios tal como está filtrada y lo abre.
+    formulario: Usuarios HPS
+    control: icono de Excel
+    tipo: botón
+    roles: []
+    resultado: Se crea y abre el libro «ConsultaUsuario.xlsx» en la carpeta local de la aplicación.
+    tecnico:
+      formulario: Form_FormInicial02ConsultasPrincipal
+      control: ComandoListaEnExcel
+      evidencia: ["src/forms/Form_FormInicial02ConsultasPrincipal.cls:113", "src/modules/Funciones Generales.bas:391"]
+      prd: prd/formularios/Form_FormInicial02ConsultasPrincipal.md
+    reglas:
+      - id: HPS-F023-R01
+        descripcion: El Excel contiene los usuarios que cumplen los filtros aplicados en ese momento.
+        evidencia: ["src/modules/Funciones Generales.bas:433", "src/modules/Filtro.bas:107"]
+      - id: HPS-F023-R02
+        descripcion: Si el Excel anterior sigue abierto, el error es «Cierre la consulta anterior»; si no, se sustituye.
+        evidencia: ["src/modules/Funciones Generales.bas:426"]
+      - id: HPS-F023-R03
+        descripcion: El icono solo está activo cuando hay una consulta elegida.
+        evidencia: ["src/forms/Form_FormInicial02ConsultasPrincipal.cls:236", "src/forms/Form_FormInicial02ConsultasPrincipal.cls:272"]
+
+  - id: HPS-F024
+    area: Usuarios HPS
+    nombre: Abrir la ficha del usuario HPS seleccionado
+    descripcion: Abre la ficha del usuario elegido en la lista, en su apartado general o directamente en sus anexos.
+    formulario: Usuarios HPS
+    control: Editar Usuario | Detalle Usuario | Anexos
+    tipo: botón
+    roles: []
+    resultado: Se abre la ficha «EDICIÓN DE «usuario»» en el apartado general, o en «Anexos» si se pulsa ese botón.
+    tecnico:
+      formulario: Form_FormInicial02ConsultasPrincipal
+      control: ComandoEditarUsuario, ComandoAnexos
+      evidencia: ["src/forms/Form_FormInicial02ConsultasPrincipal.cls:43", "src/forms/Form_FormInicial02ConsultasPrincipal.cls:13"]
+      prd: prd/formularios/Form_FormInicial02ConsultasPrincipal.md
+    reglas:
+      - id: HPS-F024-R01
+        descripcion: El botón se llama «Editar Usuario» en modo escritura y «Detalle Usuario» en modo solo lectura.
+        evidencia: ["src/forms/Form_FormInicial02ConsultasPrincipal.cls:179"]
+      - id: HPS-F024-R02
+        descripcion: Si no hay usuario seleccionado, el error es «Se ha de seleccionar el usuario primero» (o «Ha de seleccionar un usuario de la lista» para «Anexos»).
+        evidencia: ["src/forms/Form_FormInicial02ConsultasPrincipal.cls:48", "src/forms/Form_FormInicial02ConsultasPrincipal.cls:20"]
+      - id: HPS-F024-R03
+        descripcion: Si la ficha de otro usuario estaba abierta, se cierra antes de abrir la nueva.
+        evidencia: ["src/forms/Form_FormInicial02ConsultasPrincipal.cls:53"]
+      - id: HPS-F024-R04
+        descripcion: «Anexos» abre la ficha y salta directamente a su apartado «Anexos».
+        evidencia: ["src/forms/Form_FormInicial02ConsultasPrincipal.cls:28", "src/forms/Form_FormInicial02ConsultasPrincipal.cls:30"]
+
+  - id: HPS-F025
+    area: Usuarios HPS
+    nombre: Dar de alta un usuario HPS
+    descripcion: Abre la ventana de alta de un usuario HPS nuevo.
+    formulario: Usuarios HPS
+    control: Nuevo
+    tipo: botón
+    roles: []
+    resultado: Se abre la ventana «ALTA DE USUARIO» vacía (ver HPS-F040).
+    tecnico:
+      formulario: Form_FormInicial02ConsultasPrincipal
+      control: ComandoNuevoUsuario
+      evidencia: ["src/forms/Form_FormInicial02ConsultasPrincipal.cls:140"]
+      prd: prd/formularios/Form_FormInicial02ConsultasPrincipal.md
+    reglas:
+      - id: HPS-F025-R01
+        descripcion: «Nuevo» solo está activo en modo escritura.
+        evidencia: ["src/forms/Form_FormInicial02ConsultasPrincipal.cls:179", "src/forms/Form_FormInicial02ConsultasPrincipal.cls:184"]
+      - id: HPS-F025-R02
+        descripcion: Se olvida el usuario seleccionado y, si había una ventana de alta abierta, se cierra antes.
+        evidencia: ["src/forms/Form_FormInicial02ConsultasPrincipal.cls:144"]
+
+  - id: HPS-F026
+    area: Usuarios HPS
+    nombre: Eliminar definitivamente un usuario HPS
+    descripcion: Borra el usuario seleccionado con sus observaciones y anexos.
+    formulario: Usuarios HPS
+    control: Eliminar
+    tipo: botón
+    roles: []
+    resultado: El usuario desaparece de la base y se borran sus observaciones, sus anexos actuales e históricos y sus carpetas de anexos.
+    tecnico:
+      formulario: Form_FormInicial02ConsultasPrincipal
+      control: ComandoEliminarUsuario
+      evidencia: ["src/forms/Form_FormInicial02ConsultasPrincipal.cls:68", "src/classes/UsuarioHPS.cls:1599"]
+      prd: prd/formularios/Form_FormInicial02ConsultasPrincipal.md
+    reglas:
+      - id: HPS-F026-R01
+        descripcion: «Eliminar» solo está activo en modo escritura.
+        evidencia: ["src/forms/Form_FormInicial02ConsultasPrincipal.cls:182", "src/forms/Form_FormInicial02ConsultasPrincipal.cls:186"]
+      - id: HPS-F026-R02
+        descripcion: Si no hay usuario seleccionado, el error es «Se ha de seleccionar el usuario primero».
+        evidencia: ["src/forms/Form_FormInicial02ConsultasPrincipal.cls:75"]
+      - id: HPS-F026-R03
+        descripcion: Se pide confirmación con «¿Desea eliminar definitivamente al usuario seleccionado con todos sus restros asociados (Observaciones,HPSs,Anexos)?», con No como opción por defecto.
+        evidencia: ["src/forms/Form_FormInicial02ConsultasPrincipal.cls:80"]
+      - id: HPS-F026-R04
+        descripcion: Se borran el usuario, sus observaciones generales y de curso, sus anexos actuales e históricos, y las carpetas de anexos de su DNI.
+        evidencia:
+          - "src/classes/UsuarioHPS.cls:1621"
+          - "src/classes/UsuarioHPS.cls:1626"
+          - "src/classes/UsuarioHPS.cls:1649"
+          - "src/classes/UsuarioHPS.cls:1673"
+        # posible defecto: el borrado no elimina de forma explícita los HPS ni el usuario SICA vinculado, aunque el aviso menciona los HPS.
+      - id: HPS-F026-R05
+        descripcion: El borrado no comprueba si algún anexo está abierto.
+        evidencia: ["src/classes/UsuarioHPS.cls:1599", "src/classes/UsuarioHPS.cls:1188"]
+        # posible defecto: existe una comprobación de anexos abiertos y de modo solo lectura para el borrado, pero el borrado no la usa.
+      - id: HPS-F026-R06
+        descripcion: Tras el borrado se recalculan los indicadores y se retira el usuario de la copia local.
+        evidencia: ["src/classes/UsuarioHPS.cls:1624", "src/classes/UsuarioHPS.cls:1704"]
+
+  # ---------------------------------------------------------------------------
+  # Búsqueda global
+  # ---------------------------------------------------------------------------
+  - id: HPS-F027
+    area: Búsqueda global
+    nombre: Buscar una palabra en todos los datos
+    descripcion: >-
+      Busca un texto en todos los datos de usuarios HPS, usuarios SICA, usuarios históricos, observaciones y anexos, y
+      lista cada coincidencia con el apartado, el campo y el valor.
+    formulario: BÚSQUEDA GLOBAL
+    control: Palabra Clave
+    tipo: campo
+    roles: []
+    resultado: La lista muestra una fila por cada dato que contiene la palabra.
+    tecnico:
+      formulario: Form_FormInicial06BusquedaGlobal
+      control: PalabraClave
+      evidencia:
+        - "src/forms/Form_FormInicial06BusquedaGlobal.cls:355"
+        - "src/forms/Form_FormInicial06BusquedaGlobal.cls:447"
+        - "src/modules/Constructor.bas:1742"
+      prd: prd/formularios/Form_FormInicial06BusquedaGlobal.md
+    reglas:
+      - id: HPS-F027-R01
+        descripcion: La búsqueda se lanza al salir del campo o al pulsar Intro, y solo si la palabra ha cambiado o la lista está vacía.
+        evidencia: ["src/forms/Form_FormInicial06BusquedaGlobal.cls:368", "src/forms/Form_FormInicial06BusquedaGlobal.cls:399"]
+      - id: HPS-F027-R02
+        descripcion: >-
+          Se busca en los apartados Usuarios, Usuarios SICA, Usuarios Históricos, Observaciones y Observaciones Históricas
+          de la copia local, y en Anexos y Anexos SICA de la base central.
+        evidencia: ["src/modules/Constructor.bas:1760", "src/modules/Constructor.bas:1792", "src/modules/Constructor.bas:1918"]
+      - id: HPS-F027-R03
+        descripcion: Una fila coincide si el texto buscado aparece dentro de cualquiera de sus campos, sin distinguir mayúsculas.
+        evidencia: ["src/modules/Constructor.bas:1771"]
+      - id: HPS-F027-R04
+        descripcion: Si solo hay un resultado, queda seleccionado automáticamente.
+        evidencia: ["src/forms/Form_FormInicial06BusquedaGlobal.cls:493"]
+      - id: HPS-F027-R05
+        descripcion: Los errores al leer los datos durante la búsqueda se ignoran sin aviso.
+        evidencia: ["src/modules/Constructor.bas:1754"]
+        # posible defecto: si un apartado no se puede leer, la búsqueda devuelve resultados incompletos sin avisar.
+      - id: HPS-F027-R06
+        descripcion: El icono de borrar campo vacía la palabra y la lista de resultados.
+        evidencia: ["src/forms/Form_FormInicial06BusquedaGlobal.cls:16"]
+
+  - id: HPS-F028
+    area: Búsqueda global
+    nombre: Ir al dato encontrado
+    descripcion: Desde un resultado de la búsqueda, abre la ficha del usuario o el anexo correspondiente.
+    formulario: BÚSQUEDA GLOBAL
+    control: Ver Dato Seleccionado
+    tipo: botón
+    roles: []
+    resultado: Se abre la ficha del usuario HPS, SICA o histórico del resultado, o el fichero del anexo.
+    tecnico:
+      formulario: Form_FormInicial06BusquedaGlobal
+      control: ComandoVerDatoSeleccionado / ListaResultados
+      evidencia: ["src/forms/Form_FormInicial06BusquedaGlobal.cls:23", "src/forms/Form_FormInicial06BusquedaGlobal.cls:346"]
+      prd: prd/formularios/Form_FormInicial06BusquedaGlobal.md
+    reglas:
+      - id: HPS-F028-R01
+        descripcion: El botón solo se activa al seleccionar un resultado; hacer doble clic en un resultado equivale a pulsarlo.
+        evidencia: ["src/forms/Form_FormInicial06BusquedaGlobal.cls:120", "src/forms/Form_FormInicial06BusquedaGlobal.cls:349"]
+      - id: HPS-F028-R02
+        descripcion: Un resultado de usuario o de observación abre «Usuarios HPS», sitúa la lista en ese usuario y abre su ficha.
+        evidencia: ["src/forms/Form_FormInicial06BusquedaGlobal.cls:137", "src/forms/Form_FormInicial06BusquedaGlobal.cls:169"]
+      - id: HPS-F028-R03
+        descripcion: Un resultado de usuario histórico o de observación histórica abre «Usuarios Históricos», sitúa la lista y abre su ficha histórica.
+        evidencia: ["src/forms/Form_FormInicial06BusquedaGlobal.cls:202", "src/forms/Form_FormInicial06BusquedaGlobal.cls:230"]
+      - id: HPS-F028-R04
+        descripcion: Un resultado de usuario SICA abre «Usuarios SICA», sitúa la lista y abre su detalle.
+        evidencia: ["src/forms/Form_FormInicial06BusquedaGlobal.cls:313"]
+      - id: HPS-F028-R05
+        descripcion: Un resultado de anexo abre el fichero; si no está accesible, el error es «No es alcanzable en estos momentos el anexo seleccionado» (o «… el anexo SICA seleccionado»).
+        evidencia: ["src/forms/Form_FormInicial06BusquedaGlobal.cls:277", "src/forms/Form_FormInicial06BusquedaGlobal.cls:301"]
+      - id: HPS-F028-R06
+        descripcion: Si el usuario del resultado no está en la lista actual, no se abre nada.
+        evidencia: ["src/forms/Form_FormInicial06BusquedaGlobal.cls:153"]
+
+  - id: HPS-F029
+    area: Búsqueda global
+    nombre: Cerrar la búsqueda global
+    descripcion: Cierra la ventana de búsqueda y vacía la palabra clave de la ventana principal.
+    formulario: BÚSQUEDA GLOBAL
+    control: Salir
+    tipo: botón
+    roles: []
+    resultado: Se cierra la búsqueda y el campo de búsqueda de la ventana principal queda vacío.
+    tecnico:
+      formulario: Form_FormInicial06BusquedaGlobal
+      control: cmdSalir
+      evidencia: ["src/forms/Form_FormInicial06BusquedaGlobal.cls:11"]
+      prd: prd/formularios/Form_FormInicial06BusquedaGlobal.md
+    reglas:
+      - id: HPS-F029-R01
+        descripcion: Al salir se vacía la palabra clave de la cabecera de la ventana principal.
+        evidencia: ["src/forms/Form_FormInicial06BusquedaGlobal.cls:12"]
+
+  # ---------------------------------------------------------------------------
+  # Configuración
+  # ---------------------------------------------------------------------------
+  - id: HPS-F030
+    area: Configuración
+    nombre: Consultar el estado de la conexión
+    descripcion: Muestra el modo de trabajo, si se está en la oficina y si se usan los datos de la oficina.
+    formulario: Configuración
+    control: ESTADO DE CONEXIÓN | ESTOY EN LA OFICINA | DATOS DE LA OFICINA
+    tipo: automático
+    roles: []
+    resultado: Los tres campos muestran el estado actual.
+    tecnico:
+      formulario: Form_FormInicial05Configuracion
+      control: Form_Load
+      evidencia: ["src/forms/Form_FormInicial05Configuracion.cls:39"]
+      prd: prd/formularios/Form_FormInicial05Configuracion.md
+    reglas:
+      - id: HPS-F030-R01
+        descripcion: «ESTADO DE CONEXIÓN» muestra «Lectura/Escritura» o «Solo lectura».
+        evidencia: ["src/forms/Form_FormInicial05Configuracion.cls:44", "src/modules/Funciones Generales.bas:53"]
+      - id: HPS-F030-R02
+        descripcion: «ESTOY EN LA OFICINA» y «DATOS DE LA OFICINA» valen «Sí» si se está en la oficina y «No» si no.
+        evidencia: ["src/forms/Form_FormInicial05Configuracion.cls:46", "src/forms/Form_FormInicial05Configuracion.cls:52"]
+
+  - id: HPS-F031
+    area: Configuración
+    nombre: Copiar los anexos y recursos de la oficina al equipo
+    descripcion: Copia en el equipo, en espejo, las carpetas de anexos HPS, SICA e históricos y la de recursos de la oficina.
+    formulario: Configuración
+    control: IMPORTAR DATOS DE OFICINA
+    tipo: botón
+    roles: []
+    resultado: Las carpetas locales ANEXOS\HPS, ANEXOS\SICA, ANEXOS\HISTORICO y recursos quedan iguales que las de la oficina y se muestra «Datos transferidos al aplicativo local correctamente».
+    tecnico:
+      formulario: Form_FormInicial05Configuracion
+      control: ComandoImportarDatosOficinaALocal
+      evidencia: ["src/forms/Form_FormInicial05Configuracion.cls:6", "src/modules/Funciones Generales.bas:2252"]
+      prd: prd/formularios/Form_FormInicial05Configuracion.md
+    reglas:
+      - id: HPS-F031-R01
+        descripcion: El botón solo está activo en la oficina y cuando la aplicación no se ejecuta desde la carpeta de perfil de usuario (AppData\Roaming).
+        evidencia: ["src/forms/Form_FormInicial05Configuracion.cls:58", "src/forms/Form_FormInicial05Configuracion.cls:61"]
+      - id: HPS-F031-R02
+        descripcion: Fuera de la oficina el error es «Esta Operación sólo se puede hacer estando en la oficina».
+        evidencia: ["src/modules/Funciones Generales.bas:2272"]
+      - id: HPS-F031-R03
+        descripcion: La copia se hace en la carpeta donde está la aplicación; si no es accesible, el error es «Se ha de indicar una carpeta local alcanzable».
+        evidencia: ["src/forms/Form_FormInicial05Configuracion.cls:20", "src/modules/Funciones Generales.bas:2276"]
+      - id: HPS-F031-R04
+        descripcion: Si alguna carpeta de anexos de la oficina no es accesible, se detiene con «No es Alcanzable la carpeta de anexos … de la Oficina».
+        evidencia:
+          - "src/modules/Funciones Generales.bas:2285"
+          - "src/modules/Funciones Generales.bas:2293"
+          - "src/modules/Funciones Generales.bas:2301"
+      - id: HPS-F031-R05
+        descripcion: La copia es en espejo, así que los ficheros locales que no están en la oficina se borran.
+        evidencia: ["src/modules/Funciones Generales.bas:2322"]
+      - id: HPS-F031-R06
+        descripcion: El botón no copia la base de datos; solo anexos y recursos.
+        evidencia: ["src/modules/Funciones Generales.bas:2321", "src/modules/Funciones Generales.bas:2345"]
+        # posible defecto: el botón se llama «IMPORTAR DATOS DE OFICINA» pero no copia los datos, solo los ficheros.
+
+  # ---------------------------------------------------------------------------
+  # Indicadores
+  # ---------------------------------------------------------------------------
+  - id: HPS-F032
+    area: Indicadores
+    nombre: Ver el panel de indicadores
+    descripcion: Muestra los siete botones de indicador con su número de usuarios y una lista vacía hasta elegir uno.
+    formulario: Indicadores
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: Los botones muestran el número de usuarios de cada indicador.
+    tecnico:
+      formulario: Form_FormInicial09Indicadores
+      control: Form_Load
+      evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:511"]
+      prd: prd/formularios/Form_FormInicial09Indicadores.md
+    reglas:
+      - id: HPS-F032-R01
+        descripcion: Al abrir el panel la lista queda vacía, «Detalle» desactivado y se recalculan los contadores.
+        evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:517", "src/forms/Form_FormInicial09Indicadores.cls:523", "src/forms/Form_FormInicial09Indicadores.cls:530"]
+      - id: HPS-F032-R02
+        descripcion: Los indicadores se calculan siempre contra la base central, no contra la copia local.
+        evidencia: ["src/modules/Mod_Indicadores_Contadores.bas:108", "src/modules/Mod_Indicadores_Datos.bas:65"]
+      - id: HPS-F032-R03
+        descripcion: Cada lista se ordena por primer apellido, segundo apellido y nombre, y muestra identificador, nombre completo y DNI.
+        evidencia: ["src/modules/Mod_Indicadores_Backend.bas:81", "src/forms/Form_FormInicial09Indicadores.cls:25"]
+      - id: HPS-F032-R04
+        descripcion: Al pulsar un indicador se muestra «FILTRO APLICADO» con el nombre del indicador.
+        evidencia: ["src/classes/Entorno.cls:2232", "src/forms/Form_FormInicial09Indicadores.cls:98"]
+
+  - id: HPS-F033
+    area: Indicadores
+    nombre: Listar usuarios pendientes de curso
+    descripcion: Lista los usuarios que necesitan hacer el curso para mantener el HPS.
+    formulario: Indicadores
+    control: HPS Pte. Curso ( n )
+    tipo: botón
+    roles: []
+    resultado: La lista muestra los usuarios marcados como que requieren curso.
+    tecnico:
+      formulario: Form_FormInicial09Indicadores
+      control: ComandoPendientesCursoHPS
+      evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:335", "src/modules/Mod_Indicadores_Backend.bas:114"]
+      prd: prd/formularios/Form_FormInicial09Indicadores.md
+    reglas:
+      - id: HPS-F033-R01
+        descripcion: Aparecen los usuarios con «requiere curso» igual a Sí.
+        evidencia: ["src/modules/Mod_Indicadores_Backend.bas:121"]
+      - id: HPS-F033-R02
+        descripcion: Un usuario requiere curso cuando tiene algún HPS concedido y no consta fecha de curso; se recalcula cada vez que se guarda el usuario.
+        evidencia: ["src/classes/UsuarioHPS.cls:668", "src/classes/UsuarioHPS.cls:640", "src/classes/UsuarioHPS.cls:1369"]
+      - id: HPS-F033-R03
+        descripcion: Solo con este indicador se muestran los selectores de filtro por empresa (ver HPS-F042).
+        evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:360", "src/forms/Form_FormInicial09Indicadores.cls:417"]
+
+  - id: HPS-F034
+    area: Indicadores
+    nombre: Listar usuarios con HPS a punto de caducar
+    descripcion: Lista los usuarios con algún HPS que caduca en los próximos 9 meses.
+    formulario: Indicadores
+    control: A Punto de Caducar ( n )
+    tipo: botón
+    roles: []
+    resultado: La lista muestra los usuarios con algún HPS a punto de caducar.
+    tecnico:
+      formulario: Form_FormInicial09Indicadores
+      control: ComandoAPuntoDeCaducar
+      evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:86", "src/modules/Mod_Indicadores_Backend.bas:73"]
+      prd: prd/formularios/Form_FormInicial09Indicadores.md
+    reglas:
+      - id: HPS-F034-R01
+        descripcion: Aparece el usuario si alguno de sus HPS sin fecha de baja caduca entre hoy y 9 meses después.
+        evidencia: ["src/modules/Mod_Indicadores_Backend.bas:80"]
+
+  - id: HPS-F035
+    area: Indicadores
+    nombre: Listar usuarios con HPS caducados
+    descripcion: Lista los usuarios con algún HPS ya caducado.
+    formulario: Indicadores
+    control: Caducados ( n )
+    tipo: botón
+    roles: []
+    resultado: La lista muestra los usuarios con algún HPS caducado.
+    tecnico:
+      formulario: Form_FormInicial09Indicadores
+      control: ComandoCaducados
+      evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:110", "src/modules/Mod_Indicadores_Backend.bas:94"]
+      prd: prd/formularios/Form_FormInicial09Indicadores.md
+    reglas:
+      - id: HPS-F035-R01
+        descripcion: Aparece el usuario si alguno de sus HPS sin fecha de baja tiene caducidad anterior a hoy.
+        evidencia: ["src/modules/Mod_Indicadores_Backend.bas:101"]
+
+  - id: HPS-F036
+    area: Indicadores
+    nombre: Listar usuarios con HPS en solicitud
+    descripcion: Lista los usuarios con alguna solicitud de HPS registrada.
+    formulario: Indicadores
+    control: En Solicitud ( n )
+    tipo: botón
+    roles: []
+    resultado: La lista muestra los usuarios con algún HPS con fecha de solicitud.
+    tecnico:
+      formulario: Form_FormInicial09Indicadores
+      control: ComandoEnSolicitud
+      evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:192", "src/modules/Mod_Indicadores_Backend.bas:135"]
+      prd: prd/formularios/Form_FormInicial09Indicadores.md
+    reglas:
+      - id: HPS-F036-R01
+        descripcion: Aparece el usuario si alguno de sus HPS tiene fecha de solicitud, aunque esté de baja.
+        evidencia: ["src/modules/Mod_Indicadores_Backend.bas:142"]
+
+  - id: HPS-F037
+    area: Indicadores
+    nombre: Listar usuarios pendientes de la primera convocatoria al curso
+    descripcion: Lista los usuarios que requieren curso con la primera convocatoria ya vencida.
+    formulario: Indicadores
+    control: Pte.1ª Convocat. ( n )
+    tipo: botón
+    roles: []
+    resultado: La lista muestra los usuarios que requieren curso y cuya primera convocatoria es anterior a hoy.
+    tecnico:
+      formulario: Form_FormInicial09Indicadores
+      control: ComandoPendientesConvocatoria1
+      evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:226", "src/modules/Mod_Indicadores_Backend.bas:155"]
+      prd: prd/formularios/Form_FormInicial09Indicadores.md
+    reglas:
+      - id: HPS-F037-R01
+        descripcion: Aparece el usuario si requiere curso y tiene fecha de primera convocatoria anterior a hoy.
+        evidencia: ["src/modules/Mod_Indicadores_Backend.bas:162"]
+        # posible defecto: el texto de ayuda del contador lateral dice «Pendientes de envío de primera convocatoria», pero la lista muestra a quienes ya tienen la primera convocatoria enviada.
+
+  - id: HPS-F038
+    area: Indicadores
+    nombre: Listar usuarios pendientes de la segunda convocatoria al curso
+    descripcion: Lista los usuarios que requieren curso con la segunda convocatoria ya vencida.
+    formulario: Indicadores
+    control: Pte.2ª Convocat. ( n )
+    tipo: botón
+    roles: []
+    resultado: La lista muestra los usuarios que requieren curso y cuya segunda convocatoria es anterior a hoy.
+    tecnico:
+      formulario: Form_FormInicial09Indicadores
+      control: ComandoPendientesConvocatoria2
+      evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:262", "src/modules/Mod_Indicadores_Backend.bas:175"]
+      prd: prd/formularios/Form_FormInicial09Indicadores.md
+    reglas:
+      - id: HPS-F038-R01
+        descripcion: Aparece el usuario si requiere curso y tiene fecha de segunda convocatoria anterior a hoy.
+        evidencia: ["src/modules/Mod_Indicadores_Backend.bas:182"]
+        # posible defecto: el texto de ayuda del contador lateral dice «Pendientes de envío de segunda convocatoria», pero la lista muestra a quienes ya tienen la segunda convocatoria enviada.
+
+  - id: HPS-F039
+    area: Indicadores
+    nombre: Listar usuarios pendientes del correo al Jefe de Seguridad
+    descripcion: Lista los usuarios que requieren curso y cuyo correo al Jefe de Seguridad se envió hace más de 15 días.
+    formulario: Indicadores
+    control: Pte. Correo JS ( n )
+    tipo: botón
+    roles: []
+    resultado: La lista muestra los usuarios que requieren curso con correo al Jefe de Seguridad de hace más de 15 días.
+    tecnico:
+      formulario: Form_FormInicial09Indicadores
+      control: ComandoPendientesCorreoJefeSeguridad
+      evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:299", "src/modules/Mod_Indicadores_Backend.bas:195"]
+      prd: prd/formularios/Form_FormInicial09Indicadores.md
+    reglas:
+      - id: HPS-F039-R01
+        descripcion: Aparece el usuario si requiere curso y la fecha del correo al Jefe de Seguridad es anterior a hoy menos 15 días.
+        evidencia: ["src/modules/Mod_Indicadores_Backend.bas:202"]
+        # posible defecto: el texto de ayuda del contador lateral dice «Pendientes de envío de correo a Jefe de Seguridad», pero la lista muestra a quienes ya tienen el correo enviado.
+
+  - id: HPS-F040
+    area: Indicadores
+    nombre: Actualizar los indicadores
+    descripcion: Recalcula los contadores y la lista del indicador elegido.
+    formulario: Indicadores
+    control: Actualizar Indicadores
+    tipo: botón
+    roles: []
+    resultado: Los contadores y la lista quedan al día y se muestra «Listado de indicadores actualizado.».
+    tecnico:
+      formulario: Form_FormInicial09Indicadores
+      control: cmdActualizarIndicadores
+      evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:61", "src/modules/Mod_Indicadores_Contadores.bas:64"]
+      prd: prd/formularios/Form_FormInicial09Indicadores.md
+    reglas:
+      - id: HPS-F040-R01
+        descripcion: Se vuelve a cargar la lista del indicador elegido y se recalculan los siete contadores del panel y del menú lateral.
+        evidencia: ["src/modules/Mod_Indicadores_Contadores.bas:96", "src/modules/Mod_Indicadores_Contadores.bas:129"]
+      - id: HPS-F040-R02
+        descripcion: Tras guardar un usuario o borrar uno, los indicadores también se recalculan sin pulsar el botón.
+        evidencia: ["src/classes/UsuarioHPS.cls:1506", "src/modules/Mod_Indicadores_Contadores.bas:153"]
+
+  - id: HPS-F041
+    area: Indicadores
+    nombre: Abrir la ficha del usuario del indicador
+    descripcion: Abre la ficha del usuario seleccionado en la lista del indicador.
+    formulario: Indicadores
+    control: Detalle
+    tipo: botón
+    roles: []
+    resultado: Se abre la ficha «EDICIÓN DE «usuario»».
+    tecnico:
+      formulario: Form_FormInicial09Indicadores
+      control: ComandoEditarUsuario
+      evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:162", "src/forms/Form_FormInicial09Indicadores.cls:546"]
+      prd: prd/formularios/Form_FormInicial09Indicadores.md
+    reglas:
+      - id: HPS-F041-R01
+        descripcion: «Detalle» solo se activa al seleccionar una fila con identificador numérico.
+        evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:45"]
+      - id: HPS-F041-R02
+        descripcion: Si la fila no es válida, el error es «Se debe seleccionar un usuario válido de la lista. Detalle …».
+        evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:564"]
+      - id: HPS-F041-R03
+        descripcion: Si la ficha de otro usuario estaba abierta, se cierra antes de abrir la nueva.
+        evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:176"]
+
+  - id: HPS-F042
+    area: Indicadores
+    nombre: Filtrar el indicador de pendientes de curso por empresa
+    descripcion: Permite elegir un tipo de jurídica y una empresa para filtrar la lista de pendientes de curso.
+    formulario: Indicadores
+    control: Tipo de Jurídica para filtrar
+    tipo: campo
+    roles: []
+    resultado: Se muestra el aviso «El filtro por empresa del nuevo listado está pendiente de definir y conectar.»; la lista no se filtra.
+    tecnico:
+      formulario: Form_FormInicial09Indicadores
+      control: ComboTipoEmpresaFiltro, ComboNombreEmpresa
+      evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:446", "src/modules/Funciones Generales.bas:2919"]
+      prd: prd/formularios/Form_FormInicial09Indicadores.md
+    reglas:
+      - id: HPS-F042-R01
+        descripcion: Los tipos ofrecidos son Empresa Usuario, Empresa Tramitadora y Juridica Contratación.
+        evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:528"]
+      - id: HPS-F042-R02
+        descripcion: Con «Empresa Usuario» se ofrecen todas las empresas; con los otros tipos, solo las tramitadoras.
+        evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:491"]
+        # posible defecto: la condición para «Jurídica Contratación» compara el nombre de la empresa en lugar del tipo, así que ese tipo ofrece solo tramitadoras.
+      - id: HPS-F042-R03
+        descripcion: Al elegir tipo y empresa se muestra el aviso de que el filtro está pendiente y la lista no cambia.
+        evidencia: ["src/modules/Funciones Generales.bas:2925"]
+        # posible defecto: funcionalidad visible pero sin implementar.
+
+  - id: HPS-F043
+    area: Indicadores
+    nombre: Exportar la lista del indicador a Excel
+    descripcion: Botón de Excel del panel de indicadores.
+    formulario: Indicadores
+    control: icono de Excel
+    tipo: botón
+    roles: []
+    resultado: Se muestra «La exportación del nuevo listado está pendiente de conectar.»; no se genera ningún fichero.
+    tecnico:
+      formulario: Form_FormInicial09Indicadores
+      control: ComandoListaEnExcel
+      evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:222"]
+      prd: prd/formularios/Form_FormInicial09Indicadores.md
+    reglas:
+      - id: HPS-F043-R01
+        descripcion: El botón solo muestra el aviso de que la exportación está pendiente.
+        evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:223"]
+        # posible defecto: funcionalidad visible pero sin implementar.
+
+  - id: HPS-F044
+    area: Indicadores
+    nombre: Copiar al portapapeles los correos del indicador
+    descripcion: Botón para copiar los correos de los usuarios del indicador filtrado.
+    formulario: Indicadores
+    control: A PortaPapeles Filtrado
+    tipo: botón
+    roles: []
+    resultado: Se muestra «La copia de correos del nuevo listado está pendiente de conectar.»; no se copia nada.
+    tecnico:
+      formulario: Form_FormInicial09Indicadores
+      control: ComandoCopiaAPortaPapelesFiltrado
+      evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:134", "src/forms/Form_FormInicial09Indicadores.cls:439"]
+      prd: prd/formularios/Form_FormInicial09Indicadores.md
+    reglas:
+      - id: HPS-F044-R01
+        descripcion: El botón solo muestra el aviso de que la copia está pendiente.
+        evidencia: ["src/forms/Form_FormInicial09Indicadores.cls:442"]
+        # posible defecto: funcionalidad visible pero sin implementar; existe una copia de correos por indicador que ningún botón usa.
+
+  # ---------------------------------------------------------------------------
+  # Usuarios SICA
+  # ---------------------------------------------------------------------------
+  - id: HPS-F045
+    area: Usuarios SICA
+    nombre: Consultar y filtrar los usuarios SICA
+    descripcion: Muestra la lista de usuarios con acceso al sistema acreditado (SICA) y permite filtrarla por nombre.
+    formulario: Usuarios SICA
+    control: Nombre
+    tipo: lista
+    roles: []
+    resultado: La lista muestra los usuarios SICA cuyo nombre completo contiene el texto escrito.
+    tecnico:
+      formulario: Form_FormInicial07UsuariosSICA
+      control: Nombre / SubFormResultados
+      evidencia:
+        - "src/forms/Form_FormInicial07UsuariosSICA.cls:103"
+        - "src/forms/Form_FormInicial07UsuariosSICADatos.cls:27"
+      prd: prd/formularios/Form_FormInicial07UsuariosSICA.md
+    reglas:
+      - id: HPS-F045-R01
+        descripcion: La lista se lee de la copia local de usuarios SICA.
+        evidencia: ["src/forms/Form_FormInicial07UsuariosSICA.cls:124"]
+      - id: HPS-F045-R02
+        descripcion: El nombre se busca como texto contenido en «nombre apellido 1 apellido 2» y se aplica al salir del campo.
+        evidencia: ["src/forms/Form_FormInicial07UsuariosSICA.cls:122", "src/forms/Form_FormInicial07UsuariosSICA.cls:220"]
+      - id: HPS-F045-R03
+        descripcion: El icono de borrar campo quita el filtro de nombre.
+        evidencia: ["src/forms/Form_FormInicial07UsuariosSICA.cls:77"]
+      - id: HPS-F045-R04
+        descripcion: Al moverse por la lista, la fila queda como usuario SICA seleccionado.
+        evidencia: ["src/forms/Form_FormInicial07UsuariosSICADatos.cls:13"]
+
+  - id: HPS-F046
+    area: Usuarios SICA
+    nombre: Exportar la lista de usuarios SICA a Excel
+    descripcion: Genera un Excel con la lista de usuarios SICA filtrada y lo abre.
+    formulario: Usuarios SICA
+    control: icono de Excel
+    tipo: botón
+    roles: []
+    resultado: Se crea y abre el libro «ConsultaUsuario.xlsx» con la lista.
+    tecnico:
+      formulario: Form_FormInicial07UsuariosSICA
+      control: ComandoListaEnExcel
+      evidencia: ["src/forms/Form_FormInicial07UsuariosSICA.cls:137"]
+      prd: prd/formularios/Form_FormInicial07UsuariosSICA.md
+    reglas:
+      - id: HPS-F046-R01
+        descripcion: Aplica las mismas reglas de exportación que HPS-F023 (mismo fichero, error si el anterior sigue abierto).
+        evidencia: ["src/forms/Form_FormInicial07UsuariosSICA.cls:143", "src/modules/Funciones Generales.bas:426"]
+
+  - id: HPS-F047
+    area: Usuarios SICA
+    nombre: Abrir el detalle de un usuario SICA
+    descripcion: Abre el detalle del usuario SICA seleccionado para consultarlo o editarlo.
+    formulario: Usuarios SICA
+    control: Ver/Editar
+    tipo: botón
+    roles: []
+    resultado: Se abre «DETALLE USUARIO SICA («usuario»)».
+    tecnico:
+      formulario: Form_FormInicial07UsuariosSICA
+      control: ComandoEditarUsuarioSICA
+      evidencia: ["src/forms/Form_FormInicial07UsuariosSICA.cls:9"]
+      prd: prd/formularios/Form_FormInicial07UsuariosSICA.md
+    reglas:
+      - id: HPS-F047-R01
+        descripcion: Si no hay usuario SICA seleccionado, el error es «Se ha de seleccionar el usuario SICA primero».
+        evidencia: ["src/forms/Form_FormInicial07UsuariosSICA.cls:14"]
+      - id: HPS-F047-R02
+        descripcion: El botón está activo en ambos modos de trabajo.
+        evidencia: ["src/forms/Form_FormInicial07UsuariosSICA.cls:207"]
+
+  - id: HPS-F048
+    area: Usuarios SICA
+    nombre: Eliminar un usuario SICA
+    descripcion: Borra definitivamente el usuario SICA seleccionado y su anexo.
+    formulario: Usuarios SICA
+    control: Eliminar
+    tipo: botón
+    roles: []
+    resultado: El usuario SICA y su anexo desaparecen de la base, de la carpeta de anexos SICA y de la copia local.
+    tecnico:
+      formulario: Form_FormInicial07UsuariosSICA
+      control: ComandoEliminarUsuarioSICA
+      evidencia: ["src/forms/Form_FormInicial07UsuariosSICA.cls:34", "src/classes/UsuarioSICA.cls:857"]
+      prd: prd/formularios/Form_FormInicial07UsuariosSICA.md
+    reglas:
+      - id: HPS-F048-R01
+        descripcion: «Eliminar» solo está activo en modo escritura; si se invoca en solo lectura, el error es «El Sistema está en modo sólo lectura».
+        evidencia: ["src/forms/Form_FormInicial07UsuariosSICA.cls:200", "src/classes/UsuarioSICA.cls:566"]
+      - id: HPS-F048-R02
+        descripcion: Si no hay usuario SICA seleccionado, el error es «Se ha de seleccionar el usuario SICA primero».
+        evidencia: ["src/forms/Form_FormInicial07UsuariosSICA.cls:41"]
+      - id: HPS-F048-R03
+        descripcion: Se pide confirmación con «¿Desea eliminar definitivamente al usuario SICA seleccionado con todos sus Anexos asociados ?», con No por defecto.
+        evidencia: ["src/forms/Form_FormInicial07UsuariosSICA.cls:46"]
+      - id: HPS-F048-R04
+        descripcion: Si el anexo del usuario SICA está abierto, el error es «Tiene un anexo que está abierto o es de sólo lectura» y no se borra nada.
+        evidencia: ["src/classes/UsuarioSICA.cls:570"]
+      - id: HPS-F048-R05
+        descripcion: Se borra el fichero del anexo, su registro, el usuario SICA y su fila de la copia local.
+        evidencia: ["src/classes/UsuarioSICA.cls:875", "src/classes/AnexoUsuarioSICA.cls:302", "src/classes/UsuarioSICA.cls:881", "src/modules/Funciones Generales.bas:3141"]
+
+  - id: HPS-F049
+    area: Usuarios SICA
+    nombre: Dar de alta un usuario SICA
+    descripcion: >-
+      Registra un usuario con acceso a SICA, vinculado a un usuario HPS (tramitación interna) o con sus datos propios
+      (tramitación externa), con sus cuentas SICATDE y SICATSOL y, opcionalmente, un anexo.
+    formulario: ALTA DE USUARIO SICA
+    control: Grabar
+    tipo: botón
+    roles: []
+    resultado: El usuario SICA queda registrado con un código «SICA» más cuatro cifras y se muestra «Alta correcta».
+    tecnico:
+      formulario: Form_FormUsuario07SICAAlta
+      control: ComandoGrabar
+      evidencia:
+        - "src/forms/Form_FormInicial07UsuariosSICA.cls:162"
+        - "src/forms/Form_FormUsuario07SICAAlta.cls:102"
+        - "src/classes/UsuarioSICA.cls:773"
+      prd: prd/formularios/Form_FormUsuario07SICAAlta.md
+    reglas:
+      - id: HPS-F049-R01
+        descripcion: «Nuevo» en «Usuarios SICA» abre esta ventana y solo está activo en modo escritura; en solo lectura la ventana no deja editar ni grabar.
+        evidencia: ["src/forms/Form_FormInicial07UsuariosSICA.cls:200", "src/forms/Form_FormUsuario07SICAAlta.cls:153", "src/forms/Form_FormUsuario07SICAAlta.cls:166"]
+      - id: HPS-F049-R02
+        descripcion: Hasta elegir «Tramitación_Externa» los campos de datos están desactivados.
+        evidencia: ["src/forms/Form_FormUsuario07SICAAlta.form.txt:1011", "src/forms/Form_FormUsuario07SICAAlta.cls:248"]
+      - id: HPS-F049-R03
+        descripcion: Con tramitación externa se escriben a mano nombre, apellidos, correo y empresa tramitadora, y no se puede elegir usuario HPS.
+        evidencia: ["src/forms/Form_FormUsuario07SICAAlta.cls:280"]
+      - id: HPS-F049-R04
+        descripcion: Con tramitación interna se elige un usuario HPS y se copian de él nombre, apellidos, correo y empresa tramitadora, que quedan bloqueados.
+        evidencia: ["src/forms/Form_FormUsuario07SICAAlta.cls:306", "src/forms/Form_FormUsuario07SICAAlta.cls:473"]
+      - id: HPS-F049-R05
+        descripcion: En el alta no se puede elegir un usuario histórico; el campo «Usuario_HPS_Histórico» nunca se activa.
+        evidencia: ["src/forms/Form_FormUsuario07SICAAlta.cls:313", "src/forms/Form_FormUsuario07SICAAlta.cls:23"]
+      - id: HPS-F049-R06
+        descripcion: La tramitación externa es obligatoria («La TramitacionExterna es obligatoria»).
+        evidencia: ["src/classes/UsuarioSICA.cls:405"]
+      - id: HPS-F049-R07
+        descripcion: Con tramitación externa no se puede indicar usuario HPS ni histórico («Si la tramitación es externa no se puede usar un usuario HPS, ni histórico»).
+        evidencia: ["src/classes/UsuarioSICA.cls:409"]
+      - id: HPS-F049-R08
+        descripcion: Con tramitación interna se exige exactamente un usuario HPS o histórico («Si la tramitación es interna Se ha de indicar el usuario HPS o el histórico», «… Sólo uno»).
+        evidencia: ["src/classes/UsuarioSICA.cls:415", "src/classes/UsuarioSICA.cls:419"]
+      - id: HPS-F049-R09
+        descripcion: Son obligatorios el nombre («El Nombre es obligatorio») y el primer apellido («El Apellido_1 es obligatorio»).
+        evidencia: ["src/classes/UsuarioSICA.cls:425", "src/classes/UsuarioSICA.cls:429"]
+      - id: HPS-F049-R10
+        descripcion: Hay que indicar al menos una cuenta, SICATSOL o SICATDE («Uno de los dos usuario del sistema acreditado es obligatorio»).
+        evidencia: ["src/classes/UsuarioSICA.cls:434"]
+      - id: HPS-F049-R11
+        descripcion: Cada cuenta indicada exige su fecha de alta («Se ha de indicar la fecha de alta del usuario SICATSOL» o «… SICATDE»).
+        evidencia: ["src/classes/UsuarioSICA.cls:439", "src/classes/UsuarioSICA.cls:451"]
+      - id: HPS-F049-R12
+        descripcion: La fecha de baja de cada cuenta no puede ser anterior a su alta («La fecha de baja de SICATSOL no puede ser anterior al alta» o «… de SICATDE …»).
+        evidencia: ["src/classes/UsuarioSICA.cls:444", "src/classes/UsuarioSICA.cls:456"]
+      - id: HPS-F049-R13
+        descripcion: La empresa tramitadora es obligatoria («La empresa tramitadora es obligatoria»).
+        evidencia: ["src/classes/UsuarioSICA.cls:462"]
+      - id: HPS-F049-R14
+        descripcion: El correo debe contener «@» («Falta el Correo electrónico o no tiene la forma adecuada»).
+        evidencia: ["src/classes/UsuarioSICA.cls:476"]
+      - id: HPS-F049-R15
+        descripcion: En el alta no se comprueba si el correo ni las cuentas SICATSOL o SICATDE ya están usados por otro usuario.
+        evidencia: ["src/classes/UsuarioSICA.cls:480"]
+        # posible defecto: las comprobaciones de duplicados solo se aplican al editar.
+      - id: HPS-F049-R16
+        descripcion: El código se genera como «SICA» seguido del mayor número existente más uno, con cuatro cifras.
+        evidencia: ["src/classes/UsuarioSICA.cls:331", "src/classes/UsuarioSICA.cls:346"]
+      - id: HPS-F049-R17
+        descripcion: Se guardan las fechas de creación y de modificación con el momento del alta.
+        evidencia: ["src/classes/UsuarioSICA.cls:818"]
+      - id: HPS-F049-R18
+        descripcion: La ventana no se cierra tras el alta; volver a pulsar «Grabar» registra otro usuario SICA con otro código.
+        evidencia: ["src/forms/Form_FormUsuario07SICAAlta.cls:117", "src/forms/Form_FormUsuario07SICAAlta.cls:130"]
+        # posible defecto: un doble «Grabar» crea usuarios SICA duplicados.
+      - id: HPS-F049-R19
+        descripcion: Tras el alta se actualiza la copia local de usuarios SICA.
+        evidencia: ["src/forms/Form_FormUsuario07SICAAlta.cls:123", "src/modules/Funciones Generales.bas:3146"]
+
+  - id: HPS-F050
+    area: Usuarios SICA
+    nombre: Preparar el anexo en el alta de un usuario SICA
+    descripcion: En el alta, permite elegir un fichero como anexo del usuario SICA, verlo o quitarlo antes de grabar.
+    formulario: ALTA DE USUARIO SICA
+    control: Anexo | Eliminar | icono de anexo
+    tipo: botón
+    roles: []
+    resultado: El fichero elegido se adjunta al grabar el alta y se copia en la carpeta de anexos SICA.
+    tecnico:
+      formulario: Form_FormUsuario07SICAAlta
+      control: ComandoAnexar, ComandoEliminarAnexoActual, ImagenAnexo
+      evidencia:
+        - "src/forms/Form_FormUsuario07SICAAlta.cls:44"
+        - "src/forms/Form_FormUsuario07SICAAlta.cls:76"
+        - "src/forms/Form_FormUsuario07SICAAlta.cls:203"
+      prd: prd/formularios/Form_FormUsuario07SICAAlta.md
+    reglas:
+      - id: HPS-F050-R01
+        descripcion: «Anexo» se activa al elegir la tramitación; «Eliminar» solo olvida el fichero elegido, sin borrar nada.
+        evidencia: ["src/forms/Form_FormUsuario07SICAAlta.cls:278", "src/forms/Form_FormUsuario07SICAAlta.cls:84"]
+      - id: HPS-F050-R02
+        descripcion: Al grabar, si el fichero no existe el error es «El Anexo no es alcanzable» y si está abierto «El Anexo parece estar abierto».
+        evidencia: ["src/classes/UsuarioSICA.cls:369", "src/classes/UsuarioSICA.cls:374"]
+      - id: HPS-F050-R03
+        descripcion: El anexo se copia en la carpeta común de anexos SICA con el nombre original del fichero, sustituyendo cualquier fichero con ese nombre.
+        evidencia: ["src/classes/AnexoUsuarioSICA.cls:76", "src/classes/AnexoUsuarioSICA.cls:219", "src/classes/AnexoUsuarioSICA.cls:279"]
+        # posible defecto: dos usuarios SICA con anexos del mismo nombre se sobrescriben entre sí.
+      - id: HPS-F050-R04
+        descripcion: Si la carpeta de anexos SICA no es accesible, el error es «No se puede acceder al directorio de Anexos SICA».
+        evidencia: ["src/classes/AnexoUsuarioSICA.cls:275"]
+      - id: HPS-F050-R05
+        descripcion: Un usuario SICA solo puede tener un anexo («Ya existe un anexo para este usuario SICA»).
+        evidencia: ["src/classes/AnexoUsuarioSICA.cls:149"]
+      - id: HPS-F050-R06
+        descripcion: Pulsar el icono del anexo abre el fichero; si no existe, el error es «No es alcanzable en estos momentos el anexo seleccionado».
+        evidencia: ["src/forms/Form_FormUsuario07SICAAlta.cls:212"]
+
+  - id: HPS-F051
+    area: Usuarios SICA
+    nombre: Consultar el detalle de un usuario SICA
+    descripcion: Al abrir el detalle se cargan los datos del usuario SICA, su usuario HPS o histórico vinculado y su anexo.
+    formulario: DETALLE USUARIO SICA («usuario»)
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: La ventana muestra los datos guardados y, en modo escritura, deja editar los campos que corresponda.
+    tecnico:
+      formulario: Form_FormUsuario07SICAEdicion
+      control: Form_Load
+      evidencia: ["src/forms/Form_FormUsuario07SICAEdicion.cls:323", "src/forms/Form_FormUsuario07SICAEdicion.cls:377"]
+      prd: prd/formularios/Form_FormUsuario07SICAEdicion.md
+    reglas:
+      - id: HPS-F051-R01
+        descripcion: Si no hay usuario SICA seleccionado, el error es «No se ha abierto el formulario con los datos necesarios» y la ventana se cierra.
+        evidencia: ["src/forms/Form_FormUsuario07SICAEdicion.cls:337"]
+      - id: HPS-F051-R02
+        descripcion: En modo solo lectura no se puede editar ni grabar.
+        evidencia: ["src/forms/Form_FormUsuario07SICAEdicion.cls:331", "src/forms/Form_FormUsuario07SICAEdicion.cls:349"]
+      - id: HPS-F051-R03
+        descripcion: Con tramitación externa se editan nombre, apellidos y correo; con tramitación interna se eligen el usuario HPS o el histórico y esos datos se copian de él.
+        evidencia: ["src/forms/Form_FormUsuario07SICAEdicion.cls:540", "src/forms/Form_FormUsuario07SICAEdicion.cls:868"]
+      - id: HPS-F051-R04
+        descripcion: El usuario vinculado se muestra como «nombre apellido (código)».
+        evidencia: ["src/forms/Form_FormUsuario07SICAEdicion.cls:417"]
+        # posible defecto: se muestra el primer apellido dos veces y nunca el segundo.
+      - id: HPS-F051-R05
+        descripcion: El título de la ventana es «DETALLE USUARIO SICA» con el nombre completo entre paréntesis.
+        evidencia: ["src/forms/Form_FormUsuario07SICAEdicion.cls:533"]
+      - id: HPS-F051-R06
+        descripcion: Los campos marcados como intocables quedan siempre bloqueados aunque se esté en modo escritura.
+        evidencia: ["src/forms/Form_FormUsuario07SICAEdicion.cls:573"]
