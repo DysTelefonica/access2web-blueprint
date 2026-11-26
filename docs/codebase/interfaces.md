@@ -56,6 +56,7 @@ El composition root en `app/src/main.py` monta los routers de Lanzadera con los 
 | `POST` | `/admin/apps/{app_id}/activate` | `admin_routes_misc.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/app_activated.html` | Activación. |
 | `POST` | `/admin/assignments` | `admin_routes_misc.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/assignment_created.html` | Crea asignación (201). |
 | `GET` | `/admin/audit` | `admin_routes_misc.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/audit.html` | Eventos de auditoría. |
+| `GET` | `/admin/guia-it-citrix-linux` | `guia_it_routes.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/guia_it.html` | Guía de preparación Citrix y Linux para IT; solo administración global (`require_global_admin`), `Cache-Control: no-store`. |
 | `GET` | `/admin/users` | `admin_routes_users.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/users.html` | Listado. |
 | `POST` | `/admin/users` | `admin_routes_users.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/user_created.html` | Alta (201). |
 | `PATCH` | `/admin/users/{user_id}/disable` | `admin_routes_users.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/user_disabled.html` | Desactivación. |
@@ -87,6 +88,7 @@ Jinja2 vive bajo `app/src/modules/lanzadera/delivery/http/templates/`. El compos
 | `app/src/modules/lanzadera/delivery/http/templates/admin/app_activated.html` | POST `/admin/apps/{app_id}/activate` | Confirmación parcial. |
 | `app/src/modules/lanzadera/delivery/http/templates/admin/assignment_created.html` | POST `/admin/assignments` | Confirmación parcial. |
 | `app/src/modules/lanzadera/delivery/http/templates/admin/audit.html` | GET `/admin/audit` | Tabla de eventos. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/guia_it.html` | GET `/admin/guia-it-citrix-linux` | Guía IT; incluye `_guia_it_styles.html` (tokens de `design/system.md`) y `_guia_it_script.html` (escenarios, lista guardada en el navegador y exportación JSON). |
 
 Si añade una plantilla nueva, declárela en la tabla de arriba y mantenga el tono castellano peninsular formal con usted (ver `skills/documentation-alan-style/SKILL.md`).
 
