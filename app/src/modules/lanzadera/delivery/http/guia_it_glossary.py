@@ -10,12 +10,12 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 _HERE = Path(__file__).parent
 
 
-def load_json(name: str) -> object:
+def load_json(name: str) -> Any:
     """Read one of the guide's JSON data files, kept next to this module."""
     return json.loads((_HERE / name).read_text(encoding="utf-8"))
 
