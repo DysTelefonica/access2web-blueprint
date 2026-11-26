@@ -27,6 +27,9 @@ from app.src.modules.lanzadera.delivery.http.admin_routes_misc import (
 from app.src.modules.lanzadera.delivery.http.admin_routes_users import (
     register_user_routes,
 )
+from app.src.modules.lanzadera.delivery.http.guia_it_routes import (
+    register_guia_it_routes,
+)
 from app.src.modules.lanzadera.di.container import LanzaderaContainer
 
 
@@ -43,6 +46,7 @@ def register_routes(
     """
     register_user_routes(router, templates=templates, container=container)
     register_misc_routes(router, templates=templates, container=container)
+    register_guia_it_routes(router, templates=templates)
 
 
 __all__ = ["register_routes"]

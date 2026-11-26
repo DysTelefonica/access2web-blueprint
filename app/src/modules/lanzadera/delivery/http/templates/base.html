@@ -22,6 +22,7 @@
       .mds-tag--active { background: #d4f4dd; }
       .mds-tag--disabled { background: #f4d4d4; }
     </style>
+    {% block head %}{% endblock %}
   </head>
   <body>
     <header>
@@ -31,6 +32,7 @@
         <a class="mds-button mds-button--secondary" href="/admin/apps">Aplicaciones</a>
         <a class="mds-button mds-button--secondary" href="/admin/assignments">Asignaciones</a>
         <a class="mds-button mds-button--secondary" href="/admin/audit">Auditoría</a>
+        <a class="mds-button mds-button--secondary" href="/admin/guia-it-citrix-linux">Guía IT</a>
       </nav>
     </header>
     <main>{% block content %}{% endblock %}</main>
