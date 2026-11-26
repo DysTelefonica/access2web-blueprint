@@ -109,7 +109,7 @@ Antes de aplicar cualquiera de estas propuestas se avisa a Automatización. Qué
 - COR-C1 ([#1741](https://github.com/DysTelefonica/access2web-blueprint/issues/1741)): bloque A.
 - NOC-N4 ([No_conformidades#189](https://github.com/DysTelefonica/No_conformidades/issues/189)) y GRI-R6 ([GESTION_RIESGOS#343](https://github.com/DysTelefonica/GESTION_RIESGOS/issues/343)): si se recrean las tablas, mismos nombres de tabla y de columna.
 - GRI-R5 ([GESTION_RIESGOS#341](https://github.com/DysTelefonica/GESTION_RIESGOS/issues/341)): `TbExpedientes1` sigue existiendo en `Gestion_Riesgos_Datos`.
-- EXP-E8 ([Expedientes#289](https://github.com/DysTelefonica/Expedientes/issues/289)): `OrdinalE2E` no pasa a identidad hasta que Automatización cambie sus PS1.
+- EXP-E8 ([Expedientes#289](https://github.com/DysTelefonica/Expedientes/issues/289)): no incluye `OrdinalE2E`. Son dos ordinales globales, no identificadores de fila: `TbExpedientes.OrdinalE2E` se asigna al enlazar y `TbE2ECola.OrdinalE2E` es el número de envío; las dos tablas ya tienen su autonumérico ([respuesta de Expedientes](https://github.com/DysTelefonica/Expedientes/issues/289#issuecomment-7192427256)). En Access sigue siendo `Long` con índice UNIQUE y los generadores reintentan ante el error 3022 en vez de saltar la fila; en PostgreSQL se asigna con una secuencia.
 - BFA-S3 ([#1754](https://github.com/DysTelefonica/access2web-blueprint/issues/1754)): el cambio de Automatización, fusionado antes.
 - [Expedientes#294](https://github.com/DysTelefonica/Expedientes/issues/294): solo los objetos vínculo de `Expedientes_datos`, nunca las tablas físicas de `AGEDYS_DATOS`.
 

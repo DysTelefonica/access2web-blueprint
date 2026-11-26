@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sistema de diseño</title>
+<style>
+:root{--color-brand:#0066CC;--color-brand-dark:#003D7A;--color-text-primary:#1A1A1A;--color-text-secondary:#5C5C5C;--color-background:#FFFFFF;--color-surface:#F5F7FA;--color-surface-strong:#E8EEF5;--color-border:#D4DBE3;--color-success:#2E7D32;--color-warning:#ED6C02;--color-danger:#C62828;--color-info:#0277BD;--color-violet:#6A1B9A;--color-grey:#757575;--radius-card:12px;--radius-chip:24px;--radius-input:8px;--shadow-card:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--space-7:48px}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--color-text-primary);background:var(--color-surface);line-height:1.55}
+main{max-width:1180px;margin:0 auto;padding:var(--space-7) var(--space-5)}
+.hero{background:linear-gradient(135deg,var(--color-brand),var(--color-brand-dark));color:#fff;border-radius:var(--radius-card);padding:var(--space-6);margin-bottom:var(--space-5);box-shadow:var(--shadow-card)}
+.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:600;opacity:.85}
+.hero h1{font-size:30px;margin:var(--space-3) 0;line-height:1.2}
+section{background:#fff;border:1px solid var(--color-border);border-radius:var(--radius-card);padding:var(--space-6);margin-bottom:var(--space-5);box-shadow:var(--shadow-card)}
+h2{font-size:18px;color:var(--color-brand-dark);margin:0 0 var(--space-4)}
+.sw{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--space-3)}
+.sw div{border:1px solid var(--color-border);border-radius:8px;overflow:hidden;font-size:12px}
+.sw i{display:block;height:56px}.sw span{display:block;padding:6px 8px}
+.pill{display:inline-block;padding:3px 10px;border-radius:var(--radius-chip);font-size:12px;font-weight:700;margin-right:8px}
+.g{background:#E8F5E9;color:var(--color-success)}.a{background:#FFF3E0;color:var(--color-warning)}.r{background:#FFEBEE;color:var(--color-danger)}.n{background:var(--color-surface-strong);color:var(--color-text-secondary)}.v{background:#F3E5F5;color:var(--color-violet)}
+.callout{border-left:4px solid var(--color-info);background:#E3F2FD;padding:var(--space-3) var(--space-4);border-radius:6px;font-size:14px;margin:var(--space-3) 0}
+.callout.warn{border-color:var(--color-warning);background:#FFF8E1}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--color-border)}th{background:var(--color-surface);color:var(--color-brand-dark);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.sp{display:flex;align-items:flex-end;gap:16px;font-size:12px}.sp b{display:block;background:var(--color-brand);height:16px}
+</style>
+</head>
+<body>
+<main>
+<header class="hero"><div class="eyebrow">docs/uat/assets/style-base.css</div><h1>Sistema de diseño del proyecto</h1><p>Propiedades base de los informes de planificación y estado.</p></header>
+<section aria-labelledby="c"><h2 id="c">Colores</h2><div class="sw">
+<div><i style="background:#0066CC"></i><span>brand #0066CC</span></div><div><i style="background:#003D7A"></i><span>brand-dark #003D7A</span></div><div><i style="background:#1A1A1A"></i><span>text-primary #1A1A1A</span></div><div><i style="background:#5C5C5C"></i><span>text-secondary #5C5C5C</span></div><div><i style="background:#F5F7FA"></i><span>surface #F5F7FA</span></div><div><i style="background:#E8EEF5"></i><span>surface-strong #E8EEF5</span></div><div><i style="background:#D4DBE3"></i><span>border #D4DBE3</span></div><div><i style="background:#2E7D32"></i><span>success #2E7D32</span></div><div><i style="background:#ED6C02"></i><span>warning #ED6C02</span></div><div><i style="background:#C62828"></i><span>danger #C62828</span></div><div><i style="background:#0277BD"></i><span>info #0277BD</span></div><div><i style="background:#6A1B9A"></i><span>violet #6A1B9A</span></div><div><i style="background:#757575"></i><span>grey #757575</span></div>
+</div></section>
+<section aria-labelledby="t"><h2 id="t">Tipografía</h2><p style="font-size:30px;font-weight:700;margin:0">Título 30px</p><p style="font-size:18px;font-weight:700;color:#003D7A;margin:8px 0">Encabezado de tarjeta 18px</p><p style="font-size:16px;margin:0">Texto principal 16px con interlineado 1,55.</p><p style="font-size:13px;color:#5C5C5C">Texto de tabla y metadatos 13px.</p></section>
+<section aria-labelledby="s"><h2 id="s">Espaciado</h2><div class="sp"><div><b style="width:4px"></b>4</div><div><b style="width:8px"></b>8</div><div><b style="width:12px"></b>12</div><div><b style="width:16px"></b>16</div><div><b style="width:24px"></b>24</div><div><b style="width:32px"></b>32</div><div><b style="width:48px"></b>48</div></div></section>
+<section aria-labelledby="k"><h2 id="k">Componentes</h2><p><span class="pill g">Hecha</span><span class="pill a">En curso</span><span class="pill r">Bloqueada</span><span class="pill n">Pendiente</span><span class="pill v">Revisada</span></p><div class="callout"><strong>Aviso informativo.</strong> Borde de 4px en color de información.</div><div class="callout warn"><strong>Aviso de atención.</strong> Variante de advertencia.</div><table><thead><tr><th>Columna</th><th>Valor</th></tr></thead><tbody><tr><td>Fila</td><td>13px</td></tr></tbody></table></section>
+</main>
+</body>
+</html>

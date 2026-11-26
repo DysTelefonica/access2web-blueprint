@@ -1,0 +1,14 @@
+{
+  "title": "Guía IT · Citrix y Linux",
+  "brief": "Guía autónoma para preparar el ensayo aislado y documentar el traspaso a IT.",
+  "feature": "odd/tasks/guia-it-citrix-linux.md",
+  "artboards": [
+    {
+      "file": "01-guia.html",
+      "title": "Guía de preparación y traspaso",
+      "tradeoff": "Una guía operativa extensa, con escenarios comparables e impresión completa.",
+      "width": 1440,
+      "height": 900
+    }
+  ]
+}
