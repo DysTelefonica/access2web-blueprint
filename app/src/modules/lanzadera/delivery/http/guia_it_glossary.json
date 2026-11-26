@@ -1,0 +1,237 @@
+[
+  {
+    "key": "acl",
+    "term": "ACL",
+    "definition": "Lista de permisos de una carpeta o archivo: quién puede leer, quién escribir y quién no tiene acceso."
+  },
+  {
+    "key": "accde",
+    "term": "ACCDB y ACCDE",
+    "definition": "Formatos de archivo de Access. ACCDB es editable; ACCDE es la versión compilada que se entrega a los usuarios, sin código modificable. Un ACCDE solo abre en un Access de su misma bitness."
+  },
+  {
+    "key": "runtime",
+    "term": "Access Runtime",
+    "definition": "Versión gratuita de Access que ejecuta aplicaciones pero no permite editarlas; evita instalar Office completo en el servidor."
+  },
+  {
+    "key": "ad",
+    "term": "Active Directory (AD)",
+    "definition": "Directorio corporativo de usuarios, grupos y equipos. Da el inicio de sesión y los permisos de red."
+  },
+  {
+    "key": "anexos",
+    "term": "ANEXOS",
+    "definition": "Carpeta de cada aplicación con los documentos adjuntos guardados como archivos."
+  },
+  {
+    "key": "ini",
+    "term": "Archivo .ini de versión",
+    "definition": "Archivo de texto junto al front publicado que indica su versión. La Lanzadera lo compara con la versión de la copia local del usuario para decidir si copia el front nuevo."
+  },
+  {
+    "key": "backend",
+    "term": "Backend",
+    "definition": "Archivo Access que guarda las tablas con los datos; lo comparten todos los usuarios de la aplicación."
+  },
+  {
+    "key": "bitness",
+    "term": "Bitness (x86 / x64)",
+    "definition": "Si un programa es de 32 bits (x86) o de 64 bits (x64). Access u Office, los ACCDE y el controlador ODBC tienen que ser de la misma: un Access de 32 bits solo ve controladores ODBC de 32 bits, y un ACCDE compilado en 32 bits no abre en un Access de 64 bits (ni al revés). Se consulta en Access, en Archivo › Cuenta › Acerca de Access."
+  },
+  {
+    "key": "ca",
+    "term": "CA y certificado",
+    "definition": "Un certificado acredita la identidad de un servidor; la CA (autoridad de certificación) es quien lo firma. La validación falla si el nombre del servidor o la hora del equipo no cuadran."
+  },
+  {
+    "key": "cabeceras",
+    "term": "Cabeceras reenviadas",
+    "definition": "Datos que el proxy añade a cada petición (IP original, protocolo). La aplicación solo debe creerlas si vienen del proxy real; si no, cualquiera podría falsearlas."
+  },
+  {
+    "key": "citrix",
+    "term": "Citrix",
+    "definition": "Plataforma que ejecuta las aplicaciones en servidores centrales y muestra la pantalla al usuario. El puesto solo necesita el cliente Citrix."
+  },
+  {
+    "key": "upm",
+    "term": "Citrix UPM y FSLogix",
+    "definition": "Dos formas de conservar los perfiles de usuario en Citrix. UPM copia las carpetas del perfil al entrar y al salir; FSLogix monta el perfil completo desde un disco virtual. Se elige una de las dos."
+  },
+  {
+    "key": "coexistencia",
+    "term": "Coexistencia",
+    "definition": "Periodo en que conviven la Lanzadera Access y la web sobre los mismos datos. Cada aplicación está en un solo lado a la vez."
+  },
+  {
+    "key": "docker",
+    "term": "Contenedor, Docker y docker-compose",
+    "definition": "Un contenedor empaqueta una aplicación con todo lo que necesita para ejecutarse. docker-compose arranca varios contenedores juntos; el del repositorio es solo para desarrollo, no para producción."
+  },
+  {
+    "key": "offline",
+    "term": "Copia fuera de línea",
+    "definition": "Copia guardada en otra máquina, sin acceso desde el servidor original, para que sobreviva a un borrado o a un ataque."
+  },
+  {
+    "key": "d93",
+    "term": "D93",
+    "definition": "Decisión de arquitectura: cada aplicación tiene en PostgreSQL un esquema <app>_legacy con las tablas compartidas con Access y otro <app> con lo que añade la web."
+  },
+  {
+    "key": "dns",
+    "term": "DNS",
+    "definition": "Servicio que traduce nombres de servidor a direcciones IP. Los certificados se validan contra el nombre, no contra la IP."
+  },
+  {
+    "key": "esquema",
+    "term": "Esquema",
+    "definition": "Agrupación de tablas dentro de una base de datos PostgreSQL, parecida a una carpeta."
+  },
+  {
+    "key": "front",
+    "term": "Front",
+    "definition": "Parte de una aplicación Access que ve el usuario: formularios e informes. Cada usuario ejecuta su propia copia."
+  },
+  {
+    "key": "hipotesis",
+    "term": "H-3 y H-4",
+    "definition": "Hipótesis pendientes de ensayo. H-3: la copia del front por usuario funciona en Citrix. H-4: cómo accede la web a los ANEXOS."
+  },
+  {
+    "key": "https",
+    "term": "HTTPS (puerto 443)",
+    "definition": "Acceso web cifrado con TLS."
+  },
+  {
+    "key": "digest",
+    "term": "Imagen fijada por digest",
+    "definition": "La imagen es el paquete de un contenedor; el digest es su huella única (sha256:…). Fijarlo garantiza desplegar exactamente lo revisado."
+  },
+  {
+    "key": "json",
+    "term": "JSON de traspaso",
+    "definition": "Archivo de texto con las marcas y notas de la lista de entrega, para llevarlas a otro equipo o adjuntarlas a la incidencia."
+  },
+  {
+    "key": "lanzadera",
+    "term": "Lanzadera",
+    "definition": "Aplicación de entrada que muestra a cada usuario las aplicaciones a las que tiene permiso. La de Access abre aplicaciones Access; la web, solo aplicaciones web."
+  },
+  {
+    "key": "migraciones",
+    "term": "Migraciones",
+    "definition": "Scripts versionados que crean o cambian las tablas de la base de datos, aplicados en orden."
+  },
+  {
+    "key": "odbc",
+    "term": "ODBC",
+    "definition": "Estándar de Windows para que un programa, aquí Access, se conecte a una base de datos externa mediante un controlador."
+  },
+  {
+    "key": "openshift",
+    "term": "OpenShift",
+    "definition": "Plataforma corporativa de contenedores a la que se prevé llevar la web al terminar la convivencia."
+  },
+  {
+    "key": "appdata",
+    "term": "%APPDATA%",
+    "definition": "Carpeta del perfil del usuario (Roaming) que viaja con el perfil. La Lanzadera guarda aquí la copia del front y su versión."
+  },
+  {
+    "key": "temp",
+    "term": "%TEMP% y %LOCALAPPDATA%",
+    "definition": "Carpetas locales de la máquina: normalmente no viajan con el perfil y pueden vaciarse al cerrar sesión. Por eso no sirven para la copia de la Lanzadera."
+  },
+  {
+    "key": "perfil",
+    "term": "Perfil persistente",
+    "definition": "Carpeta con la configuración y los archivos de cada usuario que se guarda al cerrar sesión y se recupera al entrar, en cualquier VDA."
+  },
+  {
+    "key": "pitr",
+    "term": "PITR",
+    "definition": "Recuperación de la base de datos a un instante concreto, combinando una copia con el registro de cambios de PostgreSQL."
+  },
+  {
+    "key": "postgresql",
+    "term": "PostgreSQL",
+    "definition": "Base de datos que sustituirá a los backends Access; la usarán a la vez Access, mediante ODBC, y la web."
+  },
+  {
+    "key": "preproduccion",
+    "term": "Preproducción o ensayo",
+    "definition": "Entorno con copias de producción para probar sin riesgo; nunca toca datos reales."
+  },
+  {
+    "key": "macros",
+    "term": "Protección de macros",
+    "definition": "Seguridad de Office que bloquea código VBA de origen no confiable. Se autorizan rutas concretas (ubicaciones de confianza) en lugar de desactivarla."
+  },
+  {
+    "key": "proxy",
+    "term": "Proxy inverso",
+    "definition": "Servidor web situado delante de la aplicación: recibe el HTTPS y reenvía las peticiones al puerto interno, de modo que la aplicación no queda expuesta."
+  },
+  {
+    "key": "psqlodbc",
+    "term": "psqlODBC",
+    "definition": "Controlador ODBC oficial de PostgreSQL. Se usa la variante Unicode, que trata bien acentos y eñes, y de la misma bitness que Access."
+  },
+  {
+    "key": "puerto",
+    "term": "Puerto TCP",
+    "definition": "Número que identifica un servicio en una máquina: 443 web, 5432 PostgreSQL, 445 carpetas compartidas. Abrirlo solo a orígenes concretos limita quién puede conectarse."
+  },
+  {
+    "key": "rpo",
+    "term": "RPO y RTO",
+    "definition": "RPO: cuántos datos se pueden perder como máximo (por ejemplo, la última hora). RTO: cuánto puede tardar la recuperación."
+  },
+  {
+    "key": "smb",
+    "term": "SMB (puerto 445)",
+    "definition": "Protocolo de Windows para carpetas compartidas en red, como \\\\datoste\\APLICACIONES_DYS."
+  },
+  {
+    "key": "health",
+    "term": "Sonda de salud (/health)",
+    "definition": "Dirección que responde si la aplicación está en marcha. No prueba que los datos ni las conexiones funcionen."
+  },
+  {
+    "key": "tls",
+    "term": "TLS",
+    "definition": "Cifrado de las conexiones de red; impide leer o alterar el tráfico."
+  },
+  {
+    "key": "traslado",
+    "term": "Traslado único",
+    "definition": "Paso de todos los datos de Access a PostgreSQL de una sola vez en producción. Es irreversible."
+  },
+  {
+    "key": "uvicorn",
+    "term": "Uvicorn (puerto 8000)",
+    "definition": "Servidor que ejecuta la aplicación web Python dentro del contenedor. Ese puerto solo debe ser accesible desde el proxy."
+  },
+  {
+    "key": "variables",
+    "term": "Variables de entorno y secretos",
+    "definition": "Configuración que recibe la aplicación al arrancar. Los secretos (contraseñas, claves) llegan desde un almacén aprobado y nunca se escriben en documentos ni registros."
+  },
+  {
+    "key": "verify-full",
+    "term": "verify-full",
+    "definition": "Modo de conexión de PostgreSQL que cifra con TLS y además comprueba que el certificado lo firma una CA de confianza y corresponde al nombre del servidor. Evita suplantaciones."
+  },
+  {
+    "key": "vda",
+    "term": "VDA",
+    "definition": "Máquina Windows donde Citrix ejecuta las sesiones. Hay varias, y un usuario puede entrar cada día en una distinta."
+  },
+  {
+    "key": "multisesion",
+    "term": "Windows multisesión (RDS)",
+    "definition": "Windows Server configurado para que varios usuarios trabajen a la vez en la misma máquina."
+  }
+]
