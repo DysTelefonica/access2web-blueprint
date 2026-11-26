@@ -12,7 +12,12 @@ import json
 from pathlib import Path
 from typing import NamedTuple
 
-_SOURCE = Path(__file__).with_name("guia_it_glossary.json")
+_HERE = Path(__file__).parent
+
+
+def load_json(name: str) -> object:
+    """Read one of the guide's JSON data files, kept next to this module."""
+    return json.loads((_HERE / name).read_text(encoding="utf-8"))
 
 
 class Term(NamedTuple):
@@ -21,14 +26,13 @@ class Term(NamedTuple):
     definition: str
 
 
-def load_glossary(source: Path = _SOURCE) -> tuple[Term, ...]:
+def load_glossary() -> tuple[Term, ...]:
     """Read the glossary terms, in document order."""
-    entries = json.loads(source.read_text(encoding="utf-8"))
-    return tuple(Term(**entry) for entry in entries)
+    return tuple(Term(**entry) for entry in load_json("guia_it_glossary.json"))
 
 
 GLOSSARY: tuple[Term, ...] = load_glossary()
 
 GLOSSARY_TERMS: dict[str, str] = {entry.key: entry.term for entry in GLOSSARY}
 
-__all__ = ["GLOSSARY", "GLOSSARY_TERMS", "Term", "load_glossary"]
+__all__ = ["GLOSSARY", "GLOSSARY_TERMS", "Term", "load_glossary", "load_json"]
