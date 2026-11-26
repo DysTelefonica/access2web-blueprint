@@ -1,104 +1,16 @@
 {
   "scenarios": [
-    {
-      "key": "actual",
-      "label": "Actual",
-      "title": "01 · Producción actual",
-      "summary": "La Lanzadera Access abre únicamente aplicaciones Access. Backends por aplicación, ANEXOS y recursos (.accde, .ini, iconos) residen en \\\\datoste\\APLICACIONES_DYS\\Aplicaciones PpD\\. El ensayo no modifica esta ruta ni sus datos.",
-      "tag": "Sin cambios",
-      "terms": [
-        "lanzadera",
-        "backend",
-        "anexos",
-        "accde",
-        "ini"
-      ]
-    },
-    {
-      "key": "ensayo",
-      "label": "Ensayo aislado",
-      "title": "02 · Ensayo aislado",
-      "summary": "Citrix Windows publica la Lanzadera Access y un navegador; una máquina Linux de la misma red aloja la web y PostgreSQL de ensayo. URL, recursos SMB, bases, almacenamiento y cuentas son de preproducción y distintos de los reales. Las copias llegan por el procedimiento aprobado y no se conectan a producción.",
-      "tag": "Preparar hoy",
-      "terms": [
-        "citrix",
-        "postgresql",
-        "smb",
-        "preproduccion"
-      ]
-    },
-    {
-      "key": "futuro",
-      "label": "Coexistencia futura",
-      "title": "03 · Coexistencia propuesta, tras aprobación",
-      "summary": "Access abre solo las aplicaciones legacy y el navegador publicado solo las web; ambas trabajan sobre los mismos datos en PostgreSQL, sin sincronizar copias. Secuencia: saneamiento del legacy, ensayo de todos los backends, traslado único y autorizado de todos los datos, y después cambio de interfaz por aplicación. Volver a habilitar un botón de Access no revierte el traslado de datos, que es irreversible. Al terminar la convivencia, la web se prevé en OpenShift.",
-      "tag": "Propuesta",
-      "terms": [
-        "coexistencia",
-        "postgresql",
-        "traslado",
-        "openshift"
-      ]
-    }
+    {"key": "actual", "label": "Actual", "title": "01 · Producción actual", "summary": "La Lanzadera Access abre únicamente aplicaciones Access. Backends por aplicación, ANEXOS y recursos (.accde, .ini, iconos) residen en \\\\datoste\\APLICACIONES_DYS\\Aplicaciones PpD\\. El ensayo no modifica esta ruta ni sus datos.", "tag": "Sin cambios", "terms": ["lanzadera", "backend", "anexos", "accde", "ini"]},
+    {"key": "ensayo", "label": "Ensayo aislado", "title": "02 · Ensayo aislado", "summary": "Citrix Windows publica la Lanzadera Access y un navegador; una máquina Linux de la misma red aloja la web y PostgreSQL de ensayo. URL, recursos SMB, bases, almacenamiento y cuentas son de preproducción y distintos de los reales. Las copias llegan por el procedimiento aprobado y no se conectan a producción.", "tag": "Preparar hoy", "terms": ["citrix", "postgresql", "smb", "preproduccion"]},
+    {"key": "futuro", "label": "Coexistencia futura", "title": "03 · Coexistencia propuesta, tras aprobación", "summary": "Access abre solo las aplicaciones legacy y el navegador publicado solo las web; ambas trabajan sobre los mismos datos en PostgreSQL, sin sincronizar copias. Secuencia: saneamiento del legacy, ensayo de todos los backends, traslado único y autorizado de todos los datos, y después cambio de interfaz por aplicación. Volver a habilitar un botón de Access no revierte el traslado de datos, que es irreversible. Al terminar la convivencia, la web se prevé en OpenShift.", "tag": "Propuesta", "terms": ["coexistencia", "postgresql", "traslado", "openshift"]}
   ],
   "flows": [
-    {
-      "route": "Cliente Citrix → pasarela corporativa",
-      "transport": "Según IT",
-      "condition": "Publicación y acceso corporativo autorizados.",
-      "terms": [
-        "citrix"
-      ]
-    },
-    {
-      "route": "Windows → recurso de ficheros",
-      "transport": "SMB 445",
-      "condition": "Solo rutas y cuentas aprobadas; ACL por aplicación.",
-      "terms": [
-        "smb",
-        "acl"
-      ]
-    },
-    {
-      "route": "Windows ODBC → PostgreSQL",
-      "transport": "TCP 5432",
-      "condition": "Solo hosts Windows autorizados; TLS verify-full con CA y nombre DNS correctos.",
-      "terms": [
-        "odbc",
-        "puerto",
-        "tls",
-        "verify-full",
-        "ca",
-        "dns"
-      ]
-    },
-    {
-      "route": "Navegador publicado → proxy web",
-      "transport": "HTTPS 443",
-      "condition": "Certificado válido y URL del entorno correcto.",
-      "terms": [
-        "proxy",
-        "https"
-      ]
-    },
-    {
-      "route": "Proxy → aplicación",
-      "transport": "Puerto interno (8000 en app/Dockerfile)",
-      "condition": "No publicar 8000; el proxy es el único origen de cabeceras reenviadas confiables.",
-      "terms": [
-        "uvicorn",
-        "cabeceras"
-      ]
-    },
-    {
-      "route": "Aplicación → PostgreSQL",
-      "transport": "TCP 5432 interno",
-      "condition": "Solo el servicio autorizado, con conexión protegida según política.",
-      "terms": [
-        "postgresql",
-        "puerto"
-      ]
-    }
+    {"route": "Cliente Citrix → pasarela corporativa", "transport": "Según IT", "condition": "Publicación y acceso corporativo autorizados.", "terms": ["citrix"]},
+    {"route": "Windows → recurso de ficheros", "transport": "SMB 445", "condition": "Solo rutas y cuentas aprobadas; ACL por aplicación.", "terms": ["smb", "acl"]},
+    {"route": "Windows ODBC → PostgreSQL", "transport": "TCP 5432", "condition": "Solo hosts Windows autorizados; TLS verify-full con CA y nombre DNS correctos.", "terms": ["odbc", "puerto", "tls", "verify-full", "ca", "dns"]},
+    {"route": "Navegador publicado → proxy web", "transport": "HTTPS 443", "condition": "Certificado válido y URL del entorno correcto.", "terms": ["proxy", "https"]},
+    {"route": "Proxy → aplicación", "transport": "Puerto interno (8000 en app/Dockerfile)", "condition": "No publicar 8000; el proxy es el único origen de cabeceras reenviadas confiables.", "terms": ["uvicorn", "cabeceras"]},
+    {"route": "Aplicación → PostgreSQL", "transport": "TCP 5432 interno", "condition": "Solo el servicio autorizado, con conexión protegida según política.", "terms": ["postgresql", "puerto"]}
   ],
   "profile_tests": [
     "Dos usuarios distintos no comparten carpeta ni versión.",
@@ -109,46 +21,17 @@
     "Caída de red durante la copia: sin escrituras obsoletas ni sobrescritura parcial."
   ],
   "checks": [
-    {
-      "key": "aislamiento",
-      "label": "Entornos, cuentas y almacenamiento separados y comprobados"
-    },
-    {
-      "key": "red",
-      "label": "Red, DNS, certificados, hora y licencias comprobados"
-    },
-    {
-      "key": "perfil",
-      "label": "Perfil persistente y pruebas multisesión documentadas"
-    },
-    {
-      "key": "anexos",
-      "label": "Acceso y ACL de ANEXOS ensayados, o H-4 registrada como pendiente"
-    },
-    {
-      "key": "recuperacion",
-      "label": "Copias, RPO/RTO y restauración acordados y ensayados"
-    },
-    {
-      "key": "artefacto",
-      "label": "Entregables de desarrollo recibidos y revisados"
-    },
-    {
-      "key": "ensayo",
-      "label": "Ensayo completo y resultados registrados, sin alterar producción"
-    }
+    {"key": "aislamiento", "label": "Entornos, cuentas y almacenamiento separados y comprobados"},
+    {"key": "red", "label": "Red, DNS, certificados, hora y licencias comprobados"},
+    {"key": "perfil", "label": "Perfil persistente y pruebas multisesión documentadas"},
+    {"key": "anexos", "label": "Acceso y ACL de ANEXOS ensayados, o H-4 registrada como pendiente"},
+    {"key": "recuperacion", "label": "Copias, RPO/RTO y restauración acordados y ensayados"},
+    {"key": "artefacto", "label": "Entregables de desarrollo recibidos y revisados"},
+    {"key": "ensayo", "label": "Ensayo completo y resultados registrados, sin alterar producción"}
   ],
   "commands": [
-    {
-      "key": "dns",
-      "label": "Copiar ejemplo DNS",
-      "text": "nslookup <nombre-dns-del-entorno>"
-    },
-    {
-      "key": "tcp",
-      "label": "Copiar ejemplo PowerShell",
-      "text": "Test-NetConnection <servidor-postgresql-del-entorno> -Port 5432"
-    }
+    {"key": "dns", "label": "Copiar ejemplo DNS", "text": "nslookup <nombre-dns-del-entorno>"},
+    {"key": "tcp", "label": "Copiar ejemplo PowerShell", "text": "Test-NetConnection <servidor-postgresql-del-entorno> -Port 5432"}
   ],
   "sources": [
     "docs/07-migracion/epica-coexistencia-postgresql.md: decisiones 10, 18-20 y 28; H-3 y H-4.",
