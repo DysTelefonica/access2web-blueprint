@@ -1,0 +1,67 @@
+<script>
+(() => {
+  const root = document.querySelector('.guia-it');
+  if (!root) return;
+  const checks = [...root.querySelectorAll('[data-check]')];
+  const host = root.querySelector('#guia-host');
+  const notes = root.querySelector('#guia-notes');
+  const progress = root.querySelector('#guia-progress');
+  const feedback = root.querySelector('#guia-feedback');
+  const key = 'lanzadera-admin-guia-it-v1';
+  const state = () => ({
+    checks: Object.fromEntries(checks.map(item => [item.value, item.checked])),
+    host: host.value,
+    notes: notes.value,
+  });
+  const update = () => {
+    progress.textContent = `${checks.filter(item => item.checked).length} de ${checks.length} puntos marcados · preparado ≠ validado`;
+  };
+  let storageAvailable = true;
+  try {
+    const saved = JSON.parse(localStorage.getItem(key) || '{}');
+    checks.forEach(item => { item.checked = saved.checks?.[item.value] === true; });
+    host.value = typeof saved.host === 'string' ? saved.host : '';
+    notes.value = typeof saved.notes === 'string' ? saved.notes : '';
+    feedback.textContent = 'Los cambios se guardan solo en este navegador; exporte el traspaso para llevarlos a otro equipo.';
+  } catch (_) {
+    storageAvailable = false;
+    feedback.textContent = 'Almacenamiento local no disponible o ilegible: exporte el traspaso antes de cerrar.';
+  }
+  const save = () => {
+    update();
+    if (!storageAvailable) return;
+    try { localStorage.setItem(key, JSON.stringify(state())); }
+    catch (_) { storageAvailable = false; feedback.textContent = 'No se ha podido guardar: exporte el traspaso antes de cerrar.'; }
+  };
+  [...checks, host, notes].forEach(item => item.addEventListener('input', save));
+  update();
+  root.querySelectorAll('[data-scenario]').forEach(button => button.addEventListener('click', () => {
+    root.querySelectorAll('[data-scenario]').forEach(other => other.setAttribute('aria-pressed', String(other === button)));
+    root.querySelectorAll('[data-panel]').forEach(panel => {
+      panel.hidden = button.dataset.scenario !== 'todos' && panel.dataset.panel !== button.dataset.scenario;
+    });
+  }));
+  root.querySelectorAll('[data-copy]').forEach(button => button.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(root.querySelector(`#${button.dataset.copy}`).textContent);
+      feedback.textContent = 'Ejemplo copiado.';
+    } catch (_) {
+      feedback.textContent = 'No se pudo copiar. Seleccione el ejemplo y cópielo manualmente.';
+    }
+  }));
+  root.querySelector('#guia-export').addEventListener('click', () => {
+    try {
+      const url = URL.createObjectURL(new Blob([JSON.stringify(state(), null, 2)], {type: 'application/json'}));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'traspaso-it.json';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      feedback.textContent = 'Descarga solicitada; compruebe el archivo en su navegador.';
+    } catch (_) {
+      feedback.textContent = 'No se pudo iniciar la descarga; anote los datos por separado.';
+    }
+  });
+  root.querySelector('#guia-print').addEventListener('click', () => window.print());
+})();
+</script>
