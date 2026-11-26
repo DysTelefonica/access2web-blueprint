@@ -26,6 +26,7 @@ Tras el título, una lista con estas claves:
 | [D89](2026-08-08-d89-migracion-sin-hash-heredado.md) | adoptada | 2026-08-08 | usuario (dueño del producto) |
 | [PRs siempre contra main](2026-10-15-prs-siempre-contra-main.md) | adoptada | 2026-10-15 | dueño del repositorio |
 | [El registro de decisiones debe ser completo, sin baseline](2026-10-17-registro-de-decisiones-completo.md) | adoptada | 2026-10-17 | dueño del repositorio |
+| [Alcance: las trece aplicaciones con icono en la Lanzadera](2026-10-28-alcance-trece-aplicaciones-de-la-lanzadera.md) | adoptada | 2026-10-28 | usuario (dueño del producto) |
 | [D92](2026-11-04-d92-tablas-con-forma-legacy-compartidas.md) | adoptada | 2026-11-04 | usuario (dueño del producto) |
 | [D93](2026-11-05-d93-dos-esquemas-por-aplicacion.md) | adoptada | 2026-11-05 | usuario (dueño del producto) |
 
@@ -127,7 +128,7 @@ Tras el título, una lista con estas claves:
 | [D82](2026-08-05-d82-migraciones-de-bd-backward-compatibles.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
 | [D83](2026-08-05-d83-hps-solicitudes-se-documenta-como.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
 | [D84](2026-08-05-d84-baseline-de-release-de-condor-y-brass.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
-| [D85](2026-08-05-d85-baseline-operativo-actual-catalogo-con-8.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D85](2026-08-05-d85-baseline-operativo-actual-catalogo-con-8.md) | sustituida | 2026-08-05 | usuario (dueño del producto) |
 | [D86](2026-08-05-d86-la-forma-hexagonal-del-legacy-dominio-en.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
 | [D87](2026-08-05-d87-los-tests-vba-existentes-en-staging-por.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
 
