@@ -9,6 +9,7 @@ compara contra el texto literal que el gate emite.
 
 from __future__ import annotations
 
+import ast
 import http.client
 import importlib.machinery
 import importlib.util
@@ -24,6 +25,10 @@ import uuid
 from contextlib import redirect_stderr, redirect_stdout
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tests"))
+from _cp1252_locale import run_code_under_cp1252_locale  # noqa: E402
+from _fake_gh import GH_ENV, guard_fake_gh, install_fake_gh  # noqa: E402
 
 PREFLIGHT = Path(__file__).resolve().parents[1] / "pr_preflight.py"
 CLI = PREFLIGHT.parent / "ci-pattern"
@@ -451,15 +456,11 @@ class DraftPreflightParityTests(unittest.TestCase):
                 labels = ["type:feature", "scope:tests"]
                 gh_marker = Path(tmp) / "gh-called"
                 gh_bin = Path(tmp) / "bin"
-                gh_bin.mkdir()
-                gh = gh_bin / "gh"
-                gh.write_text(
-                    "#!/usr/bin/env python3\n"
+                gh = install_fake_gh(
+                    gh_bin,
                     "from pathlib import Path\n"
                     f"Path({str(gh_marker)!r}).write_text('called', encoding='utf-8')\n"
-                    "raise SystemExit(99)\n",
-                    encoding="utf-8")
-                gh.chmod(0o755)
+                    "raise SystemExit(99)\n")
                 excluded = {
                     "BASE_REF", "GH_TOKEN", "GITHUB_API_URL", "GITHUB_EVENT_PATH",
                     "GITHUB_TOKEN", "GIT_CONFIG_COUNT", "PR_LABELS",
@@ -478,6 +479,8 @@ class DraftPreflightParityTests(unittest.TestCase):
                 env["GITHUB_API_URL"] = (
                     f"http://127.0.0.1:{server.server_address[1]}{api_prefix}")
                 env["PATH"] = f"{gh_bin}{os.pathsep}{env.get('PATH', os.defpath)}"
+                env[GH_ENV] = str(gh)
+                guard_fake_gh(env, tmp)
 
                 ambient = http.client.HTTPConnection(
                     "127.0.0.1", server.server_address[1], timeout=5)
@@ -576,6 +579,31 @@ class CliTokenPathTests(unittest.TestCase):
         code, err = self._main()
         self.assertEqual(code, 0, err)
         self.assertIn("[issue-spec]", err)
+
+
+def _load_snippet(name, path):
+    """Snippet that loads ``path`` as module ``mod`` in the cp1252 child."""
+    return (
+        "import importlib.machinery, importlib.util\n"
+        f"loader = importlib.machinery.SourceFileLoader({name!r}, {str(path)!r})\n"
+        f"spec = importlib.util.spec_from_loader({name!r}, loader)\n"
+        "mod = importlib.util.module_from_spec(spec)\n"
+        "loader.exec_module(mod)\n"
+    )
+
+
+class GitOutputEncodingTests(unittest.TestCase):
+    """#1601: the detected branch is UTF-8 whatever the locale code page."""
+
+    def test_git_head_reads_a_non_ascii_branch_under_cp1252(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _draft_repo(tmp, 1)
+            _git(repo, "switch", "-q", "-c", "fix/sección-Á")
+            code, out, err = run_code_under_cp1252_locale(
+                _load_snippet("preflight_cp1252", PREFLIGHT)
+                + f"print(ascii(mod._git_head({str(repo)!r})))\n")
+            self.assertEqual(code, 0, err)
+            self.assertEqual(ast.literal_eval(out.strip()), "fix/sección-Á")
 
 
 if __name__ == "__main__":

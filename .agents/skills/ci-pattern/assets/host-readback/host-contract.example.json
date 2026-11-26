@@ -1,5 +1,6 @@
 {
   "contract_version": 1,
+  "coordinator": "coordinador",
   "host_capabilities": {
     "branch_protection": "unavailable",
     "rulesets": "unavailable",
@@ -12,6 +13,10 @@
     },
     {
       "name": "chain:partial",
+      "class": "host-enforced"
+    },
+    {
+      "name": "ci-red",
       "class": "host-enforced"
     },
     {

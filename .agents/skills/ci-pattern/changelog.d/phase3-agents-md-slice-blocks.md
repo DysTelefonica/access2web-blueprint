@@ -1,0 +1,6 @@
+type: patch
+
+**Qué.** La fase 3 de adopción da por sellado un `AGENTS.md` del patrón cuando sus bloques propagados están en `slice_blocks` y cuadran, aunque no esté en `files`. También con `--seal-baseline`.
+**Causa.** La regla (b) de `_manifest_identity_findings` solo aceptaba `files`. Para sacar `AGENTS.md` de `files` (y que la sección local del consumer cambie sin re-sellar), cadete tenía que quitarlo de `pattern_paths`, y eso reduce la base de sellado: lo rechaza `--seal-baseline` (cadete#720). La 0.5c de cadete quedaba bloqueada.
+**Arreglo.** `_agents_slice_seal` verifica en proceso cada bloque de `slice_blocks` con el mismo hash que `verify` y `manifest seal`. Si todos cuadran, `AGENTS.md` queda cubierto, también en el recorrido del árbol. Si alguno falta o difiere, el hallazgo nombra `AGENTS.md`, `slice_blocks` y el bloque. Tests en `Phase3SliceBlocksTests`: el bloque sellado pasa, la sección local cambia sin re-sellar, pasa con una base que sigue declarando `AGENTS.md`, y un bloque modificado falla.
+**A partir de ahora.** Un `AGENTS.md` con marcadores se sella por `slice_blocks`, y su sección local no pide re-sellar. Cadete puede hacer su 0.5c cuando esta versión del canon le llegue por la ronda. Fase 0 de CI/CD, punto 0.5.

@@ -376,5 +376,509 @@ class GovernedMergeWorkflowsListingTests(unittest.TestCase):
                           {"per_page": ["100"], "page": ["2"]}])
 
 
+# #1440: el `ci` de cadete saltaba sus jobs en `workflow_dispatch`; la verificacion
+# del arbol integrado no corria. `post_merge_verify` la separa de los detectores.
+VERIFY_TREE_MOVED = "9" * 40
+
+
+def job_yaml(condition: str = "") -> str:
+    """Un workflow con `workflow_dispatch` y un job `tests`, con su `if:` si se pide."""
+    guard = f"    if: {condition}\n" if condition else ""
+    return ("name: ci\n"
+            "on:\n"
+            "  pull_request:\n"
+            "  workflow_dispatch:\n"
+            "jobs:\n"
+            "  tests:\n"
+            f"{guard}"
+            "    runs-on: ubuntu-latest\n"
+            "    steps:\n"
+            "      - run: echo ok\n")
+
+
+def verify_state(ci_yaml: str, *, behind: int, ci_present: bool = True) -> dict:
+    """`ci` (verificacion) y `push-compliance` (detector) en el repo; PR atrasado `behind`."""
+    state = with_yaml("push-compliance", yaml_with_inputs(["before", "after"]))
+    if ci_present:
+        path = ".github/workflows/ci.yml"
+        state["workflows"].append({"id": 2, "name": "ci", "path": path, "state": "active"})
+        state["workflow_files"][path] = {
+            "content": base64.b64encode(ci_yaml.encode()).decode("ascii"),
+            "encoding": "base64", "path": path, "name": "ci.yml", "type": "file"}
+    state["compares"] = {
+        f"main...{SHA}": {"behind_by": behind, "files": [{"filename": "src/app.php"}]},
+        f"{SHA}...main": {"files": [{"filename": "docs/guide.md"}] if behind else []}}
+    if behind:
+        state["commits"][_github_stub.MERGED_SHA] = {
+            "sha": _github_stub.MERGED_SHA, "commit": {"tree": {"sha": VERIFY_TREE_MOVED}}}
+    with_policy(state, {"required_jobs": ["tests"], "events": {}})
+    return state
+
+
+POLICY_PATH = ".github/required-jobs-policy.json"
+
+
+def with_policy(state: dict, policy: object) -> dict:
+    """#1440: la politica de jobs requeridos del repo, leida por la API de contenidos."""
+    text = policy if isinstance(policy, str) else json.dumps(policy)
+    state.setdefault("workflow_files", {})[POLICY_PATH] = {
+        "content": base64.b64encode(text.encode()).decode("ascii"), "encoding": "base64",
+        "path": POLICY_PATH, "name": "required-jobs-policy.json", "type": "file"}
+    return state
+
+
+def verify_contract(verify: object = ("ci",), dispatch: object = ("push-compliance",)) -> dict:
+    data = contract()
+    if dispatch is not None:
+        data["post_merge_dispatch"] = list(dispatch)
+    data["post_merge_verify"] = list(verify) if isinstance(verify, tuple) else verify
+    return data
+
+
+class GovernedMergePostMergeVerifyTests(unittest.TestCase):
+    """#1440: la verificacion del arbol integrado solo se lanza si la PR iba atrasada."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def stored(self) -> dict:
+        return json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+
+    def dispatched(self) -> list[str]:
+        return [item["name"] for item in self.stored().get("dispatches", [])]
+
+    def test_verify_is_dispatched_when_the_pr_was_behind(self) -> None:
+        proc = run_gate(self.root, verify_contract(), verify_state(job_yaml(), behind=2))
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertTrue(self.stored()["merges"])
+        ci = [item for item in self.stored()["dispatches"] if item["name"] == "ci.yml"]
+        self.assertEqual(len(ci), 1, self.stored()["dispatches"])
+        self.assertEqual(ci[0]["ref"], BASE_BRANCH)
+
+    def test_verify_is_not_dispatched_when_the_pr_was_up_to_date(self) -> None:
+        proc = run_gate(self.root, verify_contract(), verify_state(job_yaml(), behind=0))
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertTrue(self.stored()["merges"])
+        self.assertNotIn("ci.yml", self.dispatched())
+        self.assertIn("NOT DISPATCHED: ci (post_merge_verify)", proc.stdout)
+
+    def test_post_merge_dispatch_detectors_are_dispatched_after_every_merge(self) -> None:
+        for behind in (0, 3):
+            with self.subTest(behind=behind):
+                proc = run_gate(self.root, verify_contract(),
+                                verify_state(job_yaml(), behind=behind))
+                self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+                detector = [item for item in self.stored()["dispatches"]
+                            if item["name"] == "push-compliance.yml"]
+                self.assertEqual(len(detector), 1, self.stored()["dispatches"])
+                self.assertEqual(detector[0]["inputs"],
+                                 {"before": BASE_TIP, "after": _github_stub.MERGED_SHA})
+
+    def test_a_verify_job_skipped_on_workflow_dispatch_is_refused_before_the_merge(self) -> None:
+        conditions = ("github.event_name != 'workflow_dispatch'",
+                      '${{ github.event_name != "workflow_dispatch" }}',
+                      "github.event_name!='workflow_dispatch' && always()")
+        for condition in conditions:
+            with self.subTest(condition=condition):
+                proc = run_gate(self.root, verify_contract(),
+                                verify_state(job_yaml(condition), behind=2))
+                self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+                self.assertFalse(self.stored().get("merges", []))
+                self.assertEqual(self.stored().get("dispatches", []), [])
+                self.assertIn("post_merge_verify workflow 'ci' skips the required job 'tests' on "
+                              "workflow_dispatch: the post-merge verification would not run it "
+                              "(#1440)", proc.stdout)
+
+    def test_a_skip_in_a_block_scalar_condition_is_refused(self) -> None:
+        yaml_text = job_yaml().replace(
+            "    runs-on:",
+            "    if: >-\n      github.event_name != 'workflow_dispatch'\n    runs-on:")
+        proc = run_gate(self.root, verify_contract(), verify_state(yaml_text, behind=0))
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("skips the required job 'tests'", proc.stdout)
+
+    def test_a_non_required_job_skipped_on_dispatch_is_accepted(self) -> None:
+        # Verificador #1440, bloqueo 1: solo cuentan los jobs de `required_jobs`.
+        yaml_text = job_yaml() + ("  other:\n"
+                                  "    if: github.event_name != 'workflow_dispatch'\n"
+                                  "    runs-on: ubuntu-latest\n"
+                                  "    steps:\n"
+                                  "      - run: echo other\n")
+        proc = run_gate(self.root, verify_contract(), verify_state(yaml_text, behind=2))
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("ci.yml", self.dispatched())
+
+    def test_an_event_filter_that_does_not_admit_dispatch_is_refused(self) -> None:
+        # Verificador #1440, bloqueo 2: `== 'pull_request'` tambien salta el dispatch.
+        conditions = ("github.event_name == 'pull_request'",
+                      "'workflow_dispatch' != github.event_name",
+                      "!(github.event_name == 'workflow_dispatch')",
+                      "github.event_name == 'push'  # workflow_dispatch")
+        for condition in conditions:
+            with self.subTest(condition=condition):
+                proc = run_gate(self.root, verify_contract(),
+                                verify_state(job_yaml(condition), behind=2))
+                self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+                self.assertFalse(self.stored().get("merges", []))
+                self.assertIn("skips the required job 'tests'", proc.stdout)
+
+    def test_a_filter_that_admits_dispatch_or_no_event_filter_is_accepted(self) -> None:
+        conditions = ("github.event_name == 'workflow_dispatch' || github.event_name == 'push'",
+                      "always()",
+                      "${{ contains('push workflow_dispatch', github.event_name) }}")
+        for condition in conditions:
+            with self.subTest(condition=condition):
+                proc = run_gate(self.root, verify_contract(),
+                                verify_state(job_yaml(condition), behind=2))
+                self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_a_filter_negating_another_event_admits_dispatch(self) -> None:
+        # #1454: `!= '<otro evento>'` deja pasar `workflow_dispatch`. Son los `if:`
+        # reales de pr-gate, typecheck y build en el ci.yml de APAP_WEB.
+        conditions = ("github.event_name != 'schedule'",
+                      "github.event_name != 'pull_request'",
+                      "${{ github.event_name != 'pull_request' }}",
+                      "github.event_name != 'pull_request' || (needs.pr-gate.outputs.docs_changed"
+                      " != 'true' && needs.pr-gate.outputs.fleet_changed != 'true')",
+                      "(needs.a.outputs.b == 'true') || 'push' != github.event_name")
+        for condition in conditions:
+            with self.subTest(condition=condition):
+                proc = run_gate(self.root, verify_contract(),
+                                verify_state(job_yaml(condition), behind=2))
+                self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+                self.assertIn("ci.yml", self.dispatched())
+
+    def test_admitting_filters_in_block_scalars_and_quoted_bars_are_accepted(self) -> None:
+        # #1454: la forma `>-` es la de typecheck, test e integration en APAP_WEB.
+        yaml_text = job_yaml().replace(
+            "    runs-on:",
+            "    if: >-\n      github.event_name != 'pull_request' ||\n"
+            "      (needs.a.outputs.b != 'true')\n    runs-on:")
+        cases = {"block scalar": yaml_text,
+                 "== workflow_dispatch": job_yaml(
+                     "needs.a.outputs.b == 'x' || github.event_name == 'workflow_dispatch'"),
+                 "bar inside a literal": job_yaml(
+                     "github.event_name != 'push' || contains('a || b', 'c')")}
+        for label, text in cases.items():
+            with self.subTest(case=label):
+                proc = run_gate(self.root, verify_contract(), verify_state(text, behind=2))
+                self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_dispatch_spelled_in_another_case_is_still_a_skip(self) -> None:
+        # Verificador #1454, B1: GitHub compara cadenas sin distinguir mayusculas.
+        conditions = ("github.event_name != 'WORKFLOW_DISPATCH'",
+                      "github.event_name != 'Workflow_Dispatch' || false",
+                      "'WORKFLOW_DISPATCH' != github.event_name")
+        for condition in conditions:
+            with self.subTest(condition=condition):
+                proc = run_gate(self.root, verify_contract(),
+                                verify_state(job_yaml(condition), behind=2))
+                self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+                self.assertIn("skips the required job 'tests'", proc.stdout)
+
+    def test_a_disjunct_github_would_reject_is_not_read_as_admitting(self) -> None:
+        # Verificador #1454, aviso 1: comillas dobles u operando vacio no son un filtro.
+        conditions = ('github.event_name != "pull_request"',
+                      "github.event_name != 'push' ||",
+                      "|| github.event_name != 'push'")
+        for condition in conditions:
+            with self.subTest(condition=condition):
+                proc = run_gate(self.root, verify_contract(),
+                                verify_state(job_yaml(condition), behind=2))
+                self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+
+    def test_a_negated_filter_inside_a_conjunction_is_still_refused(self) -> None:
+        # #1454: fuera de una disyuncion de nivel superior la regla sigue siendo la
+        # conservadora: lo que no sabe evaluar lo rechaza.
+        conditions = ("github.event_name != 'schedule' && needs.a.outputs.b == 'true'",
+                      "(github.event_name != 'pull_request' || x) && y",
+                      "github.event_name != 'pull_request' && github.event_name != 'push'")
+        for condition in conditions:
+            with self.subTest(condition=condition):
+                proc = run_gate(self.root, verify_contract(),
+                                verify_state(job_yaml(condition), behind=2))
+                self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+                self.assertFalse(self.stored().get("merges", []))
+                self.assertIn("skips the required job 'tests'", proc.stdout)
+
+    def test_a_dispatch_skip_declared_in_accepted_skips_is_accepted(self) -> None:
+        # #1454: el consumer declara el salto en la politica que ya lee el agregador.
+        state = verify_state(job_yaml("github.event_name == 'pull_request'"), behind=2)
+        with_policy(state, {"required_jobs": ["tests", "build"],
+                            "events": {"workflow_dispatch": {"accepted_skips": ["tests"]}}})
+        proc = run_gate(self.root, verify_contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("ci.yml", self.dispatched())
+
+    def test_accepted_skips_of_another_event_do_not_excuse_the_dispatch_skip(self) -> None:
+        state = verify_state(job_yaml("github.event_name == 'pull_request'"), behind=2)
+        with_policy(state, {"required_jobs": ["tests"],
+                            "events": {"push": {"accepted_skips": ["tests"]},
+                                       "workflow_dispatch": {"accepted_skips": []}}})
+        proc = run_gate(self.root, verify_contract(), state)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("skips the required job 'tests'", proc.stdout)
+
+    def test_malformed_dispatch_accepted_skips_fail_closed(self) -> None:
+        for events in ({"workflow_dispatch": {"accepted_skips": "tests"}},
+                       {"workflow_dispatch": []}, [], "x"):
+            with self.subTest(events=events):
+                state = verify_state(job_yaml(), behind=2)
+                with_policy(state, {"required_jobs": ["tests"], "events": events})
+                proc = run_gate(self.root, verify_contract(), state)
+                self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+                self.assertFalse(self.stored().get("merges", []))
+                self.assertIn("required-jobs-policy.json", proc.stdout + proc.stderr)
+
+    def test_every_required_job_accepted_as_a_dispatch_skip_fails_closed(self) -> None:
+        # Verificador #1454, aviso 3: sin jobs exigidos la verificacion no verifica nada.
+        state = verify_state(job_yaml("github.event_name == 'pull_request'"), behind=2)
+        with_policy(state, {"required_jobs": ["tests"],
+                            "events": {"workflow_dispatch": {"accepted_skips": ["tests"]}}})
+        proc = run_gate(self.root, verify_contract(), state)
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertFalse(self.stored().get("merges", []))
+        self.assertIn("no required job", proc.stdout + proc.stderr)
+
+    def test_four_space_jobs_and_quoted_names_are_scanned(self) -> None:
+        yaml_text = ("on:\n"
+                     "    workflow_dispatch:\n"
+                     "jobs:\n"
+                     "    'tests':\n"
+                     "        if: github.event_name != 'workflow_dispatch'\n"
+                     "        runs-on: ubuntu-latest\n"
+                     "        steps:\n"
+                     "            - run: echo ok\n")
+        proc = run_gate(self.root, verify_contract(), verify_state(yaml_text, behind=2))
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("skips the required job 'tests' on", proc.stdout)
+
+    def test_an_unreadable_required_jobs_policy_fails_closed_before_the_merge(self) -> None:
+        cases = {"missing": None, "not json": "{nope", "no required_jobs": {"events": {}}}
+        for label, policy in cases.items():
+            with self.subTest(case=label):
+                state = verify_state(job_yaml(), behind=2)
+                if policy is None:
+                    del state["workflow_files"][POLICY_PATH]
+                else:
+                    with_policy(state, policy)
+                proc = run_gate(self.root, verify_contract(), state)
+                self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+                self.assertFalse(self.stored().get("merges", []))
+                self.assertIn(".github/required-jobs-policy.json", proc.stderr)
+
+    def test_a_step_level_condition_is_not_a_skipped_job(self) -> None:
+        yaml_text = job_yaml().replace(
+            "      - run: echo ok\n",
+            "      - run: echo ok\n        if: github.event_name != 'workflow_dispatch'\n")
+        proc = run_gate(self.root, verify_contract(), verify_state(yaml_text, behind=2))
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_a_missing_or_undispatchable_verify_workflow_is_refused_before_the_merge(self) -> None:
+        cases = {"missing": (verify_state(job_yaml(), behind=2, ci_present=False),
+                             "post_merge_verify entry 'ci' is not a workflow in this repo"),
+                 "no dispatch": (verify_state(yaml_workflow(False), behind=2),
+                                 "workflow 'ci' does not declare 'workflow_dispatch'")}
+        for label, (state, expected) in cases.items():
+            with self.subTest(case=label):
+                proc = run_gate(self.root, verify_contract(), state)
+                self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+                self.assertFalse(self.stored().get("merges", []))
+                self.assertIn(expected, proc.stdout)
+
+    def test_a_workflow_in_both_lists_is_refused(self) -> None:
+        proc = run_gate(self.root, verify_contract(dispatch=("push-compliance", "ci")),
+                        verify_state(job_yaml(), behind=2))
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("'ci' is in both post_merge_dispatch and post_merge_verify", proc.stdout)
+
+    def test_a_malformed_verify_list_fails_closed_before_any_api_call(self) -> None:
+        for value in ("ci", [""], [1]):
+            with self.subTest(value=value):
+                proc = run_gate(self.root, verify_contract(verify=value),
+                                verify_state(job_yaml(), behind=2))
+                self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+                self.assertIn("post_merge_verify must be a list of non-empty strings",
+                              proc.stderr)
+                self.assertEqual(self.stored()["calls"], [])
+
+    def test_a_verify_dispatch_error_after_the_merge_is_exit_4(self) -> None:
+        state = verify_state(job_yaml(), behind=2)
+        state["dispatch_error"] = True
+        proc = run_gate(self.root, verify_contract(), state)
+        self.assertEqual(proc.returncode, 4, proc.stdout + proc.stderr)
+        self.assertTrue(self.stored()["merges"])
+        self.assertIn("ci", proc.stderr)
+
+
+CANONICAL_CALL = "python3 scripts/required-jobs/check_required_jobs.py \"$@\""
+
+
+def aggregator_yaml(condition: str = "", call: str = CANONICAL_CALL, needs: bool = True) -> str:
+    """#1568: `job_yaml` con un job `required` que corre `call` (el agregador canonico).
+
+    Sin `needs` el job no declara `needs:` ni `toJSON(needs)`.
+    """
+    wiring = ("    needs: [tests]\n"
+              "    env:\n"
+              "      NEEDS_JSON: ${{ toJSON(needs) }}\n") if needs else ""
+    return job_yaml(condition).replace("jobs:\n", "jobs:\n"
+                                       "  required:\n"
+                                       f"{wiring}"
+                                       "    if: always()\n"
+                                       "    runs-on: ubuntu-latest\n"
+                                       "    steps:\n"
+                                       "      - run: |\n"
+                                       "          printf '%s' \"$NEEDS_JSON\" |\n"
+                                       f"            {call}\n")
+
+
+def dispatch_contract(*names: str) -> dict:
+    """#1568: workflows en `post_merge_dispatch`, sin `post_merge_verify` (APAP_WEB#3721)."""
+    return verify_contract(verify=[], dispatch=("push-compliance", *(names or ("ci",))))
+
+
+NO_AGGREGATOR_WARNING = ("WARNING: no post_merge_dispatch workflow hosts the required-jobs "
+                         "aggregator (check_required_jobs.py); the #1440 required-job check "
+                         "does not apply to {0} (#1568)")
+
+
+class GovernedMergePostMergeDispatchRequiredJobsTests(unittest.TestCase):
+    """#1568: el check #1440 mide el workflow de `post_merge_dispatch` que aloja el agregador."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def stored(self) -> dict:
+        return json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+
+    def dispatched(self) -> list[str]:
+        return [item["name"] for item in self.stored().get("dispatches", [])]
+
+    def test_the_aggregator_workflow_skipping_a_required_job_is_refused_before_the_merge(self) -> None:
+        state = verify_state(aggregator_yaml("github.event_name == 'pull_request'"), behind=0)
+        proc = run_gate(self.root, dispatch_contract(), state)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertFalse(self.stored().get("merges", []))
+        self.assertEqual(self.stored().get("dispatches", []), [])
+        self.assertIn("post_merge_dispatch workflow 'ci' skips the required job 'tests' on "
+                      "workflow_dispatch: the post-merge dispatch would not run it (#1440); "
+                      "skipped jobs: ['tests']", proc.stdout)
+
+    def test_a_workflow_without_the_aggregator_keeps_its_own_filters(self) -> None:
+        # El falso positivo del revisor: `deploy` filtra su propio `build` fuera del dispatch.
+        deploy = job_yaml("github.event_name == 'pull_request'").replace("  tests:\n", "  build:\n")
+        state = verify_state(job_yaml(), behind=0)
+        path = ".github/workflows/deploy.yml"
+        state["workflows"].append({"id": 3, "name": "deploy", "path": path, "state": "active"})
+        state["workflow_files"][path] = {
+            "content": base64.b64encode(deploy.encode()).decode("ascii"),
+            "encoding": "base64", "path": path, "name": "deploy.yml", "type": "file"}
+        with_policy(state, {"required_jobs": ["build"], "events": {}})
+        proc = run_gate(self.root, dispatch_contract("deploy"), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertTrue(self.stored()["merges"])
+        self.assertEqual(sorted(self.dispatched()), ["deploy.yml", "push-compliance.yml"])
+
+    def test_no_aggregator_requires_nothing_new_and_warns(self) -> None:
+        # Sin agregador en el dispatch no se lee la politica: falta y el merge sale, como en main.
+        state = verify_state(job_yaml("github.event_name == 'pull_request'"), behind=0)
+        del state["workflow_files"][POLICY_PATH]
+        proc = run_gate(self.root, dispatch_contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertTrue(self.stored()["merges"])
+        self.assertEqual(sorted(self.dispatched()), ["ci.yml", "push-compliance.yml"])
+        self.assertIn(NO_AGGREGATOR_WARNING.format("['ci', 'push-compliance']"), proc.stdout)
+
+    def test_a_detector_only_consumer_without_a_policy_merges_as_before(self) -> None:
+        state = verify_state(job_yaml(), behind=0, ci_present=False)
+        del state["workflow_files"][POLICY_PATH]
+        proc = run_gate(self.root, verify_contract(verify=[]), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertTrue(self.stored()["merges"])
+        self.assertEqual(self.dispatched(), ["push-compliance.yml"])
+        self.assertIn(NO_AGGREGATOR_WARNING.format("['push-compliance']"), proc.stdout)
+
+    def test_an_aggregator_skip_of_a_non_required_or_accepted_job_is_dispatched(self) -> None:
+        skipping = aggregator_yaml("github.event_name == 'pull_request'").replace(
+            "  tests:\n", "  other:\n")
+        accepted = verify_state(aggregator_yaml("github.event_name == 'pull_request'"), behind=0)
+        with_policy(accepted, {"required_jobs": ["tests", "build"],
+                               "events": {"workflow_dispatch": {"accepted_skips": ["tests"]}}})
+        cases = {"not required": verify_state(skipping, behind=0), "accepted skip": accepted}
+        for label, state in cases.items():
+            with self.subTest(case=label):
+                proc = run_gate(self.root, dispatch_contract(), state)
+                self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+                self.assertTrue(self.stored()["merges"])
+                self.assertEqual(sorted(self.dispatched()), ["ci.yml", "push-compliance.yml"])
+                self.assertNotIn("WARNING: no post_merge_dispatch workflow", proc.stdout)
+
+    def assert_not_an_aggregator(self, workflow: str, yaml_text: str) -> None:
+        state = verify_state(job_yaml(), behind=0, ci_present=False)
+        path = f".github/workflows/{workflow}.yml"
+        state["workflows"].append({"id": 3, "name": workflow, "path": path, "state": "active"})
+        state["workflow_files"][path] = {
+            "content": base64.b64encode(yaml_text.encode()).decode("ascii"),
+            "encoding": "base64", "path": path, "name": f"{workflow}.yml", "type": "file"}
+        proc = run_gate(self.root, dispatch_contract(workflow), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertTrue(self.stored()["merges"])
+        names = sorted([workflow, "push-compliance"])
+        self.assertEqual(sorted(self.dispatched()), [f"{name}.yml" for name in names])
+        self.assertIn(NO_AGGREGATOR_WARNING.format(names), proc.stdout)
+
+    def test_a_job_that_only_echoes_the_script_name_is_not_the_aggregator(self) -> None:
+        self.assert_not_an_aggregator("ci", aggregator_yaml(
+            "github.event_name == 'pull_request'", call="echo check_required_jobs.py"))
+
+    def test_a_script_whose_basename_only_starts_with_the_name_is_not_the_aggregator(self) -> None:
+        self.assert_not_an_aggregator("ci", aggregator_yaml(
+            "github.event_name == 'pull_request'",
+            call="python3 scripts/required-jobs/check_required_jobs.py.bak"))
+
+    def test_a_classifier_call_without_needs_is_not_the_aggregator(self) -> None:
+        # N1 del revisor: deploy.yml corre `check_required_jobs.py --ui-changed` sin `needs`.
+        self.assert_not_an_aggregator("deploy", aggregator_yaml(
+            "github.event_name == 'pull_request'", needs=False,
+            call="python3 scripts/required-jobs/check_required_jobs.py --ui-changed"))
+
+    def test_an_empty_needs_list_with_spaces_is_not_the_aggregator(self) -> None:
+        self.assert_not_an_aggregator("ci", aggregator_yaml(
+            "github.event_name == 'pull_request'").replace("needs: [tests]", "needs: [ ]"))
+
+    def test_the_canonical_aggregator_call_variants_are_still_detected(self) -> None:
+        calls = (CANONICAL_CALL, "python -u ./scripts/required-jobs/check_required_jobs.py",
+                 "/usr/bin/python3 'scripts/required-jobs/check_required_jobs.py' \"$@\"")
+        for call in calls:
+            with self.subTest(call=call):
+                state = verify_state(aggregator_yaml("github.event_name == 'pull_request'",
+                                                     call=call), behind=0)
+                proc = run_gate(self.root, dispatch_contract(), state)
+                self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+                self.assertFalse(self.stored().get("merges", []))
+                self.assertIn("post_merge_dispatch workflow 'ci' skips the required job 'tests'",
+                              proc.stdout)
+
+    def test_an_unreadable_policy_with_the_aggregator_in_dispatch_fails_closed(self) -> None:
+        cases = {"missing": None, "not json": "{nope", "no required_jobs": {"events": {}}}
+        for label, policy in cases.items():
+            with self.subTest(case=label):
+                state = verify_state(aggregator_yaml(), behind=0)
+                if policy is None:
+                    del state["workflow_files"][POLICY_PATH]
+                else:
+                    with_policy(state, policy)
+                proc = run_gate(self.root, dispatch_contract(), state)
+                self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+                self.assertFalse(self.stored().get("merges", []))
+                self.assertEqual(self.stored().get("dispatches", []), [])
+                self.assertIn(".github/required-jobs-policy.json", proc.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

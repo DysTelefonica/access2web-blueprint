@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/scripts/check_test_classification.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.3 — assets/scripts/check_test_classification.py
 """Test classification gate: every integration test file carries the integration marker.
 
 pytest selection depends on the marker. A typical layout keeps unit tests in the default run and

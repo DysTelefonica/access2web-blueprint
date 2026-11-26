@@ -1,0 +1,28 @@
+/* Components of avance.html. Tokens come from docs/uat/assets/style-base.css. */
+.card {
+  background: var(--color-background); border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card); padding: var(--space-6); margin-bottom: var(--space-5);
+}
+.card h2 { margin: 0 0 var(--space-4); font-size: 20px; }
+.hero a { color: inherit; }
+.progress-table { font-size: 14px; }
+.progress-table th[scope="row"] { font-weight: 600; color: var(--color-text-primary); white-space: nowrap; }
+.progress-table td.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.progress-table progress {
+  width: 100%; min-width: 160px; height: 14px; appearance: none;
+  border: 0; border-radius: var(--radius-chip); background: var(--color-surface-strong);
+}
+.progress-table progress::-webkit-progress-bar { background: var(--color-surface-strong); border-radius: var(--radius-chip); }
+.progress-table progress::-webkit-progress-value { background: var(--color-success); border-radius: var(--radius-chip); }
+.progress-table progress::-moz-progress-bar { background: var(--color-success); border-radius: var(--radius-chip); }
+.progress-table tr.detail td { padding-top: 0; border-bottom: 1px solid var(--color-border); }
+.progress-table details summary { cursor: pointer; color: var(--color-brand); font-size: 13px; }
+.progress-table details ul { margin: var(--space-2) 0 0; padding-left: var(--space-5); }
+.progress-table details li { margin-bottom: var(--space-1); }
+.progress-table details li.done { color: var(--color-text-secondary); text-decoration: line-through; }
+.generated { font-size: 13px; color: var(--color-text-secondary); }
+@media print {
+  body { background: #fff; }
+  .card { box-shadow: none; border: 1px solid var(--color-border); }
+  .progress-table details { display: none; }
+}

@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/tests/test_mutation_sites.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.3 — assets/tests/test_mutation_sites.py
 """Contract of ``_count_sites``: documentation is not mutation surface.
 
 A docstring is an ``ast.Constant`` holding a ``str``, which is exactly what the counter charges as

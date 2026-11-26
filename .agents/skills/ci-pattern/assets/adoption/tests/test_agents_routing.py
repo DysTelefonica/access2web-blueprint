@@ -47,6 +47,8 @@ class AgentsRoutingTests(unittest.TestCase):
     def test_sin_declaracion_el_bloque_es_byte_a_byte_el_actual(self):
         with tempfile.TemporaryDirectory() as d:
             repo = repo_with(d, {}, agents=False)
+            # #1768: el bloque canonico es el de un consumer que declara roles.
+            (Path(repo) / ".team-skills.yaml").write_text("agent_roles: enabled\n", encoding="utf-8")
             self.assertEqual(CLI._agents_block_for(repo), CLI.OPERATING_DOC_AGENTS_BLOCK)
 
     def test_solo_se_enrutan_los_documentos_activados(self):

@@ -71,13 +71,21 @@ def run_git(repo: Path, *args: str) -> str:
     """Ejecuta git en ``repo`` y devuelve stdout. Non-zero rc -> RuntimeError."""
     proc = subprocess.run(
         ["git", "-C", str(repo), *args],
-        capture_output=True, text=True, check=False,
+        # Salida en UTF-8 estricto sea cual sea el locale (#1601): dos nombres no UTF-8
+        # distintos no deben colapsar en la misma clave con caracteres de sustitucion.
+        capture_output=True, check=False,
     )
     if proc.returncode != 0:
         raise RuntimeError(
-            f"git {' '.join(args)} fallo (rc={proc.returncode}): {proc.stderr.strip()}"
+            f"git {' '.join(args)} fallo (rc={proc.returncode}): "
+            f"{proc.stderr.decode('utf-8', 'replace').strip()}"
         )
-    return proc.stdout
+    try:
+        out = proc.stdout.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        msg = f"git {' '.join(args)}: la salida no es UTF-8 ({exc})"
+        raise RuntimeError(msg) from exc
+    return out.replace(chr(13) + chr(10), chr(10)).replace(chr(13), chr(10))
 
 
 def list_migrations(repo: Path, migrations_dir: str, pattern: str) -> dict[str, str]:

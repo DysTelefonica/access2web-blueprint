@@ -36,6 +36,7 @@ CONSUMERS = (
     ASSETS / "host-readback" / "check_host_drift.py",
     ASSETS / "runner-controls" / "check_push_compliance.py",
     ASSETS / "runner-controls" / "check_governed_merge.py",
+    ASSETS / "ci-red" / "report_ci_red.py",
 )
 
 # Funciones cuyo parametro `data` SI es el host contract. El resto de las
@@ -142,7 +143,7 @@ class ContractKeysAreDeclaredTests(unittest.TestCase):
         # ya las cubre por derivacion; este las nombra para que el fallo diga
         # que la regresion es de estas dos y no de una derivacion que se rompio.
         declared = set(json.loads(SCHEMA.read_text(encoding="utf-8"))["properties"])
-        for key in ("governed_path", "tracker_branch"):
+        for key in ("governed_path", "tracker_branch", "coordinator"):
             with self.subTest(key=key):
                 self.assertIn(key, declared)
 

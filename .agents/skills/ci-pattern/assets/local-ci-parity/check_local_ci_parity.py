@@ -113,6 +113,42 @@ def _command_lines(script):
         yield line
 
 
+def unit_suite_entries(root):
+    """Entradas de testing/unit-suites.d/*.list (#1664), en orden C.
+
+    Cada línea es una ruta o un glob relativo a la raíz; cada patrón se expande en orden C. Lo
+    mismo que hace `unit_suite_list` de run-unit-suites.sh."""
+    entries = []
+    for list_file in sorted((root / "testing" / "unit-suites.d").glob("*.list")):
+        for raw in list_file.read_text(encoding="utf-8").splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            entries += sorted(os.path.relpath(str(p), str(root)).replace("\\", "/")
+                              for p in root.glob(line))
+    return entries
+
+
+def _loop_items(items_src, arrays, root):
+    """Expande los elementos de un `for`: arrays, `$(unit_suite_list)` (#1664) y globs de la raíz."""
+    items = []
+    for item in items_src.split():
+        clean = item.strip('"\'')
+        if clean == "$(unit_suite_list)":
+            items += unit_suite_entries(root)
+        elif clean.startswith("${") and clean.endswith("}"):
+            name = clean[2:-1].split("[")[0]
+            if name not in arrays:
+                raise ValueError(
+                    f"el entrypoint expande ${{{name}}} pero el array "
+                    f"'{name}' no está declarado; extracción dudosa (HR-3).")
+            items += arrays[name]
+        else:
+            items += sorted(os.path.relpath(str(p), str(root))
+                            for p in root.glob(clean))
+    return items
+
+
 def _expand_loops(script, root):
     """Expand `name=( ... )` arrays and `for V in <globs|array>; do` bodies."""
     arrays, commands = {}, []
@@ -134,19 +170,7 @@ def _expand_loops(script, root):
         m = re.match(r"^for\s+(\w+)\s+in\s+(.+?);\s*do\s*$", _strip_noise(line))
         if m:
             var, items_src, i = m.group(1), m.group(2), i + 1
-            items = []
-            for item in items_src.split():
-                clean = item.strip('"\'')
-                if clean.startswith("${") and clean.endswith("}"):
-                    name = clean[2:-1].split("[")[0]
-                    if name not in arrays:
-                        raise ValueError(
-                            f"el entrypoint expande ${{{name}}} pero el array "
-                            f"'{name}' no está declarado; extracción dudosa (HR-3).")
-                    items += arrays[name]
-                else:
-                    items += sorted(os.path.relpath(str(p), str(root))
-                                    for p in root.glob(clean))
+            items = _loop_items(items_src, arrays, root)
             while i < len(lines) and not lines[i].strip().startswith("done"):
                 body = _strip_noise(lines[i])
                 body = re.sub(r"^if\s+!?\s*", "", body)

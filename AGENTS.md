@@ -1,6 +1,6 @@
 # access2web-blueprint
 
-<!-- personal-skills:slice:access2web-blueprint @ va23573b -->
+<!-- personal-skills:slice:access2web-blueprint @ v24c96cf -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -63,13 +63,13 @@ La tabla de skills del `AGENTS.md` del consumer es un subconjunto curado; el reg
 
 ### Presupuesto de revisión
 
-- Toda PR se mantiene bajo el **presupuesto de revisión de 400 líneas** (`additions + deletions`), comprobado por el gate `assets/pr-size/check_pr_size.py` del patrón (HR-33), que lee la etiqueta `size:exception` (`--labels` o `$PR_LABELS`).
+- Toda PR se mantiene bajo el **presupuesto de revisión de 400 líneas** (`additions + deletions`), comprobado en CI por la regla A1 de `assets/pr-contract/check_pr_contract.py` del patrón (HR-33), el único check de tamaño, con una sola cuenta (#1396); `assets/pr-size/check_pr_size.py` es la medida local.
 - 400 líneas es **techo de revisión, no techo de tamaño**: a partir de esa cifra la revisión pasa de atenta a vistazo. La justificación completa vive en el `CONTRIBUTING.md` de cada consumer; este partial la enuncia sin duplicar.
 - **Lectura obligatoria antes de abrir una PR:** el `CONTRIBUTING.md` del consumer (HR-71). Recoge cómo se aplica aquí el flujo del catálogo: issue primero, asistencia de IA declarada en el cuerpo, etiquetas, presupuesto, commits por unidad, comprobaciones previas y automáticas, enlace a la issue. Sin `CONTRIBUTING.md` el gate `docs_manifest` falla cerrado en fase 5.
-- La única excepción al presupuesto es la **etiqueta `size:exception`** (decisión del dueño del repo, 2026-10-15). El campo `size-exception-reason:` del cuerpo del PR **no existe**, y `SIZE_EXCEPTION_APPROVER` tampoco: `check_pr_size.py` lee la etiqueta (`--labels` o `$PR_LABELS`) y no comprueba quién la puso.
-- La etiqueta `size:exception` la aplica **solo el mantenedor**, nunca el agente, y solo cuando partir el PR rompería `main` (no por tests, refactor o cambio menor). Antes de aplicarla, el agente responde las cuatro preguntas de `## Excepción de tamaño` en el cuerpo de la PR; sin las cuatro respuestas la etiqueta no se pide. El merge sigue siendo una decisión humana.
+- La única excepción al presupuesto es la **etiqueta `size:exception`** (decisión del dueño del repo, 2026-10-15). El campo `size-exception-reason:` del cuerpo del PR **no existe**, y `SIZE_EXCEPTION_APPROVER` tampoco: la regla A1 lee la etiqueta del PR y no comprueba quién la puso.
+- La etiqueta `size:exception` la decide y la aplica **el administrador que lleva la sesión**, y solo cuando partir el PR rompería `main` (no por tests, refactor o cambio menor). Antes de aplicarla, el agente responde las cuatro preguntas de `## Excepción de tamaño` en el cuerpo de la PR; sin las cuatro respuestas la etiqueta no se aplica.
 - **Borrar siempre es divisible.** Retirar tests, código muerto o configuración nunca justifica `size:exception`: se borra por trozos de ≤400 líneas, aunque sea dentro del mismo fichero, dejando `main` en verde entre trozos; lo que comparten los trozos (helpers, fixtures) se borra en el último.
-- Cuando la diff supera el presupuesto, el orden de escape es: (1) partir por unidad de trabajo, (2) encadenar PRs vía `chained-pr`, (3) `size:exception` (la pone el mantenedor) como último recurso. Si la excepción se vuelve habitual, el problema está en el troceado del issue, no en el presupuesto.
+- Cuando la diff supera el presupuesto, el orden de escape es: (1) partir por unidad de trabajo, (2) encadenar PRs vía `chained-pr`, (3) `size:exception` (la decide el administrador que lleva la sesión) como último recurso. Si la excepción se vuelve habitual, el problema está en el troceado del issue, no en el presupuesto.
 
 ### Evidencia e2e por PR (invariante)
 
@@ -88,8 +88,25 @@ La tabla de skills del `AGENTS.md` del consumer es un subconjunto curado; el reg
   copiado y **nunca invoca la CLI del patrón como subproceso**. Falla cerrado:
   sin UI detectada no aplica; con UI sin flujo y sin exención, rojo.
 - Donde el consumer no ejecute el gate en el job de PR, la invariante la
-  sostiene el revisor: una PR con UI sin evidencia ni exención justificada no
-  está lista para mergear.
+  sostiene el agente que lleva la issue: una PR con UI sin evidencia ni exención
+  justificada no está lista para mergear.
+
+### Auditoría del coste del test
+
+- **Cuando una comprobación cara detecta un defecto, se busca el test barato
+  que lo habría visto antes.** Son caras el E2E de navegador, la ejecución
+  full-stack y el CI posterior al merge. El agente deja registrados en la PR, o
+  en una issue: el fallo, su causa raíz y el test más barato que lo habría
+  detectado (unitario, de integración, estático o de contrato). Si solo lo puede
+  ver un navegador, lo dice con el motivo.
+- **El test barato se añade o queda en una issue.** El agente lo añade en la
+  misma PR, o abre una issue con él. El mismo tipo de defecto no debe costar otra
+  vuelta de E2E.
+- Ejemplos de cadete (2026-11-04, #1496): una spec que dependía de un markup
+  que otra PR había quitado; un overlay global que tapaba los objetivos de clic;
+  el compose de testing sin `LDAP_SECRET`; datos semilla de una PR solo de
+  migraciones que `ci-scope` no pasó por el E2E; salida impresa antes del layout.
+  La regla de detalle está en `web-tdd-philosophy` (regla 11).
 
 ### Worktree y rama remota
 
@@ -108,8 +125,8 @@ a mano:
    PR existente). Si la base avanza durante la revisión, repita la sincronización
    y las comprobaciones: un verde anterior a la integración no es evidencia del
    resultado nuevo.
-4. **Merge y limpieza.** El merge lo lanza un mantenedor autorizado. Un agente
-   lo lanza solo por orden registrada de un mantenedor, con cuenta de mantenedor
+4. **Merge y limpieza.** El merge lo lanza el agente que lleva la issue, con el
+   perfil de el administrador que lleva la sesión, por el merge gobernado y con la CI en verde
    (`governed-delivery` regla 2), y nunca con `--admin`. Solo después del merge verificado y sin cambios pendientes, retirar el
    **worktree local** y la **rama local** con `safe_cleanup` (ver `ci-pattern`
    `assets/runner-controls/safe_cleanup.py`, invocado desde `worktree-reorg-per-project`
@@ -137,6 +154,27 @@ partial solo enuncia la invariante y no lo duplica.
 
 - La estrategia de merge (`--squash` o `--no-ff`) es decisión del consumer; ambas son válidas. La **invariante** es que la rama remota sobreviva al merge, no la forma concreta del commit en `main`.
 
+### Origen de la imagen de producción (invariante)
+
+Donde la imagen se construye y se despliega fuera del CI (registro inalcanzable
+desde el CI, despliegue con `oc`), **producción se despliega solo desde una imagen
+cuyo contenido casa con el manifiesto de un tag de release en `main`**.
+
+- **Se construye desde el tag publicado, nunca desde una copia local.**
+  `build_release_image.py` del asset `image-provenance` clona el tag en limpio,
+  rechaza tag ausente, fuera de `main` o árbol distinto del contenido git, y pone
+  `org.opencontainers.image.revision` = commit del tag.
+- **Se despliega solo tras el gate.** `image_provenance.py gate` compara el árbol
+  de la imagen con el manifiesto que el workflow de release subió a la GitHub
+  Release y muestra el diff frente a la imagen en ejecución. Cualquier diferencia,
+  incluida una que solo afecte a los finales de línea, rechaza el despliegue; un
+  resultado no medible también (exit 2).
+- **El parámetro vive en el repositorio**: `.github/image-provenance.json` (árbol
+  desplegable, exclusiones, imagen, repositorio, clúster). Su existencia activa el
+  job `provenance` del workflow de release.
+- Quien tenga permisos de `oc` puede saltarse el gate; hacerlo es un acto explícito
+  que se documenta en la issue del despliegue, nunca un atajo.
+
 ### Propiedad de recursos de contenedores (invariante)
 
 La máquina donde trabaja un agente puede ser la misma que sirve producción.
@@ -163,9 +201,9 @@ Un agente solo para o borra los contenedores, volúmenes y redes que haya creado
 
 ### Disciplina de revisión
 
-- El CI corre **una vez, en la PR**: no hay `strict` ni cola de merge, y la rama base puede avanzar durante la vida del PR sin invalidar los checks. La red de seguridad después del merge es el workflow de `push` a `main` más un nightly diario.
-- **Rojo en CI pisa todo el merge.** Regla humana: el revisor no debe pulsar merge con ningún check rojo, ni siquiera si el rojo parece trivial. Complemento técnico: `repository-delivery-governance` HR-7 + `deterministic-quality-harness` HR-1 fail-loud atajan el escenario cuando hay branch protection automatizada.
-- **El agente no usa `--admin` ni fuerza el merge.** La decisión de fusionar es humana (HR-50) y la regla anterior es inseparable del bypass: el agente que detecte un merge bloqueado por checks rojos, por la protección del ruleset o por un SHA desactualizado **lo escala al mantenedor** (issue, comentario en el PR o canal acordado), nunca aplica `--admin`, `--force` ni equivalente en CLI; y, por la API, nunca envía `merge_method: admin` ni `sha` distinto al verificado por CI. El job de merge gobernado del consumer (HR-50, `assets/runner-controls/check_governed_merge.py`) aplica `merge` o `squash` con la identidad del bot sobre el SHA verificado, sin bandera admin; si una PR exige admin para entrar, el flujo está roto y se arregla el flujo, no se salta.
+- El CI corre **una vez, en la PR**: no hay `strict` ni cola de merge, y la rama base puede avanzar durante la vida del PR sin invalidar los checks. La red de seguridad después del merge es el workflow de `push` a `main` más un nightly diario. El merge gobernado lo aplica con `merge_freshness` en `.github/host-contract.json`: ausente u `off` (por defecto), un PR atrasado con los checks requeridos en verde se fusiona sin actualizar la rama, y el CI que despacha `post_merge_dispatch` verifica el árbol fusionado (sin `post_merge_dispatch` el atraso sigue bloqueando); `required` solo para el consumer cuyo deploy compara el árbol fusionado con el revisado (#426). Hoy ningún consumer web lo usa: APAP_WEB pasó a `off` cuando su deploy empezó a aceptar la evidencia de `HEAD^2` (APAP_WEB#2362, #3098). Con cualquier valor, si la PR y la base cambiaron el mismo fichero de `.github/workflows/`, hay que actualizar la rama: `GITHUB_TOKEN` no puede escribir workflows (#783, #1397). Con `off`, fuera de ese caso y de un conflicto (`DIRTY`), no se fusiona `main` en la rama ni se pulsa «Update branch»: cada push nuevo repite la CI entera (`governed-delivery`, §«Disciplina local»). Mientras el perfil pre-release esté activo (`primary_type: web` hasta la primera release), rigen sus reglas: no hay re-ejecución tras la fusión, y la red post-merge pasa a ser la canalización nocturna sobre la cabeza de main (ver «Perfil pre-release»).
+- **Rojo en CI pisa todo el merge.** Nadie lanza el merge con ningún check rojo, ni siquiera si el rojo parece trivial. Complemento técnico: `repository-delivery-governance` HR-7 + `deterministic-quality-harness` HR-1 fail-loud atajan el escenario cuando hay branch protection automatizada.
+- **El agente no usa `--admin` ni fuerza el merge.** El merge lo lanza el administrador que lleva la sesión por el merge gobernado y con la CI en verde (HR-50), y la regla anterior es inseparable del bypass: el agente que detecte un merge bloqueado por checks rojos, por la protección del ruleset o por un SHA desactualizado **lo corrige o lo deja documentado** en la issue o en el PR, nunca aplica `--admin`, `--force` ni equivalente en CLI; y, por la API, nunca envía `merge_method: admin` ni `sha` distinto al verificado por CI. El job de merge gobernado del consumer (HR-50, `assets/runner-controls/check_governed_merge.py`) aplica `merge` o `squash` con la identidad del workflow sobre el SHA verificado, sin bandera admin; si una PR exige admin para entrar, el flujo está roto y se arregla el flujo, no se salta.
 - El job `merge-ready` signal-only que consulta `mergeable` y `reviewDecision` está retirado (no cazaba defectos): sin `strict` ni cola de merge, la barrera la aplica el ruleset del host y la red de seguridad post-merge (`push` a `main` + nightly diario), y replicarla en CI duplicaba la señal sin añadir garantía.
 - Cuando el CI rojo es por **infra** (runner colgado, red, secret rotado), abrir issue bloqueante de CI y enlazarla desde el PR; no embutir la fix infra en el PR del feature salvo que sea ≤30 LOC y se cierre en el día.
 
@@ -173,6 +211,7 @@ Un agente solo para o borra los contenedores, volúmenes y redes que haya creado
 
 - Anti-slop y anti-sobreingeniería de IA se delegan a la skill del catálogo `ai-slop-discipline` (comprobación de 23 puntos, 3 firmas, límite de delegación para subagentes). El partial no redefine la disciplina — el consumer que adopte la skill la aplica automáticamente antes de cualquier cambio.
 - **Sin atribución de IA en commits**: no se añade `Co-Authored-By: ... <AI>` ni equivalente. Esta regla vive también en `personal-skills/AGENTS.md` raíz de la flota; el partial la refleja para que sea visible en el slice de web.
+- **Autor con cuenta de GitHub**: el agente no firma los commits con una identidad propia (`pi-agent <pi-agent@local>`); usa la de la persona que lo dirige (`git config user.name`/`user.email` con un correo verificado o el noreply de la cuenta, y sin `GIT_AUTHOR_*`/`GIT_COMMITTER_*` que la sustituyan). `pr-contract` lo mide (HR-84 de `ci-pattern`).
 - Mensajes de commit en conventional commits. Castellano peninsular formal (usted) en artefactos documentales raíz; inglés en código, comentarios, mensajes de commit y PR bodies.
 
 ### CodeGraph preflight (cuando aplique)
@@ -190,7 +229,7 @@ Un agente solo para o borra los contenedores, volúmenes y redes que haya creado
 Estas decisiones quedan a la flota / consumer; el partial las registra para que las revisiones no las traten como incumplimientos.
 
 - **Merge strategy.** `--squash` o `--no-ff`, ambos válidos. Invariante compartida: la rama remota se preserva en cualquier caso.
-- **Etiqueta `size:exception`.** Solo el mantenedor la aplica cuando partir el PR rompería `main`; el campo `size-exception-reason:` está retirado y el agente nunca se pone esa etiqueta.
+- **Etiqueta `size:exception`.** La decide el administrador que lleva la sesión cuando partir el PR rompería `main`; el campo `size-exception-reason:` está retirado.
 - **Rama base única.** Todo aterriza en `main`, antes y después del MVP.
 - **Convención multi-app.** Si el consumer migra varias apps, el prefijo de issue/commit es decisión propia; el commit debe identificar el scope de cualquier manera.
 
@@ -205,12 +244,13 @@ Cada invariante de este partial se ancla a una skill específica del catálogo o
 - Base = `main` para todo el ciclo de vida del consumer web; sin flip post-MVP → upstream `engineering-workflow` líneas 46-51.
 - 400 líneas + `size:exception` → `deterministic-quality-harness` Decision Gate línea 56; upstream `chained-pr` HR-1 línea 16.
 - Rojo en CI pisa todo → `repository-delivery-governance` HR-7; upstream `engineering-workflow` línea 79.
-- Ciclo de entrega (worktree y rama desde la base activa actualizada → merge de la base en la feature → preflight/pruebas → push → PR → CI sobre cabeza y base actuales → merge del mantenedor → retirada solo del worktree local) → `governed-delivery` regla 1 y el documento operativo generado por `ci-pattern` (#390).
+- Ciclo de entrega (worktree y rama desde la base activa actualizada → merge de la base en la feature → preflight/pruebas → push → PR → CI sobre cabeza y base actuales → merge gobernado lanzado con el perfil de el administrador que lleva la sesión → retirada solo del worktree local) → `governed-delivery` regla 1 y el documento operativo generado por `ci-pattern` (#390).
 - Sincronización de la rama publicada por `git merge`, nunca rebase → `governed-delivery` regla 1; `ci-pattern` HR-54; #333.
 - Rama remota preservada tras el merge, worktree local retirado solo al final → `worktree-reorg-per-project` Phase 3.
 - Evidencia e2e por PR (UI exige flujo e2e o exención justificada; gate
   `e2e-evidence` parametrizado, fail-closed) → `ci-pattern` asset `e2e-evidence` (#425).
 - Propiedad de recursos de contenedores (solo lo propio con prefijo; producción con `*-prod-*`, volumen con nombre y etiqueta de protección) → DysTelefonica/team-skills#454, por el incidente de APAP_WEB del 2026-10-12: un agente borró la base de producción con `docker rm -fv` porque el contenedor tenía nombre de prueba y volumen anónimo. Invariante de flota sin skill fuente.
+- Origen de la imagen de producción (manifiesto de release, build desde el tag, gate antes de `oc set image`) → `ci-pattern` HR-83, asset `image-provenance` (DysTelefonica/team-skills#1389), por el incidente de `DysTelefonica/cadete`: producción ejecutó `wcdy/cadete:2026.07.29B`, construida desde un commit nunca subido mientras su tag apuntaba a otro commit de `main`, y un hotfix desde `main` borró sus funciones (DysTelefonica/cadete#748, investigación DysTelefonica/cadete#755).
 - Anti-slop → `ai-slop-discipline` (catálogo, T1 universal).
 - CodeGraph preflight → upstream `engineering-workflow` líneas 64-71; `codegraph-usage` HR-1, HR-2.
 - Conventional commits + castellano peninsular en artefactos + sin atribución IA → `personal-skills/AGENTS.md` raíz de flota.
@@ -237,8 +277,7 @@ Procedimiento de validación periódica (mensual o por release de skill fuente):
 - "Borrar la rama remota post-merge porque ya está mergeada" — destruye la granularidad por unidad de trabajo que el flujo pretende crear.
 - «Borrar un contenedor o un volumen porque su nombre parece de prueba» — la propiedad se decide por el prefijo de la tarea y por la etiqueta de protección, nunca por la apariencia del nombre; el borrado de un recurso de producción no lo recupera ni el reintentar el deploy (#454).
 - "PR con 600 líneas porque el feature lo requiere" — partir primero, encadenar después; `size:exception` es el último recurso, no la primera opción.
-- "Mergear con CI rojo aunque el rojo parezca trivial" — la trivialidad la decide el revisor, no el autor.
-- "Esperar a que el reviewer apruebe manualmente aunque todos los checks estén verdes" en proyectos con auto-merge standing explícito — revisar la sección de revocación de `merge-workflow.md §15.6` antes de saltarse el gate.
+- "Mergear con CI rojo aunque el rojo parezca trivial" — con un check rojo no se fusiona, sea cual sea su apariencia.
 
 ### Carga de skills (orden de resolución)
 
@@ -257,6 +296,32 @@ Referencias por nombre en prosa; ruta absoluta exacta en la delegación: al pasa
 ### Auditoría (Refs #490)
 
 - **2026-10-13:** el texto de *Disciplina de revisión* (linea 108) y la entrada de *Anti-slop* correspondiente (linea 175) ya enuncian la regla con `git merge` y la prohibición de reescritura de historia; el cambio que #490 propone como "Texto propuesto" coincide con el actual. Sin edición de fuente requerida. Si el duplicado que reporta el issue vive en la versión propagada del partial (por ejemplo el `AGENTS.md` del consumer referenciado por el issue), la causa es una propagación pendiente, no un bug del fuente.
+
+### Perfil pre-release (#1627)
+
+Este perfil rige todo proyecto con `primary_type: web` hasta su primera release. Lo fija el dueño (HR-14). Un proyecto lo declara con un fichero versionado, `.github/prerelease.json`, con dos campos: `enabled` (booleano, obligatorio) y `schema_version` (opcional, entero >= 1; si falta vale 1). El validador del catálogo acepta el fichero actual de APAP_WEB, `{"enabled": true}`. APAP_WEB no debe añadir `schema_version` ni `BOM` mientras su propio validador (`scripts/check_prerelease.py`) solo acepte `enabled`. El validador vive en el tier de gobierno ci-pattern: un consumer web lo ejecuta, con el tier instalado, con `python <ci-pattern>/assets/prerelease/check_prerelease_profile.py <fichero>`; sale con 0 si la declaración es válida y con 2 nombrando cada campo inválido. La forma completa de las reglas y las entregas pendientes están en `ci-pattern/references/prerelease-profile.md`.
+
+Reglas del perfil:
+
+1. **Día, cada PR ordinario.** Solo los gates baratos: lint, typecheck, tests unitarios, pr-gate, los ficheros e2e propios del PR y la seguridad de dependencias cuando cambian las dependencias. La integración y la ruta de actualización corren solo si el PR toca SQL o migraciones. Se fusiona en cuanto está en verde: sin deploy, sin job caro y sin re-ejecución tras la fusión.
+2. **Noche, una sola canalización sobre la cabeza de main.** Se construye la imagen y se ejecutan todos los checks caros: e2e completo, integración, ruta de actualización, Trivy y el escaneo de seguridad profundo. Se despliega a producción solo si todos están en verde sobre el mismo SHA.
+3. **Noche en rojo.** No hay deploy. Se abre una issue de máxima prioridad por cada job en rojo, y esos arreglos van antes que cualquier trabajo nuevo. La canalización nocturna se vuelve a lanzar a mano el mismo día, en cuanto esté en verde. Objetivo: al menos un deploy exitoso al día.
+4. **Migraciones y DDL.** Un deploy con migración o DDL espera siempre a una copia de seguridad verificada. La canalización nocturna nunca aplica por sí sola una migración pendiente.
+5. **Cadenas.** Como máximo tres eslabones abiertos, y cada uno se fusiona en cuanto está en verde. Un script abre cada eslabón con la etiqueta y `Refs #N`; solo la punta lleva `Closes #N`.
+6. **Nada redundante.** Ningún check corre dos veces sobre el mismo código el mismo día (PR, después push a main, después cron). Si un check es caro, corre de noche.
+7. **Fin del perfil.** El perfil deja de aplicarse en la primera release del proyecto. Al llegar la primera release, el proyecto pasa a su perfil normal (decisión del dueño).
+
+**Regla dura del dueño.** Mientras la canalización nocturna esté en rojo, no se trabaja ni se fusiona ninguna issue salvo las que arreglan ese rojo. La línea se para hasta que la ejecución nocturna salga en verde y se despliegue. Esta regla rige ya desde ahora; además, el merge gobernado la hará cumplir de forma automática.
+
+**Reglas adicionales del dueño.**
+
+- Todo paso con una regla fija es un script versionado y con tests, nunca un turno del modelo.
+- Toda automatización sale con sus tests escritos antes que el código, y el `.sh` del runner tiene modo de ensayo.
+- Una noche en rojo se vuelve a lanzar el mismo día hasta que el deploy a producción salga bien.
+- El runner nocturno se aprovisiona con un `.sh` idempotente que vive en team-skills o en infra, nunca en APAP_WEB.
+- Todo PR que toque la canalización nocturna hace una ejecución nocturna de ensayo antes de fusionarse.
+
+**Alcance de las relajaciones de cadena.** Las reglas de contexto de cadena (la tabla de contexto obligatoria) y de re-ejecución de CI tras un retarget se relajan solo mientras el perfil está activo: no se exige la tabla, y no se vuelve a ejecutar CI tras un retarget cuando la cabeza no ha cambiado. Fuera del perfil, ambas reglas rigen sin cambios.
 
 
 
@@ -279,10 +344,9 @@ las skills. Cargue la que corresponda antes de actuar.
 
 Invariantes, sin excepción: nada directo a la rama protegida; sin
 rebase, `--amend` ni force-push sobre ramas publicadas (HR-54); el merge
-lo lanza un mantenedor por el camino gobernado; un agente lo lanza solo
-por orden registrada de un mantenedor, con cuenta de mantenedor, y nunca
-con `--admin`; sin
-nombres propios — solo roles y rutas instaladas. El detective post-push y
+lo lanza el agente que lleva la issue, con el perfil de el administrador que lleva la sesión,
+por el camino gobernado, con la CI en verde y nunca con `--admin`; sin
+nombres propios — solo rutas instaladas. El detective post-push y
 el guard de force-push abren el incidente.
 
 <!-- ci-pattern:hr-block:begin -->
@@ -295,7 +359,7 @@ el guard de force-push abren el incidente.
 Bloque gobernado: no lo edite a mano; se regenera desde el patrón.
 Antes de actuar, lea la parte del flujo operativo de la situación. Si un paso,
 comando, etiqueta o dato que necesita no está en este documento, NO lo invente:
-deténgase y pregunte en la issue o al mantenedor.
+deténgase y pregunte en la issue o al administrador que lleva la sesión.
 
 | Situación | Qué leer antes de actuar |
 | --- | --- |
@@ -313,7 +377,7 @@ deténgase y pregunte en la issue o al mantenedor.
 
 **Mandato de no invención:** si un paso, comando, etiqueta o dato que necesita
 no está documentado en el flujo operativo, no lo invente: deténgase y
-pregunte en la issue o al mantenedor.
+pregunte en la issue o al administrador que lleva la sesión.
 
 ## Dónde vive la documentación
 
@@ -387,10 +451,11 @@ El prefijo de commit identifica la app afectada: `fix(expedientes): ...`, `docs(
 
 ## §F.7 Skills locales no distribuidas por catalog
 
-Este repo mantiene dos skills propias que **no están en el catalog** y no se sobrescriben en propagación:
+Este repo mantiene tres skills propias que **no están en el catalog** y no se sobrescriben en propagación:
 
 - `skills/architecture-guardrails/` — front-door de lectura, gates de arquitectura, D-<n> management. Se carga antes de cualquier cambio estructural.
 - `skills/documentation-alan-style/` — formato documental (Castellano peninsular, sentence case, sin emojis). El catalog tiene su propia `documentation-alan-style` que SOBREESCRIBE esta local; la divergencia histórica entre ambas se cierra tras la primera propagación exitosa.
+- `skills/coexistence-migration/` — reglas de la migración por coexistencia progresiva (épica #1545, D92). Se carga antes de cualquier trabajo de migración, de modelo de datos o de adaptadores de PostgreSQL, y antes de crear o triar una issue de migración.
 
 Si una IA llega al repo y NO ve `architecture-guardrails` cargada, está operando contra arquitectura obsoleta.
 <!-- /personal-skills:slice:access2web-blueprint -->
@@ -399,4 +464,49 @@ Si una IA llega al repo y NO ve `architecture-guardrails` cargada, está operand
 
 El índice de skills, las lecturas obligatorias y las reglas duras del repositorio viven en
 [`docs/agents-repo-guide.md`](docs/agents-repo-guide.md). El flujo operativo del CI se genera
-en [`docs/ci-pattern-flow.md`](docs/ci-pattern-flow.md) y no se edita a mano.
+en [`docs/ci-pattern-flow.md`](docs/ci-pattern-flow.md) y no se edita a mano. Antes de cualquier trabajo de
+migración, modelo de datos, adaptadores de PostgreSQL o issues de migración, cargue
+[`skills/coexistence-migration/SKILL.md`](skills/coexistence-migration/SKILL.md).
+
+Para el informe semanal (reunión semanal con la gerencia, avance del hito, seguimiento semanal,
+retrasos, bloqueos o riesgos), cargue
+[`skills/a2w-seguimiento-semanal/SKILL.md`](skills/a2w-seguimiento-semanal/SKILL.md): es propia
+de este repositorio y no se propaga a team-skills.
+
+### Orden permanente del propietario: sin roles, cada administrador de punta a punta
+
+Orden del propietario (2026-11-19), con sus palabras: «todo lo que hemos definido de gobierno de
+este repo sea igual (en lo que se pueda y si no adaptándolo a las características) en access2web.
+No quiero que ponga nada de roles, quiero que si Juan Félix entra como yo usemos nuestros gh con
+nuestro usuario. Que se pueda hacer todo de punta a punta sin contar con infra ni nada».
+Es el mismo gobierno que DysTelefonica/cadete.
+
+- **Sin roles, bots ni Apps.** El agente actúa en GitHub como el administrador que lleva la
+  sesión (hoy ardelperal o juanfelixrt23), con el `gh` de su máquina y sin ningún token de App
+  (`GH_TOKEN= GITHUB_TOKEN= gh ...`). Nunca imprime ni copia tokens, y los valores de los
+  secretos no pasan por él. Un colaborador con permiso de escritura llega hasta la PR; el merge
+  gobernado necesita el perfil de un administrador.
+- **El flujo de una issue, sin esperar a nadie:**
+  1. Issue con las seis secciones del formulario canónico; worktree propio en una rama
+     `<tipo>/<n>-<slug>` desde `main`.
+  2. Primero el test; después las pruebas locales con `skills/a2w-local-dev/SKILL.md`
+     (`dev.sh <n> up | test | integration | e2e | verify | down`) antes de empujar.
+  3. Push y PR (encadenada si pasa de 400 líneas), con la tabla de tests que prueban el cierre.
+  4. CI en los runners de GitHub: el repositorio es público y la política de
+     `docs/10-runners.md` no admite runners propios.
+  5. Merge gobernado: `gh workflow run governed-merge.yml -f pr=<N>`, con `required` y
+     `pr-gate` en verde sobre la cabeza de la PR (lo exige también el ruleset de `main`). En una
+     cadena, los eslabones en orden y el siguiente se reapunta a `main` tras cada merge. Nunca
+     `--admin`. La única excepción es el caso en que el merge gobernado de `main` no puede
+     fusionar la PR que lo arregla: entonces se fusiona esa PR una vez con
+     `gh pr merge <N> --merge --subject "Merge PR #<N> (governed merge)"` y los checks en verde
+     (#1770).
+  6. Tras el merge se borran el worktree y la rama local; la rama remota se conserva.
+- **Skill del flujo:** `skills/a2w-issue-flow/SKILL.md` (este repo, no se propaga).
+- **`size:exception`.** La decide el administrador que lleva la sesión, tras responder las
+  cuatro preguntas de la plantilla de PR.
+- **Precedencia.** En access2web esta orden manda sobre cualquier skill, propagada o global, y
+  sobre el bloque propagado de arriba, donde digan otra cosa: decisión humana del merge,
+  coordinador, revisor, mantenedor aparte, roles de agente o infra, o las identidades
+  `dys-agentes` y `dys-orquestador` de `github-roles` y `governed-delivery`. No cargue aquí
+  las skills de coordinación de agentes.

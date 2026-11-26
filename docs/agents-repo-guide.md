@@ -43,6 +43,8 @@ These skills are **mandatory** — load them before any work in their scope:
 | **`branch-pr`** | **Any** commit, PR creation, or merge to `main`. Conventional commits, PR pequeño y reversible. En el merge, **sin** `--delete-branch`: la rama remota se conserva; lo que se limpia es el worktree local (`git worktree remove <path>`). Vive en `~/.config/opencode/skills/branch-pr/SKILL.md` (distribuida por `gentle-ai`). |
 | **`worktree-reorg-per-project`** | **Any** worktree op en este repo: `git worktree add`, `git worktree move`, `git worktree remove`, `git worktree prune`, pre-PR cleanup, fresh project setup. El layout canónico es main en la raíz del proyecto + container hermano `<project>-worktrees\` con linked WTs adentro (v2.0). v1 está deprecated — si el proyecto está en v1, migrar a v2 antes de trabajar. Vive en `~/.config/opencode/skills/worktree-reorg-per-project/SKILL.md`. Author: ardelperal. |
 | **`architecture-guardrails`** | **Any** cambio estructural en `app/`, `tests/` u `openspec/`; al proponer una decisión arquitectónica nueva (D-<n>); al llegar al repo por primera vez; al extender o contradecir una D-<n> existente. Operacionaliza el front-door a [`architecture.md`](architecture.md) como single source of truth. Skill hermana de `documentation-alan-style`: esa prescribe cómo se escribe, esta prescribe qué se debe saber antes de escribir. Vive en este repo: `skills/architecture-guardrails/SKILL.md`. Author: ardelperal. |
+| **`a2w-issue-flow`** | **Any** issue de access2web: tomarla, abrir su PR, mergear, cadenas, `size:exception` y limpieza. Aplica la orden permanente de `AGENTS.md` (sin roles; el administrador que lleva la sesión, con su `gh`). Vive en este repo. |
+| **`coexistence-migration`** | **Any** trabajo de migración o de modelo de datos, adaptadores de PostgreSQL o DDL, backends Access legacy, o al crear o triar issues de migración. Recoge la coexistencia progresiva (épica `docs/07-migracion/epica-coexistencia-postgresql.md`, #1545), la D92 (`docs/decisions/2026-11-04-d92-tablas-con-forma-legacy-compartidas.md`, #1547), el protocolo de huérfanas y la convención de etiquetas `estrategia:coexistencia`, `coexistencia:ajuste` y `coexistencia:obsoleta`. Vive en este repo: `skills/coexistence-migration/SKILL.md`. Author: ardelperal. |
 | **`documentation-alan-style`** | **Any** redacción o revisión de `README.md`, `AGENTS.md`, `DOCS.md`, `CODEBASE-GUIDE.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `epic.md` o `walkthrough-*.json`. Plantillas en `references/templates/`. Vive en este repo: `skills/documentation-alan-style/SKILL.md`. |
 | **`repository-delivery-governance`** | **Any** auditoría o cambio de CI/CD, política de issues o PRs, labels, branch protection, rulesets, permisos de merge, artefactos, despliegue o rollback. Vive en `~/.agents/skills/repository-delivery-governance/SKILL.md`, distribuida por `DysTelefonica/team-skills`. Si falta, deténgase y sincronice el catálogo antes de trabajar. La política específica de este repo prevalece sobre su baseline portable. |
 | **`gentle-ai-ai-slop-discipline`** | **Any** implementación de PR (código, tests, docs). Carga la skill **antes** de escribir la primera línea y **antes** de pedir `size:exception` o merged. Las 4 preguntas self-check y las 3 firmas de AI-slop son el gate que el AI pasa sobre su propio diff antes de notificar al humano. Sin este gate, los AI-invented tests, los `object` types como placeholder, los duck-typed `hasattr` checks, y los comentarios que duplican la autoridad existente pasan como código permanente. Vive en `~/.agents/skills/gentle-ai-ai-slop-discipline/SKILL.md` (distribuida por `gentle-ai`). |
@@ -57,6 +59,10 @@ These skills are **mandatory** — load them before any work in their scope:
 | `chained-pr` | PRs sobre 400 líneas, stacked PRs, review slices. | `~/.config/opencode/skills/chained-pr/SKILL.md` (gentle-ai) |
 | `documentation-alan-style` | Redactar o revisar docs raíz, `epic.md`, `walkthrough-*.json`. | `skills/documentation-alan-style/SKILL.md` (este repo) |
 | `architecture-guardrails` | Cambios estructurales en `app/`, `tests/`, `openspec/`; decisiones D-<n>. | `skills/architecture-guardrails/SKILL.md` (este repo) |
+| `a2w-issue-flow` | Llevar una issue de punta a punta: PR, CI, merge gobernado, cadenas y limpieza. | `skills/a2w-issue-flow/SKILL.md` (este repo) |
+| `a2w-local-dev` | Probar una issue en local: stack por issue, tests, integración, e2e y `make verify`, igual en Linux que en WSL. | `skills/a2w-local-dev/SKILL.md` (este repo) |
+| `a2w-seguimiento-semanal` | Informe semanal para la gerencia: avance del hito, retrasos, bloqueos, riesgos y decisiones. | `skills/a2w-seguimiento-semanal/SKILL.md` (este repo) |
+| `coexistence-migration` | Migración, modelo de datos, adaptadores de PostgreSQL o DDL, backends legacy, issues de migración. | `skills/coexistence-migration/SKILL.md` (este repo) |
 | `lanzadera-testing-strategy` | Clasificar test nuevo en Categoría 1–5; revisar capa de un test; decidir mock vs. fake; debate sobre `auth_bypass`. | `skills/lanzadera-testing-strategy/SKILL.md` (este repo) |
 | `repository-delivery-governance` | Auditar o cambiar CI/CD, issues, PRs, labels, protección de ramas, permisos de merge, artefactos, despliegue o rollback. | `~/.agents/skills/repository-delivery-governance/SKILL.md` (`DysTelefonica/team-skills`) |
 
@@ -162,7 +168,7 @@ misma regla cuando se lo analiza por su cuenta.
 `merge-ready` fue retirado (issue #702): quedaba completamente superado por
 `required`, que sí bloquea el merge.
 
-Pasos del revisor antes de mergear:
+Comprobaciones antes de lanzar el merge gobernado:
 
 1. Verifique que `required` y `pr-gate` pertenecen al último SHA del PR.
 2. Compruebe que las conversaciones están resueltas.
@@ -174,13 +180,13 @@ Refuerza esta disciplina con `gentle-ai review status --cwd <repo>` antes de mer
 
 ## Hard rule — flujo de entrega y merge gobernado
 
-Toda entrega pasa por una issue canónica y un PR; el merge lo lanza un mantenedor por el camino del host.
+Toda entrega pasa por una issue canónica y un PR; el merge lo lanza el administrador que lleva la sesión, con su propio `gh`, por el merge gobernado (orden permanente de `AGENTS.md`).
 
 - **Issue.** El formulario canónico (`.github/ISSUE_TEMPLATE/issue-canonical.yml`) recomienda seis secciones: `Problema y contexto`, `Evidencia verificable`, `Alcance y no objetivos`, `Criterios de aceptación`, `Plan de validación` y `Dependencias y riesgos`. `status:approved` puede ponerla cualquiera, agentes incluidos, y ningún gate la exige (`DysTelefonica/team-skills#1093`, R1/R2).
 - **Rama.** `<tipo>/<slug>` con el patrón de gentle-ai (`feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert`), sin número de issue; lo aplica el ruleset del host. La trazabilidad vive en el cuerpo del PR con `Closes #N`.
-- **PR.** El cuerpo sigue la plantilla del repositorio: `Closes #N` o `Refs #N`; `Chain Context` y la sección de tests que prueban el cierre son ayudas y su ausencia avisa, pero no bloquea (#1093 R3/HR-53). Si el diff supera las 400 líneas, el mantenedor pone la etiqueta `size:exception` tras responder las 4 preguntas de `AGENTS.md` §F.7.
+- **PR.** El cuerpo sigue la plantilla del repositorio: `Closes #N` o `Refs #N`; `Chain Context` y la sección de tests que prueban el cierre son ayudas y su ausencia avisa, pero no bloquea (#1093 R3/HR-53). Si el diff supera las 400 líneas, el administrador que lleva la sesión pone la etiqueta `size:exception` tras responder las 4 preguntas de la plantilla de PR.
 - **Checks requeridos.** `required` y `pr-gate` deben estar en verde en la PR antes de fusionar. Sin `strict` ni cola de merge, una PR que ya pasó el CI se integra aunque quede atrás de `main` (no hay que sincronizar la rama con `main` a mano); la red de seguridad tras el merge es el mismo `ci` en `push` a `main` y un `schedule` diario.
-- **Merge.** Lo lanza un mantenedor por el camino del host: el ruleset `main-maintainers-and-admins-merge` solo deja actualizar `main` a los mantenedores y administradores, y solo mediante un PR. **Ningún agente hace merge.**
+- **Merge.** Lo lanza el administrador que lleva la sesión (o el agente con su perfil) con `gh workflow run governed-merge.yml -f pr=<N>`; el workflow verifica el contrato y fusiona con su `GITHUB_TOKEN` (#1770). El ruleset `main-maintainers-and-admins-merge` exige un PR y los checks `required` y `pr-gate` en verde; los roles admin y maintain conservan la excepción. Nunca `--admin`.
 - **Rama remota.** Se conserva tras el merge; nunca se borra.
 - **Documentación.** Vive en el repositorio, bajo `docs/`.
 

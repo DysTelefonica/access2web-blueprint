@@ -123,13 +123,10 @@ Fase de lectura pura: ningún cambio de código, workflow ni gobernanza.
   **presencia y deriva**: que la página exista, que tenga las filas `form`,
   `ci`, `schema` y `local`, que cada fila declare las tres columnas y que cada
   ruta citada exista en el repo. No juzga la prosa. La plantilla está en
-  `assets/where-to-work/templates/where-to-work.md`.
-
-  ```yaml
-  - name: La página dice dónde trabajar (#1201)
-    run: >
-      python3 .agents/skills/ci-pattern/assets/where-to-work/check_where_to_work.py .
-  ```
+  `assets/where-to-work/templates/where-to-work.md`. Lo ejecuta la fase 5 con
+  el modo que declara `docs_where_to_work` (HR-77): el job `docs-gates` no
+  lleva un paso propio para el asset, que daría un segundo rojo por la misma
+  causa (#1396).
 
 ### Cableado del preflight de tooling por job (G0.5)
 
@@ -428,14 +425,19 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
    "governance_seals": { "job": "governance-seals" }
    ```
 
-   y añada el job al `ci.yml` del consumer, con esta forma:
+   y añada el job en un workflow propio, con esta forma. El job solo mide el
+   árbol, así que dispara cuando el árbol puede cambiar (`opened`,
+   `synchronize`, `reopened`) y no al editar el cuerpo o las etiquetas, y
+   tiene su propia cola: no comparte la del workflow de contrato de PR (#1440).
+   Lo mismo vale para cualquier otro job que solo mida el árbol (lint,
+   nombre de rama): nunca va en el workflow de contrato de PR.
 
    ```yaml
-   name: pr-gates
+   name: governance-seals
 
    on:
      pull_request_target:
-       types: [opened, edited, labeled, unlabeled, synchronize, reopened]
+       types: [opened, synchronize, reopened]
 
    permissions:
      contents: read
@@ -443,59 +445,21 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
      checks: write
 
    concurrency:
-     group: pr-gates-${{ github.event.pull_request.number }}
+     # Cola propia (HR-73): no es la `pr-gates-<PR>` del contrato de PR.
+     group: governance-seals-${{ github.event.pull_request.number }}
      # Solo un commit nuevo cancela una corrida (#978).
      cancel-in-progress: ${{ github.event.action == 'synchronize' }}
 
    jobs:
-     canon:
-       name: canon
-       # El UNICO job que puede leer el token del catalogo (#1270). No ejecuta
-       # codigo del PR: el checkout es de la BASE, de donde salen la accion y el
-       # sello, asi que el PR no puede tocar la una ni elegir el commit que se
-       # mide. El patron se publica como artefacto para los jobs del gate.
-       runs-on: [self-hosted, Linux, mi-consumer]
-       timeout-minutes: 10
-       steps:
-         - name: Check out the base (trusted action and seal)
-           uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-           with:
-             ref: ${{ github.event.pull_request.base.sha || github.sha }}
-             persist-credentials: false
-
-         # La accion y el sello son los de la base. El token vive SOLO en este paso.
-         - name: Resolve the canon at the seal
-           uses: ./.github/actions/pattern-at-pin
-           with:
-             token: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
-
-         # El canon viaja como tarball: un artifact no conserva el bit de
-         # ejecucion, y el canon lo necesita (`assets/bin/ci-pattern`).
-         - name: Pack the canon
-           run: |
-             set -euo pipefail
-             tar -czf "$RUNNER_TEMP/canon.tar.gz" -C "$PATTERN_DIR" .
-
-         - name: Publish the canon
-           uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-           with:
-             name: canon
-             path: ${{ runner.temp }}/canon.tar.gz
-             if-no-files-found: error
-
      governance-seals:
        name: governance-seals
        # HR-72 (#1027). El gate evalua el PR, asi que corre en `pull_request_target`,
        # que ejecuta el workflow de la base (#1270).
-       needs: canon
        runs-on: [self-hosted, Linux, mi-consumer]
        timeout-minutes: 15
-       permissions:
-         contents: read
-         checks: write
        env:
-         # El canon publicado por el job `canon`.
-         PATTERN_DIR: .canon
+         # El patron vendorizado en la BASE: ni token ni artefacto (#1396).
+         PATTERN_DIR: base/.agents/skills/ci-pattern
        steps:
          - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
            with:
@@ -504,8 +468,9 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
              fetch-depth: 0
              persist-credentials: false
 
-         # La CONFIGURACION que gobierna el gate sale de la BASE (#1270): el
-         # CONTRATO DE ADOPCION se lee de ahi, sin credenciales. Un PR no puede
+         # La CONFIGURACION que gobierna el gate y el PATRON que lo ejecuta
+         # salen de la BASE (#1270, #1396): el CONTRATO DE ADOPCION se lee de
+         # ahi, sin credenciales. Un PR no puede
          # reescribir el contrato que lo mide. El estado (el manifiesto de
          # gobernanza, los ficheros gobernados y las instantaneas del host)
          # sigue siendo el del PR (#1351).
@@ -514,17 +479,6 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
              ref: ${{ github.event.pull_request.base.sha }}
              path: base
              persist-credentials: false
-
-         - name: Get the canon
-           uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-           with:
-             name: canon
-             path: .canon
-
-         - name: Unpack the canon
-           run: |
-             set -euo pipefail
-             tar -xzf .canon/canon.tar.gz -C .canon
 
          # UNA sola forma de medir (#1339): el gate corre una vez y la base es
          # el suelo. El PR puede AÑADIR (el artefacto de gobierno que acaba de
@@ -535,10 +489,10 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
          - name: Governance identity (HR-46, HR-72)
            run: python3 "$PATTERN_DIR/assets/bin/ci-pattern" adoption check --phase 3 pr-head --config-from base
 
-         # Un run de `pull_request_target` se atribuye a la BASE: su check run no
-         # aparece en el PR ni satisface un check requerido. El veredicto se publica
-         # como CHECK RUN sobre la CABEZA del PR, que es lo que bloquea el merge
-         # (`checks: write`).
+         # El espejo del veredicto sobre la CABEZA del PR (#1396): el check run
+         # nativo de un run de `pull_request_target` queda en la BASE y el merge
+         # gobernado, que lee los check runs de la cabeza, no lo ve. Solo
+         # `GITHUB_TOKEN`, nunca el secreto del catalogo.
          - name: Publish the verdict as a check run on the PR head
            if: always()
            env:
@@ -559,12 +513,12 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
          # manifiesto re-sellado no se commitea ni se empuja desde el job.
          # `if: failure()` corre solo cuando el gate falló, y el paso no usa
          # `|| true` ni `continue-on-error`: el veredicto del gate no se traga.
+         # El artefacto solo se sube cuando el gate YA falló: el veredicto no
+         # depende de él, y una cuota de artefactos no salta el check (#1396).
          - name: Manifiesto re-sellado (sin push)
            if: failure()
-           env:
-             PATTERN_DIR: pattern
            run: |
-             python3 "$PATTERN_DIR/assets/bin/ci-pattern" manifest seal base \
+             python3 "$PATTERN_DIR/assets/bin/ci-pattern" manifest seal pr-head \
                --out "$RUNNER_TEMP/governance-manifest.resealed.json"
 
          - name: Publicar el manifiesto re-sellado como artefacto
@@ -576,21 +530,28 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
              if-no-files-found: warn
 ```
 
-   El commit del patrón **no se写在**: se lee del sello `catalog @ <sha40>`
-   de la primera línea de `.team-skills.yaml`, que el propagador reescribe en
-   cada corrida (#1062). Un `pin:` literal queda viejo en la siguiente
-   propagación y el `diff` que produce no dice nada.
+   El commit del patrón **no se escribe**: es el de la copia vendorizada en la
+   base, la que fija el sello `catalog @ <sha40>` de la primera línea de
+   `.team-skills.yaml`, que el propagador reescribe en cada corrida (#1062). Un
+   `pin:` literal queda viejo en la siguiente propagación y el `diff` que
+   produce no dice nada.
 
-   El fragmento es un **workflow completo** en `pull_request_target` (#1270): el
-   job `canon` resuelve el patrón y lo publica como artefacto, y los jobs del
-   gate lo consumen sin ningún secreto. El checkout del job `canon` es de la
-   BASE, así que la acción y el sello son los de la base: el PR no puede tocar
-   la una ni apuntar el sello a un commit más antiguo del catálogo. El patrón
-   viaja como tarball porque un artefacto no conserva el bit de ejecución.
+   El fragmento es un **workflow completo** en `pull_request_target` (#1270) con
+   un solo job (#1396). El patrón es la copia vendorizada en el checkout de la
+   BASE (`base/.agents/skills/ci-pattern`), como en los jobs del `ci.yml`: el PR
+   no puede tocar el código que lo mide ni apuntar a un commit más antiguo del
+   catálogo, el job no necesita el token del catálogo y ningún artefacto se
+   interpone entre el patrón y el gate, así que una cuota de facturación de
+   artefactos no puede saltar el check requerido (`DysTelefonica/cadete#752`).
 
-   El veredicto se publica como check run sobre la cabeza del PR: un run
-   de `pull_request_target` se atribuye a la base y su check run no bloquea el
-   merge.
+   Por qué el gate aparece dos veces entre los checks del PR (#1396): un run de
+   `pull_request_target` adjunta su check run **nativo** al commit de la BASE
+   (`GITHUB_SHA`, el último commit de la rama base), no a la cabeza del PR. El
+   merge gobernado lee los check runs de la cabeza
+   (`repos/{repo}/commits/{head_sha}/check-runs`, `check_push_compliance`), así
+   que solo el **espejo** que el job publica sobre la cabeza con `CONTEXT`
+   satisface el check requerido; el nativo es informativo. El espejo usa solo
+   `GITHUB_TOKEN`, nunca el secreto del catálogo.
 
    La CONFIGURACION que gobierna el gate sale de la base (`--config-from base`):
    el **contrato de adopción** se lee del checkout de la base, sin
@@ -753,9 +714,17 @@ gates de PR por construcción, y no se fuerzan:
 | 1 | Evidencia de propagación | Fuera del PR por ahora | Solo existencia de ficheros; medible en un PR, pero cablearla es trabajo de un PR propio, no de la adopción de la 3 |
 | 2 | Aislamiento | Job propio `env-isolation` (HR-28) | Ya cableado en los consumers que lo declararon; el job invoca el asset, no la fase |
 | 3 | Sellos del manifiesto y cableado de `P23_required_jobs` | **Job de PR `governance-seals` (HR-72)** | Lee el árbol y el contrato; es la única cuya rojo puede invertir un PR antes del merge |
-| 4 | Los cinco gates del patrón en verde | Fuera del PR | Mide nombres de job y checks ya publicados: no hay PR que evaluar |
+| 4 | Los cinco gates del patrón en verde, host-readback, presupuesto y cableado HR-74 | **`docs-gates` en el PR** (`--only-phase 4 pr-head`, #1359) | El cableado del árbol del PR solo lo ve un gate de PR; si nadie la lanza, la deriva pasa (#1396) |
 | 5 | Deriva del documento operativo | Job programado o `docs-gates` en el PR | Medirlo en cada PR «gastaría minutos sin valor de revisión» (#858) |
 | 6 | Cadena de aceptación | Fuera del PR | Necesita el PR fusionado: número, SHA de 40 hex y `conclusion: success` |
+
+En el PR cada job mide solo su fase. El `docs-gates` invoca, en dos pasos,
+`ci-pattern adoption check --only-phase 4 pr-head` y
+`ci-pattern adoption check --only-phase 5 pr-head`: con `--phase 5` repetía las
+fases 2 y 3, que ya miden `env-isolation` y `governance-seals`, y una misma causa
+daba dos rojos (#1396). La fase 4 necesita su paso: `governance-seals` llega a la
+3, y sin él ningún job de PR la mide (lo vio cadete#799). El job programado sigue
+con `--phase 5 .`, que mide 0..5 en orden.
 
 Cierre: `ci-pattern adoption check --phase 3 <repo>` = 0.
 
@@ -773,7 +742,9 @@ Cierre: `ci-pattern adoption check --phase 3 <repo>` = 0.
   `assets/templates/.github/workflows/pr-contract.yml.tmpl`; generador:
   `assets/bin/origins_file.py`): sin el mapa el árbol vendorizado cuenta como
   líneas de autoría y la primera PR de propagación revienta el presupuesto
-  (#1133, #1149). La fase 4 lo mide (#1159, HR-74). Y el CI del consumer `MUST`
+  (#1133, #1149). El workflow pasa además el `.gitattributes` de la BASE con
+  `--gitattributes-file`: lo que marca `linguist-generated` no cuenta (#1440,
+  HR-54.11). La fase 4 lo mide (#1159, HR-74). Y el CI del consumer `MUST`
   ejecutarla en cada PR (`adoption check --phase 4 pr-head`), como ya hace con la
   fase 5: si solo la lanza quien la corre a mano, ningún gate ve la deriva del
   cableado (#1359).
@@ -806,6 +777,99 @@ Cierre: `ci-pattern adoption check --phase 3 <repo>` = 0.
   `P56_ci_images_gate: on` en `ci-pattern.yaml` y ejecute el gate
   `assets/ci-images/check_ci_images_pinned.py` en un job de CI; las excepciones
   van en `P57_ci_image_exceptions` (referencia → motivo). Sin declaración, inerte (HR-78).
+
+- **G4.7 — Camino de actualización de las migraciones (opt-in, HR-92).** Si el
+  consumer tiene esquema y migraciones, sus tests parten de una base vacía y
+  producción actualiza un esquema existente: la primera versión de
+  APAP_WEB#3607 pasó sus tests y habría impedido arrancar a producción. El job
+  `upgrade-path` arranca la última release sobre un Postgres vacío (eso deja el
+  esquema de producción, sin datos) y después, dos veces y sin borrar la base,
+  el arranque completo del cambio (DDL, semilla y migraciones, en el orden
+  real). `UPGRADE_BOOT_COMMAND` es el contrato del consumer: arranca la app en
+  el directorio actual, espera a que responda sana, la para y sale distinto de
+  0 si no arrancó. Sin tags de release (despliegue continuo desde `main`), la
+  base es `base.sha` del PR, como en APAP_WEB#3631; con un volcado schema-only
+  de producción, el primer arranque se sustituye por su restauración. El job
+  va en el `ci.yml` del agregador `required`, en su `needs` y en
+  `required_jobs`: en un workflow propio su rojo no para el merge
+  (APAP_WEB#3645). Declare `P60_upgrade_path: on` y la fase 4 lo exige. El job solo corre cuando el PR cambia SQL o migraciones: el filtro `sql` del job `changes` decide, y en un PR ordinario queda omitido (#1627, slice 8). Un job requerido omitido solo pasa si la política lo declara:
+
+  ```json
+  {"required_jobs": ["changes", "upgrade-path"], "events": {"pull_request": {"accepted_skips": ["upgrade-path"]}}}
+  ```
+
+  ```yaml
+  # Un PR ordinario no cambia SQL ni migraciones: este job no corre (#1627, slice 8).
+  changes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      sql: ${{ steps.filter.outputs.sql }}
+    steps:
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
+        id: filter
+        with:
+          filters: |
+            sql:
+              - '**/*.sql'
+              - '**/migrations/**'
+  upgrade-path:
+    needs: changes
+    if: needs.changes.outputs.sql == 'true'
+    runs-on: ubuntu-24.04
+    # Tres arranques: más de 30 minutos es un cuelgue.
+    timeout-minutes: 30
+    services:
+      postgres:
+        # La imagen que corre producción, fijada por digest (HR-78).
+        image: postgres:17@sha256:REEMPLACE-CON-EL-DIGEST-DE-PRODUCCION
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432
+        options: --health-cmd pg_isready --health-interval 2s --health-retries 15
+    env:
+      UPGRADE_BOOT_COMMAND: ./scripts/boot_and_check.sh
+      UPGRADE_BOOTS: 2
+    steps:
+      # Sin los tags no hay última release.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - name: Resolve the last release
+        id: release
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          tag=$(git describe --tags --abbrev=0 "${PR_BASE_SHA:-HEAD^}")
+          echo "upgrade-path base: $tag"
+          echo "sha=$(git rev-parse --verify "${tag}^{commit}")" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ steps.release.outputs.sha }}
+          path: release
+          persist-credentials: false
+      - name: Upgrade the released schema twice
+        env:
+          DATABASE_URL: postgresql://postgres@127.0.0.1:${{ job.services.postgres.ports['5432'] }}/postgres
+        run: |
+          set -euo pipefail
+          (cd release && $UPGRADE_BOOT_COMMAND)
+          for boot in $(seq "$UPGRADE_BOOTS"); do
+            echo "upgrade-path: boot $boot of the change over the released schema"
+            $UPGRADE_BOOT_COMMAND
+          done
+  ```
+
+  En la revisión de una migración, su test parte del esquema actual, no de una
+  base vacía: «idempotente, dos pasadas» sobre una base vacía no prueba el
+  camino de producción. Y la base de la release deja las tablas sin filas: una
+  migración de datos necesita sus filas heredadas sembradas antes del arranque
+  del cambio (APAP_WEB#3736).
 
 Previene C3 en G4.1-G4.3: la receta de trabajo mencionaba una ruta de tests
 inexistente (`tests/test_required_jobs.py`) y el repo equivocado para la wave

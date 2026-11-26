@@ -1,0 +1,3 @@
+type: patch
+
+Los assets `bin/pr_contract_local.py`, `bin/pr_preflight.py`, `bin/vendored_seal_check.py`, `changelog-fragment/check_changelog_fragment.py`, `e2e-evidence/check_e2e_evidence.py`, `migrations-immutable/check_migrations_immutable.py`, `release-gate/check_release_ci.py`, `release-gate/check_release_tag.py` y `runner-controls/safe_cleanup.py` decodifican la salida de `git` como UTF-8 sea cual sea la configuración regional. Antes la leían con la página de códigos del sistema (cp1252 en Windows): un mensaje de commit, una rama, una etiqueta, una ruta o un fragmento con texto no ASCII se leía corrupto o, si traía un byte sin carácter en cp1252, dejaba la salida vacía y el asset terminaba con una traza en vez de con su veredicto (#1601, continuación de #1596).

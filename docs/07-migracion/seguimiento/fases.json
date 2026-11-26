@@ -1,0 +1,100 @@
+{
+  "phases": [
+    {
+      "id": 0,
+      "name": "Inventario",
+      "status": "revisada",
+      "tasks": [
+        {"title": "Inventario de las once aplicaciones del alcance (fase-0/catalogo-aplicaciones.md)", "done": true},
+        {"title": "Catálogo de accionables con su coste medido (fase-0/catalogo-accionables.md)", "done": true},
+        {"title": "Comprobaciones de datos del grupo (a) contra la copia de referencia (fase-0/comprobaciones-grupo-a.md)", "done": true},
+        {"title": "Validación del propietario de la evidencia de la fase 0, 2026-11-15 (fase-0/cierre.md, decisión 28)", "done": true}
+      ]
+    },
+    {
+      "id": 1,
+      "name": "Saneamiento en Access",
+      "status": "en curso",
+      "tasks": [
+        {"title": "Ensayo del cambio de IDCorreo en una copia, con el perfil production-test de Automatización", "done": false},
+        {"title": "Confirmar el perfil de Automatización que usa el servidor real", "done": false},
+        {"title": "Validación del plan de aplicación por el propietario (fase-1/plan-aplicacion.md)", "done": false}
+      ],
+      "issues": {
+        "label": "saneamiento:coexistencia",
+        "block_a": {"name": "Bloque A. IDCorreo", "title_contains": "IDCorreo"},
+        "groups": [
+          {"name": "Lanzadera", "repos": ["Lanzadera"]},
+          {"name": "Expedientes", "repos": ["Expedientes"]},
+          {"name": "Condor", "repos": ["condor"]},
+          {"name": "Seguridad", "repos": ["seguridad"]},
+          {"name": "HPS", "repos": ["HPS"]},
+          {"name": "Solicitudes HPS", "repos": ["HPS_SOLICITUDES"]},
+          {"name": "Gestión de Riesgos", "repos": ["GESTION_RIESGOS"]},
+          {"name": "No Conformidades", "repos": ["No_conformidades"]},
+          {"name": "Registros", "repos": ["REGISTROS"]},
+          {"name": "Brass", "repos": ["BRASS"]},
+          {"name": "APGEDYS", "repos": ["AGEDYS", "AGEDYS_ECO"]},
+          {"name": "Transversal", "repos": ["access2web-blueprint", "Automatizacion", "CONTRATOS"]}
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "name": "Unificar el acceso a datos",
+      "status": "pendiente",
+      "tasks": [
+        {"title": "Adaptar a ODBC sin DSN getdb() con OpenDatabase y clave (Lanzadera)", "done": false},
+        {"title": "Adaptar a ODBC sin DSN la revinculación desde TbTablasAVincular (aplicaciones antiguas)", "done": false},
+        {"title": "Adaptar a ODBC sin DSN el resolvedor propio de cada aplicación moderna", "done": false},
+        {"title": "Adaptar a ODBC sin DSN la apertura directa de Lanzadera_Datos con ruta escrita en el código (11 fronts)", "done": false},
+        {"title": "Cambio de .accdb a PostgreSQL, y vuelta, solo por configuración, demostrado fuera de producción en cada front", "done": false}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Ensayo en Citrix con todos los backends",
+      "status": "revisada",
+      "status_note": "diseño revisado, pendiente de ejecutar",
+      "tasks": [
+        {"title": "Validación local de Citrix con RDS Session Host (H-3, primer paso)", "done": false},
+        {"title": "Ensayo completo en preproducción con todos los backends sobre PostgreSQL", "done": false},
+        {"title": "Conversión de tipos verificada", "done": false},
+        {"title": "Tablas vinculadas actualizables (con clave primaria)", "done": false},
+        {"title": "Todas las aplicaciones Access funcionando sobre PostgreSQL", "done": false},
+        {"title": "Rendimiento aceptable en Citrix", "done": false},
+        {"title": "Hipótesis H-1, H-3 y H-4 confirmadas o refutadas con evidencia", "done": false}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Traslado único de todos los datos a PostgreSQL",
+      "status": "pendiente",
+      "tasks": [
+        {"title": "Plan del traslado", "done": false},
+        {"title": "Repetición del ensayo de la fase 3 con una copia reciente de producción", "done": false},
+        {"title": "Reapuntado de los consumidores que no migran: AGEDO, Tareas y el envío de correos del servidor (decisiones 14 y 16)", "done": false},
+        {"title": "Decisión sobre cada despliegue de prueba que comparte la unidad de red con producción", "done": false},
+        {"title": "Traslado único en producción", "done": false}
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Expedientes a web",
+      "status": "pendiente",
+      "tasks": [
+        {"title": "Entregables del corte que fija la coexistencia de Expedientes (03-aplicaciones/expedientes/prd/coexistencia.md)", "done": false},
+        {"title": "Botón de Expedientes deshabilitado en la Lanzadera Access y habilitado en la web", "done": false},
+        {"title": "Reversión probada: rehabilitar el botón de Access", "done": false}
+      ]
+    }
+  ],
+  "hitos": [
+    {"id": "2026-12", "name": "Vía de entrega en verde y arranque del saneamiento", "start": "2026-12-01", "end": "2026-12-31", "semana_estimada": "2026-12-21", "replanificaciones": [], "groups": ["Bloque A. IDCorreo"], "tasks": [{"title": "Primera versión publicada de access2web-blueprint", "done": false}]},
+    {"id": "2027-01", "name": "Saneamiento de las primeras aplicaciones y Citrix validado en local", "start": "2027-01-01", "end": "2027-01-31", "semana_estimada": null, "replanificaciones": [], "groups": ["Lanzadera", "Expedientes", "Condor", "Seguridad"]},
+    {"id": "2027-02", "name": "Saneamiento del bloque central y acceso a datos preparado", "start": "2027-02-01", "end": "2027-02-28", "semana_estimada": null, "replanificaciones": [], "groups": ["HPS", "Solicitudes HPS", "Gestión de Riesgos", "No Conformidades", "Registros"], "phases": [2]},
+    {"id": "2027-03", "name": "Saneamiento completo", "start": "2027-03-01", "end": "2027-03-31", "semana_estimada": null, "replanificaciones": [], "groups": ["Brass", "APGEDYS", "Transversal"]},
+    {"id": "2027-04", "name": "Ensayo en Citrix con todos los datos", "start": "2027-04-01", "end": "2027-04-30", "semana_estimada": null, "replanificaciones": [], "groups": [], "phases": [3]},
+    {"id": "2027-05", "name": "Listos para el traslado", "start": "2027-05-01", "end": "2027-05-31", "semana_estimada": null, "replanificaciones": [], "groups": [], "phases": [4]}
+  ]
+}

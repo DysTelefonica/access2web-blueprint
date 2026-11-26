@@ -11,6 +11,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tests"))
+from _cp1252_locale import run_under_cp1252_locale  # noqa: E402
+
 ASSET = Path(__file__).resolve().parent.parent / "check_migrations_immutable.py"
 
 
@@ -74,6 +77,11 @@ def run_gate_full(repo: Path, *args: str, env: dict | None = None) -> subprocess
         [sys.executable, str(ASSET), "--repo", str(repo), *args],
         capture_output=True, text=True, check=False, env=full_env,
     )
+
+
+def run_gate_under_cp1252_locale(repo: Path, *args: str) -> tuple[int, str, str]:
+    """``run_gate`` in a child whose locale code page is cp1252 on any host (#1596, #1601)."""
+    return run_under_cp1252_locale(ASSET, "--repo", str(repo), "--no-check-reserved-prefixes", *args)
 
 
 class BaseMigrationTest(unittest.TestCase):

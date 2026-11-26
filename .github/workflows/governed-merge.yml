@@ -1,0 +1,78 @@
+name: Governed merge
+
+# Merge gobernado (HR-50, camino runner-enforced), adoptado de DysTelefonica/cadete
+# (#1359): SIEMPRE manual (workflow_dispatch), nunca automático.
+# El asset canónico `check_governed_merge.py` verifica el contrato del PR —los checks
+# requeridos del host-contract (`required`, `pr-gate`) en verde sobre su cabeza y las
+# palabras de cierre solo en la punta de cadena— y, si lo cumple, lo fusiona por la API;
+# si no lo cumple no fusiona y falla con el hallazgo (exit 1), y un entorno insalvable
+# falla cerrado (exit 2).
+#
+# Sin App ni roles (decisión del propietario, 2026-11-19): el administrador que lleva la
+# sesión lanza este workflow con su propio `gh` y el merge lo hace el GITHUB_TOKEN del
+# workflow, como en cadete. El ruleset de main exige PR y los checks requeridos en verde
+# (`required`, `pr-gate`), así que el token solo fusiona un PR en verde. Un merge con
+# GITHUB_TOKEN no dispara `push`: el verificador despacha tras el merge los workflows de
+# `host-contract.post_merge_dispatch` (HR-817), con `actions: write`.
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Número del PR que se va a mergear"
+        required: true
+        type: string
+
+# Una sola cola: dos merges en vuelo no compiten por la base ni por el cierre de issues
+# enlazadas; `cancel-in-progress: false` para no abortar un merge a mitad de cierre
+# (DysTelefonica/team-skills#800).
+concurrency:
+  group: governed-merge
+  cancel-in-progress: false
+
+# Nada por defecto: el job declara lo que necesita.
+permissions:
+  contents: read
+
+jobs:
+  governed-merge:
+    name: governed merge
+    # Solo desde main: un dispatch de otra rama ejecutaría el verificador y el token de
+    # escritura con código no revisado (cadete#542).
+    if: github.ref == 'refs/heads/main'
+    # Mismo runner alojado que los jobs de ci.yml: efímero, sin estado entre jobs.
+    runs-on: ubuntu-24.04
+    # sin ejecuciones medidas; ajustar al primer p95 (cadete#339)
+    timeout-minutes: 30
+    # Fusiona (contents), cierra las issues enlazadas (issues), lee el PR y sus checks y
+    # despacha el post-merge (actions).
+    permissions:
+      contents: write
+      issues: write
+      checks: read
+      pull-requests: read
+      actions: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Falla cerrado antes de emitir nada: sin los secretos de la App no hay merge, y no se
+      # recurre a GITHUB_TOKEN, que el ruleset de main rechazaría. Los valores no se imprimen.
+      - name: Verify the contract and merge through the governed path
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # El input entra por env, no interpolado en el script (cadete#542).
+          PR_ID: ${{ inputs.pr }}
+        run: |
+          # Solo pasa la forma canónica de un entero positivo; el valor no se imprime.
+          case "$PR_ID" in
+            ''|*[!0-9]*|0*)
+              echo "::error::PR_ID must be the canonical number of a pull request (positive integer, no leading zeros)." >&2
+              exit 2
+              ;;
+          esac
+          python3 .agents/skills/ci-pattern/assets/runner-controls/check_governed_merge.py \
+            --repo "$GITHUB_REPOSITORY" \
+            --pr "$PR_ID" \
+            --contract .github/host-contract.json

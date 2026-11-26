@@ -13,6 +13,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tests"))
+from _fake_gh import GH_ENV, PATH_TESTS_SKIP, install_fake_gh, run_guarded  # noqa: E402,F401
+
 # Constantes locales (los tests no dependen de test_push_compliance
 # para que este PR pueda ser revisable y mergable de forma autonoma).
 REPO = "DysTelefonica/team-skills"
@@ -148,24 +151,28 @@ def base_state() -> dict:
 
 
 def run_gate(root: Path, state: dict, pr_num: int = 7,
-             required_check: list | None = None, check_only: bool = False) -> subprocess.CompletedProcess:
-    """Escribe el shim y el estado; corre el gate."""
-    shim = root / "bin" / "gh"
-    shim.parent.mkdir(exist_ok=True)
+             required_check: list | None = None, check_only: bool = False,
+             extra: tuple[str, ...] = (), cwd: Path | None = None,
+             via_path: bool = False) -> subprocess.CompletedProcess:
+    """Escribe el shim y el estado; corre el gate con el shim por ruta explicita (#1609)."""
     state_file = root / "state.json"
     state_file.write_text(json.dumps(state), encoding="utf-8")
     builder = ShimBuilder()
     builder.add_get_repos()
-    shim.write_text(builder.build(str(state_file), REPO), encoding="utf-8")
-    shim.chmod(0o755)
+    shim = install_fake_gh(root / "bin", builder.build(str(state_file), REPO))
     cmd = [sys.executable, str(ASSET), "--repo", REPO, "--pr", str(pr_num)]
     if required_check:
         for rc in required_check:
             cmd += ["--required-check", rc]
     if check_only:
         cmd.append("--check-only")
-    env = {**os.environ, "PATH": f"{root / 'bin'}{os.pathsep}{os.environ.get('PATH', '')}"}
-    return subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=60)
+    cmd += list(extra)
+    env = {**os.environ, GH_ENV: str(shim)}
+    if via_path:  # sin CI_PATTERN_GH el asset sigue tomando `gh` del PATH
+        env.pop(GH_ENV)
+        env["PATH"] = f"{shim.parent}{os.pathsep}{env.get('PATH', '')}"
+    return run_guarded(cmd, env=env, fixture_dir=root, capture_output=True, text=True,
+                       timeout=60, cwd=cwd)
 
 
 class BaseSafeMergeTest(unittest.TestCase):

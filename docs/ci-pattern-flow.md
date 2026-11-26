@@ -31,6 +31,7 @@ detecta el gate de documentación operativa de `ci-pattern adoption check`.
 
 - Conventional Commits: `tipo[(scope)]: descripción` con tipo en feat|fix|docs|chore|refactor|test|ci|perf.
 - Sin atribución de IA: sin `Co-Authored-By` ni pies de página generados.
+- Autor vinculado a una cuenta de GitHub (HR-84): `git config user.name` y `git config user.email` con un correo verificado de la cuenta o su dirección noreply; un autor que GitHub no vincula (p. ej. `pi-agent <pi-agent@local>`) avisa, y bloquea cuando la política declara `commit_identity.mode: enforce`. Los bots legítimos se declaran en `commit_identity.allowed_bots` de `.github/pr-contract.policy.json`.
 
 <!-- ci-pattern-doc:end commits -->
 
@@ -53,6 +54,7 @@ detecta el gate de documentación operativa de `ci-pattern adoption check`.
 - Jobs requeridos del agregador: ci-images, codeql, docs-architecture, docs-codeguide, docs-commands, docs-decisions, docs-links, e2e-smoke, governance-seals, integration, pip-audit, pip-audit-alert, pr-gate, quality, security. Tabla generada 1:1 desde ellos: ningún check puede fallar por una regla que no esté aquí.
 - Contextos requeridos declarados: required.
 - Checks del contrato de host: pr-gate, required.
+- Un run programado (`schedule`) en rojo sobre la rama por defecto abre la issue `ci-red` de su workflow, asignada al `coordinator` del contrato del host, o la comenta si ya está abierta; el run programado en verde la comenta y la cierra (HR-89, `assets/ci-red/report_ci_red.py`).
 
 | `ci-images` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |
 | `codeql` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |
@@ -75,7 +77,7 @@ detecta el gate de documentación operativa de `ci-pattern adoption check`.
 <!-- ci-pattern-doc:begin merge -->
 ## 6. Merge
 
-- El merge lo decide un humano con CI en verde. Un agente lo lanza solo por orden explícita y registrada de un mantenedor con cuenta de mantenedor, nunca con `--admin`.
+- El merge gobernado lo lanza el agente que lleva la issue, con el perfil del administrador que lleva la sesión, cuando la CI está en verde; nunca con `--admin`.
 - Métodos de merge permitidos (host-contract): merge commit, rebase, squash.
 
 <!-- ci-pattern-doc:end merge -->
@@ -142,7 +144,7 @@ Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. Jobs
   Hecho: ningún check en fail.
 - **8. CI en verde.** Si un check falla, aplique su receta de recuperación (sección 5), reejecute el preflight de la etapa 5 y empuje de nuevo. Si la base avanzó durante la revisión, repita la integración de la etapa 5 (merge, nunca rebase) y vuelva a comprobar: el verde de una cabeza anterior a la integración no es evidencia del resultado nuevo.
   Hecho: todos los checks en pass sobre la cabeza y la base actuales.
-- **9. Merge gobernado.** El merge lo decide un humano con CI en verde. Un agente lo lanza solo por orden explícita y registrada de un mantenedor con cuenta de mantenedor, por el camino gobernado y nunca con `--admin`. Métodos permitidos (host-contract): merge commit, rebase, squash.
+- **9. Merge gobernado.** Con la CI en verde, el agente que lleva la issue lanza el merge con el perfil del administrador que lleva la sesión, por el camino gobernado y nunca con `--admin`. Métodos permitidos (host-contract): merge commit, rebase, squash.
   Hecho: `gh pr view <número> --json state --jq .state` devuelve MERGED.
 - **10. Limpieza.** Solo después del merge verificado y sin cambios pendientes, retire el worktree local; la rama remota se conserva siempre (nunca `git push origin --delete`, `--delete-branch` ni borrado de ramas):
   `git worktree remove ../<repo>-worktrees/<número>-<tema>`
@@ -170,7 +172,7 @@ Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. Jobs
 Bloque gobernado: no lo edite a mano; se regenera desde el patrón.
 Antes de actuar, lea la parte del flujo operativo de la situación. Si un paso,
 comando, etiqueta o dato que necesita no está en este documento, NO lo invente:
-deténgase y pregunte en la issue o al mantenedor.
+deténgase y pregunte en la issue o al administrador que lleva la sesión.
 
 | Situación | Qué leer antes de actuar |
 | --- | --- |
@@ -188,7 +190,7 @@ deténgase y pregunte en la issue o al mantenedor.
 
 **Mandato de no invención:** si un paso, comando, etiqueta o dato que necesita
 no está documentado en el flujo operativo, no lo invente: deténgase y
-pregunte en la issue o al mantenedor.
+pregunte en la issue o al administrador que lleva la sesión.
 
 ## Dónde vive la documentación
 

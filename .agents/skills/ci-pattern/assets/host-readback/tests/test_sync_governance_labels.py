@@ -12,12 +12,21 @@ La descripcion y el color de cada etiqueta salen del contrato.
 
 import json
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
+# El gh falso va por ruta explicita o por la guarda de _fake_gh (#1609, #1620).
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tests"))
+from _fake_gh import RealGhRefusedError, guard_fake_gh  # noqa: E402
+
 REPO_ROOT = Path(__file__).resolve().parents[6]
 SCRIPT = REPO_ROOT / "scripts" / "sync-governance-labels.sh"
+# El script es del repositorio del catálogo (#1707): fuera de él no existe y el test daría un falso verde.
+IN_CATALOGUE = Path(__file__).resolve().parents[5].name == "personal"
+CATALOGUE_ONLY = unittest.skipUnless(
+    IN_CATALOGUE, "prueba del script del catálogo (#1707): scripts/sync-governance-labels.sh no está fuera del catálogo")
 
 CHAIN_DESC = "PR que no cierra la issue; la cierra el PR punta o un humano (HR-7)"
 
@@ -73,6 +82,7 @@ def run_script(args, contract=CONTRACT, host_labels=HOST_LABELS, with_gh_stub=Fa
         return proc, log
 
 
+@CATALOGUE_ONLY
 class CreateOnlyByDefaultTests(unittest.TestCase):
 
     def test_emits_create_only_for_missing_labels(self):
@@ -95,6 +105,7 @@ class CreateOnlyByDefaultTests(unittest.TestCase):
         self.assertNotIn("label edit", proc.stdout)
 
 
+@CATALOGUE_ONLY
 class UpdateFlagTests(unittest.TestCase):
 
     def test_update_emits_edit_for_existing_labels_only(self):
@@ -106,14 +117,24 @@ class UpdateFlagTests(unittest.TestCase):
         self.assertIn(CHAIN_DESC, proc.stdout)
 
 
+@CATALOGUE_ONLY
 class ReadOnlySourceTests(unittest.TestCase):
+
+    def run_without_labels_file(self, root: Path, path_dirs: list[str]):
+        """Ejecuta el script sin --labels-file: llama a `gh label list` por nombre,
+        con el PATH que fijan `path_dirs`. La guarda de _fake_gh (#1620) se niega
+        antes de lanzar nada si ese gh queda fuera de `root`."""
+        contract_path = root / "contract.json"
+        contract_path.write_text(json.dumps(CONTRACT), encoding="utf-8")
+        env = {"PATH": ":".join([*path_dirs, "/usr/bin", "/bin"]), "HOME": str(root)}
+        guard_fake_gh(env, root)
+        return subprocess.run(["bash", str(SCRIPT), "--contract", str(contract_path)],
+                              capture_output=True, text=True, check=False, env=env)
 
     def test_current_labels_from_gh_stub_list_only(self):
         """Sin --labels-file, consulta gh label list (solo lectura); nunca muta."""
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            contract_path = root / "contract.json"
-            contract_path.write_text(json.dumps(CONTRACT), encoding="utf-8")
             labels_path = root / "labels.json"
             labels_path.write_text(json.dumps(HOST_LABELS), encoding="utf-8")
             log_path = root / "gh.log"
@@ -128,17 +149,24 @@ class ReadOnlySourceTests(unittest.TestCase):
                 'exit 1\n',
                 encoding="utf-8")
             gh.chmod(0o755)
-            proc = subprocess.run(
-                ["bash", str(SCRIPT), "--contract", str(contract_path)],
-                capture_output=True, text=True, check=False,
-                env={"PATH": f"{root}:/usr/bin:/bin", "HOME": str(root)},
-            )
+            proc = self.run_without_labels_file(root, [str(root)])
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
             self.assertIn('gh label create "chain:partial"', proc.stdout)
             log = log_path.read_text(encoding="utf-8") if log_path.exists() else ""
             self.assertIn("label list", log)
             self.assertNotIn("label create", log)
             self.assertNotIn("label edit", log)
+
+    def test_con_el_gh_real_primero_en_el_path_se_niega_sin_llamarlo(self):
+        """#1620: un gh real delante del falso no recibe ninguna llamada."""
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as real:
+            log = Path(real) / "calls"
+            sentinel = Path(real) / "gh"
+            sentinel.write_text(f'#!/bin/sh\necho "$@" >> "{log}"\nexit 0\n', encoding="utf-8")
+            sentinel.chmod(0o755)
+            with self.assertRaises(RealGhRefusedError):
+                self.run_without_labels_file(Path(tmp), [real, tmp])
+            self.assertFalse(log.exists(), "el gh real recibio una llamada")
 
 
 if __name__ == "__main__":

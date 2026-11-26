@@ -20,6 +20,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tests"))
+from _cp1252_locale import run_under_cp1252_locale  # noqa: E402
+
 ASSET = Path(__file__).resolve().parent.parent
 GATE = ASSET / "check_release_tag.py"
 
@@ -179,6 +182,52 @@ class TestHR20AncestorOfDefaultBranch(GateCase):
             self.table([("side branch with greater version", "v9.9.9", 1, "HR-20")], r)
 
 
+def tag_checkout(origin, dest, tag):
+    """Reproduce what actions/checkout leaves on a tag push with fetch-depth 0
+    (#1456): remote-tracking branches only, the tag fetched, HEAD detached on
+    the tag and no local branch at all."""
+    dest = Path(dest)
+    git(dest, "init", "-q")
+    git(dest, "remote", "add", "origin", str(origin.d))
+    git(dest, "fetch", "-q", "origin",
+        "+refs/heads/*:refs/remotes/origin/*", "+refs/tags/*:refs/tags/*")
+    git(dest, "switch", "-q", "--detach", f"refs/tags/{tag}")
+    return type("R", (), {"d": dest})()
+
+
+class TestTagCheckout(GateCase):
+    def test_release_tag_checkout_without_local_branch_is_clean(self):
+        with tempfile.TemporaryDirectory() as o, tempfile.TemporaryDirectory() as c:
+            origin = Repo(o)
+            origin.commit("base")
+            origin.tag_annotated("v9.9.9")
+            co = tag_checkout(origin, c, "v9.9.9")
+            code, out = self.run_gate(co, "v9.9.9")
+            self.assertEqual(code, 0, out)
+
+    def test_side_branch_tag_is_measured_against_the_remote_branch(self):
+        with tempfile.TemporaryDirectory() as o, tempfile.TemporaryDirectory() as c:
+            origin = Repo(o)
+            origin.commit("base")
+            origin.branch("side")
+            origin.commit("side fix")
+            origin.tag_annotated("v1.0.1")
+            co = tag_checkout(origin, c, "v1.0.1")
+            code, out = self.run_gate(co, "v1.0.1")
+            self.assertEqual(code, 1, out)
+            self.assertIn("HR-20", out)
+
+    def test_default_branch_missing_locally_and_remotely_exits_two(self):
+        with tempfile.TemporaryDirectory() as o, tempfile.TemporaryDirectory() as c:
+            origin = Repo(o)
+            origin.commit("base")
+            origin.tag_annotated("v1.0.0")
+            co = tag_checkout(origin, c, "v1.0.0")
+            code, out = self.run_gate(co, "v1.0.0", ("--default-branch", "trunk"))
+            self.assertEqual(code, 2, out)
+            self.assertIn("'trunk' does not exist", out)
+
+
 class InvalidInput(GateCase):
     def test_missing_tag_exits_two(self):
         with tempfile.TemporaryDirectory() as d:
@@ -222,6 +271,18 @@ class Contract(GateCase):
             r.tag_annotated("v1.0.0")
             code, out = self.run_gate(r, "v1.0.0")
             self.assertEqual(code, 0)
+            self.assertIn("RELEASE OK", out)
+
+    def test_non_ascii_tag_in_the_list_is_read_under_cp1252(self):
+        """#1601: the tag list from git is UTF-8 whatever the locale."""
+        with tempfile.TemporaryDirectory() as d:
+            r = Repo(d)
+            r.commit("base")
+            r.tag_annotated("v0.9.0-Á")
+            r.tag_annotated("v1.0.0")
+            code, out, err = run_under_cp1252_locale(
+                GATE, "--repo", str(r.d), "--tag", "v1.0.0", "--default-branch", "main")
+            self.assertEqual(code, 0, out + err)
             self.assertIn("RELEASE OK", out)
 
 

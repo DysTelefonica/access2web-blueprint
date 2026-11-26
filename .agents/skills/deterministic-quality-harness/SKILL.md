@@ -4,8 +4,8 @@ description: "Trigger: deterministic code quality, ratchet gate, shrink-only bas
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: 2.2
-  last_verified: 2026-10-14
+  version: 2.3
+  last_verified: 2026-11-19
   scope: ['universal', 'docs']
   auto_invoke: ['auditing CI quality gates', 'setting ratchet baselines']
   tiers: ['universal', 'docs']
@@ -41,6 +41,7 @@ that does not affect an executable gate.
 17. **Make policy time explicit.** Analysis depends on code; the orchestrator supplies one validated `--policy-date`, and identical commit plus date must produce byte-identical evidence.
 18. **Prove measurement liveness.** Empty subjects, missing tools, missing evidence, unhealthy baseline emission, and degenerate runs fail closed.
 19. **Use one portable local command.** `make verify` matches portable PR gates in CI order; capability-bound exclusions are explicit, valid CI gates. Preserve Makefile LF and mode.
+20. **Check every derived cache against its source.** A denormalized cache carries a read-only check (CLI and nightly) comparing it with the source derivation for every live row; drift opens or comments on one issue. Its test goes red on a deliberately stale row: [Derived cache consistency](references/derived-cache-consistency.md).
 
 Detailed rationale and failure modes: [Hard-rule rationale](references/hard-rule-rationale.md).
 
@@ -53,8 +54,9 @@ Detailed rationale and failure modes: [Hard-rule rationale](references/hard-rule
 | Gate has no runnable fixture | Add a fixture or remove the gate; an empty gate is a false guarantee. |
 | Gate exists only locally | Wire it into CI or delete it. |
 | CI gate is absent from `make verify` | Add it, or declare a reasoned capability-scoped exclusion. |
-| PR exceeds 400 changed lines | Split it unless the PR records `size:exception` with a reason. |
+| PR exceeds 400 changed lines | Split it; only a PR that cannot be split carries the `size:exception` label, with the four answers in its body. |
 | Dependency introduces a CVE | File an issue and link the shrink-only allowlist entry to it. |
+| Repo keeps a derived cache | Add the read-only consistency check and its nightly single-issue job (Hard Rule 20). |
 
 ## Execution Steps
 
@@ -91,6 +93,7 @@ complete destination map, adoption locks, commands, and scope limits live in
 | Policy and evidence | `assets/quality-policy.json`, `assets/scripts/quality_policy.py`, `assets/scripts/quality_report.py` | Shared scope plus identity-bound envelopes. |
 | Gates | `assets/scripts/check_*.py`, `assets/scripts/policy_time.py` | Fail-closed executable rules. |
 | Adoption locks | `assets/cosmic-ray.toml`, `assets/security-images.*.json`, `assets/pyproject.fragment.toml` | Pinned mutation, scanner, and dependency inputs. |
+| Derived cache | `assets/scripts/cache_consistency.py`, `assets/tests/test_cache_consistency.py` | Read-only cache-vs-source comparison (Hard Rule 20). |
 | Contract tests | `assets/tests/test_ci_workflow.py`, `assets/tests/test_gate_smoke.py`, `assets/tests/test_gate_liveness.py`, `assets/tests/test_adoption_preflight.py`, `assets/tests/test_policy_time.py`, `assets/tests/test_quality_policy.py`, `assets/tests/test_quality_report_contract.py`, `assets/tests/fixtures/**` | Wiring, failure, liveness, policy, and evidence proof. |
 
 Keep every `HARNESS-PROVENANCE` marker. The marker names the skill version the asset was published with, so a version bump re-stamps every non-exempt asset to the new version (#790). Re-resolve action SHAs and scanner digests during an

@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/tests/test_test_classification.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.3 — assets/tests/test_test_classification.py
 """Contract of check_test_classification: an unmarked integration file is always a violation."""
 
 from __future__ import annotations

@@ -24,9 +24,14 @@ activo del patrón y sí como plantillas:
 - `.github/workflows/release.yml.tmpl` — el workflow de release del consumer.
   Se dispara con un tag estable; `preflight` corre los dos gates de
   `assets/release-gate/`, `release` publica en el entorno protegido `release`
-  y `verify` comprueba la salida. Tres valores a cambiar, todos en su bloque
+  y `verify` comprueba la salida. Los valores a cambiar están en su bloque
   `env`: la raíz donde el propagador materializó la skill, el basename del
-  workflow de CI y la ruta del script de verificación.
+  workflow de CI, la espera al CI del tag, la ruta del script de verificación
+  (o su aplazamiento declarado, con motivo) y la ruta de las notas. Fuera del
+  `env` quedan el runner, literal en las cuatro líneas `# RELEASE_RUNS_ON`
+  porque un `runs-on` dinámico es hallazgo de HR-61, y el entorno, en la
+  variable del repositorio `RELEASE_ENVIRONMENT` (`none` = sin entorno), porque
+  `environment` no admite el contexto `env` (#1456).
 - `scripts/verify-release-output.sh.tmpl` — la comprobación de salida: la
   revisión que sirve el endpoint de salud del consumer debe ser el SHA del tag.
 

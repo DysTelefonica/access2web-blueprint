@@ -25,6 +25,7 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 SKILL_ROOT = Path(__file__).resolve().parents[3]
@@ -1073,6 +1074,76 @@ class Phase3SubstitutionTests(unittest.TestCase):
             code, _, err = run_cli(["adoption", "check", "--phase", "3", str(repo)])
             self.assertEqual(code, 2)
             self.assertIn("name", err)
+
+
+class Phase3SliceBlocksTests(unittest.TestCase):
+    """Fase 0, 0.5: AGENTS.md se sella por sus bloques propagados.
+
+    Un AGENTS.md con marcadores `personal-skills:slice:*` lleva dos partes: el
+    bloque que escribe la propagación y la sección local del consumer. Sellar
+    el fichero entero obligaba a re-sellar cada vez que el consumer tocaba su
+    sección. Con el bloque en `slice_blocks`, la fase 3 da AGENTS.md por
+    sellado aunque no esté en `files`, también con `--seal-baseline`, que
+    sigue exigiendo el mismo `pattern_path` (cadete 0.5c).
+    """
+
+    BLOCK = ("<!-- personal-skills:slice:consumer @ v1234567 -->\n"
+             "Regla propagada.\n"
+             "<!-- /personal-skills:slice:consumer -->\n")
+
+    def _repo(self, tmp, local="Sección local.\n"):
+        contract = complete_contract(upto=3)
+        contract["phases"]["3"]["pattern_paths"].append("AGENTS.md")
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        seed_evidence(repo, 3)
+        seed_phase3(repo)
+        (repo / "AGENTS.md").write_text("# consumer\n\n" + self.BLOCK + "\n" + local,
+                                        encoding="utf-8")
+        block = CLI.extract_slice_block((repo / "AGENTS.md").read_text(encoding="utf-8"),
+                                        "consumer")
+        manifest = json.loads((repo / ".governance-manifest.json").read_text(encoding="utf-8"))
+        manifest["files"].pop("AGENTS.md")
+        manifest["slice_blocks"] = {"consumer": "sha256:" + hashlib.sha256(
+            block[1].encode("utf-8")).hexdigest()}
+        touch(repo, ".governance-manifest.json", json.dumps(manifest, indent=2))
+        return repo
+
+    def test_agents_md_sealed_by_its_slice_block_passes_phase_three(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            code, out, err = run_cli(["adoption", "check", "--phase", "3", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_the_local_section_changes_without_a_reseal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            with (repo / "AGENTS.md").open("a", encoding="utf-8") as agents:
+                agents.write("Otra regla local.\n")
+            code, out, err = run_cli(["adoption", "check", "--phase", "3", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_it_holds_under_the_seal_baseline_that_still_declares_agents_md(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            base = Path(tmp) / "base"
+            (base / ".github").mkdir(parents=True)
+            (base / ".github" / "ci-pattern-adoption.json").write_text(json.dumps(
+                {"schema_version": 1, "phases": {"3": {"pattern_paths": [
+                    ".github/workflows/ci.yml", "AGENTS.md"]}}}), encoding="utf-8")
+            code, out, err = run_cli(["adoption", "check", "--phase", "3",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_a_modified_propagated_block_still_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            text = (repo / "AGENTS.md").read_text(encoding="utf-8")
+            (repo / "AGENTS.md").write_text(text.replace("Regla propagada.", "Regla pirata."),
+                                            encoding="utf-8")
+            code, _, err = run_cli(["adoption", "check", "--phase", "3", str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn("AGENTS.md", err)
+            self.assertIn("slice_blocks", err)
 
 
 class SealBaselineTests(unittest.TestCase):
@@ -2643,9 +2714,19 @@ class GovernedMergeDocTests(unittest.TestCase):
     def test_merge_lines_include_run_command_for_the_detected_workflow(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo = self._repo(tmp, "merge.yml", invoke_asset=True)
+            (Path(repo) / ".team-skills.yaml").write_text("agent_roles: enabled\n", encoding="utf-8")
             text = "\n".join(CLI._operating_doc_merge_lines(repo, ["merge"]))
             self.assertIn("gh workflow run merge.yml", text)
             self.assertIn("por orden explícita y registrada de un mantenedor", text)
+
+    def test_merge_lines_without_roles_name_the_session_admin(self):
+        """#1768: sin roles, el comando lo lanza el agente con el perfil del administrador."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp, "merge.yml", invoke_asset=True)
+            text = "\n".join(CLI._operating_doc_merge_lines(repo, ["merge"]))
+            self.assertIn("gh workflow run merge.yml", text)
+            self.assertIn("perfil del administrador que lleva la sesión", text)
+            self.assertNotIn("mantenedor", text)
 
     def test_merge_lines_silent_without_wired_workflow(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -2695,6 +2776,16 @@ class DocsPhaseTests(unittest.TestCase):
             repo = self.docs_repo(tmp)
             code, out, _ = run_cli(["adoption", "check", "--phase", "5", str(repo)])
             self.assertEqual(code, 0, out)
+
+    def test_generated_doc_is_written_with_lf_line_endings(self):
+        """#1408: en Windows el modo texto escribía CRLF y el tramo 2 contaba
+        el documento entero como reescrito (450 líneas frente a 9)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.docs_repo(tmp)
+            out = repo / "docs" / "ci-pattern-flow.md"
+            code, _, err = run_cli(["adoption", "generate-doc", str(repo), "--out", str(out)])
+            self.assertEqual(code, 0, err)
+            self.assertNotIn(b"\r", out.read_bytes())
 
     def test_docs_phase_missing_doc_is_finding(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -2787,6 +2878,103 @@ class DocsPhaseTests(unittest.TestCase):
                 ["adoption", "generate-doc", str(repo),
                  "--out", str(repo / "docs" / "ci-pattern-flow.md")])
             self.assertEqual(code, 2, err)
+
+
+class OnlyPhaseTests(unittest.TestCase):
+    """#1396: `--only-phase N` mide la fase N y ninguna otra, para que cada
+    job de CI mida su fase una sola vez; `--phase N` sigue midiendo 0..N."""
+
+    def docs_repo(self, tmp):
+        return DocsPhaseTests.docs_repo(self, tmp)
+
+    def break_phase_two(self, repo):
+        contract = json.loads(
+            (repo / ".github" / "ci-pattern-adoption.json").read_text(encoding="utf-8"))
+        contract["phases"]["2"] = {}
+        write_contract(repo, contract)
+
+    def measured_phases(self, argv):
+        seen = []
+        real = CLI._phase_findings
+
+        def spy(repo, n, *rest):
+            seen.append(n)
+            return real(repo, n, *rest)
+
+        with unittest.mock.patch.object(CLI, "_phase_findings", spy):
+            code, out, err = run_cli(argv)
+        return seen, code, out, err
+
+    def test_only_phase_measures_exactly_that_phase(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.docs_repo(tmp)
+            seen, code, out, err = self.measured_phases(
+                ["adoption", "check", "--only-phase", "5", str(repo)])
+            self.assertEqual((seen, code), ([5], 0), err)
+            self.assertEqual(out, f"adoption check: fase 5 en verde sobre {repo}\n")
+
+    def test_cumulative_phase_still_measures_zero_to_n(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.docs_repo(tmp)
+            seen, code, out, err = self.measured_phases(
+                ["adoption", "check", "--phase", "5", str(repo)])
+            self.assertEqual((seen, code), ([0, 1, 2, 3, 4, 5], 0), err)
+            self.assertEqual(out, f"adoption check: fases 0..5 en verde sobre {repo}\n")
+
+    def test_a_phase_two_cause_is_not_red_in_the_phase_five_job(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.docs_repo(tmp)
+            self.break_phase_two(repo)
+            code, out, _ = run_cli(
+                ["adoption", "check", "--only-phase", "5", str(repo)])
+            self.assertEqual(code, 0)
+            self.assertEqual(out, f"adoption check: fase 5 en verde sobre {repo}\n")
+            code, out, err = run_cli(
+                ["adoption", "check", "--only-phase", "2", str(repo)])
+            self.assertEqual((code, out), (1, ""))
+            self.assertEqual(
+                [line for line in err.splitlines() if line.startswith("hallazgo:")],
+                ["hallazgo: fase 2: falta 'env_isolation' con 'root' (árbol de tests "
+                 "del consumer) y 'allowlist' (JSON versionado): el gate EJECUTA "
+                 "env-isolation (HR-28) sobre el árbol; una declaración con evidencia "
+                 "en un .md no lo prueba"])
+            self.assertNotIn("no evaluadas", err)
+
+    def test_cumulative_phase_still_stops_at_the_first_red(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.docs_repo(tmp)
+            self.break_phase_two(repo)
+            code, out, err = run_cli(["adoption", "check", "--phase", "5", str(repo)])
+            self.assertEqual((code, out), (1, ""))
+            self.assertIn("adoption check: fases 3..5 no evaluadas: ninguna fase pasa "
+                          "si la anterior no pasa.\n", err)
+            self.assertIn("hallazgo: fase 2: falta 'env_isolation'", err)
+
+    def test_agents_structure_is_measured_once_on_the_way_to_phase_five(self):
+        # HR-55 es de la fase 3 (job governance-seals): la fase 5 no la repite.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.docs_repo(tmp)
+            _, _, err = run_cli(["adoption", "check", "--phase", "5", str(repo)])
+            self.assertEqual(err.count("HR-55: agents_md no declarado"), 1, err)
+            _, _, err = run_cli(["adoption", "check", "--only-phase", "5", str(repo)])
+            self.assertNotIn("HR-55", err)
+
+    def test_phase_options_are_mutually_exclusive(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.docs_repo(tmp)
+            for argv in (["--phase", "5", "--only-phase", "5"],
+                         ["--only-phase", "5", "--all"]):
+                code, out, err = run_cli(["adoption", "check", *argv, str(repo)])
+                self.assertEqual((code, out), (2, ""))
+                self.assertIn("adoption check: exactamente una de --phase N, "
+                              "--only-phase N o --all", err)
+
+    def test_only_phase_out_of_range_is_usage_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.docs_repo(tmp)
+            code, out, err = run_cli(["adoption", "check", "--only-phase", "7", str(repo)])
+            self.assertEqual((code, out), (2, ""))
+            self.assertIn("--only-phase debe ser un número 0..6; se recibió '7'", err)
 
 
 class DocsLocationTests(unittest.TestCase):
@@ -2919,10 +3107,12 @@ class DocFidelityTests(unittest.TestCase):
             self.assertIn("type:bug", line)
             self.assertIn("type:feature", line)
 
-    def governed_merge_repo(self, tmp):
+    def governed_merge_repo(self, tmp, roles=False):
         """Consumer con camino gobernado: runner declarado y workflow que invoca
-        el merge gobernado en SU runner."""
+        el merge gobernado en SU runner. `roles` declara `agent_roles: enabled` (#1768)."""
         repo = self.consumer_with_contract_types(tmp)
+        if roles:
+            (repo / ".team-skills.yaml").write_text("agent_roles: enabled\n", encoding="utf-8")
         host = json.loads((repo / ".github" / "host-contract.json").read_text(encoding="utf-8"))
         host["runner"] = {"label": "fixture"}
         (repo / ".github" / "host-contract.json").write_text(json.dumps(host), encoding="utf-8")
@@ -2943,10 +3133,21 @@ class DocFidelityTests(unittest.TestCase):
         """#356 (decisión del usuario, 2026-10-07): el merge gobernado lo lanza un
         mantenedor del repositorio, no «el operador»."""
         with tempfile.TemporaryDirectory() as tmp:
-            repo = self.governed_merge_repo(tmp)
+            repo = self.governed_merge_repo(tmp, roles=True)
             doc = (repo / "docs" / "ci-pattern-flow.md").read_text(encoding="utf-8")
             line = next(item for item in doc.splitlines() if "Camino gobernado" in item)
             self.assertIn("mantenedor", line)
+            self.assertNotIn("operador", line)
+
+    def test_merge_rule_without_roles_names_the_session_admin(self):
+        """#1768: sin `agent_roles: enabled` lo lanza el agente con el perfil del
+        administrador que lleva la sesion; tampoco nombra a una persona."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.governed_merge_repo(tmp)
+            doc = (repo / "docs" / "ci-pattern-flow.md").read_text(encoding="utf-8")
+            line = next(item for item in doc.splitlines() if "Camino gobernado" in item)
+            self.assertIn("administrador que lleva la sesión", line)
+            self.assertNotIn("mantenedor", line)
             self.assertNotIn("operador", line)
 
     def test_doc_names_no_command_that_the_consumer_does_not_have(self):
@@ -3446,6 +3647,23 @@ class OperatingDocTests(unittest.TestCase):
             code, _, err = run_cli(["adoption", "generate-doc", str(repo)])
             self.assertEqual(code, 2, err)
             self.assertIn("--out", err)
+
+    def test_generate_doc_tells_the_scheduled_red_has_an_owner(self):
+        # HR-89 (#1508): el documento operativo propagado dice que un run
+        # programado en rojo abre la issue `ci-red` del coordinador.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = make_docs_repo(tmp)
+            out = Path(tmp) / "doc.md"
+            code, _, err = run_cli(
+                ["adoption", "generate-doc", str(repo), "--out", str(out)])
+            self.assertEqual(code, 0, err)
+            text = out.read_text(encoding="utf-8")
+            start = text.index("<!-- ci-pattern-doc:begin required-checks -->")
+            end = text.index("<!-- ci-pattern-doc:end required-checks -->")
+            section = text[start:end]
+            for needle in ("HR-89", "`ci-red`", "coordinator",
+                           "assets/ci-red/report_ci_red.py"):
+                self.assertIn(needle, section)
 
 
 def _lifecycle_section(text):
@@ -4252,6 +4470,57 @@ class AdoptionContractSchemaTests(unittest.TestCase):
             "la CLI lo retiró por #513/#540; reintroducir requiere "
             "reintroducir la regla completa, no basta con citar el "
             "nombre")
+
+
+class GovernedPathCasingTests(unittest.TestCase):
+    """Auditoría de CI/CD de cadete 2026-10-29, hallazgo 7: en un sistema de
+    ficheros que no distingue mayúsculas (Windows), el patrón literal
+    `.github/pull_request_template.md` casa con `PULL_REQUEST_TEMPLATE.md` y
+    `glob` devuelve la ruta del patrón. La fase 0 la daba por artefacto sin
+    inventario aunque el inventario nombra el fichero real."""
+
+    def _repo(self, tmp):
+        repo = Path(tmp) / "repo"
+        (repo / ".github").mkdir(parents=True)
+        (repo / ".github" / "PULL_REQUEST_TEMPLATE.md").write_text("x", encoding="utf-8")
+        return repo
+
+    def test_the_relative_path_takes_the_name_on_disk(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            self.assertEqual(
+                CLI._on_disk_relpath(repo, repo / ".github" / "pull_request_template.md"),
+                ".github/PULL_REQUEST_TEMPLATE.md")
+
+    def test_a_missing_file_has_no_relative_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            self.assertIsNone(CLI._on_disk_relpath(repo, repo / ".github" / "otro.md"))
+
+    def test_a_case_insensitive_match_is_reported_by_its_real_name(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            real_glob = Path.glob
+
+            def insensitive_glob(self, pattern):
+                # Como en Windows: el segmento literal casa sin distinguir
+                # mayúsculas y la ruta sale escrita como el patrón.
+                if pattern == ".github/pull_request_template.md":
+                    return iter([self / pattern])
+                return real_glob(self, pattern)
+
+            real_is_file = Path.is_file
+
+            def insensitive_is_file(self):
+                if self.name == "pull_request_template.md":
+                    return real_is_file(self.with_name("PULL_REQUEST_TEMPLATE.md"))
+                return real_is_file(self)
+
+            with unittest.mock.patch.object(Path, "glob", insensitive_glob), \
+                    unittest.mock.patch.object(Path, "is_file", insensitive_is_file):
+                found = CLI._scan_governed_paths(repo)
+            self.assertIn(".github/PULL_REQUEST_TEMPLATE.md", found)
+            self.assertNotIn(".github/pull_request_template.md", found)
 
 
 class PhaseZeroWorkflowCommentsTests(unittest.TestCase):

@@ -32,6 +32,11 @@
       "uniqueItems": true,
       "description": "Deprecated (DysTelefonica/team-skills#1093, R1). Logins that may put `status:approved` on an issue. Since R1 the issue-spec gate does not read this list: `status:approved` is a convention that anyone (agents included) may apply and that no gate requires. The key is kept so the consumer contracts that declare it stay valid."
     },
+    "coordinator": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional (DysTelefonica/team-skills#1508, HR-89). GitHub login of the repository coordinator. A scheduled run that fails on the default branch opens its `ci-red` tracking issue assigned to this login (assets/ci-red/report_ci_red.py); without it the reporter exits 2, because a notice without an owner is the gap HR-89 closes. An empty or non-string value fails closed (exit 2, HR-3)."
+    },
     "required_checks": {
       "type": "array",
       "description": "Required check names with classification. `host-enforced` = the host DEMANDS that check (branch protection), and it is only admissible when `host_capabilities.required_checks` is `available`; with the capability `unavailable` the host cannot demand it and the honest class is `documented-only` (the CI runs the check, the host does not require it)."
@@ -58,6 +63,17 @@
       "uniqueItems": true,
       "description": "Optional. Basenames of workflows to redispatch via workflow_dispatch after a governed merge (DysTelefonica/team-skills#817, HR-817). Each basename must exist as a workflow with `on: workflow_dispatch:` in the repo; if not, the merge fails closed before PUT /merge."
     },
+    "post_merge_verify": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true,
+      "description": "Optional (DysTelefonica/team-skills#1440). Basenames of the workflows that verify the integrated tree after a governed merge. They are dispatched via workflow_dispatch only when the merged PR was behind its base; a PR that was up to date merged the tree its CI already verified. Each one must exist, declare `on: workflow_dispatch:` and run its jobs on that event: a job whose `if:` excludes it (`github.event_name != 'workflow_dispatch'`) blocks the merge before PUT /merge. A name cannot also be in post_merge_dispatch, which keeps the detectors dispatched after every merge. A non-empty list also lets a PR behind its base merge under merge_freshness off."
+    },
+    "merge_freshness": {
+      "type": "string",
+      "enum": ["off", "required"],
+      "description": "Optional, default off (DysTelefonica/team-skills#1397). off: CI runs once, on the PR; a PR behind its base with green required checks merges and the post-merge CI (post_merge_dispatch) verifies the integrated tree; without post_merge_dispatch or post_merge_verify (#1440) being behind still blocks. required: a PR behind its base is blocked (#787) and an integrated tree that differs from the verified head exits 5. The workflow-overlap refusal (#783) applies with either value; any other value fails closed (exit 2)."
+    },
     "governed_path": {
       "type": "object",
       "description": "Optional. Exige que lo que llega a una rama protegida por contrato haya entrado por el camino gobernado (DysTelefonica/team-skills#909). Un PR mergeado en una rama protegida cumple si su `merged_by.login` esta en `actors` (ruta fuerte: la plataforma la firma) o si su commit de merge casa con `merge_marker` (ruta debil, corroboracion). Sin la clave, o con `enabled: false`, el veredicto del detective no cambia. Un contrato inservible falla cerrado con exit 2 (HR-3).",
@@ -83,6 +99,17 @@
       "type": "string",
       "minLength": 1,
       "description": "Optional (DysTelefonica/team-skills#333, regla 7). Con la clave declarada, lo que llega a una rama protegida tiene que venir por el PR del tracker (modelo «rama de feature con PR tracker en borrador»). Sin declaracion el control no cambia: una cadena apilada hacia main no necesita tracker y exigirlo sin declararlo inventaria una regla que el contrato no pide. Una cadena vacia o no textual hace fallar cerrado el contrato (HR-3)."
+    },
+    "deploy_backup_publisher": {
+      "type": "object",
+      "description": "Optional (DysTelefonica/team-skills#1705). Pin del gate de backup del deploy del consumer (APAP #4077). `check_name` es el nombre no vacio del check que publica el backup; `app_id` es el entero >= 0 de la GitHub App que lo publica (0 si el consumer no fija app); `todo` es texto libre opcional. Sin otras claves: una forma invalida falla cerrado (exit 2, HR-3) nombrando la clave.",
+      "required": ["check_name", "app_id"],
+      "additionalProperties": false,
+      "properties": {
+        "check_name": {"type": "string", "minLength": 1},
+        "app_id": {"type": "integer", "minimum": 0},
+        "todo": {"type": "string"}
+      }
     }
   }
 }

@@ -4,8 +4,8 @@ description: "Trigger: actualizar mi rama, abrir un pull request, encadenar PRs,
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: "1.1"
-  last_verified: 2026-10-21
+  version: "1.7.0"
+  last_verified: 2026-11-19
   scope: ['universal', 'ops']
   auto_invoke: ['actualizar rama', 'abrir un PR', 'encadenar PRs', 'pedir merge', 'etiquetar un PR']
   tiers: ['universal', 'ops']
@@ -22,10 +22,10 @@ Para ADOPTAR o AUDITAR el patrón (gates, contratos, HRs, fases) cargue
 | Situación | Regla |
 | --- | --- |
 | Mi rama está desfasada de main | 1 — `git merge origin/main` |
-| El PR está en verde y hay que integrarlo | 2 — lo lanza un mantenedor, camino gobernado; un agente solo por orden registrada |
+| El PR está en verde y hay que integrarlo | 2 — lo lanza el agente con el perfil de el administrador que lleva la sesión, camino gobernado y CI en verde |
 | El cambio no cabe en un PR | 3 y 5 — cadena de unidades, punta cierra |
 | Añadir o elegir etiquetas | 4 — `type:*` orientativa, del contrato del host |
-| El diff pasa de 400 líneas | 5 — partir o pedir la etiqueta `size:exception` al mantenedor, nunca recortar |
+| El diff pasa de 400 líneas | 5 — partir; la etiqueta `size:exception` la decide el administrador que lleva la sesión, nunca recortar |
 | Después del merge | 6 — la rama remota se conserva |
 | Empujé algo que la política prohíbe | 7 — el detective/guard abre el incidente |
 | El consumer decide la estrategia de merge | 8 — `--squash` o `--no-ff`, ambos válidos; la rama remota sobrevive |
@@ -37,7 +37,7 @@ PR-1 (chain:partial, Refs #N) ──> PR-2 (chain:partial, Refs #N) ──> PR-N
         📍 actual
 ```
 
-## Las siete reglas
+## Las nueve reglas
 
 Antes de `gh pr create`, ejecute `ci-pattern pr preflight --draft --pr-body <cuerpo.md> --base <rama-base> --label <etiqueta>`: comprueba cuerpo, etiquetas y tamaño sin API.
 
@@ -46,34 +46,45 @@ Antes de `gh pr create`, ejecute `ci-pattern pr preflight --draft --pr-body <cue
    todos y reescribirla rompe los enlaces, los PRs y el trabajo de quien
    venía revisando. — *referencia: `ci-pattern`, HR-54.*
 
-2. **El merge lo lanza un mantenedor, por el camino gobernado**
-   (`gh workflow run <workflow> -f pr=<N>`). `status:approved` no es
-   puerta: la puede poner cualquiera, agentes incluidos (decisión del
-   dueño del 2026-10-23, 17:24, en los comentarios de #1093). El agente
-   ejecuta el merge solo por orden de un mantenedor, y cuando se
-   cumplen las tres condiciones siguientes:
-   - **Permiso:** la cuenta de `gh` en uso es de mantenedor en el repositorio.
-     Lo comprueba justo antes de actuar con
-     `gh api repos/{owner}/{repo} --jq '.permissions.maintain or .permissions.admin'`.
-   - **Orden:** el mantenedor, en la sesión, nombra la acción y el número
-     exacto («aprueba la #1069», «mergea el PR #1070»). La autoridad inferida
-     por el modelo o por el texto de la issue no vale.
-   - **Registro:** antes de actuar, la orden queda en un comentario de la
-     issue o del PR con la orden literal, quién la dio, el agente y la fecha:
-     `Aprobada por orden de @<mantenedor>: «<orden>» — agente <nombre>, <fecha>`.
+   Las historias se unen con un `git merge origin/<base>` normal,
+   resolviendo los conflictos. En una rama que va a un PR están prohibidos
+   `git merge -s ours` y `-X ours`: `-s ours` registra la base como
+   fusionada pero conserva el árbol de la rama y descarta los cambios de la
+   base, y el merge gobernado puede revertir después en silencio el trabajo
+   de la base (incidente: ardelperal/APAP_WEB, 2026-11).
 
-   Tras la acción, el agente relee la etiqueta o el estado del merge con un
-   solo intento; si el resultado es incierto, se detiene sin reintentar. El
-   merge exige CI en verde y el camino gobernado; nunca `--admin`. El merge
-   nunca lo hace el agente sin esa orden registrada; la etiqueta
-   `status:approved` sí se puede poner sin ella. Un mantenedor puede aprobar
-   y mergear su propio cambio si la protección de la rama lo admite. —
+2. **El merge lo lanza el agente que lleva la issue, con el perfil de
+   el administrador que lleva la sesión, por el camino gobernado**
+   (`gh workflow run <workflow> -f pr=<N>`), cuando la CI está en verde. No
+   hace falta una orden aparte: una orden permanente registrada en el
+   `AGENTS.md` local del repositorio cuenta como orden registrada.
+   `status:approved` no es puerta: la puede poner cualquiera, agentes
+   incluidos (decisión del dueño del 2026-10-23, 17:24, en los comentarios
+   de #1093). Antes de actuar, el agente comprueba que la cuenta de `gh` en
+   uso administra el repositorio:
+   `gh api repos/{owner}/{repo} --jq '.permissions.maintain or .permissions.admin'`.
+
+   Tras la acción, el agente relee el estado del merge con un solo intento;
+   si el resultado es incierto, se detiene sin reintentar. El merge exige CI
+   en verde y el camino gobernado; nunca `--admin`. El verde se comprueba con
+   `python .agents/skills/ci-pattern/assets/runner-controls/wait_ci.py
+   --repo <owner/repo> --pr <n> --check <agregador>` (p. ej. `required`): espera a que los checks
+   aparezcan y terminen y nunca da verde con checks ausentes o pendientes
+   (`gh pr checks --watch` sale con 1 justo después del push, #1502). —
    *referencia: `ci-pattern`, flujo §«Pedir un merge».*
 
 3. **Las cadenas**: los intermedios llevan `chain:partial` y `Refs #N`;
-   solo la punta lleva `Closes #N`. El merge avanza de abajo arriba —
-   re-apunte del PR siguiente sobre main y empujón, porque re-apuntar por
-   sí solo no lanza el CI. — *referencia: `ci-pattern`, HR-7 y HR-54.*
+   solo la punta lleva `Closes #N`. El merge avanza de abajo arriba: se
+   re-apunta el PR siguiente sobre main. Re-apuntar no lanza la CI (dispara
+   `edited`, que el CI no escucha). Bajo el perfil pre-release (#1627,
+   regla 5), un re-apuntado con el head sin cambiar no necesita run: el
+   merge gobernado da por bueno el run verde que ya existe sobre ese SHA.
+   Cuando el eslabón sí necesite un run, la única vía es un commit vacío
+   (`git commit --allow-empty`); nunca fusionando main en la rama
+   (§«Disciplina local», push). Cerrar y reabrir el PR no es la vía
+   de relanzar. Un run cancelado o caído por un transitorio lo relanza el
+   agente que lleva la issue, con el perfil de el administrador que lleva la sesión, con `rerun_run.py`. —
+   *referencia: `ci-pattern`, HR-7 y HR-54.*
 
 4. **Etiqueta `type:*` orientativa, de las que declara el contrato del
    host.** Ningún gate la exige (team-skills#1093, R1). Una etiqueta que el
@@ -82,9 +93,23 @@ Antes de `gh pr create`, ejecute `ci-pattern pr preflight --draft --pr-body <cue
 
 5. **400 líneas por PR.** Corte por unidad de trabajo —cada commit, una
    pieza entregable con sus tests y su doc—. La etiqueta `size:exception` la
-   pone el mantenedor, solo cuando el corte honesto no cabe; nunca se recortan
+   decide el administrador que lleva la sesión, solo cuando el corte honesto no cabe; nunca se recortan
    comentarios, documentación ni tests para entrar en el presupuesto. —
    *referencia: `ci-pattern`, HR-8 y HR-54.*
+
+   El presupuesto se planifica **antes** de empezar, no se descubre al final
+   (regla del dueño, 2026-11-02). Quien encarga el trabajo estima su tamaño y
+   lo parte en eslabones de una cadena ya en el encargo. Quien lo hace mira el
+   tamaño de su diff mientras trabaja y corta el eslabón hacia las 350 líneas.
+   El chequeo de tamaño del preflight local es la última red, y la CI nunca
+   debería ser la primera en descubrir que una PR se pasa.
+
+   Si un eslabón no se puede partir, el administrador que lleva la sesión decide antes del push si
+   de verdad no se puede (un fichero generado, una migración atómica o un
+   renombrado mecánico) o si falta el esfuerzo de partirlo, y lo registra con
+   un comentario en la PR. El único mecanismo de la flota es la etiqueta
+   `size:exception` que lee el gate `pr-size` (`ci-pattern` HR-8), con las
+   cuatro respuestas en el cuerpo de la PR.
 
 6. **La rama remota se conserva tras el merge** (nunca `git push origin
    --delete <rama>`): permite seguir o revertir con exactitud algo que se
@@ -104,12 +129,39 @@ Antes de `gh pr create`, ejecute `ci-pattern pr preflight --draft --pr-body <cue
    (Refs DysTelefonica/team-skills#528 §3.13 D1; `slices/partials/web.md`
    §Divergencias documentadas). Si el partial del consumer prescribe una
    concreta, gana el partial; en ausencia de prescripción, el agente
-   respeta el método configurado en el host o pregunta al mantenedor.
+   respeta el método configurado en el host o pregunta a el administrador que lleva la sesión.
+
+9. **Antes del merge, quien lleva la issue comprueba la conformidad con la
+   issue, no la CI.** La PR hace lo que pide la issue (alcance y criterios de
+   aceptación), y cada criterio tiene su evidencia en la PR, una línea por
+   criterio: test con su salida en verde, comando con su salida real, captura
+   para la UI, consulta o log para los datos. Un criterio sin evidencia no
+   está hecho. Que la CI pase es parte de hacer la PR (`ci-pattern` HR-86).
+
+## Disciplina local
+
+Reglas sin actor: valen igual con roles o sin ellos.
+
+- **Scratch.** El trabajo temporal va en `d=$(mktemp -d)` y se queda allí; si hay que
+  rehacerlo, otro `mktemp -d`. Al terminar se listan las rutas de scratch y de
+  worktrees creadas, para decidir qué limpiar.
+- **Push.** Cada push encola la CI entera de la rama. Se juntan los commits de una
+  tanda y se empuja una vez; una rama que aún no se fusiona no se pone al día; con
+  `merge_freshness` en `off` no se fusiona `main` en la rama salvo conflicto (`DIRTY`)
+  o el mismo fichero de `.github/workflows/` cambiado en las dos (#783); en una
+  cadena se empuja solo el eslabón siguiente; si un push deja obsoleta la ejecución
+  anterior de la propia rama, se cancela, nunca la de una rama ajena.
+- **Preflight.** La CI confirma, no descubre (`ci-pattern` HR-86): antes de cada push
+  pasa el preflight local del repositorio, con tamaño, contrato de PR y commits,
+  nombre de rama, lint, tipos, tests unitarios y secretos. Una PR en rojo en uno de
+  esos gates es un defecto de proceso.
 
 ## Anti-patrones
 
 - Rebase o `--amend` sobre una rama que ya se empujó: la historia de
   otros deja de cuadrar y el review ya emitido se invalida.
+- `git merge -s ours` o `-X ours` en una rama que va a un PR: la base
+  figura como fusionada y sus cambios se pierden en el merge.
 - Force-push a la rama por defecto: el guard lo detecta y abre el
   incidente.
 - Declarar un PR listo con el CI en rojo, o encadenar sin re-apuntar y
@@ -117,9 +169,8 @@ Antes de `gh pr create`, ejecute `ci-pattern pr preflight --draft --pr-body <cue
 - Una etiqueta inventada fuera del contrato del host.
 - Recortar documentación, comentarios o tests para caber en las 400
   líneas: se parte el cambio, no se adelgaza el diff.
-- Que un agente ejecute el merge sin orden explícita de un mantenedor
-  registrada en la issue o el PR, o con una cuenta sin permiso de
-  mantenedor.
+- Que un agente ejecute el merge con la CI en rojo, saltándose el camino
+  gobernado o con una cuenta que no administra el repositorio.
 
 ## Qué cargar junto a esto
 

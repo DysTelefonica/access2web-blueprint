@@ -78,8 +78,9 @@ LITERAL_PIN = "bc915526af7920e459afd2532e93e96e0479c0e6"
 def canonical_job() -> str:
     """El workflow que publica el porting-guide, extraído del documento.
 
-    Desde #1270 el bloque es un workflow completo en `pull_request_target`, con
-    los jobs `canon` (el único con el token) y `governance-seals`. Se busca el
+    Desde #1270 el bloque es un workflow completo en `pull_request_target`; desde
+    #1396 su único job es `governance-seals`, que toma el patrón de la copia
+    vendorizada en la BASE. Se busca el
     bloque cercado que contiene la clave `governance-seals:`: si el documento
     deja de publicarlo, esta función reventa y el fallo nombra el documento.
     """
@@ -104,6 +105,35 @@ def hand_written_shas(text: str) -> list[str]:
 def consumer_workflow() -> str:
     """El workflow publicado, tal cual lo pega el consumer."""
     return canonical_job()
+
+
+PR_CONTRACT_TEMPLATE = SKILL_ROOT / "assets" / "templates" / ".github" / "workflows" / "pr-contract.yml.tmpl"
+TRIGGER_TYPES = re.compile(r"^\s*types:\s*\[(.*?)\]", re.M)
+CONCURRENCY_GROUP = re.compile(r"^\s*group:\s*(\S+)", re.M)
+
+
+def trigger_types(workflow: str) -> list[str]:
+    """Los `types` del disparador de PR de un workflow."""
+    match = TRIGGER_TYPES.search(workflow)
+    assert match, "el workflow no declara `types` en su disparador"
+    return [t.strip() for t in match.group(1).split(",")]
+
+
+def concurrency_group(workflow: str) -> str:
+    match = CONCURRENCY_GROUP.search(workflow)
+    assert match, "el workflow no declara grupo de `concurrency`"
+    return match.group(1)
+
+
+class TreeOnlyTriggerTests(unittest.TestCase):
+    """#1440 (C2): un job que solo mide el arbol no corre al editar el cuerpo o las etiquetas."""
+
+    def test_the_fragment_runs_only_when_the_tree_can_change(self):
+        self.assertEqual(trigger_types(consumer_workflow()), ["opened", "synchronize", "reopened"])
+
+    def test_the_fragment_does_not_share_the_pr_contract_queue(self):
+        template = PR_CONTRACT_TEMPLATE.read_text(encoding="utf-8")
+        self.assertNotEqual(concurrency_group(consumer_workflow()), concurrency_group(template))
 
 
 class CanonicalJobTests(unittest.TestCase):
@@ -186,13 +216,36 @@ class CanonicalJobTests(unittest.TestCase):
         self.assertTrue(found[0].endswith(LITERAL_PIN), found)
 
     def test_fragment_reads_the_commit_from_the_manifest_seal(self):
-        """El commit del catálogo lo lee la acción del sello; el workflow no lo declara (#1062)."""
+        """El commit del catálogo es el de la copia vendorizada en la base (#1062, #1396)."""
         tree = policy_gate.parse_workflow(consumer_workflow(), "ci.yml")
         steps = [s for s in tree["jobs"][JOB]["steps"] if "GITHUB_OUTPUT" in str(s.get("run") or "")]
-        self.assertEqual(steps, [], "el job no resuelve el sello: lo hace la acción del job `canon`")
-        canon = tree["jobs"]["canon"]
-        action = [s for s in canon["steps"] if "pattern-at-pin" in str(s.get("uses") or "")]
-        self.assertEqual(len(action), 1, "el job `canon` no invoca la acción del catálogo")
+        self.assertEqual(steps, [], "el job no resuelve el sello: lo fija la propagación en la base")
+        self.assertEqual(tree["jobs"][JOB]["env"]["PATTERN_DIR"], "base/.agents/skills/ci-pattern")
+
+    # --- #1396: un solo job, sin token, sin artefacto de entrada; el espejo se queda ---
+
+    def test_the_fragment_has_no_canon_job_nor_token(self):
+        tree = policy_gate.parse_workflow(consumer_workflow(), "ci.yml")
+        self.assertEqual(list(tree["jobs"]), [JOB])
+        self.assertNotIn("needs", tree["jobs"][JOB])
+        self.assertNotIn("TEAM_SKILLS", consumer_workflow())
+        self.assertNotIn("pattern-at-pin", consumer_workflow())
+
+    def test_the_verdict_does_not_depend_on_an_artifact(self):
+        """Una cuota de artefactos no salta el check requerido (cadete#752)."""
+        self.assertNotIn("download-artifact", consumer_workflow())
+
+    def test_the_verdict_is_mirrored_on_the_pr_head_with_the_github_token(self):
+        """El check run nativo de `pull_request_target` queda en la base; el merge
+        gobernado lee la cabeza, así que el espejo se queda y su motivo está escrito (#1396, S9)."""
+        tree = policy_gate.parse_workflow(consumer_workflow(), "ci.yml")
+        mirror = [s for s in tree["jobs"][JOB]["steps"] if "check-runs" in str(s.get("run") or "")]
+        self.assertEqual(len(mirror), 1)
+        self.assertEqual(mirror[0]["env"]["CONTEXT"], "governance-seals")
+        self.assertEqual(mirror[0]["env"]["HEAD_SHA"], "${{ github.event.pull_request.head.sha }}")
+        self.assertEqual(mirror[0]["env"]["GH_TOKEN"], "${{ github.token }}")
+        guide = " ".join(PORTING_GUIDE.read_text(encoding="utf-8").split())
+        self.assertIn("Por qué el gate aparece dos veces entre los checks del PR (#1396)", guide)
 
     # --- #1172: el manifiesto re-sellado como artefacto, sin push ---
 
@@ -201,7 +254,7 @@ class CanonicalJobTests(unittest.TestCase):
         tree = policy_gate.parse_workflow(consumer_workflow(), "ci.yml")
         commands = "\n".join(
             str(step.get("run") or "") for step in tree["jobs"][JOB]["steps"])
-        self.assertIn("manifest seal", commands)
+        self.assertIn("manifest seal pr-head", commands)
         self.assertIn("--out", commands)
         # Re-sellar es escribir el manifiesto: el job no lo commitea ni lo empuja.
         for forbidden in ("git commit", "git push", "git add"):

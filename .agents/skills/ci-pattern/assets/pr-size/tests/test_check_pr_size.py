@@ -27,6 +27,8 @@ import unittest
 from pathlib import Path
 
 GATE = Path(__file__).resolve().parents[1] / "check_pr_size.py"
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tests"))
+from _fake_gh import GH_ENV, PATH_TESTS_SKIP, install_fake_gh, run_guarded  # noqa: E402
 
 
 def _load_gate():
@@ -482,10 +484,10 @@ class TestLabelOverride(unittest.TestCase):
     def tearDown(self) -> None:
         self._tmp.cleanup()
 
-    def test_over_budget_without_label_fails_and_names_the_maintainer(self) -> None:
+    def test_over_budget_without_label_fails_and_names_the_coordinator(self) -> None:
         result = _run_cli(self.repo)
         self.assertEqual(result.returncode, 1, result.stdout)
-        self.assertIn("maintainer", result.stdout)
+        self.assertIn("coordinator", result.stdout)
         self.assertIn("size:exception", result.stdout)
 
     def test_label_flag_overrides(self) -> None:
@@ -557,7 +559,7 @@ class TestGeneratedLockfilesAreExcluded(unittest.TestCase):
             repo = _over_budget_repo(Path(tmp), "app/x.py")
             result = _run_cli(repo)
             self.assertEqual(result.returncode, 1, result.stdout)
-            self.assertIn("maintainer", result.stdout)
+            self.assertIn("coordinator", result.stdout)
 
     def test_requirements_txt_still_counts(self) -> None:
         """Solo la extension ``.lock`` queda fuera: ``requirements.txt`` es de autoria."""
@@ -573,6 +575,58 @@ class TestGeneratedLockfilesAreExcluded(unittest.TestCase):
             repo = _over_budget_repo(Path(tmp), "app/requirements-dev.lock")
             result = _run_cli(repo)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+
+class TestOddTasksAreExcluded(unittest.TestCase):
+    """RED (#1611): ``odd/tasks/*.md`` no cuenta; nada más amplio queda fuera."""
+
+    def test_a_task_document_does_not_count(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            result = _run_cli(_over_budget_repo(Path(tmp), "odd/tasks/1611-x.md"))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("500 generated line(s) excluded", result.stdout)
+
+    def test_a_nested_task_document_still_counts(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            result = _run_cli(_over_budget_repo(Path(tmp), "odd/tasks/sub/x.md"))
+            self.assertEqual(result.returncode, 1, result.stdout)
+
+
+class TestGeneratedFilesFromTheBase(unittest.TestCase):
+    """#1440: lo que el ``.gitattributes`` de la BASE marca generado no cuenta."""
+
+    INVENTORY = "\n".join(f"<li>{i}</li>" for i in range(500)) + "\n"
+    ATTRS = "docs/inventory.html linguist-generated\n"
+
+    def test_a_file_marked_generated_in_the_base_does_not_count(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            _commit_file(repo, ".gitattributes", self.ATTRS, "chore: mark generated")
+            _commit_file(repo, "docs/inventory.html", self.INVENTORY, "docs: regenerate")
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("500 generated line(s) excluded", result.stdout)
+
+    def test_a_pr_cannot_mark_its_own_lines_generated(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            _commit_files(repo, {".gitattributes": self.ATTRS,
+                                 "docs/inventory.html": self.INVENTORY}, "docs: hide it")
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+
+    def test_handwritten_docs_still_count(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            _commit_file(repo, ".gitattributes", self.ATTRS, "chore: mark generated")
+            _commit_file(repo, "docs/guide.md", self.INVENTORY, "docs: write a guide")
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
 
 
 class TestLockfileBumpRealCase(unittest.TestCase):
@@ -805,6 +859,36 @@ class TestApiMode(unittest.TestCase):
         result, _ = self.run_api([_file("uv.lock", 500, previous="app/a.py")])
         self.assertEqual(result.returncode, 1, result.stdout)
 
+    def test_an_odd_task_document_does_not_count_unless_renamed_into(self) -> None:
+        """RED (#1611): en modo API la regla de ``odd/tasks/*.md`` es la misma."""
+        result, _ = self.run_api([_file("odd/tasks/x.md", 500)])
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        result, _ = self.run_api([_file("odd/tasks/x.md", 500, previous="docs/plan.md")])
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_a_generated_file_from_the_gitattributes_file_does_not_count(self) -> None:
+        """#1440: en modo API el workflow pasa el ``.gitattributes`` de la base."""
+        attrs = self.tmp / "base.gitattributes"
+        attrs.write_text("docs/inventory.html linguist-generated\n", encoding="utf-8")
+        result, _ = self.run_api([_file("docs/inventory.html", 500)],
+                                 extra=("--gitattributes-file", str(attrs)))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("500 generated line(s) excluded", result.stdout)
+
+    def test_an_unreadable_gitattributes_file_fails_with_an_envelope(self) -> None:
+        import json
+        attrs = self.tmp / "bad.gitattributes"
+        attrs.write_bytes(b"docs/\xff linguist-generated\n")
+        result, _ = self.run_api([_file("docs/inventory.html", 500)],
+                                 extra=("--gitattributes-file", str(attrs), "--json"))
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertEqual(json.loads(result.stdout)["status"], "error")
+
+    def test_without_the_gitattributes_file_a_generated_path_counts(self) -> None:
+        result, _ = self.run_api([_file("docs/inventory.html", 500)])
+        self.assertEqual(result.returncode, 1, result.stdout)
+
     def test_a_lockfile_bump_counts_only_the_manifest(self) -> None:
         """APAP_WEB#2424: 444 líneas de ``uv.lock`` y 4 de ``pyproject.toml`` → 4."""
         result, _ = self.run_api([_file("uv.lock", 222, 222),
@@ -920,9 +1004,6 @@ class TestApiMode(unittest.TestCase):
         self.assertEqual(json.loads(result.stdout)["status"], "error")
 
 
-if __name__ == "__main__":
-    unittest.main()
-
 
 # ---------------------------------------------------------------------------
 # RED: el modo local mide contra la base real del PR (issue #658)
@@ -954,19 +1035,17 @@ class TestLocalBaseResolution(unittest.TestCase):
         self._tmp.cleanup()
 
     def _fake_gh(self, stdout: str, exit_code: int = 0) -> None:
-        gh = self.bin / "gh"
-        gh.write_text(f"#!/bin/sh\nprintf '%s' '{stdout}'\nexit {exit_code}\n", encoding="utf-8")
-        gh.chmod(0o755)
+        self.gh = install_fake_gh(self.bin, f"import sys\nsys.stdout.write({stdout!r})\nsys.exit({exit_code})\n")
 
     def _run_gate(self, *args: str, env_extra: dict[str, str] | None = None) -> subprocess.CompletedProcess:
         env = _clean_env()
-        env["PATH"] = f"{self.bin}{os.pathsep}{env.get('PATH', '')}"
+        env[GH_ENV] = str(self.gh)
         env.pop("BASE_REF", None)
         if env_extra:
             env.update(env_extra)
-        return subprocess.run(
-            [sys.executable, str(GATE), *args],
-            cwd=self.repo, capture_output=True, text=True, env=env,
+        return run_guarded(
+            [sys.executable, str(GATE), *args], env=env, fixture_dir=self.tmp,
+            cwd=self.repo, capture_output=True, text=True,
         )
 
     def test_pr_base_from_gh_counts_only_the_stacked_slice(self) -> None:
@@ -975,6 +1054,17 @@ class TestLocalBaseResolution(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("origin/feature/base", result.stdout)
         self.assertIn("150 changed line(s)", result.stdout)
+
+    @unittest.skipIf(os.name == "nt", PATH_TESTS_SKIP)
+    def test_without_explicit_gh_the_gh_on_path_is_asked(self) -> None:
+        # #1609: sin CI_PATTERN_GH el gate sigue preguntando al `gh` del PATH.
+        self._fake_gh('{"baseRefName":"feature/base"}')
+        env = {k: v for k, v in _clean_env().items() if k not in (GH_ENV, "BASE_REF")}
+        env["PATH"] = f"{self.bin}{os.pathsep}{env.get('PATH', '')}"
+        result = run_guarded([sys.executable, str(GATE)], env=env, fixture_dir=self.tmp,
+                             cwd=self.repo, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("origin/feature/base", result.stdout)
 
     def test_no_pr_falls_back_to_origin_main(self) -> None:
         self._fake_gh("", exit_code=1)
@@ -994,3 +1084,7 @@ class TestLocalBaseResolution(unittest.TestCase):
         result = self._run_gate(env_extra={"BASE_REF": "origin/main"})
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("450 changed line(s)", result.stdout)
+
+
+if __name__ == "__main__":
+    unittest.main()

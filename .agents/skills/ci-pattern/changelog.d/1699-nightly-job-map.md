@@ -1,0 +1,3 @@
+type: minor
+
+`prerelease/nightly_pipeline.py plan` acepta `--job <requerido>=<job del consumer>`, repetible, para leer cada uno de los seis jobs requeridos de un job con el nombre que use el consumidor (por ejemplo, `--job e2e-full=e2e --job trivy=build`). Un consumidor con su noche ya montada, como APAP_WEB, puede así decidir sobre la ejecución programada de su propio workflow sin duplicarla en otro. Los mensajes siguen nombrando el job requerido, el prefijo `<caller> / ` se trata como antes y, sin `--job`, nada cambia. Un valor sin `=` o con un lado vacío, un requerido desconocido o un requerido mapeado dos veces retiene con código 2 sin llamar a la API. Refs #1699.

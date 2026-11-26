@@ -1,0 +1,5 @@
+type: minor
+
+**Qué.** HR-89: un run programado (`schedule`) en rojo sobre la rama por defecto abre la issue `ci-red` de su workflow (`[ci-red] <workflow>`), asignada al `coordinator` del contrato del host, o la comenta si ya está abierta; el run programado en verde la comenta y la cierra. Asset copiado `assets/ci-red/report_ci_red.py`, sin invocar la CLI del patrón (lección #342), con los dos pasos del workflow documentados en `assets/ci-red/README.md`. La clave `coordinator` entra en `host-contract.schema.json` y la valida `check_host_drift.py`; `ci-red` entra en las etiquetas de gobierno (HR-34) del contrato de ejemplo y del de team-skills, y el documento operativo generado lo dice en «Checks requeridos».
+**Causa.** El nightly era la red de seguridad sin nadie mirándola: en `ardelperal/APAP_WEB`, `main-audit.yml` y `r2-smoke.yml` fallaron todas las noches del 2026-10-31 al 2026-11-05 sin abrir una issue (#1508).
+**Adopción.** Declare `coordinator` y la etiqueta `ci-red` en `.github/host-contract.json`, cree la etiqueta con `scripts/sync-governance-labels.sh` y añada los dos pasos a cada workflow programado con `issues: write`.

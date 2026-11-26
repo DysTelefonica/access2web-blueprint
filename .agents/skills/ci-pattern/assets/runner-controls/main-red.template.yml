@@ -1,0 +1,28 @@
+# Plantilla del productor del rojo de main (#1708, parte A). Copiar al consumer como
+# .github/workflows/main-red.yml. Sustituir `CI` por el nombre del workflow de CI del consumer.
+# La lógica está en main_red.py: este workflow solo lo llama sobre el evento del run.
+name: main en rojo (#1708)
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types: [completed]
+
+permissions:
+  contents: read
+  issues: write
+  actions: read
+
+jobs:
+  main-red:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Abrir, reutilizar o cerrar la issue de main en rojo
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          python .agents/skills/ci-pattern/assets/runner-controls/main_red.py sync
+          --repo ${{ github.repository }}
+          --run ${{ github.event.workflow_run.id }}

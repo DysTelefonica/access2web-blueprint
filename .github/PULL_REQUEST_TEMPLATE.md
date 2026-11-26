@@ -3,7 +3,7 @@ El presupuesto de revisión es 400 líneas (additions + deletions) y se aplica e
 el job `pr-gate` del workflow de CI
 (`.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py`). Las rutas
 vendorizadas `.agents/skills/**` y `skills/**` no cuentan (issue #918). El gate
-lee solo la etiqueta `size:exception`, que pone el mantenedor; el cuerpo no
+lee solo la etiqueta `size:exception`, que pone el administrador que lleva la sesión; el cuerpo no
 lleva ningún campo de excepción.
 -->
 
@@ -36,8 +36,8 @@ Closes #
 
 ## Excepción de tamaño
 
-<!-- Solo si el PR supera 400 líneas. Responda las cuatro preguntas; el mantenedor
-     decide si concede la etiqueta `size:exception`. -->
+<!-- Solo si el PR supera 400 líneas. Responda las cuatro preguntas; el administrador que lleva la sesión
+     decide si pone la etiqueta `size:exception`. -->
 
 1. ¿Qué parte puede ir antes en una PR propia sin romper `main` (refactor previo, puerto o servicio con sus tests, docs)?
 2. ¿Se puede partir por sub-comportamiento o por capa (dominio → ruta → plantilla + e2e)?
@@ -57,4 +57,4 @@ Closes #
 - [ ] CI verde contra la base actual: `required`, `quality`, `codeql`, `pr-gate` y los tres de `security`.
 - [ ] Conventional Commits, sin atribución de IA.
 - [ ] La rama remota se preserva tras el merge (nunca `git push origin --delete <rama>`).
-- [ ] El merge lo lanza un mantenedor por el camino del host (ruleset `main-maintainers-and-admins-merge`). Ningún agente hace merge.
+- [ ] El merge lo lanza el administrador que lleva la sesión, con su perfil, por `governed-merge.yml` (`gh workflow run governed-merge.yml -f pr=<N>`).

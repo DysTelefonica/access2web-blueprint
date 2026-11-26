@@ -5,8 +5,9 @@
 Takes a base ref and a head ref and gates every skill directory touched by
 the diff (a SKILL.md at head). Such a directory must gain at least one NEW
 fragment under ``<skill>/changelog.d/*.md`` in the same diff. A fragment is
-valid when its first non-empty line is ``type: patch`` or ``type: minor``
-and a non-empty entry follows it. ``README.md`` inside ``changelog.d/`` is
+valid when its first non-empty line is ``type: patch``, ``type: minor`` or
+``type: major`` and a non-empty entry follows it; a ``major`` one also carries a
+migration note (``Migración: …``). ``README.md`` inside ``changelog.d/`` is
 documentation, not a fragment. Only fragments ADDED by the diff count: an
 edit to a fragment already on base does not satisfy the rule.
 
@@ -36,7 +37,13 @@ import sys
 from pathlib import Path
 
 FRAGMENT_DIR = "changelog.d"
-TYPE_LINE = re.compile(r"type:\s*(patch|minor)")
+# Fase 0, 0.2: un cambio incompatible es `type: major` y lleva una nota de
+# migración, una línea `Migración: …` (o `Migration: …`, con o sin negrita) que
+# dice qué tiene que hacer quien usa la skill. Cambiar una ruta o un valor por
+# defecto de un script que ejecuta una persona es incompatible.
+TYPE_LINE = re.compile(r"type:\s*(patch|minor|major)")
+MIGRATION_LINE = re.compile(r"(?:\*\*)?(?:migración|migration)(?:\*\*)?\s*[.:]\s*(?:\*\*)?\s*\S",
+                            re.IGNORECASE)
 VERSION_LINE = re.compile(r"\s*version:\s*[\"']?\d+\.\d+\.\d+[\"']?\s*")
 
 
@@ -45,16 +52,24 @@ class GateError(Exception):
 
 
 def git(repo, *args) -> str:
-    r = subprocess.run(["git", "-C", str(repo), *args],
-                       capture_output=True, text=True)
+    # git output is strict UTF-8 whatever the locale code page (#1601): a fragment that is
+    # not UTF-8 would pass with replacement characters here and then break the release,
+    # whose consolidation reads fragments strictly. Decoded here, not in the reader thread.
+    r = subprocess.run(["git", "-C", str(repo), *args], capture_output=True)
     if r.returncode != 0:
-        raise GateError(f"git {' '.join(args)} failed: {r.stderr.strip()}")
-    return r.stdout.strip()
+        raise GateError(f"git {' '.join(args)} failed: "
+                        f"{r.stderr.decode('utf-8', 'replace').strip()}")
+    try:
+        out = r.stdout.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        msg = f"git {' '.join(args)}: output is not UTF-8 ({exc})"
+        raise GateError(msg) from exc
+    return out.replace(chr(13) + chr(10), chr(10)).replace(chr(13), chr(10)).strip()
 
 
 def rev_parse(repo: Path, ref: str) -> str:
     r = subprocess.run(["git", "-C", str(repo), "rev-parse", "--verify", "-q", ref],
-                       capture_output=True, text=True)
+                       capture_output=True, encoding="utf-8", errors="replace")
     if r.returncode != 0:
         raise GateError(f"ref {ref!r} does not resolve")
     return r.stdout.strip()
@@ -143,10 +158,14 @@ def validate_fragment(text: str) -> str | None:
     if not lines:
         return "empty fragment"
     if not TYPE_LINE.fullmatch(lines[0]):
-        return (f"first line must be 'type: patch' or 'type: minor', "
+        return (f"first line must be 'type: patch', 'type: minor' or 'type: major', "
                 f"got {lines[0]!r}")
     if len(lines) < 2:
         return "fragment has no entry after the type line"
+    if TYPE_LINE.fullmatch(lines[0]).group(1) == "major" \
+            and not any(MIGRATION_LINE.match(line) for line in lines[1:]):
+        return ("a 'type: major' fragment needs a migration note: a line "
+                "'Migración: <what whoever uses the skill must do>'")
     return None
 
 

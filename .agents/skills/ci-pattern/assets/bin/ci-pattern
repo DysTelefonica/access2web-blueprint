@@ -110,9 +110,10 @@ Comandos:
                              [--policy <path> --changed-files <file>] [--json]
                              Mismos veredictos que la CI sobre un PR abierto,
                              reusando los gates en proceso; corre antes de push.
-  adoption check (--phase N | --all) <repo>
+  adoption check (--phase N | --only-phase N | --all) <repo>
                              Gate por fase del contrato de adopción: fases del
                              porting-guide verificadas sobre el árbol real.
+                             --phase N mide 0..N; --only-phase N, solo la N.
   dependabot render <repo>  Imprime el `.github/dependabot.yml` que el canon
                              genera desde la declaración `dependabot` del contrato.
   dependabot check <repo>   Dice si el del consumer coincide con ese.
@@ -221,9 +222,23 @@ def load_manifest(repo, allow_legacy=False):
     return manifest
 
 
+def manifest_newline(repo):
+    """El final de línea del manifiesto en disco: CRLF si ya lo usa, si no LF.
+    Re-sellar no cambia los finales de línea de un manifiesto commiteado con
+    CRLF; el diff que se revisa es solo el sello (#1415)."""
+    try:
+        data = (Path(repo) / MANIFEST_NAME).read_bytes()
+    except OSError:
+        return "\n"
+    return "\r\n" if b"\r\n" in data else "\n"
+
+
 def write_manifest(repo, manifest):
+    # Sin ordenar las claves: re-sellar cambia la línea del hash y conserva el
+    # orden del manifiesto, así el diff que se revisa es solo el sello (#1415).
     path = Path(repo) / MANIFEST_NAME
-    path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8",
+                    newline=manifest_newline(repo))
     return path
 
 
@@ -1280,8 +1295,8 @@ def cmd_manifest_seal(args):
     if out_path:
         target = Path(out_path)
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(json.dumps(sealed, indent=2, sort_keys=True) + "\n",
-                          encoding="utf-8")
+        target.write_text(json.dumps(sealed, indent=2) + "\n",
+                          encoding="utf-8", newline=manifest_newline(repo))
     else:
         write_manifest(repo, sealed)
     destino = out_path or str(repo / MANIFEST_NAME)
@@ -1458,7 +1473,7 @@ def cmd_report_friction(args):
             "consumer-local NUNCA se publica en team-skills: pase --repo <repo-del-consumer>. Rechazado.")
 
     def gh(*argv):
-        return _run_cmd(["gh", *argv], timeout=120)
+        return _run_cmd([*_gh_command(), *argv], timeout=120)
 
     occ_files = []
     try:
@@ -1560,8 +1575,8 @@ def cmd_report_friction(args):
 ADOPTION_HELP = """\
 adoption — generación y gate por fase de la adopción (#276, #279)
 
-uso: ci-pattern adoption check (--phase N | --all) <repo> [--config-from <dir>]
-     [--seal-baseline <dir>]
+uso: ci-pattern adoption check (--phase N | --only-phase N | --all) <repo>
+     [--config-from <dir>] [--seal-baseline <dir>]
      ci-pattern adoption generate-doc <repo> --out <ruta>
 
 check: valida el contrato .github/ci-pattern-adoption.json del consumer y
@@ -1569,6 +1584,13 @@ verifica cada fase del porting-guide contra el árbol real. Exit: 0 la fase
 cumple · 1 hallazgos nombrando cada artefacto o condición que falta · 2
 contrato ilegible, esquema inválido, sujeto vacío o entrada ausente de un
 gate.
+
+--phase N mide las fases 0..N en orden y se detiene en la primera que falla:
+ninguna fase pasa si la anterior no pasa. --only-phase N mide la fase N y
+ninguna otra (#1396): es la forma de un job de CI que mide su fase cuando cada
+fase previa tiene su propio job (p. ej. `docs-gates` con --only-phase 5 junto a
+`governance-seals` con --phase 3), de modo que una causa da un solo rojo. La
+medición completa (nightly, cierre de adopción) sigue usando --phase N o --all.
 
 --config-from <dir>: el contrato de adopción que GOBIERNA el gate sale de <dir>
 (un checkout de la base del PR, sin credenciales); el estado que se mide sigue
@@ -2129,6 +2151,22 @@ def _changelog_fragment_lines(repo):
             "exige uno por PR (HR-44, #665; team-skills#1093, R4)."]
 
 
+# #1768: sin roles de agentes, quien decide es el administrador que lleva la sesion.
+SESSION_ADMIN = "administrador que lleva la sesión"
+
+
+def _agent_roles_enabled(repo):
+    """#1768: el consumer conserva los roles solo con `agent_roles: enabled` en su
+    `.team-skills.yaml`; sin el fichero o sin la clave, no hay roles."""
+    if repo is None:
+        return False
+    try:
+        text = (Path(repo) / ".team-skills.yaml").read_text(encoding="utf-8")
+    except OSError:
+        return False
+    return re.search(r"(?m)^agent_roles:\s*enabled\s*(#.*)?$", text) is not None
+
+
 OPERATING_DOC_AGENTS_BLOCK = """<!-- ci-pattern-agents:begin -->
 ## Flujo operativo y mandato de no invención
 
@@ -2345,10 +2383,14 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint, repo=None):
         "(merge, nunca rebase) y vuelva a comprobar: el verde de una cabeza "
         "anterior a la integración no es evidencia del resultado nuevo.\n"
         "  Hecho: todos los checks en pass sobre la cabeza y la base actuales.",
-        "- **9. Merge gobernado.** El merge lo decide un humano con CI en verde. "
-        "Un agente lo lanza solo por orden explícita y registrada de un mantenedor "
-        "con cuenta de mantenedor, por el camino gobernado y nunca con `--admin`. "
-        "Métodos permitidos (host-contract): "
+        ("- **9. Merge gobernado.** El merge lo decide un humano con CI en verde. "
+         "Un agente lo lanza solo por orden explícita y registrada de un mantenedor "
+         "con cuenta de mantenedor, por el camino gobernado y nunca con `--admin`. "
+         if _agent_roles_enabled(repo) else
+         "- **9. Merge gobernado.** Con la CI en verde, el agente que lleva la issue "
+         f"lanza el merge con el perfil del {SESSION_ADMIN}, por el camino "
+         "gobernado y nunca con `--admin`. ")
+        + "Métodos permitidos (host-contract): "
         f"{_or_none(allowed_merges)}.\n"
         "  Hecho: `gh pr view <número> --json state --jq .state` devuelve MERGED.",
         "- **10. Limpieza.** Solo después del merge verificado y sin cambios "
@@ -2455,12 +2497,14 @@ def _integrated_tree_lines():
         "en el resumen del job, con `merge commit`, `merge tree`, `verified head`, "
         "`head tree` y `verdict`.",
         "- Códigos de salida del merge gobernado:",
-        "  - `0`: Merge hecho y el árbol integrado es el del head verificado.",
+        "  - `0`: Merge hecho y el árbol integrado es el del head verificado o, con la "
+        "frescura apagada, incluye commits de la base que verifica el CI post-merge.",
         "  - `1`: El contrato no se cumplió: no se fusiona.",
         "  - `2`: Fallo cerrado: el entorno o la medición no son salvables.",
         "  - `3`: Merge hecho, las issues enlazadas no se cerraron.",
         "  - `4`: Merge hecho, el dispatch post-merge falló.",
-        "  - `5`: Merge hecho, **el árbol integrado no es el árbol que revisó el CI**.",
+        "  - `5`: Merge hecho, **el árbol integrado no es el árbol que revisó el CI** "
+        '(solo con `merge_freshness: "required"`).',
         "- Si sale `5`, el merge no se deshace. Compare el commit de merge con el head "
         "verificado (`git diff <head> <merge>`), compruebe si la base se movió entre la "
         "comprobación y el merge, corrija y vuelva a fusionar: un rerun no sirve.",
@@ -2468,21 +2512,30 @@ def _integrated_tree_lines():
 
 
 def _operating_doc_merge_lines(repo, allowed_merges):
-    """#351: seccion Merge; el camino gobernado solo con declaracion."""
+    """#351: seccion Merge; el camino gobernado solo con declaracion.
+    #1768: sin `agent_roles: enabled`, el merge lo lanza el agente con el perfil
+    del administrador que lleva la sesion, con la CI en verde."""
     _or_none = lambda items: ", ".join(items) if items else "ninguno declarado"
+    roles = _agent_roles_enabled(repo)
+    if roles:
+        who = ("- El merge lo decide un humano con CI en verde. Un agente lo lanza solo por "
+               "orden explícita y registrada de un mantenedor con cuenta de mantenedor, "
+               "nunca con `--admin`.")
+    else:
+        who = (f"- El merge gobernado lo lanza el agente que lleva la issue, con el perfil del "
+               f"{SESSION_ADMIN}, cuando la CI está en verde; nunca con `--admin`.")
     lines = [
-        "- El merge lo decide un humano con CI en verde. Un agente lo lanza solo por "
-        "orden explícita y registrada de un mantenedor con cuenta de mantenedor, "
-        "nunca con `--admin`.",
+        who,
         f"- Métodos de merge permitidos (host-contract): {_or_none(allowed_merges)}.",
     ]
     gm = _governed_merge_workflow(repo)
     if gm:
         name = Path(gm).name
+        launcher = "un mantenedor" if roles else f"el agente con el perfil del {SESSION_ADMIN}"
         lines.append(
             f"- Camino gobernado: el workflow `{name}` (workflow_dispatch) "
-            "audita el PR antes de merge y exige CI en verde; lo lanza un "
-            f"mantenedor con `gh workflow run {name} -f pr=<N>`.")
+            "audita el PR antes de merge y exige CI en verde; lo lanza "
+            f"{launcher} con `gh workflow run {name} -f pr=<N>`.")
         lines += _integrated_tree_lines()
     return lines
 
@@ -2548,6 +2601,12 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
             "- Conventional Commits: `tipo[(scope)]: descripción` con tipo en "
             "feat|fix|docs|chore|refactor|test|ci|perf.",
             "- Sin atribución de IA: sin `Co-Authored-By` ni pies de página generados.",
+            "- Autor vinculado a una cuenta de GitHub (HR-84): `git config user.name` y "
+            "`git config user.email` con un correo verificado de la cuenta o su dirección "
+            "noreply; un autor que GitHub no vincula (p. ej. `pi-agent <pi-agent@local>`) "
+            "avisa, y bloquea cuando la política declara `commit_identity.mode: enforce`. "
+            "Los bots legítimos se declaran en `commit_identity.allowed_bots` de "
+            "`.github/pr-contract.policy.json`.",
         ]),
         "pull-request": "\n".join([
             f"- Presupuesto: {params['P06_review_budget_lines']} líneas (añadidas + borradas, "
@@ -2578,6 +2637,10 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
              "una regla que no esté aquí.",
              f"- Contextos requeridos declarados: {_or_none(list(contexts))}.",
              f"- Checks del contrato de host: {_or_none(required_checks)}.",
+             "- Un run programado (`schedule`) en rojo sobre la rama por defecto abre la "
+             "issue `ci-red` de su workflow, asignada al `coordinator` del contrato del "
+             "host, o la comenta si ya está abierta; el run programado en verde la "
+             "comenta y la cierra (HR-89, `assets/ci-red/report_ci_red.py`).",
              ""]
             + [f"| `{name}` | {what} | `bash {entrypoint}` | → {recovery} |"
                for name, (what, recovery) in _checks_table_rows(jobs)]),
@@ -2596,7 +2659,7 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
             "receta de operación local del consumer.",
         ]),
         "lifecycle": "\n".join(
-            _operating_doc_lifecycle_lines(params, host, jobs, entrypoint)),
+            _operating_doc_lifecycle_lines(params, host, jobs, entrypoint, repo)),
         "incidents": _operating_doc_incident_lines(params),
         "docs-location": _operating_doc_docs_location_lines(params),
         "agents-block": _agents_block_for(repo),
@@ -2657,7 +2720,9 @@ def _cmd_adoption_generate_doc(rest):
     target = Path(out)
     if str(target.parent) and not target.parent.exists():
         target.parent.mkdir(parents=True)
-    target.write_text(text, encoding="utf-8")
+    # LF en todas las plataformas: el modo texto de Windows escribe CRLF y el PR
+    # cuenta el documento entero como reescrito (#1408).
+    target.write_text(text, encoding="utf-8", newline="\n")
     print(f"documento operativo escrito: {target}")
     return EXIT_OK
 
@@ -2785,7 +2850,12 @@ def _check_review_budget(repo):
 
 
 def _ci_images_mode(repo):
-    """#1264: 'on' si P56_ci_images_gate: on; None sin declaración (ausente, off o sin clave).
+    """#1264: 'on' si P56_ci_images_gate: on; None sin declaración (ausente, off o sin clave)."""
+    return _opt_in_mode(repo, "P56", "P56_ci_images_gate")
+
+
+def _opt_in_mode(repo, pid, key):
+    """'on' si `key: on` en ci-pattern.yaml; None sin declaración (ausente, off o sin clave).
     Fail-closed: fichero ilegible o valor fuera de {off, on} es UsageError (exit 2)."""
     path = repo / "ci-pattern.yaml"
     if not path.is_file():
@@ -2794,13 +2864,27 @@ def _ci_images_mode(repo):
         params = parse_params_yaml(path.read_text(encoding="utf-8"))
     except (ParamsFileError, OSError, UnicodeDecodeError) as exc:
         raise UsageError(f"fase 4: ci-pattern.yaml ilegible ({path}): {exc}") from exc
-    if "P56_ci_images_gate" not in params:
+    if key not in params:
         return None
-    param = next(p for p in load_schema()[0]["parameters"] if p["id"] == "P56")
-    err = validate_value(param, params["P56_ci_images_gate"])
+    param = next(p for p in load_schema()[0]["parameters"] if p["id"] == pid)
+    err = validate_value(param, params[key])
     if err:
         raise UsageError(f"fase 4: ci-pattern.yaml ilegible: {err}")
-    return "on" if params["P56_ci_images_gate"] == "on" else None
+    return "on" if params[key] == "on" else None
+
+
+UPGRADE_PATH_JOB = "upgrade-path"
+
+
+def _upgrade_path_findings(repo):
+    """#1561 (HR-92): con P60=on el job upgrade-path bloquea, así que existe y es requerido."""
+    if _opt_in_mode(repo, "P60", "P60_upgrade_path") is None:
+        return []
+    return [
+        "fase 4: " + f
+        for f in _workflow_job_findings(repo, UPGRADE_PATH_JOB, hr="HR-92")
+        + _required_job_findings(repo, UPGRADE_PATH_JOB, hr="HR-92")
+    ]
 
 
 def _ci_images_jobs(repo):
@@ -2853,6 +2937,149 @@ def _ci_images_findings(repo):
             + _required_job_findings(repo, job, hr="HR-78")
         ]
     return findings
+
+
+def _gate_assets(skill):
+    """#1742: los gates del canon, una sola fuente: cada assets/<gate>/check_*.py."""
+    return sorted(p.relative_to(skill).as_posix()
+                  for p in (skill / "assets").glob("*/check_*.py"))
+
+
+_HR_ENTRY = re.compile(r"^\s*-\s+\*\*(HR-[\d.]+)\s*[—\-–]")
+
+
+def _hr_blocks(lines):
+    """#1756: los bloques de regla de SKILL.md: cada entrada HR y sus sub-reglas.
+
+    Una entrada HR larga envuelve su cita del asset en la línea siguiente, y
+    las sub-reglas (HR-54.5) van indentadas: el bloque va de la línea de la
+    entrada hasta la entrada siguiente.
+    """
+    bloques = []
+    for line in lines:
+        m = _HR_ENTRY.match(line)
+        if m:
+            bloques.append([m.group(1), [line]])
+        elif bloques:
+            bloques[-1][1].append(line)
+    return [(hr, "\n".join(cuerpo)) for hr, cuerpo in bloques]
+
+
+def _hr_citing_gate(skill, rel):
+    """#1742 / #1756: la línea HR de SKILL.md que cita el asset del gate.
+
+    La cita puede caer en la primera línea de la entrada HR (lo que ya
+    resolví­a) o en su continuación, incluida la sub-regla indentada. Si la
+    primera línea no cita el asset, se lee el bloque entero de la entrada: se
+    prefiere la cita del fichero y, si no hay, la de su carpeta. Un gate que
+    ninguna entrada HR cita devuelve None: el aviso lo dice, sin inventar.
+    """
+    folder = Path(rel).parent.name
+    name = Path(rel).name
+    lines = (skill / "SKILL.md").read_text(encoding="utf-8").splitlines()
+    for line in lines:
+        m = re.match(r"- \*\*(HR-\d+)", line)
+        if m and f"assets/{folder}/" in line:
+            return m.group(1)
+    bloques = _hr_blocks(lines)
+    for cita in (f"assets/{folder}/{name}", f"assets/{folder}/"):
+        for hr, cuerpo in bloques:
+            if cita in cuerpo:
+                return hr
+    return None
+
+
+_SCRIPT_SUFFIXES = (".py", ".sh", ".ps1", ".js", ".ts", ".mjs", ".cjs", ".rb", ".pl")
+
+
+def _invoked_files(repo, workflow_text):
+    """#1742: ficheros del repo que un workflow invoca, con su contenido.
+
+    Un workflow ejecuta sus scripts por ruta (`python scripts/x.py`); cada token
+    de ruta que existe en el repo es un fichero invocado."""
+    found = {}
+    for token in re.findall(r"[A-Za-z0-9_][A-Za-z0-9_./-]*\.[A-Za-z0-9]+", workflow_text):
+        if not token.endswith(_SCRIPT_SUFFIXES):
+            continue
+        path = repo / token
+        if path.is_file() and path not in found:
+            found[path] = path.read_text(encoding="utf-8", errors="replace")
+    return found
+
+
+def _cites_asset(content, name):
+    """#1742: el contenido cita el asset: un token tipo ruta que TERMINA en su nombre.
+
+    La cita tiene que ser una ruta (o el nombre suelto), no una palabra que lo
+    contenga: `check_e2e_evidence.py` cita el asset; `check_e2e_evidence_helper.py`
+    no."""
+    return bool(re.search(rf"(?<![\w-])(?:[\w./-]*/)?{re.escape(name)}(?![\w.-])", content))
+
+
+def _same_gate_content(asset, content):
+    """#1742: el fichero es el asset renombrado: su contenido coincide casi entero.
+
+    Se comparan las líneas no vacías: una copia byte a byte con otro nombre
+    coincide en todas; un script que solo se le parece, en ninguna."""
+    lines = [l.strip() for l in asset.read_text(encoding="utf-8", errors="replace").splitlines()
+             if l.strip()]
+    if not lines:
+        return False
+    other = {l.strip() for l in content.splitlines() if l.strip()}
+    matched = sum(1 for l in lines if l in other)
+    return matched / len(lines) >= 0.9
+
+
+def _wired_by_invoked_file(asset, name, invoked):
+    """#1742: el gate está cableado si un fichero invocado por un workflow lo alcanza.
+
+    Dos pruebas del propio contenido del fichero, no de su nombre: que cite el
+    asset (un adaptador renombrado que lo importa) o que sea el asset copiado
+    con otro nombre. Un fichero con un nombre parecido pero sin relación con el
+    asset no cablea nada."""
+    for content in invoked.values():
+        if name in content and _cites_asset(content, name):
+            return True
+        if _same_gate_content(asset, content):
+            return True
+    return False
+
+
+def _warn_unwired_gates(repo):
+    """#1742: AVISO por stderr (no fallo) de cada gate distribuido al consumer
+    (.agents/skills/ci-pattern/<asset>) que ningún workflow invoca, ni por ruta ni
+    por nombre de fichero. Los gates que ejecuta la propia CLI no cuentan: el
+    workflow que corre `adoption check` ya los invoca."""
+    skill = skill_dir()
+    vendored = repo / ".agents" / "skills" / "ci-pattern"
+    workflows = repo / WORKFLOW_DIR
+    text = ""
+    if workflows.is_dir():
+        text = "\n".join(p.read_text(encoding="utf-8", errors="replace")
+                         for p in sorted(workflows.glob("*.y*ml")))
+    invoked = _invoked_files(repo, text)
+    cli_invoked = set(ADOPTION_GATES.values()) | set(RUNNER_BINDING_GATES.values()) \
+        | {ENV_ISOLATION_GATE, CI_IMAGES_GATE}
+    for rel in _gate_assets(skill):
+        asset = vendored / rel
+        if rel in cli_invoked or not asset.is_file():
+            continue
+        # La unidad es la carpeta del gate: un wrapper de la misma carpeta (p. ej.
+        # run_docs_links.py) o una copia adoptada en scripts/<carpeta>/ ejecuta el
+        # gate aunque su nombre no aparezca.
+        folder = re.escape(Path(rel).parent.name)
+        if rel in text or Path(rel).name in text \
+                or re.search(rf"(^|[\s'\"/]){folder}/", text, re.M):
+            continue
+        # El cableado puede ser indirecto: un fichero invocado por el workflow
+        # cita el asset (adaptador renombrado) o es el asset copiado con otro
+        # nombre. Lo prueban el contenido de ese fichero, no su nombre.
+        if _wired_by_invoked_file(asset, Path(rel).name, invoked):
+            continue
+        hr = _hr_citing_gate(skill, rel) or "sin HR"
+        print(f"AVISO {hr}: el gate {Path(rel).name} se distribuye a este consumer "
+              "y ningún workflow de .github/workflows/ lo invoca; su invariante queda "
+              "sin aplicar.", file=sys.stderr)
 
 
 def _check_gates_phase(repo, decl, contract, seal=None):
@@ -2943,6 +3170,7 @@ def _check_gates_phase(repo, decl, contract, seal=None):
     if runner:
         findings.extend(_runner_online_findings(repo, contract, runner))
     findings.extend(_ci_images_findings(repo))
+    findings.extend(_upgrade_path_findings(repo))
     return findings
 
 
@@ -3009,6 +3237,16 @@ def _child_env():
     env = os.environ.copy()
     env[RECURSION_ENV] = "1"
     return env
+
+
+def _gh_command():
+    """``gh`` a ejecutar: ``$CI_PATTERN_GH`` si esta fijada (una ruta ``.py`` corre
+    con este mismo Python) y, si no, ``gh`` del PATH. Los tests fijan la ruta del
+    ``gh`` falso; nunca dependen de como resuelve el PATH (#1609)."""
+    explicit = os.environ.get("CI_PATTERN_GH")
+    if explicit and explicit.endswith(".py"):
+        return [sys.executable, explicit]
+    return [explicit or "gh"]
 
 
 def _run_cmd(cmd, timeout):
@@ -3081,6 +3319,29 @@ def _referenced_governance_scripts(repo, refs, declared=()):
     return found
 
 
+def _on_disk_relpath(repo, path):
+    """Ruta relativa de ``path`` con los nombres que tiene en disco, o None si
+    no existe. En un sistema de ficheros que no distingue mayúsculas, `glob`
+    devuelve el segmento literal escrito como el patrón
+    (`pull_request_template.md` para `PULL_REQUEST_TEMPLATE.md`), y esa ruta
+    no casa con el inventario, que nombra el fichero real."""
+    current = Path(repo)
+    parts = []
+    for part in path.relative_to(repo).parts:
+        try:
+            names = os.listdir(current)
+        except OSError:
+            return None
+        if part not in names:
+            matches = [n for n in names if n.casefold() == part.casefold()]
+            if len(matches) != 1:
+                return None
+            part = matches[0]
+        parts.append(part)
+        current = current / part
+    return "/".join(parts) if current.is_file() else None
+
+
 def _scan_governed_paths(repo, declared=()):
     """Artefactos de gobierno PRESENTES en el árbol: rutas del catálogo
     (glob como dato) y scripts descubiertos por REFERENCIA (#312)."""
@@ -3089,7 +3350,10 @@ def _scan_governed_paths(repo, declared=()):
     for pattern in patterns:
         for p in repo.glob(pattern):
             if p.is_file():
-                found.add(p.relative_to(repo).as_posix())
+                # Sin nombre resoluble en disco (nombre ambiguo, error de
+                # lectura) se queda la ruta del glob: mejor un hallazgo de más
+                # que un artefacto sin medir.
+                found.add(_on_disk_relpath(repo, p) or p.relative_to(repo).as_posix())
     for rel in _referenced_governance_scripts(repo, refs, declared):
         if (repo / rel).is_file():
             found.add(rel)
@@ -3317,14 +3581,55 @@ def _manifest_identity_findings(repo, declared_paths):
                 f"(esperado {manifest_files[rel]}, encontrado {actual}); "
                 "la identidad del patrón no es autodeclarada (HR-46). "
                 f"Re-selle el manifiesto con: ci-pattern manifest seal {repo}")
-    # (b) todo artefacto declarado del patrón está cubierto por el manifiesto.
+    # (b) todo artefacto declarado del patrón está cubierto por el manifiesto:
+    # en `files` o, para AGENTS.md, por sus bloques propagados en
+    # `slice_blocks` (fase 0, 0.5): la sección local del consumer cambia sin
+    # re-sellar, y el bloque del patrón sigue verificado aquí mismo.
+    covered = set(manifest_files)
+    slice_state = _agents_slice_seal(repo, manifest)
+    if slice_state is True:
+        covered.add(AGENTS_MD)
     for rel in sorted(declared_paths):
-        if rel not in manifest_files:
+        if rel in covered:
+            continue
+        if rel == AGENTS_MD and isinstance(slice_state, str):
             findings.append(
-                f"fase 3: '{rel}' se declara del patrón pero no está en el "
-                "manifiesto de gobierno; la identidad del patrón no es "
-                "autodeclarada (HR-46)")
-    return findings, manifest_files
+                f"fase 3: '{rel}' se sella por 'slice_blocks', pero {slice_state}; "
+                "la identidad del patrón no es autodeclarada (HR-46). "
+                f"Re-propague o re-selle el manifiesto con: ci-pattern manifest seal {repo}")
+            continue
+        findings.append(
+            f"fase 3: '{rel}' se declara del patrón pero no está en el "
+            "manifiesto de gobierno; la identidad del patrón no es "
+            "autodeclarada (HR-46)")
+    return findings, covered
+
+
+AGENTS_MD = "AGENTS.md"
+
+
+def _agents_slice_seal(repo, manifest):
+    """¿Sellan los `slice_blocks` del manifiesto el AGENTS.md del árbol? (0.5).
+
+    `True` si hay bloques declarados y todos están en AGENTS.md con su hash;
+    `None` si el manifiesto no declara bloques; si no, el motivo, para el
+    hallazgo. El hash es el de `verify` y `manifest seal`: el cuerpo del bloque
+    con LF."""
+    blocks = manifest.get("slice_blocks")
+    if not isinstance(blocks, dict) or not blocks:
+        return None
+    agents = Path(repo) / AGENTS_MD
+    if not agents.is_file():
+        return "AGENTS.md no existe en el árbol"
+    text = agents.read_text(encoding="utf-8")
+    for name, expected in sorted(blocks.items()):
+        block = extract_slice_block(text, name)
+        if block is None:
+            return f"el bloque '{name}' no está en AGENTS.md"
+        actual = "sha256:" + hashlib.sha256(block[1].replace("\r\n", "\n").encode("utf-8")).hexdigest()
+        if actual != expected:
+            return f"el bloque '{name}' difiere del hash del manifiesto"
+    return True
 
 
 def _pattern_rulesets_from_host_contract(repo):
@@ -3861,22 +4166,28 @@ def _check_docs_phase(repo, decl, seal=None):
 def _agents_block_for(repo):
     """#716 (HR-69): bloque gobernado `ci-pattern-agents` de este consumer. Sin
     `docs_manifest` en su contrato es la constante canonica (byte a byte); con
-    el, anade la tabla «Donde trabajar» generada del manifiesto y del contrato."""
+    el, anade la tabla «Donde trabajar» generada del manifiesto y del contrato.
+    #1768: sin `agent_roles: enabled`, a quien se pregunta es al administrador
+    que lleva la sesion, no a un mantenedor."""
+    base = OPERATING_DOC_AGENTS_BLOCK
+    if not _agent_roles_enabled(repo):
+        base = base.replace("pregunte en la issue o al mantenedor.",
+                            f"pregunte en la issue o al {SESSION_ADMIN}.")
     try:
         contract = json.loads((Path(repo) / ADOPTION_CONTRACT_NAME).read_text(encoding="utf-8"))
     except (OSError, ValueError):
-        return OPERATING_DOC_AGENTS_BLOCK
+        return base
     if not isinstance(contract, dict) or "docs_manifest" not in contract:
-        return OPERATING_DOC_AGENTS_BLOCK
+        return base
     gate, manifest_path = _load_docs_manifest()
     rows = gate.routing_rows(gate.load_manifest(manifest_path), contract, repo)
     if not rows:
-        return OPERATING_DOC_AGENTS_BLOCK
+        return base
     table = "\n".join(f"| {when} | {read} |" for when, read, _path in rows)
     section = ("\n## Dónde trabajar\n\nAntes de actuar, vaya al documento de su situación; "
                "no deduzca dónde va el trabajo.\n\n| Si vas a… | Lee… |\n| --- | --- |\n" + table + "\n")
-    return OPERATING_DOC_AGENTS_BLOCK.replace("\n<!-- ci-pattern-agents:end -->",
-                                              section + "<!-- ci-pattern-agents:end -->")
+    return base.replace("\n<!-- ci-pattern-agents:end -->",
+                        section + "<!-- ci-pattern-agents:end -->")
 
 
 def _routed_path_findings(repo):
@@ -3968,7 +4279,7 @@ def _manifest_slice_sha(repo):
 
 
 def _check_agents_structure(repo, contract):
-    """#341-S3 (HR-55): estructura del AGENTS en fases 3 y 5.
+    """#341-S3 (HR-55): estructura del AGENTS en la fase 3 (#1396: no en la 5).
 
     AGENTS = titulo + bloque propagado (marcas personal-skills:slice:* con
     sha256 identico a slice_block_sha256 del .team-skills.yaml) + como
@@ -4669,9 +4980,12 @@ def _phase_findings(repo, n, decl, contract, seal=None):
             _check_agents_structure(repo, contract) + \
             _check_governance_seals(repo, contract)
     if n == 4:
+        _warn_unwired_gates(repo)
         return _check_gates_phase(repo, decl, contract, seal) + _check_review_budget(repo)
     if n == 5:
-        return (_check_docs_phase(repo, decl, seal) + _check_agents_structure(repo, contract)
+        # #1396: HR-55 (_check_agents_structure) la mide la fase 3; repetirla
+        # aquí daba dos rojos por una causa.
+        return (_check_docs_phase(repo, decl, seal)
                 + _check_docs_map(repo, contract) + _check_architecture(repo, contract)
                 + _check_docs_manifest(repo, contract)
                 + _check_docs_links(repo, contract)
@@ -5100,7 +5414,8 @@ def cmd_adoption(args):
         return EXIT_OK
     if args[:1] != ["check"]:
         raise UsageError(
-            "adoption: subcomando desconocido; use 'adoption check (--phase N | --all) <repo>' "
+            "adoption: subcomando desconocido; use "
+            "'adoption check (--phase N | --only-phase N | --all) <repo>' "
             "o 'adoption generate-doc <repo> --out <ruta>'."
         )
     rest = args[1:]
@@ -5108,6 +5423,7 @@ def cmd_adoption(args):
         print(ADOPTION_HELP.rstrip())
         return EXIT_OK
     phase_raw = None
+    only_raw = None
     all_phases = False
     repo = None
     config_from = None
@@ -5119,6 +5435,11 @@ def cmd_adoption(args):
             if i + 1 >= len(rest):
                 raise UsageError("--phase requiere un número de fase (0..%d)" % (ADOPTION_PHASES - 1))
             phase_raw = rest[i + 1]
+            i += 2
+        elif arg == "--only-phase":
+            if i + 1 >= len(rest):
+                raise UsageError(f"--only-phase requiere un número de fase (0..{ADOPTION_PHASES - 1})")
+            only_raw = rest[i + 1]
             i += 2
         elif arg == "--all":
             all_phases = True
@@ -5142,8 +5463,8 @@ def cmd_adoption(args):
             i += 1
     if repo is None:
         raise UsageError("adoption check: falta <repo>")
-    if all_phases == (phase_raw is not None):
-        raise UsageError("adoption check: exactamente una de --phase N o --all")
+    if [all_phases, phase_raw is not None, only_raw is not None].count(True) != 1:
+        raise UsageError("adoption check: exactamente una de --phase N, --only-phase N o --all")
     if not Path(repo).is_dir():
         raise UsageError(f"repo inexistente o no es un directorio: {repo}")
     if seal_baseline is not None and not Path(seal_baseline).is_dir():
@@ -5152,9 +5473,13 @@ def cmd_adoption(args):
     if all_phases:
         last = ADOPTION_PHASES - 1
     else:
-        if not re.fullmatch(r"[0-6]", phase_raw):
-            raise UsageError(f"--phase debe ser un número 0..{ADOPTION_PHASES - 1}; se recibió {phase_raw!r}")
-        last = int(phase_raw)
+        option, raw = ("--phase", phase_raw) if phase_raw is not None else ("--only-phase", only_raw)
+        if not re.fullmatch(r"[0-6]", raw):
+            raise UsageError(f"{option} debe ser un número 0..{ADOPTION_PHASES - 1}; se recibió {raw!r}")
+        last = int(raw)
+    # #1396: --only-phase mide la fase N y ninguna otra; cada fase previa la
+    # mide su propio job, de modo que una causa da un solo rojo.
+    first = last if only_raw is not None else 0
 
     # #1270: la configuracion que gobierna el gate puede venir de la BASE
     # (--config-from); el estado que se mide sigue siendo el del repo.
@@ -5180,7 +5505,7 @@ def cmd_adoption(args):
         seal = _seal_baseline(seal_baseline) if seal_baseline else None
     blocked_at = None
     findings = []
-    for n in range(last + 1):
+    for n in range(first, last + 1):
         phase_findings = _phase_findings(Path(repo), n, contract["phases"].get(str(n)),
                                          contract, seal)
         if phase_findings:
@@ -5197,6 +5522,9 @@ def cmd_adoption(args):
         for finding in findings:
             print(f"hallazgo: {finding}", file=sys.stderr)
         return EXIT_FINDINGS
+    if only_raw is not None:
+        print(f"adoption check: fase {last} en verde sobre {repo}")
+        return EXIT_OK
     print(f"adoption check: fases 0..{last} en verde sobre {repo}")
     return EXIT_OK
 

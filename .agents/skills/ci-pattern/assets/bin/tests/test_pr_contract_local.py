@@ -9,6 +9,7 @@ como proceso aparte sobre el mismo evento y los mismos datos del rango.
 
 from __future__ import annotations
 
+import ast
 import importlib.machinery
 import importlib.util
 import io
@@ -21,6 +22,9 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tests"))
+from _cp1252_locale import run_code_under_cp1252_locale  # noqa: E402
 
 ASSETS = Path(__file__).resolve().parents[2]
 LOCAL = Path(__file__).resolve().parents[1] / "pr_contract_local.py"
@@ -150,6 +154,7 @@ def _gate_direct(root, body_text):
         "numstat": root / "numstat.txt",
         "commits": root / "commits.txt",
         "tracked": root / "tracked.txt",
+        "diff": root / "diff.txt",
     }
     files["event"].write_text(json.dumps(payload), encoding="utf-8")
     data = LOCAL_MOD.range_data(root, "main", "HEAD")
@@ -157,13 +162,15 @@ def _gate_direct(root, body_text):
     files["numstat"].write_text(data["numstat"], encoding="utf-8")
     files["commits"].write_text(data["commits"], encoding="utf-8")
     files["tracked"].write_text(data["tracked"], encoding="utf-8")
+    files["diff"].write_text(data["diff"], encoding="utf-8")
     proc = subprocess.run(
         [sys.executable, str(GATE), "--event-file", str(files["event"]),
          "--policy-file", str(files["policy"]), "--repo", str(root),
          "--changed-files", str(files["changed"]),
          "--numstat-file", str(files["numstat"]),
          "--commits-file", str(files["commits"]),
-         "--tracked-files", str(files["tracked"])],
+         "--tracked-files", str(files["tracked"]),
+         "--diff-file", str(files["diff"])],
         capture_output=True, text=True, check=False,
         env={k: v for k, v in os.environ.items() if k != "PR_CONTRACT_USE_LIVE_API"})
     return proc.returncode, proc.stdout, proc.stderr
@@ -275,6 +282,33 @@ class DispatchTests(unittest.TestCase):
             capture_output=True, text=True, check=False)
         self.assertEqual(proc.returncode, 2, proc.stderr)
         self.assertIn("body", proc.stderr.lower())
+
+
+def _load_snippet(name, path):
+    """Snippet that loads ``path`` as module ``mod`` in the cp1252 child."""
+    return (
+        "import importlib.machinery, importlib.util\n"
+        f"loader = importlib.machinery.SourceFileLoader({name!r}, {str(path)!r})\n"
+        f"spec = importlib.util.spec_from_loader({name!r}, loader)\n"
+        "mod = importlib.util.module_from_spec(spec)\n"
+        "loader.exec_module(mod)\n"
+    )
+
+
+class GitOutputEncodingTests(unittest.TestCase):
+    """#1601: the range read from git is UTF-8 whatever the locale code page."""
+
+    def test_range_data_reads_a_non_ascii_commit_message_under_cp1252(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _make_repo(root)
+            (root / "app.py").write_text("X = 3\n", encoding="utf-8")
+            _git(root, "commit", "-qam", "fix: corrige la sección Á")
+            code, out, err = run_code_under_cp1252_locale(
+                _load_snippet("pcl_cp1252", LOCAL)
+                + f"print(ascii(mod.range_data({str(root)!r}, 'main', 'HEAD')['commits']))\n")
+            self.assertEqual(code, 0, err)
+            self.assertIn("fix: corrige la sección Á", ast.literal_eval(out.strip()))
 
 
 if __name__ == "__main__":

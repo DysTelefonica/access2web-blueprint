@@ -103,6 +103,25 @@ def load_json(path: str, what: str) -> object:
     except json.JSONDecodeError as exc:
         raise ContractError(f"{what} '{path}' is not valid JSON: {exc}") from exc
 
+def validate_backup_publisher(pin: object) -> None:
+    """#1705: el pin `deploy_backup_publisher` tiene forma fija; una forma invalida falla cerrado (HR-3)."""
+    allowed = {"check_name", "app_id", "todo"}
+    if not isinstance(pin, dict):
+        problem = "it is not an object"
+    elif set(pin) - allowed:
+        problem = f"it has keys outside {sorted(allowed)}: {sorted(set(pin) - allowed)}"
+    elif not isinstance(pin.get("check_name"), str) or not pin.get("check_name"):
+        problem = "check_name is not a non-empty string"
+    elif type(pin.get("app_id")) is not int or pin["app_id"] < 0:
+        problem = "app_id is not an integer >= 0"
+    elif "todo" in pin and not isinstance(pin["todo"], str):
+        problem = "todo is not a string"
+    else:
+        return
+    msg = ("deploy_backup_publisher must be {check_name: non-empty string, app_id: integer >= 0, "
+           f"todo?: string}} with no other keys; {problem}")
+    raise ContractError(msg)
+
 def validate_contract(data: object) -> dict:
     """Validate the declared contract; every structural doubt raises (exit 2)."""
     if not isinstance(data, dict) or data.get("contract_version") != 1:
@@ -114,6 +133,10 @@ def validate_contract(data: object) -> dict:
         raise ContractError("protected_branches must be a non-empty list of branch names")
     if set(data) - known:
         raise ContractError(f"contract has unknown keys: {sorted(set(data) - known)}")
+    coordinator = data.get("coordinator", "-")
+    if not isinstance(coordinator, str) or not coordinator.strip():
+        msg = "coordinator must be a non-empty GitHub login (owner of the ci-red issue, HR-89)"
+        raise ContractError(msg)
     caps = data.get("host_capabilities", {})
     if not isinstance(caps, dict) or set(caps) - set(CAPABILITIES):
         raise ContractError(
@@ -128,6 +151,8 @@ def validate_contract(data: object) -> dict:
         raise ContractError(
             "runner must be an object with a single non-empty string 'label' "
             "(the self-hosted runner that applies runner-enforced rules)")
+    if "deploy_backup_publisher" in data:
+        validate_backup_publisher(data["deploy_backup_publisher"])
     contract: dict = {"labels": {}, "required_checks": {}, "merge_methods": {}, "protection": {}, "rulesets": [],
                       "host_capabilities": {cap: caps.get(cap, "available") for cap in CAPABILITIES}}
     for where in ("labels", "required_checks"):
