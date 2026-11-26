@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "chosen": "01-guia.html",
+  "handoffs": {
+    "01-guia.html": {
+      "status": "implemented",
+      "queued": false,
+      "sentAt": "2026-11-19T10:18:33.611Z",
+      "startedAt": "2026-11-19T10:18:39.141Z",
+      "implementedAt": "2026-11-19T10:58:34.342Z",
+      "feature": "odd/tasks/guia-it-citrix-linux.md",
+      "note": "Implementada en FastAPI/Jinja2: GET /admin/guia-it-citrix-linux, solo administración global (require_global_admin), enlace «Guía IT» en el menú admin, tokens de design/system.md. 16 tests en contenedor verdes (acceso 401/403/200, OpenAPI, arquitectura). Sin app en ejecución: no hay previewUrl."
+    }
+  }
+}
