@@ -5,7 +5,7 @@
 | Fase | Nombre | Estado | Hechas | Total |
 |---|---|---|---|---|
 | 0 | Inventario | revisada | 4 | 4 |
-| 1 | Saneamiento en Access | en curso | 14 | 190 |
+| 1 | Saneamiento en Access | en curso | 15 | 190 |
 | 2 | Unificar el acceso a datos | pendiente | 0 | 5 |
 | 3 | Ensayo en Citrix con todos los backends | revisada (diseño revisado, pendiente de ejecutar) | 0 | 7 |
 | 4 | Traslado único de todos los datos a PostgreSQL | pendiente | 0 | 5 |
@@ -22,7 +22,7 @@
 
 ## Fase 1. Saneamiento en Access
 
-**Estado:** en curso · **Hechas:** 14/190
+**Estado:** en curso · **Hechas:** 15/190
 
 ### Preparación
 
@@ -120,13 +120,13 @@
 - [ ] [HPS#61](https://github.com/DysTelefonica/HPS/issues/61) refactor: fijar por escrito el contrato de las 4 cachés vivas del front (TbDatosLocal
 - [ ] [HPS#62](https://github.com/DysTelefonica/HPS/issues/62) refactor: poner en cuarentena las 3 tablas huérfanas de HPST
 
-### Solicitudes HPS (0/15)
+### Solicitudes HPS (1/15)
 
 - [ ] [HPS_SOLICITUDES#1](https://github.com/DysTelefonica/HPS_SOLICITUDES/issues/1) [Bug]: read real HPS data instead of the flattened TbUsuariosEntidades table
 - [ ] [HPS_SOLICITUDES#3](https://github.com/DysTelefonica/HPS_SOLICITUDES/issues/3) refactor: retirar el vínculo roto TbUsuarioSolicitud y la consulta guardada Consulta2 que lo usa
 - [ ] [HPS_SOLICITUDES#4](https://github.com/DysTelefonica/HPS_SOLICITUDES/issues/4) refactor: resolver la duplicidad de TbHPSGrado
 - [ ] [HPS_SOLICITUDES#5](https://github.com/DysTelefonica/HPS_SOLICITUDES/issues/5) refactor: declarar la propiedad de las cuatro tablas de HPST que esta aplicación escribe
-- [ ] [HPS_SOLICITUDES#6](https://github.com/DysTelefonica/HPS_SOLICITUDES/issues/6) refactor: retirar la credencial literal de las cinco cadenas OpenDatabase (src/modules/Variables
+- [x] [HPS_SOLICITUDES#6](https://github.com/DysTelefonica/HPS_SOLICITUDES/issues/6) refactor: retirar la credencial literal de las cinco cadenas OpenDatabase (src/modules/Variables
 - [ ] [HPS_SOLICITUDES#7](https://github.com/DysTelefonica/HPS_SOLICITUDES/issues/7) refactor: revisar los 10 vínculos del backend
 - [ ] [HPS_SOLICITUDES#8](https://github.com/DysTelefonica/HPS_SOLICITUDES/issues/8) refactor: añadir al backend los vínculos que el front usa por código
 - [ ] [HPS_SOLICITUDES#9](https://github.com/DysTelefonica/HPS_SOLICITUDES/issues/9) refactor: retirar del front la tabla TbCorreosEnviadosParaPruebas
