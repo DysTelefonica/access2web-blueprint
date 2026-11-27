@@ -7,11 +7,12 @@ issues labelled for phase 1, and writes ``avance.md`` (full checklist) and
 hand: a closed issue counts as done; static tasks carry their own flag.
 
 Everything is validated before anything is written: an issue from a repository
-that no group maps fails the run and leaves the output directory untouched.
+that no group maps, or an invalid ``esfuerzo`` of a milestone, fails the run and
+leaves the output directory untouched.
 
 Exit codes:
     0  report written
-    2  invalid input (unmapped repository, truncated search, gh or JSON error)
+    2  invalid input (unmapped repository, invalid esfuerzo, truncated search, gh or JSON error)
 """
 
 from __future__ import annotations
@@ -31,6 +32,7 @@ SEARCH_LIMIT = 1000
 GH_TIMEOUT_SECONDS = 120
 COMMAND = "python scripts/migration_progress.py"
 STATUS_PILL = {"revisada": "rag-green", "hecha": "rag-green", "en curso": "rag-amber"}
+EFFORT_KEYS = {"jornadas", "observaciones"}
 
 Issue = dict[str, Any]
 Group = dict[str, Any]
@@ -85,6 +87,31 @@ def read_json(path: Path) -> Any:
         return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         raise ProgressError(f"cannot read {path}: {exc}") from exc
+
+
+def effort_problems(effort: Any) -> list[str]:
+    if not isinstance(effort, dict):
+        return ["esfuerzo must be an object"]
+    days = effort.get("jornadas")
+    notes = effort.get("observaciones")
+    problems = [f"unknown key {key}" for key in sorted(set(effort) - EFFORT_KEYS)]
+    if isinstance(days, bool) or not isinstance(days, int) or days < 0:
+        problems.append("jornadas must be a whole number >= 0")
+    if not isinstance(notes, str) or not notes.strip():
+        problems.append("observaciones must justify the jornadas")
+    return problems
+
+
+def validate_esfuerzo(definition: dict[str, Any]) -> None:
+    """A milestone may carry ``esfuerzo``: whole days and why; absent means not estimated."""
+    problems = [
+        f"hito {hito['id']}: {problem}"
+        for hito in definition.get("hitos", [])
+        if "esfuerzo" in hito
+        for problem in effort_problems(hito["esfuerzo"])
+    ]
+    if problems:
+        raise ProgressError("invalid esfuerzo: " + "; ".join(problems))
 
 
 def is_done(issue: Issue) -> bool:
@@ -319,6 +346,7 @@ def load_issues(args: argparse.Namespace, label: str) -> list[Issue]:
 def generate(args: argparse.Namespace) -> list[dict[str, Any]]:
     datetime.date.fromisoformat(args.date)
     definition = read_json(args.phases)
+    validate_esfuerzo(definition)
     issues = [issue for label in issue_labels(definition) for issue in load_issues(args, label)]
     phases = build_phases(definition, issues)
     write_report(phases, args.date, args.out_dir)
