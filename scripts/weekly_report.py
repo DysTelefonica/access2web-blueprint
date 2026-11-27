@@ -50,7 +50,9 @@ STYLE_SOURCES = (
     mp.ROOT / "docs" / "uat" / "assets" / "style-base.css",
     mp.TRACKING_DIR / "avance.css",
     mp.TRACKING_DIR / "semanal.css",
+    mp.TRACKING_DIR / "ficha-proyecto.css",
 )
+FICHA = mp.TRACKING_DIR / "ficha-proyecto.html"
 MONTHS = (
     "enero", "febrero", "marzo", "abril", "mayo", "junio",
     "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
@@ -404,8 +406,23 @@ def summary_table(hitos: list[dict[str, Any]], visible: set[str]) -> list[str]:
     ]
 
 
+def ficha_card() -> str:
+    """The shared project card, when the repository carries it.
+
+    The card explains, in plain language, what the project is and why the
+    cleanup takes as long as it takes, so a report read outside the team arrives
+    with its context. It is optional: without the file the report is generated
+    exactly as before.
+    """
+    if not FICHA.is_file():
+        return ""
+    return FICHA.read_text(encoding="utf-8").strip()
+
+
 def render_weekly(report: dict[str, Any]) -> str:
-    css = "\n".join(path.read_text(encoding="utf-8") for path in STYLE_SOURCES)
+    css = "\n".join(
+        path.read_text(encoding="utf-8") for path in STYLE_SOURCES if path.is_file()
+    )
     lines = [
         "<!doctype html>",
         '<html lang="es">',
@@ -416,6 +433,7 @@ def render_weekly(report: dict[str, Any]) -> str:
         "<title>Access2Web: seguimiento semanal de la migración</title>",
         "</head>",
         "<body>",
+        ficha_card(),
         '<div class="page">',
         '<header class="hero" role="banner">',
         f'<div class="eyebrow">Fecha de corte: {esc(long_date(report["cut"]))}</div>',

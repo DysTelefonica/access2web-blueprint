@@ -45,7 +45,7 @@ There are two views. The **management view** (`semanal/AAAA-MM-DD.html`) is a fu
 
 1. **Day before the meeting**: review the open issues of the cleanup, close the ones done, and label `bloqueado`, `riesgo` (with its level) and `decision:gerencia` as needed. Agree with the other owner the estimated week of the current milestone and any replanning, and write it in `fases.json`.
 2. **Generate** from a worktree of `main`, with the meeting's cut date: `GH_TOKEN= GITHUB_TOKEN= python scripts/weekly_report.py --gh "/c/Program Files/GitHub CLI/gh.exe" --date <AAAA-MM-DD>` (on Linux, `--gh gh`). The console shows one internal line per milestone: done/total, estimated week and status.
-3. **Review** `docs/07-migracion/seguimiento/semanal/<AAAA-MM-DD>.html` in a browser: current milestone, all milestones, done and new this week, blockers, risks, decisions.
+3. **Review** `docs/07-migracion/seguimiento/semanal/<AAAA-MM-DD>.html` in a browser: the shared project card that opens every report, the current milestone, all milestones, done and new this week, blockers, risks, decisions.
 4. **Deliver**: commit `fases.json` if it changed, the new `semanal/<AAAA-MM-DD>.json` and `.html` and the refreshed `avance.md` and `avance.html` in one PR (`docs(platform): informe semanal <AAAA-MM-DD>`), following `skills/a2w-issue-flow/SKILL.md`. The JSON is the comparison base of next week.
 
 ## Output Contract
@@ -63,3 +63,4 @@ There are two views. The **management view** (`semanal/AAAA-MM-DD.html`) is a fu
 - `scripts/weekly_report.py`, `scripts/migration_progress.py` — the generators; `scripts/README.md` lists them.
 - `docs/07-migracion/seguimiento/fases.json` — phases and milestones (`hitos`) with their groups, tasks, estimated week and replannings.
 - `docs/07-migracion/presentacion/cronograma-hitos.html` — the milestones as presented to management.
+- `docs/07-migracion/seguimiento/ficha-proyecto.html` — the shared project card that opens the management report; it explains the project in plain language and is never edited by hand.

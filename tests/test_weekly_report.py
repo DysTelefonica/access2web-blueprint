@@ -340,6 +340,21 @@ def test_criterion_4_the_report_is_one_html_file_without_external_resources(
     assert '<html lang="es">' in page
 
 
+def test_the_report_starts_with_the_shared_project_card(tmp_path: Path) -> None:
+    """The management view carries the shared project card in front."""
+    data: dict[str, object] = {"issues": [], "decision:gerencia": []}
+    result = _run(tmp_path, data, "2026-11-25")
+    assert result.returncode == 0, result.stderr
+    page = _page(tmp_path, "2026-11-25")
+    card = (ROOT / "docs" / "07-migracion" / "seguimiento" / "ficha-proyecto.html").read_text(
+        encoding="utf-8"
+    )
+    assert "Ficha base del proyecto" in card, "the card has no title"
+    assert "Ficha base del proyecto" in page, "the card is not in the report"
+    assert "a2w-ficha" in page, "the card styles are not in the report"
+    assert page.index("a2w-ficha") < page.index("Seguimiento semanal")
+
+
 def test_a_phase_one_group_in_no_hito_fails_naming_it_and_writes_nothing(tmp_path: Path) -> None:
     definition = json.loads(PHASES.read_text(encoding="utf-8"))
     definition["hitos"][1]["groups"].remove("Condor")
