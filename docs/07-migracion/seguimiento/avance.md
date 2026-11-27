@@ -1,11 +1,11 @@
 # Avance de la migración por fases
 
-> Fichero generado. No edite este fichero a mano: se regenera con `python scripts/migration_progress.py` a partir de `fases.json` y de las issues de GitHub. Fecha de corte: 2026-11-26.
+> Fichero generado. No edite este fichero a mano: se regenera con `python scripts/migration_progress.py` a partir de `fases.json` y de las issues de GitHub. Fecha de corte: 2026-11-27.
 
 | Fase | Nombre | Estado | Hechas | Total |
 |---|---|---|---|---|
 | 0 | Inventario | revisada | 4 | 4 |
-| 1 | Saneamiento en Access | en curso | 15 | 190 |
+| 1 | Saneamiento en Access | en curso | 16 | 191 |
 | 2 | Unificar el acceso a datos | pendiente | 0 | 5 |
 | 3 | Ensayo en Citrix con todos los backends | revisada (diseño revisado, pendiente de ejecutar) | 0 | 7 |
 | 4 | Traslado único de todos los datos a PostgreSQL | pendiente | 0 | 5 |
@@ -22,7 +22,7 @@
 
 ## Fase 1. Saneamiento en Access
 
-**Estado:** en curso · **Hechas:** 15/190
+**Estado:** en curso · **Hechas:** 16/191
 
 ### Preparación
 
@@ -30,13 +30,14 @@
 - [ ] Confirmar el perfil de Automatización que usa el servidor real
 - [ ] Validación del plan de aplicación por el propietario (fase-1/plan-aplicacion.md)
 
-### Bloque A. IDCorreo (0/14)
+### Bloque A. IDCorreo (1/15)
 
 - [ ] [access2web-blueprint#1740](https://github.com/DysTelefonica/access2web-blueprint/issues/1740) refactor(platform): IDCorreo autonumérico en la cola común de correo
 - [ ] [access2web-blueprint#1741](https://github.com/DysTelefonica/access2web-blueprint/issues/1741) refactor(platform): IDCorreo autonumérico y clave primaria en TbCorreosEnviados de Correos_datos
 - [ ] [AGEDYS#5](https://github.com/DysTelefonica/AGEDYS/issues/5) refactor: dejar de calcular IDCorreo al encolar correos
+- [ ] [AGEDYS#25](https://github.com/DysTelefonica/AGEDYS/issues/25) test: arnés de pruebas con entornos y sandbox (patrón BRASS) y caracterización de IDCorreo
 - [ ] [AGEDYS_ECO#12](https://github.com/DysTelefonica/AGEDYS_ECO/issues/12) refactor: dejar de calcular IDCorreo al encolar correos
-- [ ] [Automatizacion#53](https://github.com/DysTelefonica/Automatizacion/issues/53) fix(correo): comprobar EnviarCorreoNoEnviado con IDCorreo autonumérico en la cola común (requisito previo de access2web-blueprint#1741)
+- [x] [Automatizacion#53](https://github.com/DysTelefonica/Automatizacion/issues/53) fix(correo): comprobar EnviarCorreoNoEnviado con IDCorreo autonumérico en la cola común (requisito previo de access2web-blueprint#1741)
 - [ ] [condor#29](https://github.com/DysTelefonica/condor/issues/29) refactor: dejar de calcular IDCorreo al encolar correos
 - [ ] [Expedientes#279](https://github.com/DysTelefonica/Expedientes/issues/279) refactor: dejar de calcular IDCorreo al encolar correos
 - [ ] [GESTION_RIESGOS#338](https://github.com/DysTelefonica/GESTION_RIESGOS/issues/338) refactor: dejar de calcular IDCorreo al encolar correos
