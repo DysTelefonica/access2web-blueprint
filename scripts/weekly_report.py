@@ -16,13 +16,14 @@ and the cut reaches its estimated week (``semana_estimada``, or the week of its
 last ``replanificaciones`` entry). A milestone counts its issues, the static tasks of
 its ``phases`` and its own ``tasks``. Future milestones show no figures; done and new
 issues are listed only for the current and closed milestones; a milestone past its
-first estimated week with work pending is delayed. Every phase-1 group must
+first estimated week with work pending is delayed. Every milestone shows its
+optional ``esfuerzo`` (days and why) or «sin estimar». Every phase-1 group must
 belong to exactly one milestone; everything is validated before anything is
 written.
 
 Exit codes:
     0  report written
-    2  invalid input (group in no milestone or in several, gh or JSON error)
+    2  invalid input (group in no milestone or in several, invalid esfuerzo, gh or JSON error)
 """
 
 from __future__ import annotations
@@ -43,6 +44,7 @@ WEEK = datetime.timedelta(days=7)
 MOTIVO_MAX = 200
 NO_MOTIVO = "sin motivo indicado"
 NO_DELAY_MOTIVO = "motivo pendiente de indicar"
+NO_EFFORT = "sin estimar"
 FIRST_CUT = "Primer corte, sin comparación."
 PROBLEM_HEADING = "### Problema y contexto"
 SNAPSHOT_NAME = re.compile(r"^\d{4}-\d{2}-\d{2}\.json$")
@@ -186,6 +188,7 @@ def build_hito(
         "phases": hito.get("phases", []),
         "tasks": hito.get("tasks", []),
         "refs": {mp.issue_ref(issue) for issue in items},
+        "effort": hito.get("esfuerzo"),
         "label": f"{MONTHS[start.month - 1].capitalize()} {start.year}: {hito['name']}",
     }
     return {**item, "status": hito_status(item, cut)}
@@ -386,19 +389,28 @@ def current_section(hito: dict[str, Any] | None, since: str) -> list[str]:
     )
 
 
+def effort_text(effort: dict[str, Any] | None) -> str:
+    if effort is None:
+        return esc(NO_EFFORT)
+    days = effort["jornadas"]
+    unit = "jornada" if days == 1 else "jornadas"
+    return f'{days} {unit}<span class="motivo">{esc(effort["observaciones"])}</span>'
+
+
 def summary_row(hito: dict[str, Any], visible: set[str]) -> str:
-    """A future milestone shows only its name, month and estimated week."""
+    """A future milestone shows only its name, month, estimated week and effort."""
     status = pill(hito["status"], STATUS_PILL[hito["status"]]) if hito["id"] in visible else ""
     return (
         f'<tr><th scope="row">{esc(hito["label"])}</th><td>{status}</td>'
-        f"<td>{esc(week_text(hito['week']))}</td></tr>"
+        f"<td>{esc(week_text(hito['week']))}</td><td>{effort_text(hito['effort'])}</td></tr>"
     )
 
 
 def summary_table(hitos: list[dict[str, Any]], visible: set[str]) -> list[str]:
     return [
         '<table class="data-table progress-table">',
-        "<thead><tr><th>Hito</th><th>Estado</th><th>Semana estimada</th></tr></thead><tbody>",
+        "<thead><tr><th>Hito</th><th>Estado</th><th>Semana estimada</th>"
+        "<th>Esfuerzo</th></tr></thead><tbody>",
         *(summary_row(hito, visible) for hito in hitos),
         "</tbody></table>",
     ]
@@ -484,6 +496,7 @@ def generate(args: Any) -> list[dict[str, Any]]:
     cut = datetime.date.fromisoformat(args.date)
     definition = mp.read_json(args.phases)
     validate_hitos(definition)
+    mp.validate_esfuerzo(definition)
     issues, flagged = load_input(args, definition)
     phases = mp.build_phases(definition, issues)
     hitos = build_hitos(definition, phases, cut)

@@ -203,6 +203,8 @@ section.card li { margin-bottom: var(--space-2); }
 .timeline h3 { margin: 0 0 var(--space-1); font-size: 17px; }
 .timeline p { margin: 0; color: var(--color-text-secondary); }
 .timeline .gate { margin-top: var(--space-2); font-size: 14px; color: var(--color-text-primary); }
+.timeline .effort { margin-top: var(--space-2); font-size: 14px; }
+.timeline .replan { margin-top: var(--space-2); font-size: 14px; color: var(--color-danger); }
 .timeline li.key { background: var(--color-surface-strong); border-radius: var(--radius-input); padding-left: var(--space-3); padding-right: var(--space-3); }
 .timeline li.after .month { color: var(--color-danger); }
 .status { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--space-3); }
@@ -272,10 +274,21 @@ table.risks th { background: var(--color-surface); }
   <h2 id="sec-hitos">Los hitos, mes a mes</h2>
   <ol class="timeline">
     <li>
+      <div class="month">30 nov. – 11 dic. 2026</div>
+      <div>
+        <h3>AGEDYS y AGEDYS ECO testeables</h3>
+        <p>Antes de tocar el envío de correos de AGEDYS y AGEDYS ECO, cada una tiene que poder probarse sin riesgo: un entorno de pruebas aislado, pruebas que fijen cómo funcionan hoy y un acceso a los datos ordenado. Semana estimada de cierre: la del 7 de diciembre.</p>
+        <p class="effort"><strong>Esfuerzo: 10 jornadas.</strong> AGEDYS y AGEDYS ECO no tienen pruebas automáticas y su copia de desarrollo trabaja contra los datos reales: hoy no se puede cambiar nada sin riesgo de tocar producción. Antes de adaptar su envío de correos hay que montar un entorno de pruebas aislado (como el de BRASS), fijar con pruebas cómo funcionan ahora y ordenar su acceso a los datos. Son dos aplicaciones grandes que comparten la misma base de datos, y el trabajo de una condiciona a la otra.</p>
+        <p class="gate">Puerta: las dos aplicaciones se pueden probar en su entorno aislado, sin tocar los datos reales.</p>
+      </div>
+    </li>
+    <li>
       <div class="month">Diciembre 2026</div>
       <div>
         <h3>Vía de entrega en verde y arranque del saneamiento</h3>
         <p>CI en verde y primera versión publicada. El saneamiento empieza por el cambio común a las once aplicaciones: el envío de correos, primero en el almacén compartido y después en cada aplicación.</p>
+        <p class="replan">Replanificado el 27 de noviembre: de la semana del 21 de diciembre de 2026 a la del 11 de enero de 2027. Motivo: AGEDYS y AGEDYS ECO necesitan antes el hito anterior, y el cambio común espera a que cuatro aplicaciones superen las pruebas UAT de su versión pendiente.</p>
+        <p class="effort"><strong>Esfuerzo:</strong> sin estimar.</p>
         <p class="gate">Puerta: el cambio del envío de correos, con sus pruebas UAT superadas antes de subir a producción.</p>
       </div>
     </li>

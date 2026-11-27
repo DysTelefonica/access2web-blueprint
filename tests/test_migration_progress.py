@@ -16,6 +16,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "scripts" / "migration_progress.py"
+PHASES = ROOT / "docs" / "07-migracion" / "seguimiento" / "fases.json"
 
 
 def _issue(repo: str, number: int, state: str, title: str) -> dict[str, object]:
@@ -28,7 +29,9 @@ def _issue(repo: str, number: int, state: str, title: str) -> dict[str, object]:
     }
 
 
-def _run(tmp_path: Path, issues: list[dict[str, object]]) -> subprocess.CompletedProcess[str]:
+def _run(
+    tmp_path: Path, issues: list[dict[str, object]], phases: Path = PHASES
+) -> subprocess.CompletedProcess[str]:
     source = tmp_path / "issues.json"
     source.write_text(json.dumps(issues), encoding="utf-8")
     out_dir = tmp_path / "out"
@@ -41,6 +44,8 @@ def _run(tmp_path: Path, issues: list[dict[str, object]]) -> subprocess.Complete
             str(source),
             "--date",
             "2026-11-25",
+            "--phases",
+            str(phases),
             "--out-dir",
             str(out_dir),
         ],
@@ -103,6 +108,17 @@ def test_an_issue_from_an_unmapped_repo_fails_naming_it_and_writes_nothing(
     result = _run(tmp_path, [*SAMPLE, _issue("SICA", 3, "open", "fix: algo")])
     assert result.returncode == 2
     assert "SICA" in result.stderr
+    assert list((tmp_path / "out").iterdir()) == []
+
+
+def test_an_invalid_hito_effort_fails_naming_the_hito_and_writes_nothing(tmp_path: Path) -> None:
+    definition = json.loads(PHASES.read_text(encoding="utf-8"))
+    definition["hitos"][-1]["esfuerzo"] = {"jornadas": 4}
+    phases = tmp_path / "fases.json"
+    phases.write_text(json.dumps(definition), encoding="utf-8")
+    result = _run(tmp_path, SAMPLE, phases)
+    assert result.returncode == 2
+    assert "hito 2027-05" in result.stderr and "observaciones" in result.stderr
     assert list((tmp_path / "out").iterdir()) == []
 
 

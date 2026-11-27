@@ -59,7 +59,10 @@ def _phases(
     replans: dict[str, list[dict[str, str]]] | None = None,
 ) -> Path:
     definition = json.loads(PHASES.read_text(encoding="utf-8"))
+    # These funnels start at block A: the AGEDYS milestone has no issues to close it.
+    definition["hitos"] = [h for h in definition["hitos"] if h["id"] != AGEDYS]
     for hito in definition["hitos"]:
+        hito.pop("esfuerzo", None)
         hito["semana_estimada"] = weeks.get(hito["id"])
         hito["replanificaciones"] = (replans or {}).get(hito["id"], [])
         hito["tasks"] = []
@@ -95,9 +98,12 @@ def _items(page: str, heading: str) -> list[str]:
     return re.findall(r"<li>(.*?)</li>", _section_text(page, heading))
 
 
+AGEDYS = "2026-11"
 IDCORREO = "refactor: dejar de calcular IDCorreo al encolar correos"
 PROBLEM = "### Problema y contexto\n\n{}\n\n### Evidencia verificable\n\nOtra cosa."
 CLOSED_DECEMBER = "semana del 21 de diciembre de 2026"
+REPLANNED_DECEMBER = "semana del 11 de enero de 2027"
+FEBRUARY = "Febrero 2027: Saneamiento del bloque central y acceso a datos preparado"
 
 
 def test_future_hitos_show_no_figures_and_nothing_is_reported_ahead(tmp_path: Path) -> None:
@@ -108,14 +114,14 @@ def test_future_hitos_show_no_figures_and_nothing_is_reported_ahead(tmp_path: Pa
     ]
     result = _run(tmp_path, {"issues": issues}, "2026-11-25")
     assert result.returncode == 0, result.stderr
-    # The real fases.json: one issue plus the static task of the hito, and its week.
-    assert f"Hito 2026-12: 0/2 (0 %), {CLOSED_DECEMBER}, en preparación" in result.stdout
+    # The real fases.json: one issue plus the static task of the hito, and its replanned week.
+    assert f"Hito 2026-12: 0/2 (0 %), {REPLANNED_DECEMBER}, en preparación" in result.stdout
     page = _page(tmp_path, "2026-11-25")
     assert "adelantado" not in page
     assert page.count("<progress") == 1
     assert (
-        '<tr><th scope="row">Febrero 2027: Saneamiento del bloque central y acceso a datos '
-        "preparado</th><td></td><td>semana por definir</td></tr>"
+        f'<tr><th scope="row">{FEBRUARY}</th><td></td><td>semana por definir</td>'
+        "<td>sin estimar</td></tr>"
     ) in page
     assert "fix: hecha antes de tiempo" not in page
 
@@ -224,7 +230,8 @@ def test_done_and_new_this_week_list_only_issues_of_current_and_past_hitos(
         _issue("BRASS", 7, "open", "refactor: IDCorreo en BRASS"),
         _issue("Lanzadera", 39, "open", "feat: migraciones"),
     ]
-    result = _run(tmp_path, {"issues": first}, "2026-11-18")
+    phases = _phases(tmp_path, {"2026-12": "2026-12-21"})
+    result = _run(tmp_path, {"issues": first}, "2026-11-18", phases)
     assert result.returncode == 0, result.stderr
     page = _page(tmp_path, "2026-11-18")
     assert "Primer corte, sin comparación." in _section_text(page, "Hecho esta semana")
@@ -237,7 +244,7 @@ def test_done_and_new_this_week_list_only_issues_of_current_and_past_hitos(
         _issue("BRASS", 10, "open", "refactor: IDCorreo largo", PROBLEM.format("a" * 300 + ".")),
         _issue("Lanzadera", 41, "open", "fix: clave nueva", PROBLEM.format("Nueva.")),
     ]
-    result = _run(tmp_path, {"issues": second}, "2026-11-25")
+    result = _run(tmp_path, {"issues": second}, "2026-11-25", phases)
     assert result.returncode == 0, result.stderr
     page = _page(tmp_path, "2026-11-25")
     assert _items(page, "Hecho esta semana") == ["refactor: IDCorreo en BRASS"]
@@ -342,12 +349,85 @@ def test_criterion_4_the_report_is_one_html_file_without_external_resources(
 
 def test_a_phase_one_group_in_no_hito_fails_naming_it_and_writes_nothing(tmp_path: Path) -> None:
     definition = json.loads(PHASES.read_text(encoding="utf-8"))
-    definition["hitos"][1]["groups"].remove("Condor")
+    next(h for h in definition["hitos"] if h["id"] == "2027-01")["groups"].remove("Condor")
     phases = tmp_path / "fases.json"
     phases.write_text(json.dumps(definition), encoding="utf-8")
     result = _run(tmp_path, {"issues": []}, "2026-11-25", phases)
     assert result.returncode == 2
     assert "Condor" in result.stderr
+    assert list((tmp_path / "out").iterdir()) == []
+
+
+def test_the_effort_of_every_hito_is_shown_with_its_observaciones_or_sin_estimar(
+    tmp_path: Path,
+) -> None:
+    definition = json.loads(PHASES.read_text(encoding="utf-8"))
+    february = next(h for h in definition["hitos"] if h["id"] == "2027-02")
+    february["esfuerzo"] = {"jornadas": 1, "observaciones": "Una <b>tarea</b>."}
+    phases = tmp_path / "fases.json"
+    phases.write_text(json.dumps(definition), encoding="utf-8")
+    result = _run(
+        tmp_path, {"issues": [_issue("BRASS", 7, "open", IDCORREO)]}, "2026-11-27", phases
+    )
+    assert result.returncode == 0, result.stderr
+    assert f"Hito {AGEDYS}: 0/2 (0 %), semana del 7 de diciembre de 2026, en preparación" in (
+        result.stdout
+    )
+    page = _page(tmp_path, "2026-11-27")
+    assert "Noviembre 2026: AGEDYS y AGEDYS ECO testeables" in _section_text(page, "Hito actual")
+    summary = _section_text(page, "Todos los hitos")
+    assert "<th>Esfuerzo</th>" in summary
+    assert (
+        '<td>10 jornadas<span class="motivo">AGEDYS y AGEDYS ECO no tienen pruebas automáticas'
+    ) in summary
+    # A future milestone shows no figures, but it shows its effort.
+    assert (
+        f'<tr><th scope="row">{FEBRUARY}</th><td></td><td>semana por definir</td>'
+        '<td>1 jornada<span class="motivo">Una &lt;b&gt;tarea&lt;/b&gt;.</span></td></tr>'
+    ) in summary
+    assert (
+        '<tr><th scope="row">Diciembre 2026: Vía de entrega en verde y arranque del '
+        f"saneamiento</th><td></td><td>{REPLANNED_DECEMBER}</td><td>sin estimar</td></tr>"
+    ) in summary
+
+
+def test_hitos_without_effort_still_render_as_before_with_sin_estimar(tmp_path: Path) -> None:
+    phases = _phases(tmp_path, {"2026-12": "2026-12-21"})
+    result = _run(
+        tmp_path, {"issues": [_issue("BRASS", 7, "open", IDCORREO)]}, "2026-11-25", phases
+    )
+    assert result.returncode == 0, result.stderr
+    assert f"Hito 2026-12: 0/1 (0 %), {CLOSED_DECEMBER}, en preparación" in result.stdout
+    summary = _section_text(_page(tmp_path, "2026-11-25"), "Todos los hitos")
+    assert summary.count("<td>sin estimar</td></tr>") == summary.count("<tr><th scope") == 6
+
+
+@pytest.mark.parametrize(
+    ("effort", "problem"),
+    [
+        ({"jornadas": -1, "observaciones": "x"}, "jornadas"),
+        ({"jornadas": 1.5, "observaciones": "x"}, "jornadas"),
+        ({"jornadas": "10", "observaciones": "x"}, "jornadas"),
+        ({"jornadas": True, "observaciones": "x"}, "jornadas"),
+        ({"observaciones": "x"}, "jornadas"),
+        ({"jornadas": 3}, "observaciones"),
+        ({"jornadas": 3, "observaciones": "  "}, "observaciones"),
+        ({"jornadas": 3, "observaciones": "x", "horas": 24}, "horas"),
+        (10, "object"),
+    ],
+)
+def test_an_invalid_effort_fails_naming_the_hito_and_writes_nothing(
+    tmp_path: Path, effort: object, problem: str
+) -> None:
+    definition = json.loads(PHASES.read_text(encoding="utf-8"))
+    next(h for h in definition["hitos"] if h["id"] == "2027-01")["esfuerzo"] = effort
+    phases = tmp_path / "fases.json"
+    phases.write_text(json.dumps(definition), encoding="utf-8")
+    result = _run(tmp_path, {"issues": []}, "2026-11-25", phases)
+    assert result.returncode == 2
+    assert "hito 2027-01" in result.stderr
+    assert problem in result.stderr
+    assert result.stdout == ""
     assert list((tmp_path / "out").iterdir()) == []
 
 
