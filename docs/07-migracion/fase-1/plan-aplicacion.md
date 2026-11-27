@@ -96,6 +96,8 @@ En el orden de la decisión 24: Lanzadera, Expedientes, Condor, Seguridad, HPS y
 3. Las del grupo (b) que apruebe el propietario.
 4. Al final, la cuarentena (renombrar a `zzBAJA_`, decisión 23). El borrado, tras un cierre mensual sin incidencias y antes de migrar ese backend ([protocolo de huérfanas](../epica-coexistencia-postgresql.md#protocolo-de-huérfanas)).
 
+**DEC-21 en AGEDYS (decisión 21 enmendada el 2026-11-27).** La tabla propia `TbExpedientesAnualidades` de `AGEDYS_DATOS` se sustituye por un vínculo a la de `Expedientes_datos`, sin traer las filas que solo tiene AGEDYS. Condiciones: (1) los fronts de AGEDYS Técnico y AGEDYS ECO, ya en producción, no fallan cuando falta la anualidad (cada uso auditado; los que podían dar error, protegidos con su test); (2) ventana con copia de seguridad verificada de `AGEDYS_DATOS`; (3) la tabla propia pasa a cuarentena (`zzBAJA_`, decisión 23) y se borra tras el cierre mensual sin incidencias. Va en el hito de APGEDYS, no en el bloque A.
+
 Van en la misma tanda las aplicaciones que escriben en tablas de la otra ([orden de paso a la web](../fase-0/orden-cortes-web.md)): HPS con Solicitudes HPS (cuatro tablas de HPST), Gestión de Riesgos con No Conformidades (`TbRiesgosNC` y `TbNoConformidades`) y AGE-E1 con Registros (`TbSalidas_RES`).
 
 ### No se aplican hasta resolverlas
