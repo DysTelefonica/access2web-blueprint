@@ -42,9 +42,7 @@
   border-left: 3px solid var(--ficha-brand-mid); background: var(--ficha-surface); border-radius: 5px;
 }
 .a2w-ficha__panels { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 6px 16px 0; }
-.a2w-ficha__panel {
-  border: 1px solid var(--ficha-border); border-radius: 8px; padding: 11px 13px; background: var(--color-background, #FFFFFF);
-}
+.a2w-ficha__panel { { border: 1px solid var(--ficha-border); border-radius: 8px; padding: 11px 13px; background: var(--color-background, #FFFFFF); }
 .a2w-ficha__panel--wide { grid-column: 1 / -1; margin-top: 12px; }
 .a2w-ficha__panel h4 {
   margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em;
