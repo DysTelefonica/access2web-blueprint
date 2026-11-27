@@ -70,6 +70,9 @@ Evidencia: repositorio `DysTelefonica/Automatizacion`, HEAD `9cb6fb5` (2026-11-2
 
 ## 3. Orden
 
+**Hito a hito (propietario, 2026-11-27).** Los hitos de `seguimiento/fases.json` se cumplen de uno en uno y en su orden. Ahora toca el de diciembre de 2026: el bloque A. Lo ya empezado de hitos posteriores se termina solo si está dentro de una versión en curso (la rc de Expedientes con las hijas 6-12 de [Expedientes#289](https://github.com/DysTelefonica/Expedientes/issues/289)); el resto del saneamiento adelantado (Expedientes, No Conformidades) queda congelado hasta su hito.
+
+
 ### Bloque A. `IDCorreo` ([#1740](https://github.com/DysTelefonica/access2web-blueprint/issues/1740))
 
 Va primero porque toca a las once aplicaciones. **Orden (cambiado el 2026-11-26): primero los once fronts en versión tolerante, después el backend.** En ACE, un alta con `IDCorreo` explícito mueve el contador autonumérico a ese valor + 1, así que un front con `Max + 1` conviviendo con la columna autonumérica puede bloquear a los demás ([evidencia de Automatización](https://github.com/DysTelefonica/Automatizacion/issues/53#issuecomment-7193543305)). Un front tolerante detecta si `IDCorreo` es autonumérico: si lo es, no da el número; si no, sigue con `Max + 1`. Se publica cuando le toque, sin ventana, y #1741 va cuando el último esté en producción.
@@ -115,7 +118,7 @@ Antes de aplicar cualquiera de estas propuestas se avisa a Automatización. Qué
 
 ## 4. Decisiones pendientes del propietario
 
-1. **Ramas RC1 con UAT pendiente.** En Expedientes, Gestión de Riesgos, Condor, No Conformidades y Brass, el cambio de `IDCorreo` sale sobre su RC1 o en una versión posterior. Condiciona la duración del bloque A. **Resuelta (propietario, 2026-11-25):** en las aplicaciones con una RC1 pendiente de UAT, el cambio de `IDCorreo` sale en una versión posterior.
+1. **Ramas RC1 con UAT pendiente.** En Expedientes, Gestión de Riesgos, Condor, No Conformidades y Brass, el cambio de `IDCorreo` sale sobre su RC1 o en una versión posterior. Condiciona la duración del bloque A. **Resuelta (propietario, 2026-11-25):** en las aplicaciones con una RC1 pendiente de UAT, el cambio de `IDCorreo` sale en una versión posterior. **Precisión (propietario, 2026-11-27):** con el orden nuevo del bloque A (los fronts antes que #1741), el front tolerante de esas aplicaciones sale en la primera versión tras la firma de su UAT, y el hito de diciembre queda condicionado a esas cuatro firmas (Expedientes, Gestión de Riesgos, Condor y No Conformidades).
 2. **Cola local de Solicitudes HPS** (decisión 26): bloquea la fase 1 de Solicitudes HPS.
 3. **Tablas de AGEDO** que usan Gestión de Riesgos y AGEDYS Técnico, y el botón `ComandoAGEDO` de la Lanzadera ([cierre de la fase 0](../fase-0/cierre.md)).
 4. **Propuestas del grupo (b)** que se aprueban.
