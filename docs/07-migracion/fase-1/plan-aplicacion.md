@@ -118,6 +118,17 @@ Antes de aplicar cualquiera de estas propuestas se avisa a Automatización. Qué
 - BFA-S3 ([#1754](https://github.com/DysTelefonica/access2web-blueprint/issues/1754)): el cambio de Automatización, fusionado antes.
 - [Expedientes#294](https://github.com/DysTelefonica/Expedientes/issues/294): solo los objetos vínculo de `Expedientes_datos`, nunca las tablas físicas de `AGEDYS_DATOS`.
 
+## Registro de lo aplicado en producción
+
+Cada cambio de backend del saneamiento aplicado en producción, con su cuarentena. Las tablas en cuarentena se retiran tras un cierre mensual sin incidencias y **antes del traslado a PostgreSQL**: el traslado no las migra.
+
+| Fecha | Aplicación | Backend | Cambio | Copia previa | Cuarentena pendiente |
+|---|---|---|---|---|---|
+| 2026-11-27, 11:45-11:50 | Automatización ([Automatizacion#56](https://github.com/DysTelefonica/Automatizacion/issues/56), fuera del saneamiento) | `Tareas_datos1` | `TbCorreosEnviados.IDCorreo` autonumérico y clave primaria; 26 repetidos renumerados | Sí, verificada por SHA-256 | `zzBAJA_TbCorreosEnviados_20261127` |
+| 2026-11-27, 14:20-14:21 | Expedientes, rc 2026-010 ([Expedientes#289](https://github.com/DysTelefonica/Expedientes/issues/289), tablas 1 a 12) | `Expedientes_datos` | Doce tablas con su identificador autonumérico, identificadores y filas conservados; índice único de `TbE2ECola.OrdinalE2E` renombrado a `UX_TbE2ECola_OrdinalE2E` | Sí, copia completa | `zzBAJA_<tabla>` de las doce tablas |
+
+Expedientes 2026-010 publica además el front que ya no calcula esos doce identificadores. Quedan para el ciclo siguiente de Expedientes los catálogos (fila 13 de #289), [Expedientes#279](https://github.com/DysTelefonica/Expedientes/issues/279), el resto de cambios de backend (#290, #292, #293, #294 y la parte de backend de #286) y la retirada de sus `zzBAJA_`.
+
 ## 4. Decisiones pendientes del propietario
 
 1. **Ramas RC1 con UAT pendiente.** En Expedientes, Gestión de Riesgos, Condor, No Conformidades y Brass, el cambio de `IDCorreo` sale sobre su RC1 o en una versión posterior. Condiciona la duración del bloque A. **Resuelta (propietario, 2026-11-25):** en las aplicaciones con una RC1 pendiente de UAT, el cambio de `IDCorreo` sale en una versión posterior. **Precisión (propietario, 2026-11-27):** con el orden nuevo del bloque A (los fronts antes que #1741), el front tolerante de esas aplicaciones sale en la primera versión tras la firma de su UAT, y el hito de diciembre queda condicionado a esas cuatro firmas (Expedientes, Gestión de Riesgos, Condor y No Conformidades).
