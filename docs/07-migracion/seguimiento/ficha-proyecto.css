@@ -1,0 +1,175 @@
+/* Ficha base del proyecto — estilos de la cabecera compartida.
+   Se inyecta en todos los informes publicados; no depende del CSS de cada informe.
+   Explica cómo funciona el proyecto: cómo están hoy los datos y cómo se
+   relacionan, cómo va a quedar y qué entra en los seis primeros meses.
+   El color nunca es el único portador de estado: cada estado lleva su texto. */
+.a2w-ficha {
+  --ficha-brand: #003D7A;
+  --ficha-brand-mid: #0066CC;
+  --ficha-border: #D4DBE3;
+  --ficha-surface: #F5F7FA;
+  --ficha-strong: #E8EEF5;
+  --ficha-text: #1A1A1A;
+  --ficha-muted: #5C5C5C;
+  --ficha-ok: #2E7D32;
+  --ficha-amber: #ED6C02;
+  --ficha-alert: #C62828;
+  box-sizing: border-box;
+  max-width: 1180px;
+  margin: 0 auto 22px;
+  background: #FFFFFF;
+  border: 1px solid var(--ficha-border);
+  border-left: 5px solid var(--ficha-brand);
+  border-radius: 10px;
+  color: var(--ficha-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: left;
+}
+.a2w-ficha *, .a2w-ficha *::before, .a2w-ficha *::after { box-sizing: border-box; }
+.a2w-ficha__head {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; justify-content: space-between;
+  padding: 9px 16px; border-bottom: 1px solid var(--ficha-border);
+  background: var(--ficha-surface); border-radius: 9px 9px 0 0;
+}
+.a2w-ficha__tag { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ficha-brand); }
+.a2w-ficha__fecha { font-size: 11.5px; color: var(--ficha-muted); }
+.a2w-ficha__lead { padding: 12px 16px 6px; }
+.a2w-ficha__what { margin: 0 0 6px; font-size: 13.5px; }
+.a2w-ficha__rule {
+  margin: 0; padding: 7px 11px; font-size: 13.5px;
+  border-left: 3px solid var(--ficha-brand-mid); background: var(--ficha-surface); border-radius: 5px;
+}
+.a2w-ficha__panels { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 6px 16px 0; }
+.a2w-ficha__panel { { border: 1px solid var(--ficha-border); border-radius: 8px; padding: 11px 13px; background: var(--color-background, #FFFFFF); }
+.a2w-ficha__panel--wide { grid-column: 1 / -1; margin-top: 12px; }
+.a2w-ficha__panel h4 {
+  margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--ficha-brand);
+}
+.a2w-ficha__lead-sm { margin: 0 0 9px; font-size: 12px; color: var(--ficha-muted); }
+.a2w-ficha__lead-sm code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; background: var(--ficha-strong); padding: 0 4px; border-radius: 3px; }
+.a2w-ficha__caption { margin: 8px 0 5px; font-size: 11.5px; color: var(--ficha-muted); }
+.a2w-ficha__stats { display: flex; gap: 8px; }
+.a2w-ficha__stats span {
+  flex: 1 1 0; background: var(--ficha-surface); border: 1px solid var(--ficha-border); border-radius: 7px;
+  padding: 6px 9px; font-size: 10.5px; color: var(--ficha-muted);
+}
+.a2w-ficha__stats b { display: block; font-size: 18px; color: var(--ficha-brand); line-height: 1.1; }
+.a2w-ficha__hubs { list-style: none; margin: 0; padding: 0; }
+.a2w-ficha__hubs li {
+  display: grid; grid-template-columns: minmax(0, 1fr) 84px 44px; gap: 8px; align-items: center;
+  padding: 3px 0; border-bottom: 1px dashed var(--ficha-border); font-size: 11.5px;
+}
+.a2w-ficha__hubs li:last-child { border-bottom: 0; }
+.a2w-ficha__hubname { min-width: 0; }
+.a2w-ficha__hubs b { font-weight: 600; }
+.a2w-ficha__hubs em { font-style: normal; font-size: 10px; color: var(--ficha-muted); }
+.a2w-ficha__caption em { font-style: normal; }
+.a2w-ficha__bar { display: block; height: 8px; background: var(--ficha-strong); border-radius: 4px; overflow: hidden; }
+.a2w-ficha__bar i { display: block; height: 8px; background: var(--ficha-brand-mid); border-radius: 4px; }
+.a2w-ficha__count { font-size: 10.5px; color: var(--ficha-muted); text-align: right; }
+.a2w-ficha__diagram { width: 100%; height: auto; display: block; }
+.a2w-ficha__six { display: grid; grid-template-columns: 1fr 320px; gap: 16px; align-items: start; }
+.a2w-ficha__chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.a2w-ficha__chip {
+  display: inline-block; padding: 3px 9px; border-radius: 12px; font-size: 11.5px; font-weight: 600;
+  background: var(--ficha-surface); border: 1px solid var(--ficha-border); color: var(--ficha-text);
+}
+.a2w-ficha__chip.is-web { background: #E3F2FD; border-color: var(--ficha-brand-mid); color: var(--ficha-brand); }
+.a2w-ficha__chip.is-inline { padding: 1px 7px; font-size: 10.5px; }
+.a2w-ficha__months { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px 12px; }
+.a2w-ficha__month { font-size: 11px; color: var(--ficha-muted); border-left: 2px solid var(--ficha-strong); padding-left: 7px; }
+.a2w-ficha__month b { display: block; font-size: 11.5px; color: var(--ficha-brand); }
+.a2w-ficha__people { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.a2w-ficha__person { border: 1px solid var(--ficha-border); border-radius: 8px; padding: 9px 11px; background: var(--ficha-background, #FFFFFF); }
+.a2w-ficha__who { display: block; font-size: 12.5px; color: var(--ficha-brand); margin-bottom: 3px; }
+.a2w-ficha__who b { font-size: 13.5px; }
+.a2w-ficha__what { display: block; font-size: 11.5px; margin-bottom: 6px; }
+.a2w-ficha__role { display: inline-block; padding: 1px 8px; border-radius: 12px; font-size: 10.5px; font-weight: 700; }
+.a2w-ficha__role.is-decide { background: #E3F2FD; color: var(--ficha-brand); }
+.a2w-ficha__role.is-get { background: #F3E5F5; color: #6A1B9A; }
+.a2w-ficha__role.is-ok { background: #FFF3E0; color: var(--ficha-amber); }
+.a2w-ficha__role.is-do { background: #E8F5E9; color: var(--ficha-ok); }
+.a2w-ficha__glossary { margin: 12px 16px 0; border: 1px solid var(--ficha-border); border-radius: 8px; background: var(--ficha-surface); }
+.a2w-ficha__glossary summary {
+  cursor: pointer; padding: 7px 12px; font-size: 12px; font-weight: 700; color: var(--ficha-brand);
+  list-style: none;
+}
+.a2w-ficha__glossary summary::-webkit-details-marker { display: none; }
+.a2w-ficha__glossary summary::before { content: "\25B8 "; color: var(--ficha-brand-mid); }
+.a2w-ficha__glossary[open] summary::before { content: "\25BE "; }
+.a2w-ficha__terms {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 5px 18px;
+  padding: 4px 12px 10px;
+}
+.a2w-ficha__terms p { margin: 0; font-size: 11.5px; }
+.a2w-ficha__terms b { color: var(--ficha-brand); }
+.a2w-ficha__terms code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; background: var(--ficha-strong); padding: 0 4px; border-radius: 3px; }
+.a2w-ficha__foot {
+  display: flex; flex-wrap: wrap; gap: 4px 18px; justify-content: space-between;
+  padding: 10px 16px 11px; margin-top: 12px; border-top: 1px solid var(--ficha-border);
+  background: var(--ficha-surface); border-radius: 0 0 9px 9px; font-size: 12px;
+}
+.a2w-ficha__foot strong { color: var(--ficha-brand); }
+.a2w-ficha__links a { color: var(--ficha-brand); font-weight: 600; text-decoration: none; border-bottom: 1px solid rgba(0,61,122,.35); }
+.a2w-ficha__links a:hover { border-bottom-color: var(--ficha-brand); }
+@media (max-width: 900px) {
+  .a2w-ficha__panels { grid-template-columns: 1fr; }
+  .a2w-ficha__six { grid-template-columns: 1fr; }
+}
+@media print {
+  .a2w-ficha { break-inside: avoid; page-break-inside: avoid; border-left-width: 3px; margin-bottom: 8px; }
+  /* En papel la ficha se reparte en dos columnas: los diagramas quedan como
+     apoyo visual y el texto explicativo es el que se lee. */
+  .a2w-ficha__panels { grid-template-columns: 1fr 1fr; }
+  .a2w-ficha__panel--wide { grid-column: 1 / -1; }
+  .a2w-ficha__six { grid-template-columns: 1fr 240px; }
+  .a2w-ficha__head { padding: 5px 12px; }
+  .a2w-ficha__tag { font-size: 9px; }
+  .a2w-ficha__fecha { font-size: 8.4px; }
+  .a2w-ficha__lead { padding: 5px 12px 2px; }
+  .a2w-ficha__what { font-size: 9.4px; margin-bottom: 3px; }
+  .a2w-ficha__rule { font-size: 9.4px; padding: 4px 8px; }
+  .a2w-ficha__panels { gap: 8px; padding: 2px 12px 0; }
+  .a2w-ficha__panel { padding: 6px 8px; }
+  .a2w-ficha__panel--wide { margin-top: 7px; }
+  .a2w-ficha__lead-sm { font-size: 8.6px; margin-bottom: 4px; }
+  .a2w-ficha__caption { font-size: 8.2px; margin: 4px 0 3px; }
+  .a2w-ficha__hubs li { padding: 1px 0; font-size: 8.6px; }
+  .a2w-ficha__hubs em { font-size: 8.4px; }
+  .a2w-ficha__stats span { font-size: 8px; }
+  .a2w-ficha__stats b { font-size: 12px; }
+  .a2w-ficha__six { gap: 10px; }
+  .a2w-ficha__chips { gap: 3px; }
+  .a2w-ficha__chip { font-size: 8.6px; padding: 1px 6px; }
+  .a2w-ficha__months { gap: 3px 10px; padding: 5px 12px 2px; }
+  .a2w-ficha__month { font-size: 8.2px; }
+  .a2w-ficha__month b { font-size: 8.8px; }
+  .a2w-ficha__people { gap: 6px; }
+  .a2w-ficha__person { padding: 5px 7px; }
+  .a2w-ficha__who { font-size: 9.4px; } .a2w-ficha__who b { font-size: 10px; }
+  .a2w-ficha__what { font-size: 8.4px; margin-bottom: 3px; }
+  .a2w-ficha__role { font-size: 8px; padding: 0 6px; }
+  .a2w-ficha__glossary { margin-top: 6px; }
+  .a2w-ficha__glossary summary { font-size: 9px; padding: 4px 10px; }
+  .a2w-ficha__terms { gap: 2px 12px; padding: 2px 10px 5px; }
+  .a2w-ficha__terms p { font-size: 8.4px; }
+  .a2w-ficha__foot { font-size: 8.6px; padding: 5px 12px; margin-top: 6px; }
+  .a2w-ficha__lead { padding: 7px 12px 3px; }
+  .a2w-ficha__panels { gap: 7px; padding: 3px 12px 0; }
+  .a2w-ficha__panel { padding: 6px 8px; }
+  .a2w-ficha__panel h4 { font-size: 9.5px; margin-bottom: 4px; }
+  .a2w-ficha__lead-sm { font-size: 9px; margin-bottom: 5px; }
+  .a2w-ficha__stats b { font-size: 13px; }
+  .a2w-ficha__stats span { font-size: 8.4px; padding: 4px 6px; }
+  .a2w-ficha__hubs li { font-size: 9px; grid-template-columns: minmax(0, 1fr) 60px 34px; }
+  .a2w-ficha__caption { font-size: 8.6px; }
+  .a2w-ficha__chip { font-size: 9px; padding: 2px 7px; }
+  .a2w-ficha__month { font-size: 8.6px; }
+  .a2w-ficha__month b { font-size: 9px; }
+  .a2w-ficha__what, .a2w-ficha__rule { font-size: 10px; }
+  .a2w-ficha__foot { font-size: 9.5px; padding: 6px 12px; margin-top: 7px; }
+  .a2w-ficha__links a { color: inherit; border-bottom: none; }
+}
